@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Calendar, Building2, MapPin, Globe, Filter, Check, ChevronsUpDown } from "lucide-react";
+import { Calendar as CalendarIcon, Building2, MapPin, Globe, Filter, Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Command,
   CommandEmpty,
@@ -18,6 +19,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { tr } from "date-fns/locale";
 
 const houses = [
   { value: "all", label: "Tüm Evler" },
@@ -42,7 +45,7 @@ const countries = [
 ];
 
 export default function FilterPanel() {
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [dateString, setDateString] = useState(new Date().toISOString().split("T")[0]);
   const [selectedHouse, setSelectedHouse] = useState("all");
   const [selectedCity, setSelectedCity] = useState("all");
   const [selectedCountry, setSelectedCountry] = useState("all");
@@ -51,6 +54,9 @@ export default function FilterPanel() {
   const [houseOpen, setHouseOpen] = useState(false);
   const [cityOpen, setCityOpen] = useState(false);
   const [countryOpen, setCountryOpen] = useState(false);
+  const [dateOpen, setDateOpen] = useState(false);
+
+  const selectedDate = dateString ? new Date(dateString) : undefined;
 
   return (
     <div className="bg-gray-50 rounded-lg p-6 space-y-6">
@@ -61,17 +67,52 @@ export default function FilterPanel() {
 
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="date" className="flex items-center gap-2">
-            <Calendar className="w-4 h-4" />
+          <Label className="flex items-center gap-2">
+            <CalendarIcon className="w-4 h-4" />
             Tarih
           </Label>
-          <Input
-            id="date"
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            data-testid="input-filter-date"
-          />
+          <Popover open={dateOpen} onOpenChange={setDateOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full justify-start text-left font-normal",
+                  !selectedDate && "text-muted-foreground"
+                )}
+                data-testid="button-filter-date"
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {selectedDate ? format(selectedDate, "PPP", { locale: tr }) : "Tarih seçin"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <div className="p-3 border-b flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setDateString(new Date().toISOString().split("T")[0]);
+                    setDateOpen(false);
+                  }}
+                  data-testid="button-today"
+                >
+                  Bugün
+                </Button>
+              </div>
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={(newDate) => {
+                  if (newDate) {
+                    setDateString(newDate.toISOString().split("T")[0]);
+                    setDateOpen(false);
+                  }
+                }}
+                numberOfMonths={2}
+                locale={tr}
+              />
+            </PopoverContent>
+          </Popover>
         </div>
 
         <div className="space-y-2">
@@ -103,9 +144,9 @@ export default function FilterPanel() {
                     {houses.map((house) => (
                       <CommandItem
                         key={house.value}
-                        value={house.value}
-                        onSelect={(currentValue) => {
-                          setSelectedHouse(currentValue === selectedHouse ? "all" : currentValue);
+                        value={house.label}
+                        onSelect={() => {
+                          setSelectedHouse(house.value);
                           setHouseOpen(false);
                         }}
                       >
@@ -154,9 +195,9 @@ export default function FilterPanel() {
                     {cities.map((city) => (
                       <CommandItem
                         key={city.value}
-                        value={city.value}
-                        onSelect={(currentValue) => {
-                          setSelectedCity(currentValue === selectedCity ? "all" : currentValue);
+                        value={city.label}
+                        onSelect={() => {
+                          setSelectedCity(city.value);
                           setCityOpen(false);
                         }}
                       >
@@ -205,9 +246,9 @@ export default function FilterPanel() {
                     {countries.map((country) => (
                       <CommandItem
                         key={country.value}
-                        value={country.value}
-                        onSelect={(currentValue) => {
-                          setSelectedCountry(currentValue === selectedCountry ? "all" : currentValue);
+                        value={country.label}
+                        onSelect={() => {
+                          setSelectedCountry(country.value);
                           setCountryOpen(false);
                         }}
                       >
