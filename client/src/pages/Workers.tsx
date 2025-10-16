@@ -85,7 +85,7 @@ export default function Workers() {
                             {worker.name}
                           </div>
                           <div 
-                            className="text-xs text-red-500 font-normal" 
+                            className="text-xs text-muted-foreground mt-0.5" 
                             data-testid={`text-worker-birthdate-${worker.id}`}
                           >
                             {worker.birthDate}
