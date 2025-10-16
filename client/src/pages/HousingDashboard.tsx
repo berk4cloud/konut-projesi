@@ -145,6 +145,45 @@ const mockHouses = [
       },
     ],
   },
+  {
+    id: "h4",
+    name: "Bahnhofstrasse 22",
+    city: "Berlin",
+    country: "de",
+    totalBeds: 15,
+    occupiedBeds: 10,
+    rooms: [
+      {
+        id: "r8",
+        roomNumber: "301",
+        floor: 3,
+        beds: [
+          {
+            id: "b19",
+            bedNumber: 1,
+            status: "occupied" as const,
+            worker: { id: "w9", name: "Anna", gender: "female" as const },
+          },
+          { id: "b20", bedNumber: 2, status: "available" as const },
+          {
+            id: "b21",
+            bedNumber: 3,
+            status: "occupied" as const,
+            worker: { id: "w10", name: "Klaus", gender: "male" as const },
+          },
+        ],
+      },
+      {
+        id: "r9",
+        roomNumber: "302",
+        floor: 3,
+        beds: [
+          { id: "b22", bedNumber: 1, status: "available" as const },
+          { id: "b23", bedNumber: 2, status: "reserved" as const },
+        ],
+      },
+    ],
+  },
 ];
 
 export default function HousingDashboard() {
@@ -219,6 +258,7 @@ export default function HousingDashboard() {
               setSelectedCountry={setSelectedCountry}
               showEmptyOnly={showEmptyOnly}
               setShowEmptyOnly={setShowEmptyOnly}
+              houses={mockHouses}
             />
           </div>
         </aside>

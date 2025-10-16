@@ -22,27 +22,13 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 
-const houses = [
-  { value: "all", label: "Tüm Evler" },
-  { value: "h1", label: "Geldernstrasse 13" },
-  { value: "h2", label: "Hauptstrasse 45" },
-  { value: "h3", label: "Marktplatz 7" },
-];
-
-const cities = [
-  { value: "all", label: "Tüm Şehirler" },
-  { value: "geilenkirchen", label: "Geilenkirchen" },
-  { value: "venlo", label: "Venlo" },
-  { value: "roermond", label: "Roermond" },
-];
-
-const countries = [
-  { value: "all", label: "Tüm Ülkeler" },
-  { value: "nl", label: "Hollanda" },
-  { value: "de", label: "Almanya" },
-  { value: "pl", label: "Polonya" },
-  { value: "ro", label: "Romanya" },
-];
+const countryLabels: Record<string, string> = {
+  nl: "Hollanda",
+  de: "Almanya",
+  pl: "Polonya",
+  ro: "Romanya",
+  tr: "Türkiye",
+};
 
 interface FilterPanelProps {
   dateString: string;
@@ -55,6 +41,7 @@ interface FilterPanelProps {
   setSelectedCountry: (country: string) => void;
   showEmptyOnly: boolean;
   setShowEmptyOnly: (show: boolean) => void;
+  houses: Array<{ id: string; name: string; city: string; country: string }>;
 }
 
 export default function FilterPanel({
@@ -68,6 +55,7 @@ export default function FilterPanel({
   setSelectedCountry,
   showEmptyOnly,
   setShowEmptyOnly,
+  houses: allHouses,
 }: FilterPanelProps) {
   
   const [houseOpen, setHouseOpen] = useState(false);
@@ -76,6 +64,30 @@ export default function FilterPanel({
   const [dateOpen, setDateOpen] = useState(false);
 
   const selectedDate = dateString ? new Date(dateString) : undefined;
+
+  // Extract unique values from houses
+  const houses = [
+    { value: "all", label: "Tüm Evler" },
+    ...allHouses.map((h) => ({ value: h.id, label: h.name })),
+  ];
+
+  const cities = [
+    { value: "all", label: "Tüm Şehirler" },
+    ...Array.from(new Set(allHouses.map((h) => h.city.toLowerCase())))
+      .map((city) => ({
+        value: city,
+        label: allHouses.find((h) => h.city.toLowerCase() === city)?.city || city,
+      })),
+  ];
+
+  const countries = [
+    { value: "all", label: "Tüm Ülkeler" },
+    ...Array.from(new Set(allHouses.map((h) => h.country)))
+      .map((country) => ({
+        value: country,
+        label: countryLabels[country] || country,
+      })),
+  ];
 
   return (
     <div className="bg-gray-50 rounded-lg p-6 space-y-6">
