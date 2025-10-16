@@ -79,14 +79,14 @@ export default function FilterPanel() {
         <div className="space-y-2">
           <Label className="flex items-center gap-2">
             <Globe className="w-4 h-4" />
-            Nationality
+            Country
           </Label>
           <Select>
-            <SelectTrigger data-testid="select-filter-nationality">
-              <SelectValue placeholder="All Nationalities" />
+            <SelectTrigger data-testid="select-filter-country">
+              <SelectValue placeholder="All Countries" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Nationalities</SelectItem>
+              <SelectItem value="all">All Countries</SelectItem>
               <SelectItem value="nl">Netherlands</SelectItem>
               <SelectItem value="de">Germany</SelectItem>
               <SelectItem value="pl">Poland</SelectItem>
