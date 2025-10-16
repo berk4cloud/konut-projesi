@@ -1,22 +1,56 @@
 import { useState } from "react";
-import { Calendar, Building2, MapPin, Globe, Filter } from "lucide-react";
+import { Calendar, Building2, MapPin, Globe, Filter, Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+
+const houses = [
+  { value: "all", label: "Tüm Evler" },
+  { value: "h1", label: "Geldernstrasse 13" },
+  { value: "h2", label: "Hauptstrasse 45" },
+  { value: "h3", label: "Marktplatz 7" },
+];
+
+const cities = [
+  { value: "all", label: "Tüm Şehirler" },
+  { value: "geilenkirchen", label: "Geilenkirchen" },
+  { value: "venlo", label: "Venlo" },
+  { value: "roermond", label: "Roermond" },
+];
+
+const countries = [
+  { value: "all", label: "Tüm Ülkeler" },
+  { value: "nl", label: "Hollanda" },
+  { value: "de", label: "Almanya" },
+  { value: "pl", label: "Polonya" },
+  { value: "ro", label: "Romanya" },
+];
 
 export default function FilterPanel() {
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [selectedHouse, setSelectedHouse] = useState("all");
   const [selectedCity, setSelectedCity] = useState("all");
+  const [selectedCountry, setSelectedCountry] = useState("all");
   const [showEmptyOnly, setShowEmptyOnly] = useState(false);
+  
+  const [houseOpen, setHouseOpen] = useState(false);
+  const [cityOpen, setCityOpen] = useState(false);
+  const [countryOpen, setCountryOpen] = useState(false);
 
   return (
     <div className="bg-gray-50 rounded-lg p-6 space-y-6">
@@ -41,39 +75,105 @@ export default function FilterPanel() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="house" className="flex items-center gap-2">
+          <Label className="flex items-center gap-2">
             <Building2 className="w-4 h-4" />
             Ev
           </Label>
-          <Select value={selectedHouse} onValueChange={setSelectedHouse}>
-            <SelectTrigger id="house" data-testid="select-filter-house">
-              <SelectValue placeholder="Tüm Evler" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tüm Evler</SelectItem>
-              <SelectItem value="h1">Geldernstrasse 13</SelectItem>
-              <SelectItem value="h2">Hauptstrasse 45</SelectItem>
-              <SelectItem value="h3">Marktplatz 7</SelectItem>
-            </SelectContent>
-          </Select>
+          <Popover open={houseOpen} onOpenChange={setHouseOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={houseOpen}
+                className="w-full justify-between"
+                data-testid="select-filter-house"
+              >
+                {selectedHouse
+                  ? houses.find((house) => house.value === selectedHouse)?.label
+                  : "Ev seçin..."}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-full p-0">
+              <Command>
+                <CommandInput placeholder="Ev ara..." />
+                <CommandList>
+                  <CommandEmpty>Ev bulunamadı.</CommandEmpty>
+                  <CommandGroup>
+                    {houses.map((house) => (
+                      <CommandItem
+                        key={house.value}
+                        value={house.value}
+                        onSelect={(currentValue) => {
+                          setSelectedHouse(currentValue === selectedHouse ? "all" : currentValue);
+                          setHouseOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            selectedHouse === house.value ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {house.label}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="city" className="flex items-center gap-2">
+          <Label className="flex items-center gap-2">
             <MapPin className="w-4 h-4" />
             Şehir
           </Label>
-          <Select value={selectedCity} onValueChange={setSelectedCity}>
-            <SelectTrigger id="city" data-testid="select-filter-city">
-              <SelectValue placeholder="Tüm Şehirler" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tüm Şehirler</SelectItem>
-              <SelectItem value="geilenkirchen">Geilenkirchen</SelectItem>
-              <SelectItem value="venlo">Venlo</SelectItem>
-              <SelectItem value="roermond">Roermond</SelectItem>
-            </SelectContent>
-          </Select>
+          <Popover open={cityOpen} onOpenChange={setCityOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={cityOpen}
+                className="w-full justify-between"
+                data-testid="select-filter-city"
+              >
+                {selectedCity
+                  ? cities.find((city) => city.value === selectedCity)?.label
+                  : "Şehir seçin..."}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-full p-0">
+              <Command>
+                <CommandInput placeholder="Şehir ara..." />
+                <CommandList>
+                  <CommandEmpty>Şehir bulunamadı.</CommandEmpty>
+                  <CommandGroup>
+                    {cities.map((city) => (
+                      <CommandItem
+                        key={city.value}
+                        value={city.value}
+                        onSelect={(currentValue) => {
+                          setSelectedCity(currentValue === selectedCity ? "all" : currentValue);
+                          setCityOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            selectedCity === city.value ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {city.label}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
 
         <div className="space-y-2">
@@ -81,18 +181,50 @@ export default function FilterPanel() {
             <Globe className="w-4 h-4" />
             Ülke
           </Label>
-          <Select>
-            <SelectTrigger data-testid="select-filter-country">
-              <SelectValue placeholder="Tüm Ülkeler" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tüm Ülkeler</SelectItem>
-              <SelectItem value="nl">Hollanda</SelectItem>
-              <SelectItem value="de">Almanya</SelectItem>
-              <SelectItem value="pl">Polonya</SelectItem>
-              <SelectItem value="ro">Romanya</SelectItem>
-            </SelectContent>
-          </Select>
+          <Popover open={countryOpen} onOpenChange={setCountryOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={countryOpen}
+                className="w-full justify-between"
+                data-testid="select-filter-country"
+              >
+                {selectedCountry
+                  ? countries.find((country) => country.value === selectedCountry)?.label
+                  : "Ülke seçin..."}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-full p-0">
+              <Command>
+                <CommandInput placeholder="Ülke ara..." />
+                <CommandList>
+                  <CommandEmpty>Ülke bulunamadı.</CommandEmpty>
+                  <CommandGroup>
+                    {countries.map((country) => (
+                      <CommandItem
+                        key={country.value}
+                        value={country.value}
+                        onSelect={(currentValue) => {
+                          setSelectedCountry(currentValue === selectedCountry ? "all" : currentValue);
+                          setCountryOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            selectedCountry === country.value ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {country.label}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
 
         <div className="flex items-center space-x-2 pt-2">
