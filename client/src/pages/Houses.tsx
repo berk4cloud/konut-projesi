@@ -466,23 +466,11 @@ export default function Houses() {
 
             {/* Rooms Section */}
             <div className="space-y-4 pt-4 border-t">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="text-base font-semibold">Odalar</Label>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Her oda için detaylı bilgi girin
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleAddRoom}
-                  data-testid="button-add-room"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Oda Ekle
-                </Button>
+              <div>
+                <Label className="text-base font-semibold">Odalar</Label>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Her oda için detaylı bilgi girin
+                </p>
               </div>
 
               {formData.rooms.length === 0 && (
@@ -564,6 +552,17 @@ export default function Houses() {
                   </div>
                 ))}
               </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={handleAddRoom}
+                data-testid="button-add-room"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Oda Ekle
+              </Button>
 
               {formData.rooms.length > 0 && (
                 <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
