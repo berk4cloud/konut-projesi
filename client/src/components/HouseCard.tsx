@@ -78,10 +78,10 @@ export default function HouseCard({
       <div className="pt-3 border-t border-gray-200 flex items-center justify-between text-sm">
         <div className="flex items-center gap-4">
           <span className="text-gray-600">
-            Empty: <span className="font-semibold text-status-empty">{emptyBeds}</span>
+            Boş: <span className="font-semibold text-status-empty">{emptyBeds}</span>
           </span>
           <span className="text-gray-600">
-            Occupied: <span className="font-semibold text-status-occupied">{occupiedBeds}</span>
+            Dolu: <span className="font-semibold text-status-occupied">{occupiedBeds}</span>
           </span>
         </div>
       </div>

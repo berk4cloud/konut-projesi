@@ -34,15 +34,15 @@ export default function LoginForm() {
     <div className="w-full max-w-md space-y-6">
       <div className="text-center space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">APDO HABITAT</h1>
-        <p className="text-muted-foreground">Housing Management Platform</p>
+        <p className="text-muted-foreground">Konaklama Yönetim Platformu</p>
       </div>
 
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="tenant">Company</Label>
+          <Label htmlFor="tenant">Firma</Label>
           <Select value={tenant} onValueChange={setTenant}>
             <SelectTrigger id="tenant" data-testid="select-tenant">
-              <SelectValue placeholder="Select your company" />
+              <SelectValue placeholder="Firmanızı seçin" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="cova">Cova B.V.</SelectItem>
@@ -53,11 +53,11 @@ export default function LoginForm() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">E-posta</Label>
           <Input
             id="email"
             type="email"
-            placeholder="admin@company.com"
+            placeholder="admin@firma.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             data-testid="input-email"
@@ -65,7 +65,7 @@ export default function LoginForm() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">Şifre</Label>
           <Input
             id="password"
             type="password"
@@ -81,7 +81,7 @@ export default function LoginForm() {
           onClick={handleLogin}
           data-testid="button-login"
         >
-          Sign In
+          Giriş Yap
         </Button>
 
         <Button
@@ -90,7 +90,7 @@ export default function LoginForm() {
           onClick={handleDemoLogin}
           data-testid="button-demo-login"
         >
-          Demo Login (Cova B.V.)
+          Demo Giriş (Cova B.V.)
         </Button>
       </div>
     </div>

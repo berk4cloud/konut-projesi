@@ -40,11 +40,11 @@ export default function Header({ tenantName = "Cova B.V.", userName = "Admin" }:
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => console.log("Profile clicked")}>
               <User className="w-4 h-4 mr-2" />
-              Profile
+              Profil
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => console.log("Logout clicked")}>
               <LogOut className="w-4 h-4 mr-2" />
-              Logout
+              Çıkış Yap
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

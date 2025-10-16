@@ -50,33 +50,33 @@ export default function WorkerAssignmentModal({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md" data-testid="modal-worker-assignment">
         <DialogHeader>
-          <DialogTitle>Assign Worker to Bed</DialogTitle>
+          <DialogTitle>Çalışanı Yatağa Ata</DialogTitle>
           <DialogDescription>
             {roomNumber && bedNumber
-              ? `Assigning to Room ${roomNumber}, Bed ${bedNumber}`
-              : "Select a worker and date range"}
+              ? `Oda ${roomNumber}, Yatak ${bedNumber} için atama yapılıyor`
+              : "Bir çalışan ve tarih aralığı seçin"}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="worker">Worker</Label>
+            <Label htmlFor="worker">Çalışan</Label>
             <Select value={selectedWorker} onValueChange={setSelectedWorker}>
               <SelectTrigger id="worker" data-testid="select-worker">
-                <SelectValue placeholder="Select worker" />
+                <SelectValue placeholder="Çalışan seçin" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="w1">John Doe (Male)</SelectItem>
-                <SelectItem value="w2">Jane Smith (Female)</SelectItem>
-                <SelectItem value="w3">Mike Johnson (Male)</SelectItem>
-                <SelectItem value="w4">Sarah Williams (Female)</SelectItem>
+                <SelectItem value="w1">John Doe (Erkek)</SelectItem>
+                <SelectItem value="w2">Jane Smith (Kadın)</SelectItem>
+                <SelectItem value="w3">Mike Johnson (Erkek)</SelectItem>
+                <SelectItem value="w4">Sarah Williams (Kadın)</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="startDate">Start Date</Label>
+              <Label htmlFor="startDate">Başlangıç Tarihi</Label>
               <Input
                 id="startDate"
                 type="date"
@@ -87,7 +87,7 @@ export default function WorkerAssignmentModal({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="endDate">End Date</Label>
+              <Label htmlFor="endDate">Bitiş Tarihi</Label>
               <Input
                 id="endDate"
                 type="date"
@@ -105,14 +105,14 @@ export default function WorkerAssignmentModal({
             onClick={onClose}
             data-testid="button-cancel-assignment"
           >
-            Cancel
+            İptal
           </Button>
           <Button
             onClick={handleAssign}
             disabled={!selectedWorker || !startDate}
             data-testid="button-confirm-assignment"
           >
-            Assign Worker
+            Çalışanı Ata
           </Button>
         </DialogFooter>
       </DialogContent>

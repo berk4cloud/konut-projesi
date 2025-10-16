@@ -21,7 +21,7 @@ export default function FilterPanel() {
   return (
     <div className="bg-gray-50 rounded-lg p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold">Filters</h3>
+        <h3 className="font-semibold">Filtreler</h3>
         <Filter className="w-4 h-4 text-gray-500" />
       </div>
 
@@ -29,7 +29,7 @@ export default function FilterPanel() {
         <div className="space-y-2">
           <Label htmlFor="date" className="flex items-center gap-2">
             <Calendar className="w-4 h-4" />
-            Date
+            Tarih
           </Label>
           <Input
             id="date"
@@ -43,14 +43,14 @@ export default function FilterPanel() {
         <div className="space-y-2">
           <Label htmlFor="house" className="flex items-center gap-2">
             <Building2 className="w-4 h-4" />
-            House
+            Ev
           </Label>
           <Select value={selectedHouse} onValueChange={setSelectedHouse}>
             <SelectTrigger id="house" data-testid="select-filter-house">
-              <SelectValue placeholder="All Houses" />
+              <SelectValue placeholder="Tüm Evler" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Houses</SelectItem>
+              <SelectItem value="all">Tüm Evler</SelectItem>
               <SelectItem value="h1">Geldernstrasse 13</SelectItem>
               <SelectItem value="h2">Hauptstrasse 45</SelectItem>
               <SelectItem value="h3">Marktplatz 7</SelectItem>
@@ -61,14 +61,14 @@ export default function FilterPanel() {
         <div className="space-y-2">
           <Label htmlFor="city" className="flex items-center gap-2">
             <MapPin className="w-4 h-4" />
-            City
+            Şehir
           </Label>
           <Select value={selectedCity} onValueChange={setSelectedCity}>
             <SelectTrigger id="city" data-testid="select-filter-city">
-              <SelectValue placeholder="All Cities" />
+              <SelectValue placeholder="Tüm Şehirler" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Cities</SelectItem>
+              <SelectItem value="all">Tüm Şehirler</SelectItem>
               <SelectItem value="geilenkirchen">Geilenkirchen</SelectItem>
               <SelectItem value="venlo">Venlo</SelectItem>
               <SelectItem value="roermond">Roermond</SelectItem>
@@ -79,18 +79,18 @@ export default function FilterPanel() {
         <div className="space-y-2">
           <Label className="flex items-center gap-2">
             <Globe className="w-4 h-4" />
-            Country
+            Ülke
           </Label>
           <Select>
             <SelectTrigger data-testid="select-filter-country">
-              <SelectValue placeholder="All Countries" />
+              <SelectValue placeholder="Tüm Ülkeler" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Countries</SelectItem>
-              <SelectItem value="nl">Netherlands</SelectItem>
-              <SelectItem value="de">Germany</SelectItem>
-              <SelectItem value="pl">Poland</SelectItem>
-              <SelectItem value="ro">Romania</SelectItem>
+              <SelectItem value="all">Tüm Ülkeler</SelectItem>
+              <SelectItem value="nl">Hollanda</SelectItem>
+              <SelectItem value="de">Almanya</SelectItem>
+              <SelectItem value="pl">Polonya</SelectItem>
+              <SelectItem value="ro">Romanya</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -106,7 +106,7 @@ export default function FilterPanel() {
             htmlFor="emptyOnly"
             className="text-sm font-medium cursor-pointer"
           >
-            Show only empty beds
+            Sadece boş yatakları göster
           </Label>
         </div>
 
@@ -116,7 +116,7 @@ export default function FilterPanel() {
           onClick={() => console.log("Clear filters")}
           data-testid="button-clear-filters"
         >
-          Clear Filters
+          Filtreleri Temizle
         </Button>
       </div>
     </div>
