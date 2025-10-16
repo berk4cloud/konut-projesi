@@ -12,6 +12,7 @@ const mockHouses = [
     id: "h1",
     name: "Geldernstrasse 13",
     city: "Geilenkirchen",
+    country: "de",
     totalBeds: 18,
     occupiedBeds: 12,
     rooms: [
@@ -64,6 +65,7 @@ const mockHouses = [
     id: "h2",
     name: "Hauptstrasse 45",
     city: "Venlo",
+    country: "nl",
     totalBeds: 24,
     occupiedBeds: 18,
     rooms: [
@@ -108,6 +110,7 @@ const mockHouses = [
     id: "h3",
     name: "Marktplatz 7",
     city: "Roermond",
+    country: "nl",
     totalBeds: 12,
     occupiedBeds: 8,
     rooms: [
@@ -149,8 +152,40 @@ export default function HousingDashboard() {
   const [warningModalOpen, setWarningModalOpen] = useState(false);
   const [selectedBed, setSelectedBed] = useState<any>(null);
 
-  const totalBeds = mockHouses.reduce((sum, house) => sum + house.totalBeds, 0);
-  const occupiedBeds = mockHouses.reduce((sum, house) => sum + house.occupiedBeds, 0);
+  // Filter states
+  const [dateString, setDateString] = useState(new Date().toISOString().split("T")[0]);
+  const [selectedHouse, setSelectedHouse] = useState("all");
+  const [selectedCity, setSelectedCity] = useState("all");
+  const [selectedCountry, setSelectedCountry] = useState("all");
+  const [showEmptyOnly, setShowEmptyOnly] = useState(false);
+
+  // Filter houses based on selected filters
+  const filteredHouses = mockHouses.filter((house) => {
+    // Filter by house
+    if (selectedHouse !== "all" && house.id !== selectedHouse) {
+      return false;
+    }
+
+    // Filter by city
+    if (selectedCity !== "all" && house.city.toLowerCase() !== selectedCity) {
+      return false;
+    }
+
+    // Filter by country
+    if (selectedCountry !== "all" && house.country !== selectedCountry) {
+      return false;
+    }
+
+    // Filter by empty beds only (has at least one empty bed)
+    if (showEmptyOnly && house.totalBeds === house.occupiedBeds) {
+      return false;
+    }
+
+    return true;
+  });
+
+  const totalBeds = filteredHouses.reduce((sum, house) => sum + house.totalBeds, 0);
+  const occupiedBeds = filteredHouses.reduce((sum, house) => sum + house.occupiedBeds, 0);
   const emptyBeds = totalBeds - occupiedBeds;
 
   const handleBedClick = (bed: any) => {
@@ -173,7 +208,18 @@ export default function HousingDashboard() {
               emptyBeds={emptyBeds}
               oosBeds={1}
             />
-            <FilterPanel />
+            <FilterPanel
+              dateString={dateString}
+              setDateString={setDateString}
+              selectedHouse={selectedHouse}
+              setSelectedHouse={setSelectedHouse}
+              selectedCity={selectedCity}
+              setSelectedCity={setSelectedCity}
+              selectedCountry={selectedCountry}
+              setSelectedCountry={setSelectedCountry}
+              showEmptyOnly={showEmptyOnly}
+              setShowEmptyOnly={setShowEmptyOnly}
+            />
           </div>
         </aside>
 
@@ -187,17 +233,23 @@ export default function HousingDashboard() {
             </div>
 
             <div className="space-y-6">
-              {mockHouses.map((house) => (
-                <HouseCard
-                  key={house.id}
-                  name={house.name}
-                  city={house.city}
-                  totalBeds={house.totalBeds}
-                  occupiedBeds={house.occupiedBeds}
-                  rooms={house.rooms}
-                  onBedClick={handleBedClick}
-                />
-              ))}
+              {filteredHouses.length > 0 ? (
+                filteredHouses.map((house) => (
+                  <HouseCard
+                    key={house.id}
+                    name={house.name}
+                    city={house.city}
+                    totalBeds={house.totalBeds}
+                    occupiedBeds={house.occupiedBeds}
+                    rooms={house.rooms}
+                    onBedClick={handleBedClick}
+                  />
+                ))
+              ) : (
+                <div className="text-center py-12 bg-white rounded-lg border" data-testid="text-no-houses">
+                  <p className="text-gray-500">Seçilen filtrelere uygun konut bulunamadı</p>
+                </div>
+              )}
             </div>
           </div>
         </main>

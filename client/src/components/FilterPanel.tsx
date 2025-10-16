@@ -44,12 +44,31 @@ const countries = [
   { value: "ro", label: "Romanya" },
 ];
 
-export default function FilterPanel() {
-  const [dateString, setDateString] = useState(new Date().toISOString().split("T")[0]);
-  const [selectedHouse, setSelectedHouse] = useState("all");
-  const [selectedCity, setSelectedCity] = useState("all");
-  const [selectedCountry, setSelectedCountry] = useState("all");
-  const [showEmptyOnly, setShowEmptyOnly] = useState(false);
+interface FilterPanelProps {
+  dateString: string;
+  setDateString: (date: string) => void;
+  selectedHouse: string;
+  setSelectedHouse: (house: string) => void;
+  selectedCity: string;
+  setSelectedCity: (city: string) => void;
+  selectedCountry: string;
+  setSelectedCountry: (country: string) => void;
+  showEmptyOnly: boolean;
+  setShowEmptyOnly: (show: boolean) => void;
+}
+
+export default function FilterPanel({
+  dateString,
+  setDateString,
+  selectedHouse,
+  setSelectedHouse,
+  selectedCity,
+  setSelectedCity,
+  selectedCountry,
+  setSelectedCountry,
+  showEmptyOnly,
+  setShowEmptyOnly,
+}: FilterPanelProps) {
   
   const [houseOpen, setHouseOpen] = useState(false);
   const [cityOpen, setCityOpen] = useState(false);
@@ -286,7 +305,13 @@ export default function FilterPanel() {
         <Button
           variant="outline"
           className="w-full"
-          onClick={() => console.log("Clear filters")}
+          onClick={() => {
+            setDateString(new Date().toISOString().split("T")[0]);
+            setSelectedHouse("all");
+            setSelectedCity("all");
+            setSelectedCountry("all");
+            setShowEmptyOnly(false);
+          }}
           data-testid="button-clear-filters"
         >
           Filtreleri Temizle
