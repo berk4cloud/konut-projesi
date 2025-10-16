@@ -970,10 +970,14 @@ export default function Houses() {
                             id={`use-floor-${index}`}
                             checked={room.useFloor}
                             onCheckedChange={(checked) => {
-                              handleRoomChange(index, "useFloor", !!checked);
-                              if (!checked) {
-                                handleRoomChange(index, "floor", undefined);
-                              }
+                              const isChecked = !!checked;
+                              const newRooms = [...formData.rooms];
+                              newRooms[index] = { 
+                                ...newRooms[index], 
+                                useFloor: isChecked,
+                                floor: isChecked ? newRooms[index].floor : undefined
+                              };
+                              setFormData({ ...formData, rooms: newRooms });
                             }}
                             data-testid={`checkbox-use-floor-${index}`}
                           />
