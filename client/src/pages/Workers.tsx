@@ -15,11 +15,11 @@ import { Badge } from "@/components/ui/badge";
 
 // Mock data
 const mockWorkers = [
-  { id: "1", name: "John Doe", gender: "Erkek", country: "Hollanda", house: "Geldernstrasse 13", room: "45", bed: "1" },
-  { id: "2", name: "Jane Smith", gender: "Kadın", country: "Almanya", house: "Geldernstrasse 13", room: "45", bed: "3" },
-  { id: "3", name: "Mike Johnson", gender: "Erkek", country: "Polonya", house: "Geldernstrasse 13", room: "47", bed: "1" },
-  { id: "4", name: "Sarah Williams", gender: "Kadın", country: "Romanya", house: "Hauptstrasse 45", room: "101", bed: "2" },
-  { id: "5", name: "Tom Brown", gender: "Erkek", country: "Hollanda", house: "Hauptstrasse 45", room: "102", bed: "1" },
+  { id: "1", name: "John Doe", birthDate: "1980-10-22", gender: "Erkek", country: "Hollanda", house: "Geldernstrasse 13", room: "45", bed: "1" },
+  { id: "2", name: "Jane Smith", birthDate: "1992-05-15", gender: "Kadın", country: "Almanya", house: "Geldernstrasse 13", room: "45", bed: "3" },
+  { id: "3", name: "Mike Johnson", birthDate: "1985-11-30", gender: "Erkek", country: "Polonya", house: "Geldernstrasse 13", room: "47", bed: "1" },
+  { id: "4", name: "Sarah Williams", birthDate: "1988-03-08", gender: "Kadın", country: "Romanya", house: "Hauptstrasse 45", room: "101", bed: "2" },
+  { id: "5", name: "Tom Brown", birthDate: "1995-07-12", gender: "Erkek", country: "Hollanda", house: "Hauptstrasse 45", room: "102", bed: "1" },
 ];
 
 export default function Workers() {
@@ -76,11 +76,21 @@ export default function Workers() {
                 {filteredWorkers.map((worker) => (
                   <TableRow key={worker.id} data-testid={`worker-row-${worker.id}`}>
                     <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
                           <User className="w-4 h-4 text-blue-600" />
                         </div>
-                        {worker.name}
+                        <div>
+                          <div data-testid={`text-worker-name-${worker.id}`}>
+                            {worker.name}
+                          </div>
+                          <div 
+                            className="text-xs text-red-500 font-normal" 
+                            data-testid={`text-worker-birthdate-${worker.id}`}
+                          >
+                            {worker.birthDate}
+                          </div>
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell>{worker.gender}</TableCell>
