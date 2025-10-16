@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Building2, MapPin, Edit, Bed } from "lucide-react";
+import { Plus, Search, Building2, MapPin, Edit, Bed, Trash2 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -26,6 +26,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+
+// Room type definition
+type RoomInfo = {
+  roomNumber: string;
+  beds: number;
+  canRentAsRoom: boolean;
+};
 
 // Initial mock data
 const initialMockHouses = [
@@ -35,9 +43,13 @@ const initialMockHouses = [
     address: "Geldernstrasse 13, 52511",
     city: "Geilenkirchen",
     country: "Almanya",
-    totalRooms: 3,
-    totalBeds: 18,
-    occupiedBeds: 12,
+    rooms: [
+      { roomNumber: "45", beds: 3, canRentAsRoom: false },
+      { roomNumber: "46", beds: 2, canRentAsRoom: true },
+      { roomNumber: "47", beds: 2, canRentAsRoom: false },
+    ],
+    totalBeds: 7,
+    occupiedBeds: 5,
     ownershipType: "Kiralık",
   },
   {
@@ -46,9 +58,12 @@ const initialMockHouses = [
     address: "Hauptstrasse 45, 5911",
     city: "Venlo",
     country: "Hollanda",
-    totalRooms: 2,
-    totalBeds: 24,
-    occupiedBeds: 18,
+    rooms: [
+      { roomNumber: "101", beds: 4, canRentAsRoom: false },
+      { roomNumber: "102", beds: 2, canRentAsRoom: false },
+    ],
+    totalBeds: 6,
+    occupiedBeds: 4,
     ownershipType: "Mülk",
   },
   {
@@ -57,9 +72,12 @@ const initialMockHouses = [
     address: "Marktplatz 7, 6041",
     city: "Roermond",
     country: "Hollanda",
-    totalRooms: 2,
-    totalBeds: 12,
-    occupiedBeds: 8,
+    rooms: [
+      { roomNumber: "201", beds: 3, canRentAsRoom: true },
+      { roomNumber: "202", beds: 2, canRentAsRoom: false },
+    ],
+    totalBeds: 5,
+    occupiedBeds: 3,
     ownershipType: "3. Taraf",
   },
 ];
@@ -76,8 +94,7 @@ export default function Houses() {
     address: "",
     city: "",
     country: "Hollanda", // Default from settings
-    totalRooms: "",
-    totalBeds: "",
+    rooms: [] as RoomInfo[],
     ownershipType: "Kiralık",
   });
 
@@ -95,8 +112,7 @@ export default function Houses() {
       address: "",
       city: "",
       country: "Hollanda",
-      totalRooms: "",
-      totalBeds: "",
+      rooms: [],
       ownershipType: "Kiralık",
     });
     setIsDialogOpen(true);
@@ -109,15 +125,71 @@ export default function Houses() {
       address: house.address,
       city: house.city,
       country: house.country,
-      totalRooms: house.totalRooms.toString(),
-      totalBeds: house.totalBeds.toString(),
+      rooms: [...house.rooms],
       ownershipType: house.ownershipType,
     });
     setIsDialogOpen(true);
   };
 
+  const handleAddRoom = () => {
+    setFormData({
+      ...formData,
+      rooms: [...formData.rooms, { roomNumber: "", beds: 1, canRentAsRoom: false }],
+    });
+  };
+
+  const handleRemoveRoom = (index: number) => {
+    setFormData({
+      ...formData,
+      rooms: formData.rooms.filter((_, i) => i !== index),
+    });
+  };
+
+  const handleRoomChange = (index: number, field: keyof RoomInfo, value: any) => {
+    const newRooms = [...formData.rooms];
+    newRooms[index] = { ...newRooms[index], [field]: value };
+    setFormData({ ...formData, rooms: newRooms });
+  };
+
+  const calculateTotalBeds = () => {
+    return formData.rooms.reduce((sum, room) => sum + (room.beds || 0), 0);
+  };
+
   const handleSave = () => {
+    // Validation
+    if (!formData.name.trim()) {
+      alert("Konut adı zorunludur");
+      return;
+    }
+    if (!formData.address.trim()) {
+      alert("Adres zorunludur");
+      return;
+    }
+    if (!formData.city.trim()) {
+      alert("Şehir zorunludur");
+      return;
+    }
+    if (formData.rooms.length === 0) {
+      alert("En az bir oda eklemelisiniz");
+      return;
+    }
+    
+    // Validate each room
+    for (let i = 0; i < formData.rooms.length; i++) {
+      const room = formData.rooms[i];
+      if (!room.roomNumber.trim()) {
+        alert(`Oda ${i + 1}: Oda numarası zorunludur`);
+        return;
+      }
+      if (!room.beds || room.beds < 1) {
+        alert(`Oda ${i + 1}: Yatak sayısı en az 1 olmalıdır`);
+        return;
+      }
+    }
+    
     console.log("Saving house:", formData);
+    
+    const totalBeds = calculateTotalBeds();
     
     if (editingHouse) {
       // Update existing house
@@ -129,8 +201,8 @@ export default function Houses() {
               address: formData.address,
               city: formData.city,
               country: formData.country,
-              totalRooms: parseInt(formData.totalRooms) || 0,
-              totalBeds: parseInt(formData.totalBeds) || 0,
+              rooms: formData.rooms,
+              totalBeds,
               ownershipType: formData.ownershipType,
             }
           : h
@@ -143,8 +215,8 @@ export default function Houses() {
         address: formData.address,
         city: formData.city,
         country: formData.country,
-        totalRooms: parseInt(formData.totalRooms) || 0,
-        totalBeds: parseInt(formData.totalBeds) || 0,
+        rooms: formData.rooms,
+        totalBeds,
         occupiedBeds: 0, // Default to 0 for new houses
         ownershipType: formData.ownershipType,
       };
@@ -222,7 +294,7 @@ export default function Houses() {
                       <div>
                         <p className="text-xs text-gray-500">Oda Sayısı</p>
                         <p className="text-lg font-semibold" data-testid={`text-room-count-${house.id}`}>
-                          {house.totalRooms}
+                          {house.rooms.length}
                         </p>
                       </div>
                       <div>
@@ -231,6 +303,30 @@ export default function Houses() {
                           <Bed className="w-4 h-4" />
                           {house.totalBeds}
                         </p>
+                      </div>
+                    </div>
+
+                    {/* Room details with rental status */}
+                    <div className="space-y-2">
+                      <p className="text-xs text-gray-500 font-medium">Odalar:</p>
+                      <div className="space-y-1.5">
+                        {house.rooms.map((room) => (
+                          <div 
+                            key={room.roomNumber} 
+                            className="flex items-center justify-between text-sm bg-muted/40 rounded px-2 py-1.5"
+                            data-testid={`room-info-${house.id}-${room.roomNumber}`}
+                          >
+                            <span className="font-medium">Oda {room.roomNumber}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground">{room.beds} yatak</span>
+                              {room.canRentAsRoom && (
+                                <Badge variant="outline" className="text-xs" data-testid={`badge-can-rent-${house.id}-${room.roomNumber}`}>
+                                  Oda kirası
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
 
@@ -367,30 +463,115 @@ export default function Houses() {
               </Select>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="totalRooms">Oda Sayısı *</Label>
-                <Input
-                  id="totalRooms"
-                  type="number"
-                  placeholder="örn: 3"
-                  value={formData.totalRooms}
-                  onChange={(e) => setFormData({ ...formData, totalRooms: e.target.value })}
-                  data-testid="input-total-rooms"
-                />
+            {/* Rooms Section */}
+            <div className="space-y-4 pt-4 border-t">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-base font-semibold">Odalar</Label>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Her oda için detaylı bilgi girin
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAddRoom}
+                  data-testid="button-add-room"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Oda Ekle
+                </Button>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="totalBeds">Toplam Yatak *</Label>
-                <Input
-                  id="totalBeds"
-                  type="number"
-                  placeholder="örn: 18"
-                  value={formData.totalBeds}
-                  onChange={(e) => setFormData({ ...formData, totalBeds: e.target.value })}
-                  data-testid="input-total-beds"
-                />
+              {formData.rooms.length === 0 && (
+                <div className="text-center py-8 bg-muted/50 rounded-lg border-2 border-dashed">
+                  <Building2 className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">
+                    Henüz oda eklenmedi. "Oda Ekle" butonuna tıklayarak başlayın.
+                  </p>
+                </div>
+              )}
+
+              <div className="space-y-3">
+                {formData.rooms.map((room, index) => (
+                  <div
+                    key={index}
+                    className="p-4 bg-muted/30 rounded-lg border space-y-3"
+                    data-testid={`room-item-${index}`}
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-sm font-semibold">Oda {index + 1}</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveRoom(index)}
+                        data-testid={`button-remove-room-${index}`}
+                      >
+                        <Trash2 className="w-4 h-4 text-red-500" />
+                      </Button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <Label htmlFor={`room-number-${index}`}>Oda Numarası *</Label>
+                        <Input
+                          id={`room-number-${index}`}
+                          placeholder="örn: 45"
+                          value={room.roomNumber}
+                          onChange={(e) => handleRoomChange(index, "roomNumber", e.target.value)}
+                          data-testid={`input-room-number-${index}`}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor={`beds-${index}`}>Yatak Sayısı *</Label>
+                        <Input
+                          id={`beds-${index}`}
+                          type="number"
+                          min="1"
+                          placeholder="örn: 3"
+                          value={room.beds === 0 ? "" : room.beds}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === "") {
+                              handleRoomChange(index, "beds", 0);
+                            } else {
+                              handleRoomChange(index, "beds", parseInt(val) || 1);
+                            }
+                          }}
+                          data-testid={`input-beds-${index}`}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-2 pt-2">
+                      <Checkbox
+                        id={`can-rent-${index}`}
+                        checked={room.canRentAsRoom}
+                        onCheckedChange={(checked) => handleRoomChange(index, "canRentAsRoom", checked)}
+                        data-testid={`checkbox-can-rent-${index}`}
+                      />
+                      <Label
+                        htmlFor={`can-rent-${index}`}
+                        className="text-sm font-normal cursor-pointer"
+                      >
+                        Oda olarak kiraya verilebilir
+                      </Label>
+                    </div>
+                  </div>
+                ))}
               </div>
+
+              {formData.rooms.length > 0 && (
+                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <span className="text-sm font-medium text-blue-900">Toplam Yatak Sayısı:</span>
+                  <span className="text-lg font-bold text-blue-900" data-testid="text-calculated-total-beds">
+                    {calculateTotalBeds()}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
