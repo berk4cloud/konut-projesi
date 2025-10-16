@@ -804,6 +804,148 @@ export default function Houses() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Meter Logs Dialog */}
+      <Dialog open={isMeterDialogOpen} onOpenChange={setIsMeterDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Sayaç Bilgileri</DialogTitle>
+            <DialogDescription>
+              {selectedHouseForMeters?.name} için elektrik ve su sayacı okumaları
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedHouseForMeters && (
+            <div className="space-y-6">
+              {/* Electricity Meter */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
+                    <Zap className="w-4 h-4 text-amber-600" />
+                  </div>
+                  <h3 className="font-semibold">Elektrik Sayacı</h3>
+                </div>
+                
+                {selectedHouseForMeters.meterLogs?.electricity && selectedHouseForMeters.meterLogs.electricity.length > 0 ? (
+                  <div className="space-y-2">
+                    {selectedHouseForMeters.meterLogs.electricity.map((reading, index) => {
+                      const prevReading = selectedHouseForMeters.meterLogs.electricity[index + 1];
+                      const consumption = prevReading ? reading.value - prevReading.value : null;
+                      
+                      return (
+                        <div 
+                          key={reading.id} 
+                          className="p-3 border rounded-lg bg-card"
+                          data-testid={`electricity-reading-${reading.id}`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium" data-testid={`text-reading-date-${reading.id}`}>
+                                {new Date(reading.date).toLocaleDateString("tr-TR", { 
+                                  day: "numeric", 
+                                  month: "long", 
+                                  year: "numeric" 
+                                })}
+                              </p>
+                              {reading.note && (
+                                <p className="text-xs text-muted-foreground" data-testid={`text-reading-note-${reading.id}`}>
+                                  {reading.note}
+                                </p>
+                              )}
+                            </div>
+                            <div className="text-right">
+                              <p className="text-lg font-bold" data-testid={`text-reading-value-${reading.id}`}>
+                                {reading.value.toLocaleString("tr-TR")} kWh
+                              </p>
+                              {consumption !== null && (
+                                <p className="text-xs text-muted-foreground" data-testid={`text-consumption-${reading.id}`}>
+                                  +{consumption.toLocaleString("tr-TR")} kWh
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Kayıt bulunamadı</p>
+                )}
+              </div>
+
+              {/* Water Meter */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                    <Droplet className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <h3 className="font-semibold">Su Sayacı</h3>
+                </div>
+                
+                {selectedHouseForMeters.meterLogs?.water && selectedHouseForMeters.meterLogs.water.length > 0 ? (
+                  <div className="space-y-2">
+                    {selectedHouseForMeters.meterLogs.water.map((reading, index) => {
+                      const prevReading = selectedHouseForMeters.meterLogs.water[index + 1];
+                      const consumption = prevReading ? reading.value - prevReading.value : null;
+                      
+                      return (
+                        <div 
+                          key={reading.id} 
+                          className="p-3 border rounded-lg bg-card"
+                          data-testid={`water-reading-${reading.id}`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium" data-testid={`text-reading-date-${reading.id}`}>
+                                {new Date(reading.date).toLocaleDateString("tr-TR", { 
+                                  day: "numeric", 
+                                  month: "long", 
+                                  year: "numeric" 
+                                })}
+                              </p>
+                              {reading.note && (
+                                <p className="text-xs text-muted-foreground" data-testid={`text-reading-note-${reading.id}`}>
+                                  {reading.note}
+                                </p>
+                              )}
+                            </div>
+                            <div className="text-right">
+                              <p className="text-lg font-bold" data-testid={`text-reading-value-${reading.id}`}>
+                                {reading.value.toLocaleString("tr-TR")} m³
+                              </p>
+                              {consumption !== null && (
+                                <p className="text-xs text-muted-foreground" data-testid={`text-consumption-${reading.id}`}>
+                                  +{consumption.toLocaleString("tr-TR")} m³
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Kayıt bulunamadı</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div className="flex gap-3 justify-end pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => setIsMeterDialogOpen(false)}
+              data-testid="button-close-meter-dialog"
+            >
+              Kapat
+            </Button>
+            <Button data-testid="button-add-meter-reading">
+              <Plus className="w-4 h-4 mr-2" />
+              Yeni Okuma Ekle
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
