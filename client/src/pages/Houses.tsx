@@ -170,6 +170,8 @@ export default function Houses() {
   const [isMeterDialogOpen, setIsMeterDialogOpen] = useState(false);
   const [selectedHouseForMeters, setSelectedHouseForMeters] = useState<typeof initialMockHouses[0] | null>(null);
   const [isAddReadingOpen, setIsAddReadingOpen] = useState(false);
+  const [showAllElectricity, setShowAllElectricity] = useState(false);
+  const [showAllWater, setShowAllWater] = useState(false);
   const [newReading, setNewReading] = useState({
     meterType: "electricity" as "electricity" | "water",
     date: new Date().toISOString().split("T")[0],
@@ -423,6 +425,10 @@ export default function Houses() {
         totalBeds,
         occupiedBeds: 0, // Default to 0 for new houses
         ownershipType: formData.ownershipType,
+        meterLogs: {
+          electricity: [],
+          water: [],
+        },
       };
       setHouses([...houses, newHouse]);
     }
@@ -937,47 +943,72 @@ export default function Houses() {
                 </div>
                 
                 {selectedHouseForMeters.meterLogs?.electricity && selectedHouseForMeters.meterLogs.electricity.length > 0 ? (
-                  <div className="space-y-2">
-                    {selectedHouseForMeters.meterLogs.electricity.map((reading, index) => {
-                      const prevReading = selectedHouseForMeters.meterLogs.electricity[index + 1];
-                      const consumption = prevReading ? reading.value - prevReading.value : null;
-                      
-                      return (
-                        <div 
-                          key={reading.id} 
-                          className="p-3 border rounded-lg bg-card"
-                          data-testid={`electricity-reading-${reading.id}`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="space-y-1">
-                              <p className="text-sm font-medium" data-testid={`text-reading-date-${reading.id}`}>
-                                {new Date(reading.date).toLocaleDateString("tr-TR", { 
-                                  day: "numeric", 
-                                  month: "long", 
-                                  year: "numeric" 
-                                })}
-                              </p>
-                              {reading.note && (
-                                <p className="text-xs text-muted-foreground" data-testid={`text-reading-note-${reading.id}`}>
-                                  {reading.note}
+                  <>
+                    <div className="space-y-2">
+                      {(showAllElectricity 
+                        ? selectedHouseForMeters.meterLogs.electricity 
+                        : selectedHouseForMeters.meterLogs.electricity.slice(0, 3)
+                      ).map((reading, index) => {
+                        const allReadings = selectedHouseForMeters.meterLogs.electricity;
+                        const actualIndex = showAllElectricity ? index : index;
+                        const prevReading = allReadings[actualIndex + 1];
+                        const consumption = prevReading ? reading.value - prevReading.value : null;
+                        
+                        return (
+                          <div 
+                            key={reading.id} 
+                            className="p-3 border rounded-lg bg-card"
+                            data-testid={`electricity-reading-${reading.id}`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="space-y-1">
+                                <p className="text-sm font-medium" data-testid={`text-reading-date-${reading.id}`}>
+                                  {new Date(reading.date).toLocaleDateString("tr-TR", { 
+                                    day: "numeric", 
+                                    month: "long", 
+                                    year: "numeric" 
+                                  })}
                                 </p>
-                              )}
-                            </div>
-                            <div className="text-right">
-                              <p className="text-lg font-bold" data-testid={`text-reading-value-${reading.id}`}>
-                                {reading.value.toLocaleString("tr-TR")} kWh
-                              </p>
-                              {consumption !== null && (
-                                <p className="text-xs text-muted-foreground" data-testid={`text-consumption-${reading.id}`}>
-                                  +{consumption.toLocaleString("tr-TR")} kWh
+                                {reading.note && (
+                                  <p className="text-xs text-muted-foreground" data-testid={`text-reading-note-${reading.id}`}>
+                                    {reading.note}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="text-right">
+                                <p className="text-lg font-bold" data-testid={`text-reading-value-${reading.id}`}>
+                                  {reading.value.toLocaleString("tr-TR")} kWh
                                 </p>
-                              )}
+                                {consumption !== null && (
+                                  <p className="text-xs text-muted-foreground" data-testid={`text-consumption-${reading.id}`}>
+                                    +{consumption.toLocaleString("tr-TR")} kWh
+                                  </p>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                        );
+                      })}
+                    </div>
+                    {!showAllElectricity && selectedHouseForMeters.meterLogs.electricity.length > 3 && (
+                      <button
+                        onClick={() => setShowAllElectricity(true)}
+                        className="text-sm text-primary hover:underline"
+                        data-testid="button-show-more-electricity"
+                      >
+                        Daha fazla göster ({selectedHouseForMeters.meterLogs.electricity.length - 3} kayıt)
+                      </button>
+                    )}
+                    {showAllElectricity && selectedHouseForMeters.meterLogs.electricity.length > 3 && (
+                      <button
+                        onClick={() => setShowAllElectricity(false)}
+                        className="text-sm text-primary hover:underline"
+                        data-testid="button-show-less-electricity"
+                      >
+                        Daha az göster
+                      </button>
+                    )}
+                  </>
                 ) : (
                   <p className="text-sm text-muted-foreground">Kayıt bulunamadı</p>
                 )}
@@ -993,47 +1024,72 @@ export default function Houses() {
                 </div>
                 
                 {selectedHouseForMeters.meterLogs?.water && selectedHouseForMeters.meterLogs.water.length > 0 ? (
-                  <div className="space-y-2">
-                    {selectedHouseForMeters.meterLogs.water.map((reading, index) => {
-                      const prevReading = selectedHouseForMeters.meterLogs.water[index + 1];
-                      const consumption = prevReading ? reading.value - prevReading.value : null;
-                      
-                      return (
-                        <div 
-                          key={reading.id} 
-                          className="p-3 border rounded-lg bg-card"
-                          data-testid={`water-reading-${reading.id}`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="space-y-1">
-                              <p className="text-sm font-medium" data-testid={`text-reading-date-${reading.id}`}>
-                                {new Date(reading.date).toLocaleDateString("tr-TR", { 
-                                  day: "numeric", 
-                                  month: "long", 
-                                  year: "numeric" 
-                                })}
-                              </p>
-                              {reading.note && (
-                                <p className="text-xs text-muted-foreground" data-testid={`text-reading-note-${reading.id}`}>
-                                  {reading.note}
+                  <>
+                    <div className="space-y-2">
+                      {(showAllWater 
+                        ? selectedHouseForMeters.meterLogs.water 
+                        : selectedHouseForMeters.meterLogs.water.slice(0, 3)
+                      ).map((reading, index) => {
+                        const allReadings = selectedHouseForMeters.meterLogs.water;
+                        const actualIndex = showAllWater ? index : index;
+                        const prevReading = allReadings[actualIndex + 1];
+                        const consumption = prevReading ? reading.value - prevReading.value : null;
+                        
+                        return (
+                          <div 
+                            key={reading.id} 
+                            className="p-3 border rounded-lg bg-card"
+                            data-testid={`water-reading-${reading.id}`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="space-y-1">
+                                <p className="text-sm font-medium" data-testid={`text-reading-date-${reading.id}`}>
+                                  {new Date(reading.date).toLocaleDateString("tr-TR", { 
+                                    day: "numeric", 
+                                    month: "long", 
+                                    year: "numeric" 
+                                  })}
                                 </p>
-                              )}
-                            </div>
-                            <div className="text-right">
-                              <p className="text-lg font-bold" data-testid={`text-reading-value-${reading.id}`}>
-                                {reading.value.toLocaleString("tr-TR")} m³
-                              </p>
-                              {consumption !== null && (
-                                <p className="text-xs text-muted-foreground" data-testid={`text-consumption-${reading.id}`}>
-                                  +{consumption.toLocaleString("tr-TR")} m³
+                                {reading.note && (
+                                  <p className="text-xs text-muted-foreground" data-testid={`text-reading-note-${reading.id}`}>
+                                    {reading.note}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="text-right">
+                                <p className="text-lg font-bold" data-testid={`text-reading-value-${reading.id}`}>
+                                  {reading.value.toLocaleString("tr-TR")} m³
                                 </p>
-                              )}
+                                {consumption !== null && (
+                                  <p className="text-xs text-muted-foreground" data-testid={`text-consumption-${reading.id}`}>
+                                    +{consumption.toLocaleString("tr-TR")} m³
+                                  </p>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                        );
+                      })}
+                    </div>
+                    {!showAllWater && selectedHouseForMeters.meterLogs.water.length > 3 && (
+                      <button
+                        onClick={() => setShowAllWater(true)}
+                        className="text-sm text-primary hover:underline"
+                        data-testid="button-show-more-water"
+                      >
+                        Daha fazla göster ({selectedHouseForMeters.meterLogs.water.length - 3} kayıt)
+                      </button>
+                    )}
+                    {showAllWater && selectedHouseForMeters.meterLogs.water.length > 3 && (
+                      <button
+                        onClick={() => setShowAllWater(false)}
+                        className="text-sm text-primary hover:underline"
+                        data-testid="button-show-less-water"
+                      >
+                        Daha az göster
+                      </button>
+                    )}
+                  </>
                 ) : (
                   <p className="text-sm text-muted-foreground">Kayıt bulunamadı</p>
                 )}
