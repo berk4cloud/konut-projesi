@@ -1,0 +1,667 @@
+# Plan4Flex Housing Management Module - Full Stack Implementation
+
+## 📋 Proje Özeti
+
+Multi-tenant SaaS platformu için konaklama (housing) yönetim modülü geliştirme.
+İşçi tedarik firmalarının işçi konaklama yerlerini yönetmesine olanak sağlar.
+
+**Tech Stack:**
+- Backend: Node.js + Express
+- Frontend: React + Tailwind CSS
+- Database: PostgreSQL
+- ORM: Prisma
+- Authentication: JWT
+
+---
+
+## 🎯 MVP Özellikleri
+
+### 1. House/Room/Bed Management (Ev/Oda/Yatak Yönetimi)
+
+#### Database Schema:
+```
+Houses (Evler)
+├── Rooms (Odalar)
+│   └── Beds (Yataklar)
+```
+
+**Houses Tablosu Alanları:**
+- `id` (UUID, Primary Key)
+- `tenantId` (UUID, Foreign Key - Multi-tenant)
+- `name` (String) - Ev adı
+- `address` (String) - Sokak
+- `houseNumber` (String) - Bina numarası
+- `houseNumberAddition` (String) - Bina numarası eki (a, b, c)
+- `postalCode` (String) - Posta kodu
+- `city` (String) - Şehir
+- `country` (String, default: 'NL') - Ülke
+- `latitude` (Decimal)
+- `longitude` (Decimal)
+- `totalRooms` (Integer)
+- `totalBeds` (Integer)
+- `costPerWeek` (Decimal) - Haftalık ücret
+- `costPerBedPerDay` (Decimal) - Yatak başı günlük ücret
+- `ownershipType` (Enum: 'owned', 'rented', 'third_party')
+- `status` (Enum: 'active', 'inactive', 'maintenance')
+- `description` (Text)
+- `internalNotes` (Text)
+- `createdAt` (DateTime)
+- `updatedAt` (DateTime)
+
+**Rooms Tablosu Alanları:**
+- `id` (UUID, Primary Key)
+- `houseId` (UUID, Foreign Key)
+- `roomNumber` (String) - Oda numarası (Örn: "45")
+- `floor` (Integer) - Kat
+- `roomType` (Enum: 'standard', 'family', 'single', 'shared', 'suite')
+- `bedCount` (Integer) - Yatak sayısı
+- `genderRestriction` (Enum: 'male_only', 'female_only', 'family_only', 'mixed')
+- `isFamilyRoom` (Boolean) - Aile odası mı?
+- `status` (Enum: 'available', 'occupied', 'oos', 'maintenance')
+- `costPerDay` (Decimal)
+- `createdAt` (DateTime)
+- `updatedAt` (DateTime)
+
+**Beds Tablosu Alanları:**
+- `id` (UUID, Primary Key)
+- `roomId` (UUID, Foreign Key)
+- `bedNumber` (Integer) - Yatak numarası
+- `status` (Enum: 'available', 'occupied', 'reserved', 'oos')
+- `lastOccupiedBy` (UUID, Foreign Key to Workers)
+- `lastOccupiedAt` (DateTime)
+- `createdAt` (DateTime)
+- `updatedAt` (DateTime)
+
+**Workers Tablosu (İşçiler):**
+- `id` (UUID, Primary Key)
+- `tenantId` (UUID, Foreign Key)
+- `firstName` (String)
+- `lastName` (String)
+- `gender` (Enum: 'male', 'female', 'other')
+- `email` (String)
+- `phone` (String)
+- `address` (String)
+- `nationality` (String) - Ülke kodu
+- `status` (Enum: 'active', 'inactive', 'blocked')
+- `createdAt` (DateTime)
+- `updatedAt` (DateTime)
+
+**Housing Reservations Tablosu (Konaklama Rezervasyonları):**
+- `id` (UUID, Primary Key)
+- `workerId` (UUID, Foreign Key)
+- `houseId` (UUID, Foreign Key)
+- `roomId` (UUID, Foreign Key)
+- `bedId` (UUID, Foreign Key)
+- `tenantId` (UUID, Foreign Key)
+- `startDate` (Date) - Başlangıç tarihi
+- `endDate` (Date, nullable) - Bitiş tarihi
+- `checkInDate` (Date, nullable)
+- `checkOutDate` (Date, nullable)
+- `status` (Enum: 'pending', 'confirmed', 'checked_in', 'checked_out', 'cancelled')
+- `dailyRate` (Decimal)
+- `totalCost` (Decimal)
+- `onVacation` (Boolean) - Tatilde mi?
+- `belongingsInRoom` (Boolean) - Eşyaları odada mı?
+- `description` (Text)
+- `internalNotes` (Text)
+- `confirmedBy` (UUID, Foreign Key to TenantUsers)
+- `confirmedAt` (DateTime)
+- `createdAt` (DateTime)
+- `updatedAt` (DateTime)
+- `createdBy` (UUID, Foreign Key to TenantUsers)
+
+---
+
+### 2. Housing Overview Screen (Konaklama Genel Bakış Ekranı)
+
+**Features:**
+- Tüm evleri listelemek
+- Tarih bazlı doluluk durumu göstermek
+- Filtreler:
+  - 📅 Tarih seçici
+  - 🏠 Ev seçimi (All/Specific)
+  - 🛏️ Only empty beds (Boş yatakları göster)
+  - 🌍 Milliyet filtresi
+  - 🏙️ Şehir filtresi
+  - 👤 Account manager filtresi
+- 📊 Kapasite göstergesi (boş/dolu yatak sayısı)
+- 🎨 Renk kodlu durum:
+  - 🔴 Boş (empty)
+  - 🟢 Dolu (işçi adı gösterilir)
+  - 🟡 OOS (Out of Service - tamir/bakım)
+  - 🔵 Mavi işaret = Erkek
+  - 🟣 Pembe işaret = Kadın
+  - 🟠 Turuncu = Yakında boş (checkout yakın)
+
+**API Endpoints:**
+```
+GET /api/houses
+  Query params:
+  - tenantId (required)
+  - date (YYYY-MM-DD, default: today)
+  - houseId (optional)
+  - cityId (optional)
+  - showEmptyOnly (boolean)
+  - nationalityFilter (optional)
+  
+  Response:
+  {
+    "success": true,
+    "data": {
+      "totalHouses": 21,
+      "totalBeds": 397,
+      "emptyBeds": 173,
+      "occupiedBeds": 224,
+      "houses": [
+        {
+          "id": "uuid",
+          "name": "Geldernstrasse 13",
+          "city": "Geilenkirchen",
+          "totalBeds": 18,
+          "rooms": [
+            {
+              "id": "uuid",
+              "roomNumber": "45",
+              "bedCount": 2,
+              "beds": [
+                {
+                  "id": "uuid",
+                  "bedNumber": 1,
+                  "status": "occupied",
+                  "worker": {
+                    "id": "uuid",
+                    "name": "Canny",
+                    "gender": "male"
+                  }
+                },
+                {
+                  "id": "uuid",
+                  "bedNumber": 2,
+                  "status": "available"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+
+GET /api/houses/:houseId
+  Response: Ev detayları
+
+POST /api/houses
+  Body: { name, address, postalCode, city, totalRooms, totalBeds, ... }
+
+PUT /api/houses/:houseId
+  Body: Güncellenecek alanlar
+
+DELETE /api/houses/:houseId
+```
+
+---
+
+### 3. Housing Reservation System (Konaklama Rezervasyon Sistemi)
+
+**Features:**
+- İşçiyi yatağa atama
+- Tarih aralığı seçimi
+- Otomatik kontroller:
+  - ✅ Cinsiyet uyumu (aynı odada erkek-kadın kontrolü)
+  - ✅ Aile odası kısıtlaması
+  - ✅ Yatak kullanılabilirlik kontrolü
+
+**Cinsiyet Uyarı Sistemi:**
+
+Farklı cinsiyet + Farklı soyadlar = UYARI
+```typescript
+Seçenekler:
+1. Evli çift olarak işaretle ✅
+2. Ayrı odalara yerleştir
+3. Yine de devam et
+```
+
+**API Endpoints:**
+```
+POST /api/reservations
+  Body: {
+    workerId: "uuid",
+    bedId: "uuid",
+    startDate: "2025-10-06",
+    endDate: "2025-10-20",
+    dailyRate: 30.00
+  }
+  
+  Validations:
+  - Yatak boş mu?
+  - Tarih aralığında çakışma var mı?
+  - Cinsiyet uyumu kontrolü
+  - Aile odası kısıtlaması
+
+GET /api/reservations?workerId=uuid&date=2025-10-06
+
+PUT /api/reservations/:reservationId
+  Body: Güncelleme verileri
+
+DELETE /api/reservations/:reservationId
+  Soft delete (checkoutDate'i set et)
+```
+
+---
+
+### 4. Capacity Dashboard (Kapasite Gösterimi)
+
+**Gösterilecek Veriler:**
+- Toplam yatak sayısı
+- Dolu/Boş yatak sayısı
+- Doluluk yüzdesi
+- Lokasyon bazında doluluk
+- OOS (tamir/bakım) yatak sayısı
+```typescript
+Response:
+{
+  "totalBeds": 397,
+  "occupiedBeds": 224,
+  "emptyBeds": 173,
+  "oosBeds": 0,
+  "occupancyRate": 56.4,
+  "byLocation": [
+    {
+      "city": "Geilenkirchen",
+      "totalBeds": 50,
+      "occupiedBeds": 40,
+      "occupancyRate": 80
+    },
+    {
+      "city": "Venlo",
+      "totalBeds": 100,
+      "occupiedBeds": 40,
+      "occupancyRate": 40
+    }
+  ]
+}
+```
+
+---
+
+### 5. Worker Assignment to Accommodation (İşçi Konaklama Atama)
+
+**Dialog Features:**
+- İşçi seçimi
+- Tarih aralığı seçimi
+- Otomatik yatak önerisi (boş yatak, uygun cinsiyet)
+- Cinsiyet uyarıları
+
+**API Endpoints:**
+```
+POST /api/reservations/assign-worker
+  Body: {
+    workerId: "uuid",
+    bedId: "uuid",
+    startDate: "2025-10-06",
+    endDate: "2025-10-20",
+    assignmentType: "single_day" | "recurring" | "permanent"
+  }
+
+GET /api/workers?available=true&gender=male&date=2025-10-06
+  Uygun işçileri getir
+
+POST /api/reservations/check-conflict
+  Body: { workerId, roomId, startDate, endDate }
+  Çakışma kontrolü
+```
+
+---
+
+### 6. Tarih Seçici (Date Picker)
+
+- 📅 Takvim widget
+- ◀️ ▶️ Önceki/Sonraki gün
+- 📅 Haftalık/Günlük görünüm
+
+---
+
+## 🏗️ Frontend (React + Tailwind)
+
+### Sayfa Yapısı:
+```
+HousingModule/
+├── HousingOverview.jsx (Ana sayfa)
+│   ├── FilterPanel.jsx
+│   │   ├── DatePicker.jsx
+│   │   ├── HouseFilter.jsx
+│   │   ├── CityFilter.jsx
+│   │   ├── NationalityFilter.jsx
+│   │   └── MoreFilters.jsx
+│   ├── CapacityDashboard.jsx
+│   └── HousesList.jsx
+│       ├── HouseCard.jsx
+│       │   ├── RoomCard.jsx
+│       │   │   └── BedCard.jsx
+│       │   │       └── WorkerBadge.jsx (Tıklanabilir)
+│       │   └── RoomCard.jsx
+│       └── HouseCard.jsx
+├── ReservationDialog.jsx
+│   ├── WorkerSelect.jsx
+│   ├── DateRangeSelect.jsx
+│   ├── GenderWarning.jsx
+│   └── ConfirmButton.jsx
+├── HouseDetail.jsx (Ev detay sayfası)
+└── HousingStatistics.jsx (Raporlar)
+```
+
+### Color Coding:
+```javascript
+const bedStatusColors = {
+  available: 'bg-red-100 border-2 border-red-500',
+  occupied: 'bg-green-100 border-2 border-green-500',
+  reserved: 'bg-purple-100 border-2 border-purple-500',
+  oos: 'bg-yellow-100 border-2 border-yellow-500'
+};
+
+const genderBadges = {
+  male: '🔵',      // Mavi
+  female: '🟣',    // Pembe
+  other: '⚪'       // Gri
+};
+```
+
+---
+
+## 🔧 Backend (Node.js + Express)
+
+### Dosya Yapısı:
+```
+backend/
+├── routes/
+│   ├── houses.js
+│   ├── rooms.js
+│   ├── beds.js
+│   └── reservations.js
+├── controllers/
+│   ├── housingController.js
+│   ├── reservationController.js
+│   └── workerController.js
+├── models/
+│   ├── House.js
+│   ├── Room.js
+│   ├── Bed.js
+│   ├── Reservation.js
+│   └── Worker.js
+├── middleware/
+│   ├── auth.js
+│   ├── tenantCheck.js
+│   └── validation.js
+├── utils/
+│   ├── validators.js
+│   └── helpers.js
+└── prisma/
+    └── schema.prisma
+```
+
+### Validation Rules:
+```javascript
+// Cinsiyet kontrolü
+validateGenderAssignment(roomId, workerId) => {
+  1. Odadaki diğer işçileri getir
+  2. Farklı cinsiyet kontrolü yap
+  3. Aynı soyadı kontrol et
+  4. Uyarı ver veya reddet
+}
+
+// Aile odası kontrolü
+validateFamilyRoom(roomId, workerId) => {
+  1. Oda aile odası mı?
+  2. Evet ise: Tek işçi atanamaz
+  3. Hayır ise: Devam et
+}
+
+// Tarih çakışması
+checkDateConflict(bedId, startDate, endDate) => {
+  1. Aynı yatak için geçerli rezervasyonlar kontrol et
+  2. Çakışma varsa: Reddet
+}
+```
+
+---
+
+## 📊 Database (PostgreSQL + Prisma)
+
+**Prisma Schema:**
+```prisma
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  houses    House[]
+  workers   Worker[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model House {
+  id                    String   @id @default(cuid())
+  tenantId              String
+  tenant                Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name                  String
+  address               String
+  houseNumber           String
+  houseNumberAddition   String?
+  postalCode            String
+  city                  String
+  country               String   @default("NL")
+  latitude              Float?
+  longitude             Float?
+  totalRooms            Int
+  totalBeds             Int
+  costPerWeek           Decimal?
+  costPerBedPerDay      Decimal?
+  ownershipType         String   @default("owned")
+  status                String   @default("active")
+  description           String?
+  internalNotes         String?
+  rooms                 Room[]
+  reservations          Reservation[]
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@unique([tenantId, name, postalCode])
+}
+
+model Room {
+  id                  String   @id @default(cuid())
+  houseId             String
+  house               House    @relation(fields: [houseId], references: [id], onDelete: Cascade)
+  roomNumber          String
+  floor               Int?
+  roomType            String   @default("standard")
+  bedCount            Int
+  genderRestriction   String?
+  isFamilyRoom        Boolean  @default(false)
+  status              String   @default("available")
+  costPerDay          Decimal?
+  beds                Bed[]
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@unique([houseId, roomNumber])
+}
+
+model Bed {
+  id                  String   @id @default(cuid())
+  roomId              String
+  room                Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  bedNumber           Int
+  status              String   @default("available")
+  lastOccupiedBy      String?
+  lastOccupiedAt      DateTime?
+  reservations        Reservation[]
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@unique([roomId, bedNumber])
+}
+
+model Worker {
+  id                  String   @id @default(cuid())
+  tenantId            String
+  tenant              Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  firstName           String
+  lastName            String
+  gender              String?
+  email               String?
+  phone               String?
+  address             String?
+  nationality         String?
+  status              String   @default("active")
+  reservations        Reservation[]
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@unique([tenantId, email])
+}
+
+model Reservation {
+  id                  String   @id @default(cuid())
+  workerId            String
+  worker              Worker   @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  houseId             String
+  house               House    @relation(fields: [houseId], references: [id])
+  roomId              String
+  room                Room     @relation(fields: [roomId], references: [id])
+  bedId               String
+  bed                 Bed      @relation(fields: [bedId], references: [id])
+  tenantId            String
+  startDate           DateTime
+  endDate             DateTime?
+  checkInDate         DateTime?
+  checkOutDate        DateTime?
+  status              String   @default("pending")
+  dailyRate           Decimal
+  totalCost           Decimal?
+  onVacation          Boolean  @default(false)
+  belongingsInRoom    Boolean  @default(false)
+  description         String?
+  internalNotes       String?
+  confirmedBy         String?
+  confirmedAt         DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  createdBy           String?
+}
+```
+
+---
+
+## 🎨 UI Layout
+
+### Konaklama Genel Bakış (Housing Overview)
+```
+┌─────────────────────────────────────────────────────────────┐
+│                   🏠 Housing Overview                        │
+├─────────────────────────────────────────────────────────────┤
+│ 📅 6-10-2025 (Week 41) ◀️ [Today] ▶️                        │
+│ 🏠 All houses                                               │
+│ 🛏️ Only empty beds                                          │
+│ 🌍 Nationality: All  🏙️ City: All  👤 Account manager: All│
+│ 📊 Export to Excel  🔄 Refresh  🔍 Search                  │
+├─────────────────────────────────────────────────────────────┤
+│ 📊 Kapasite: 173 boş / 397 toplam (%56 dolu)              │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│ 📍 Geilenkirchen (18)                                       │
+│   🏠 Geldernstrasse 13 - Cova B.V.                         │
+│   ├─ Bed 1: 🔴 empty      | Bed 2: 🟢 Canny              │
+│   ├─ Bed 3: 🟢 Ungan      | Bed 4: 🔴 empty              │
+│   ├─ Bed 5: 🟢 Pilszcz    | Bed 6: 🟢 Celic               │
+│   └─ Bed 7: 🟢 Kosanc     | Bed 8: 🔴 empty              │
+│                                                              │
+│ 📍 Venlo (24)                                               │
+│   🏠 Albertstraat 37 - Cova B.V.                           │
+│   ├─ Bed 1: 🟢 Ali        | Bed 2: 🟡 OOS                │
+│   └─ Bed 3: 🔴 empty      | Bed 4: 🔴 empty              │
+│                                                              │
+│ 📍 Weeze (43)                                               │
+│   🏠 Euregio-park 38 A - Cova B.V.                         │
+│   ├─ Bed 1: 🔴 empty      | Bed 2: 🟢 Ahmed              │
+│   └─ ...                                                     │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## ✅ Checklist
+
+**Database Setup:**
+- [ ] PostgreSQL kurulumu
+- [ ] Prisma schema oluşturma
+- [ ] Migrations çalıştırma
+- [ ] Seed data oluşturma (örnek evler/odalar)
+
+**Backend API:**
+- [ ] Houses endpoints
+- [ ] Rooms endpoints
+- [ ] Beds endpoints
+- [ ] Reservations endpoints
+- [ ] Validation logic
+- [ ] Error handling
+- [ ] Tenant authorization
+
+**Frontend UI:**
+- [ ] Housing Overview sayfası
+- [ ] Filter Panel
+- [ ] Capacity Dashboard
+- [ ] Reservation Dialog
+- [ ] Gender Warning Modal
+- [ ] Responsive design
+- [ ] Color coding system
+
+**Testing:**
+- [ ] API tests
+- [ ] Validation tests
+- [ ] Integration tests
+
+---
+
+## 📝 Deployment
+
+**Replit.com için:**
+1. Database: Replit PostgreSQL
+2. Backend: Node.js Express
+3. Frontend: React (Vite)
+4. Environment variables: `.env` dosyası
+
+**Required Packages:**
+```json
+{
+  "dependencies": {
+    "express": "^4.18.2",
+    "prisma": "^5.0.0",
+    "@prisma/client": "^5.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "axios": "^1.4.0",
+    "tailwindcss": "^3.3.0"
+  }
+}
+```
+
+---
+
+## 🚀 Getting Started
+
+1. Replit'de yeni Node.js projesi oluştur
+2. Dependency'leri kur
+3. `.env` dosyasını oluştur (DATABASE_URL, JWT_SECRET, etc.)
+4. Prisma schema'yı oluştur
+5. Database migrate et
+6. Backend sunucuyu çalıştır
+7. Frontend React uygulamasını başlat
+8. API endpoints'i test et
+
+---
+
+**Ready to build! 🎉**
