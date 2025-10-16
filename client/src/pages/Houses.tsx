@@ -3,6 +3,7 @@ import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 import { Plus, Search, Building2, MapPin, Edit, Bed, Trash2, ChevronsUpDown, Check, Zap, Droplet } from "lucide-react";
 import {
   Card,
@@ -158,6 +159,7 @@ const countries = [
 ];
 
 export default function Houses() {
+  const { toast } = useToast();
   const [houses, setHouses] = useState(initialMockHouses);
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -255,13 +257,21 @@ export default function Houses() {
 
   const handleAddMeterReading = () => {
     if (!selectedHouseForMeters || !newReading.value) {
-      alert("Lütfen tüm alanları doldurun");
+      toast({
+        title: "Hata",
+        description: "Lütfen tüm alanları doldurun",
+        variant: "destructive",
+      });
       return;
     }
 
     const readingValue = parseFloat(newReading.value);
     if (isNaN(readingValue) || readingValue <= 0) {
-      alert("Geçerli bir sayaç değeri girin");
+      toast({
+        title: "Hata",
+        description: "Geçerli bir sayaç değeri girin",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -306,24 +316,45 @@ export default function Houses() {
       note: "",
     });
     setIsAddReadingOpen(false);
+    
+    toast({
+      title: "Başarılı",
+      description: `${newReading.meterType === "electricity" ? "Elektrik" : "Su"} sayacı okuması eklendi`,
+    });
   };
 
   const handleSave = () => {
     // Validation
     if (!formData.address.trim()) {
-      alert("Adres zorunludur");
+      toast({
+        title: "Hata",
+        description: "Adres zorunludur",
+        variant: "destructive",
+      });
       return;
     }
     if (!formData.city.trim()) {
-      alert("Şehir zorunludur");
+      toast({
+        title: "Hata",
+        description: "Şehir zorunludur",
+        variant: "destructive",
+      });
       return;
     }
     if (formData.useCustomName && !formData.customName.trim()) {
-      alert("Özel isim kullanıyorsanız, isim girmelisiniz");
+      toast({
+        title: "Hata",
+        description: "Özel isim kullanıyorsanız, isim girmelisiniz",
+        variant: "destructive",
+      });
       return;
     }
     if (formData.rooms.length === 0) {
-      alert("En az bir oda eklemelisiniz");
+      toast({
+        title: "Hata",
+        description: "En az bir oda eklemelisiniz",
+        variant: "destructive",
+      });
       return;
     }
     
@@ -331,15 +362,27 @@ export default function Houses() {
     for (let i = 0; i < formData.rooms.length; i++) {
       const room = formData.rooms[i];
       if (!room.roomNumber.trim()) {
-        alert(`Oda ${i + 1}: Oda numarası zorunludur`);
+        toast({
+          title: "Hata",
+          description: `Oda ${i + 1}: Oda numarası zorunludur`,
+          variant: "destructive",
+        });
         return;
       }
       if (!room.beds || room.beds < 1) {
-        alert(`Oda ${i + 1}: Yatak sayısı en az 1 olmalıdır`);
+        toast({
+          title: "Hata",
+          description: `Oda ${i + 1}: Yatak sayısı en az 1 olmalıdır`,
+          variant: "destructive",
+        });
         return;
       }
       if (room.useFloor && (room.floor === undefined || room.floor === null)) {
-        alert(`Oda ${i + 1}: Kat bilgisi girmelisiniz`);
+        toast({
+          title: "Hata",
+          description: `Oda ${i + 1}: Kat bilgisi girmelisiniz`,
+          variant: "destructive",
+        });
         return;
       }
     }
@@ -385,6 +428,11 @@ export default function Houses() {
     }
     
     setIsDialogOpen(false);
+    
+    toast({
+      title: "Başarılı",
+      description: editingHouse ? "Konut güncellendi" : "Yeni konut eklendi",
+    });
   };
 
   return (
