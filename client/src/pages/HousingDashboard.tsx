@@ -180,9 +180,9 @@ export default function HousingDashboard() {
         <main className="flex-1 p-6">
           <div className="max-w-7xl mx-auto space-y-6">
             <div>
-              <h2 className="text-2xl font-bold mb-2">Housing Overview</h2>
+              <h2 className="text-2xl font-bold mb-2">Konaklama Genel Bakış</h2>
               <p className="text-gray-600">
-                Manage worker accommodation across all properties
+                Tüm mülklerdeki çalışan konaklamalarını yönetin
               </p>
             </div>
 
