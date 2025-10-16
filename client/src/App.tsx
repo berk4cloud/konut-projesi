@@ -9,6 +9,7 @@ import LoginPage from "@/pages/LoginPage";
 import HousingDashboard from "@/pages/HousingDashboard";
 import Houses from "@/pages/Houses";
 import Workers from "@/pages/Workers";
+import QRManagement from "@/pages/QRManagement";
 import Settings from "@/pages/Settings";
 
 function Router() {
@@ -18,6 +19,7 @@ function Router() {
       <Route path="/dashboard" component={HousingDashboard} />
       <Route path="/houses" component={Houses} />
       <Route path="/workers" component={Workers} />
+      <Route path="/qr-management" component={QRManagement} />
       <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>
