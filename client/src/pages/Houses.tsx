@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Building2, MapPin, Edit, Bed, Trash2, ChevronsUpDown, Check } from "lucide-react";
+import { Plus, Search, Building2, MapPin, Edit, Bed, Trash2, ChevronsUpDown, Check, Zap, Droplet } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -163,6 +163,10 @@ export default function Houses() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingHouse, setEditingHouse] = useState<typeof initialMockHouses[0] | null>(null);
   const [countryOpen, setCountryOpen] = useState(false);
+  
+  // Meter logs state
+  const [isMeterDialogOpen, setIsMeterDialogOpen] = useState(false);
+  const [selectedHouseForMeters, setSelectedHouseForMeters] = useState<typeof initialMockHouses[0] | null>(null);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -455,15 +459,27 @@ export default function Houses() {
                       </div>
                     </div>
 
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => handleEdit(house)}
-                      data-testid={`button-edit-house-${house.id}`}
-                    >
-                      <Edit className="w-4 h-4 mr-2" />
-                      Düzenle
-                    </Button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => handleEdit(house)}
+                        data-testid={`button-edit-house-${house.id}`}
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Düzenle
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedHouseForMeters(house);
+                          setIsMeterDialogOpen(true);
+                        }}
+                        data-testid={`button-meters-${house.id}`}
+                      >
+                        <Zap className="w-4 h-4 mr-2" />
+                        Sayaçlar
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               );
