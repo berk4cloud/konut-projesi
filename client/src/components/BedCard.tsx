@@ -15,10 +15,10 @@ interface BedCardProps {
 
 export default function BedCard({ bedNumber, status, worker, onClick }: BedCardProps) {
   const statusColors = {
-    available: "bg-red-50 border-status-empty",
-    occupied: "bg-green-50 border-status-occupied",
-    reserved: "bg-purple-50 border-status-reserved",
-    oos: "bg-amber-50 border-status-oos",
+    available: "bg-status-empty/10 dark:bg-status-empty/20 border-status-empty",
+    occupied: "bg-status-occupied/10 dark:bg-status-occupied/20 border-status-occupied",
+    reserved: "bg-status-reserved/10 dark:bg-status-reserved/20 border-status-reserved",
+    oos: "bg-status-oos/10 dark:bg-status-oos/20 border-status-oos",
   };
 
   const genderColors = {
@@ -43,7 +43,7 @@ export default function BedCard({ bedNumber, status, worker, onClick }: BedCardP
       {worker && (
         <div
           className={cn(
-            "absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-white",
+            "absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-background",
             genderColors[worker.gender]
           )}
           title={worker.name}
@@ -51,8 +51,8 @@ export default function BedCard({ bedNumber, status, worker, onClick }: BedCardP
       )}
 
       {status === "oos" && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/10 rounded-md">
-          <span className="text-[8px] font-bold text-amber-700">OOS</span>
+        <div className="absolute inset-0 flex items-center justify-center bg-black/10 dark:bg-white/10 rounded-md">
+          <span className="text-[8px] font-bold text-status-oos">OOS</span>
         </div>
       )}
     </button>

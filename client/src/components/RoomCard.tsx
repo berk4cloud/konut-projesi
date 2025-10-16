@@ -22,13 +22,13 @@ interface RoomCardProps {
 
 export default function RoomCard({ roomNumber, floor, beds, onBedClick }: RoomCardProps) {
   return (
-    <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+    <div className="bg-muted/50 rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between">
         <h4 className="font-semibold" data-testid={`room-${roomNumber}`}>
           Oda {roomNumber}
         </h4>
         {floor !== undefined && (
-          <span className="text-xs text-gray-500">Kat {floor}</span>
+          <span className="text-xs text-muted-foreground">Kat {floor}</span>
         )}
       </div>
 

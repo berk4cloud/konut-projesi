@@ -90,10 +90,10 @@ export default function FilterPanel({
   ];
 
   return (
-    <div className="bg-gray-50 rounded-lg p-6 space-y-6">
+    <div className="bg-card rounded-lg p-6 space-y-6 border">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold">Filtreler</h3>
-        <Filter className="w-4 h-4 text-gray-500" />
+        <Filter className="w-4 h-4 text-muted-foreground" />
       </div>
 
       <div className="space-y-4">

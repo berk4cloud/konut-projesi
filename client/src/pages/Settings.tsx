@@ -53,7 +53,7 @@ export default function Settings() {
         <div className="max-w-4xl mx-auto space-y-6">
           <div>
             <h2 className="text-2xl font-bold mb-2">Ayarlar</h2>
-            <p className="text-gray-600">Sistem ayarlarını yönetin</p>
+            <p className="text-muted-foreground">Sistem ayarlarını yönetin</p>
           </div>
 
           <Card>
@@ -130,7 +130,7 @@ export default function Settings() {
                     </Badge>
                   ))}
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-xs text-muted-foreground mt-2">
                   ⭐ Varsayılan ülke filtrelerde otomatik seçili gelir
                 </p>
               </div>
@@ -145,7 +145,7 @@ export default function Settings() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 Diğer ayarlar geliştirilme aşamasında...
               </p>
             </CardContent>

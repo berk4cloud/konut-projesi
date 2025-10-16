@@ -239,7 +239,7 @@ export default function HousingDashboard() {
       <Header tenantName="Cova B.V." userName="Admin" />
 
       <div className="flex">
-        <aside className="w-80 border-r border-gray-200 bg-gray-50 min-h-[calc(100vh-4rem)] p-6 sticky top-16 overflow-y-auto">
+        <aside className="w-80 border-r bg-muted/30 min-h-[calc(100vh-4rem)] p-6 sticky top-16 overflow-y-auto">
           <div className="space-y-6">
             <CapacityWidget
               totalBeds={totalBeds}
@@ -267,7 +267,7 @@ export default function HousingDashboard() {
           <div className="max-w-7xl mx-auto space-y-6">
             <div>
               <h2 className="text-2xl font-bold mb-2">Konaklama Genel Bakış</h2>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 Tüm mülklerdeki çalışan konaklamalarını yönetin
               </p>
             </div>
@@ -286,8 +286,8 @@ export default function HousingDashboard() {
                   />
                 ))
               ) : (
-                <div className="text-center py-12 bg-white rounded-lg border" data-testid="text-no-houses">
-                  <p className="text-gray-500">Seçilen filtrelere uygun konut bulunamadı</p>
+                <div className="text-center py-12 bg-card rounded-lg border" data-testid="text-no-houses">
+                  <p className="text-muted-foreground">Seçilen filtrelere uygun konut bulunamadı</p>
                 </div>
               )}
             </div>

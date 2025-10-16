@@ -43,7 +43,7 @@ export default function Header({ tenantName = "Cova B.V.", userName = "Admin" }:
   };
 
   return (
-    <header className="h-16 border-b border-gray-200 bg-white sticky top-0 z-50">
+    <header className="h-16 border-b bg-background sticky top-0 z-50">
       <div className="h-full px-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
@@ -87,8 +87,8 @@ export default function Header({ tenantName = "Cova B.V.", userName = "Admin" }:
             <Building2 className="w-6 h-6 text-primary" />
             <h1 className="text-xl font-bold">APDO HABITAT</h1>
           </div>
-          <div className="h-6 w-px bg-gray-300" />
-          <span className="text-sm text-gray-600" data-testid="text-tenant-name">
+          <div className="h-6 w-px bg-border" />
+          <span className="text-sm text-muted-foreground" data-testid="text-tenant-name">
             {tenantName}
           </span>
         </div>

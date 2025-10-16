@@ -41,20 +41,20 @@ export default function HouseCard({
   const emptyBeds = totalBeds - occupiedBeds;
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4 hover:shadow-md transition-shadow">
+    <div className="bg-card border rounded-xl p-6 space-y-4 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           <h3 className="text-xl font-semibold" data-testid={`house-${name}`}>
             {name}
           </h3>
-          <div className="flex items-center gap-1 text-sm text-gray-500">
+          <div className="flex items-center gap-1 text-sm text-muted-foreground">
             <MapPin className="w-4 h-4" />
             <span>{city}</span>
           </div>
         </div>
 
         <div className="text-right">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-sm font-medium">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
             <Building2 className="w-4 h-4" />
             <span data-testid={`house-bed-count-${name}`}>
               {occupiedBeds}/{totalBeds}

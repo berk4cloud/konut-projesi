@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Building2, MapPin, Edit, Bed, Trash2 } from "lucide-react";
+import { Plus, Search, Building2, MapPin, Edit, Bed, Trash2, ChevronsUpDown, Check } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -26,7 +26,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/lib/utils";
 
 // Room type definition
 type RoomInfo = {
@@ -82,11 +96,20 @@ const initialMockHouses = [
   },
 ];
 
+const countries = [
+  { value: "Türkiye", label: "Türkiye" },
+  { value: "Hollanda", label: "Hollanda" },
+  { value: "Almanya", label: "Almanya" },
+  { value: "Polonya", label: "Polonya" },
+  { value: "Romanya", label: "Romanya" },
+];
+
 export default function Houses() {
   const [houses, setHouses] = useState(initialMockHouses);
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingHouse, setEditingHouse] = useState<typeof initialMockHouses[0] | null>(null);
+  const [countryOpen, setCountryOpen] = useState(false);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -235,7 +258,7 @@ export default function Houses() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold mb-2">Konutlar</h2>
-              <p className="text-gray-600">Tüm konutları görüntüleyin ve yönetin</p>
+              <p className="text-muted-foreground">Tüm konutları görüntüleyin ve yönetin</p>
             </div>
             <Button onClick={handleAddNew} data-testid="button-add-house">
               <Plus className="w-4 h-4 mr-2" />
@@ -244,7 +267,7 @@ export default function Houses() {
           </div>
 
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Konut ara (adres, şehir)..."
               value={searchQuery}
@@ -283,7 +306,7 @@ export default function Houses() {
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-muted-foreground">
                       <p data-testid={`text-house-address-${house.id}`}>{house.address}</p>
                       <p className="text-xs mt-1" data-testid={`text-house-country-${house.id}`}>
                         {house.country}
@@ -292,13 +315,13 @@ export default function Houses() {
 
                     <div className="grid grid-cols-2 gap-4 py-3 border-t border-b">
                       <div>
-                        <p className="text-xs text-gray-500">Oda Sayısı</p>
+                        <p className="text-xs text-muted-foreground">Oda Sayısı</p>
                         <p className="text-lg font-semibold" data-testid={`text-room-count-${house.id}`}>
                           {house.rooms.length}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">Toplam Yatak</p>
+                        <p className="text-xs text-muted-foreground">Toplam Yatak</p>
                         <p className="text-lg font-semibold flex items-center gap-1" data-testid={`text-total-beds-${house.id}`}>
                           <Bed className="w-4 h-4" />
                           {house.totalBeds}
@@ -308,7 +331,7 @@ export default function Houses() {
 
                     {/* Room details with rental status */}
                     <div className="space-y-2">
-                      <p className="text-xs text-gray-500 font-medium">Odalar:</p>
+                      <p className="text-xs text-muted-foreground font-medium">Odalar:</p>
                       <div className="space-y-1.5">
                         {house.rooms.map((room) => (
                           <div 
@@ -332,7 +355,7 @@ export default function Houses() {
 
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Doluluk</span>
+                        <span className="text-muted-foreground">Doluluk</span>
                         <span className="font-semibold" data-testid={`text-occupancy-rate-${house.id}`}>
                           {occupancyRate}%
                         </span>
@@ -343,7 +366,7 @@ export default function Houses() {
                           style={{ width: `${occupancyRate}%` }}
                         />
                       </div>
-                      <div className="flex items-center justify-between text-xs text-gray-500">
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
                         <span data-testid={`text-occupied-beds-${house.id}`}>
                           Dolu: {house.occupiedBeds}
                         </span>
@@ -370,8 +393,8 @@ export default function Houses() {
 
           {filteredHouses.length === 0 && (
             <div className="text-center py-12">
-              <Building2 className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500" data-testid="text-no-houses">
+              <Building2 className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" />
+              <p className="text-muted-foreground" data-testid="text-no-houses">
                 Konut bulunamadı
               </p>
             </div>
@@ -429,21 +452,48 @@ export default function Houses() {
 
               <div className="space-y-2">
                 <Label htmlFor="country">Ülke *</Label>
-                <Select
-                  value={formData.country}
-                  onValueChange={(value) => setFormData({ ...formData, country: value })}
-                >
-                  <SelectTrigger id="country" data-testid="select-house-country">
-                    <SelectValue placeholder="Ülke seçin" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Türkiye">Türkiye</SelectItem>
-                    <SelectItem value="Hollanda">Hollanda</SelectItem>
-                    <SelectItem value="Almanya">Almanya</SelectItem>
-                    <SelectItem value="Polonya">Polonya</SelectItem>
-                    <SelectItem value="Romanya">Romanya</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Popover open={countryOpen} onOpenChange={setCountryOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={countryOpen}
+                      className="w-full justify-between"
+                      data-testid="select-house-country"
+                    >
+                      {formData.country || "Ülke seçin"}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0">
+                    <Command>
+                      <CommandInput placeholder="Ülke ara..." />
+                      <CommandList>
+                        <CommandEmpty>Ülke bulunamadı.</CommandEmpty>
+                        <CommandGroup>
+                          {countries.map((country) => (
+                            <CommandItem
+                              key={country.value}
+                              value={country.label}
+                              onSelect={() => {
+                                setFormData({ ...formData, country: country.value });
+                                setCountryOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  formData.country === country.value ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {country.label}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
 

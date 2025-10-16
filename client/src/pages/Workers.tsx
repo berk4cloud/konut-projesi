@@ -47,7 +47,7 @@ export default function Workers() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold mb-2">Çalışanlar</h2>
-              <p className="text-gray-600">Tüm çalışanları görüntüleyin ve yönetin</p>
+              <p className="text-muted-foreground">Tüm çalışanları görüntüleyin ve yönetin</p>
             </div>
             <Button data-testid="button-add-worker">
               <Plus className="w-4 h-4 mr-2" />
@@ -56,7 +56,7 @@ export default function Workers() {
           </div>
 
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Çalışan ara..."
               value={searchQuery}
@@ -67,7 +67,7 @@ export default function Workers() {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Info className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 cursor-help" data-testid="icon-search-info" />
+                  <Info className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground cursor-help" data-testid="icon-search-info" />
                 </TooltipTrigger>
                 <TooltipContent>
                   <p className="text-sm">İsim, ev, doğum tarihi veya ülke ile arama yapabilirsiniz</p>
@@ -76,7 +76,7 @@ export default function Workers() {
             </TooltipProvider>
           </div>
 
-          <div className="bg-white rounded-lg border">
+          <div className="bg-card rounded-lg border">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -94,8 +94,8 @@ export default function Workers() {
                   <TableRow key={worker.id} data-testid={`worker-row-${worker.id}`}>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                          <User className="w-4 h-4 text-blue-600" />
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <User className="w-4 h-4 text-primary" />
                         </div>
                         <div>
                           <div data-testid={`text-worker-name-${worker.id}`}>
@@ -130,7 +130,7 @@ export default function Workers() {
 
           {filteredWorkers.length === 0 && (
             <div className="text-center py-12">
-              <p className="text-gray-500">Çalışan bulunamadı</p>
+              <p className="text-muted-foreground">Çalışan bulunamadı</p>
             </div>
           )}
         </div>
