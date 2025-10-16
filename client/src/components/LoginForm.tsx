@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,12 +12,14 @@ import {
 } from "@/components/ui/select";
 
 export default function LoginForm() {
+  const [, setLocation] = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [tenant, setTenant] = useState("");
 
   const handleLogin = () => {
     console.log("Login triggered:", { email, password, tenant });
+    setLocation("/dashboard");
   };
 
   const handleDemoLogin = () => {
@@ -24,6 +27,7 @@ export default function LoginForm() {
     setPassword("demo123");
     setTenant("cova");
     console.log("Demo login triggered");
+    setTimeout(() => setLocation("/dashboard"), 100);
   };
 
   return (
