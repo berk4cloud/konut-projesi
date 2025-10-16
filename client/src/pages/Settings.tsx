@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2, Globe } from "lucide-react";
+import { Plus, Trash2, Globe, Star } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -13,24 +13,36 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
+interface Country {
+  name: string;
+  isDefault: boolean;
+}
+
 export default function Settings() {
-  const [countries, setCountries] = useState([
-    "Hollanda",
-    "Almanya",
-    "Polonya",
-    "Romanya",
+  const [countries, setCountries] = useState<Country[]>([
+    { name: "Hollanda", isDefault: true },
+    { name: "Almanya", isDefault: false },
+    { name: "Polonya", isDefault: false },
+    { name: "Romanya", isDefault: false },
   ]);
   const [newCountry, setNewCountry] = useState("");
 
   const handleAddCountry = () => {
-    if (newCountry.trim() && !countries.includes(newCountry.trim())) {
-      setCountries([...countries, newCountry.trim()]);
+    if (newCountry.trim() && !countries.some(c => c.name === newCountry.trim())) {
+      setCountries([...countries, { name: newCountry.trim(), isDefault: false }]);
       setNewCountry("");
     }
   };
 
-  const handleRemoveCountry = (country: string) => {
-    setCountries(countries.filter((c) => c !== country));
+  const handleRemoveCountry = (countryName: string) => {
+    setCountries(countries.filter((c) => c.name !== countryName));
+  };
+
+  const handleSetDefault = (countryName: string) => {
+    setCountries(countries.map(c => ({
+      ...c,
+      isDefault: c.name === countryName
+    })));
   };
 
   return (
@@ -51,7 +63,7 @@ export default function Settings() {
                 Ülke Yönetimi
               </CardTitle>
               <CardDescription>
-                Filtrelerde kullanılacak ülkeleri ekleyin veya kaldırın
+                Filtrelerde kullanılacak ülkeleri ekleyin veya kaldırın. Varsayılan ülkeyi işaretleyin.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -78,25 +90,49 @@ export default function Settings() {
                 <div className="flex flex-wrap gap-2">
                   {countries.map((country) => (
                     <Badge
-                      key={country}
-                      variant="secondary"
-                      className="px-3 py-2 text-sm"
-                      data-testid={`country-badge-${country}`}
+                      key={country.name}
+                      variant={country.isDefault ? "default" : "secondary"}
+                      className="px-3 py-2 text-sm flex items-center gap-2"
+                      data-testid={`country-badge-${country.name}`}
                     >
-                      <Globe className="w-3 h-3 mr-2" />
-                      {country}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-auto p-0 ml-2 hover:bg-transparent"
-                        onClick={() => handleRemoveCountry(country)}
-                        data-testid={`button-remove-${country}`}
-                      >
-                        <Trash2 className="w-3 h-3 text-red-500" />
-                      </Button>
+                      {country.isDefault ? (
+                        <Star className="w-3 h-3 fill-current" />
+                      ) : (
+                        <Globe className="w-3 h-3" />
+                      )}
+                      {country.name}
+                      {country.isDefault && (
+                        <span className="text-xs opacity-80">(Varsayılan)</span>
+                      )}
+                      <div className="flex items-center gap-1 ml-1">
+                        {!country.isDefault && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-auto p-0 hover:bg-transparent"
+                            onClick={() => handleSetDefault(country.name)}
+                            data-testid={`button-set-default-${country.name}`}
+                            title="Varsayılan yap"
+                          >
+                            <Star className="w-3 h-3 text-yellow-500" />
+                          </Button>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-auto p-0 hover:bg-transparent"
+                          onClick={() => handleRemoveCountry(country.name)}
+                          data-testid={`button-remove-${country.name}`}
+                        >
+                          <Trash2 className="w-3 h-3 text-red-500" />
+                        </Button>
+                      </div>
                     </Badge>
                   ))}
                 </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  ⭐ Varsayılan ülke filtrelerde otomatik seçili gelir
+                </p>
               </div>
             </CardContent>
           </Card>
