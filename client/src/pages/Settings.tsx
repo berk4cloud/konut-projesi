@@ -63,7 +63,7 @@ export default function Settings() {
                 Ülke Yönetimi
               </CardTitle>
               <CardDescription>
-                Filtrelerde kullanılacak ülkeleri ekleyin veya kaldırın. Varsayılan ülkeyi işaretleyin.
+                Filtrelerde kullanılacak ülkeleri ekleyin veya kaldırın. ⭐ Varsayılan ülke, filtrelerde otomatik seçilir ve yeni veri girişlerinde (konut, çalışan) varsayılan değer olarak kullanılır.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
