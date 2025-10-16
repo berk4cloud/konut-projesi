@@ -1,4 +1,4 @@
-import { Building2, User, LogOut } from "lucide-react";
+import { Building2, User, LogOut, Menu, Home, Users, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -8,6 +8,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { useLocation } from "wouter";
+import { useState } from "react";
 
 interface HeaderProps {
   tenantName?: string;
@@ -15,10 +25,61 @@ interface HeaderProps {
 }
 
 export default function Header({ tenantName = "Cova B.V.", userName = "Admin" }: HeaderProps) {
+  const [location, setLocation] = useLocation();
+  const [sheetOpen, setSheetOpen] = useState(false);
+
+  const menuItems = [
+    { icon: Home, label: "Konaklama Genel Bakış", path: "/dashboard" },
+    { icon: Users, label: "Çalışanlar", path: "/workers" },
+    { icon: Settings, label: "Ayarlar", path: "/settings" },
+  ];
+
+  const handleNavigation = (path: string) => {
+    setLocation(path);
+    setSheetOpen(false);
+  };
+
   return (
     <header className="h-16 border-b border-gray-200 bg-white sticky top-0 z-50">
       <div className="h-full px-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
+          <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" data-testid="button-menu">
+                <Menu className="w-5 h-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-80">
+              <SheetHeader>
+                <SheetTitle className="flex items-center gap-2">
+                  <Building2 className="w-5 h-5 text-primary" />
+                  APDO HABITAT
+                </SheetTitle>
+                <SheetDescription>
+                  Navigasyon Menüsü
+                </SheetDescription>
+              </SheetHeader>
+              <div className="mt-6 space-y-2">
+                {menuItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = location === item.path;
+                  return (
+                    <Button
+                      key={item.path}
+                      variant={isActive ? "secondary" : "ghost"}
+                      className="w-full justify-start"
+                      onClick={() => handleNavigation(item.path)}
+                      data-testid={`nav-${item.path}`}
+                    >
+                      <Icon className="w-4 h-4 mr-2" />
+                      {item.label}
+                    </Button>
+                  );
+                })}
+              </div>
+            </SheetContent>
+          </Sheet>
+
           <div className="flex items-center gap-2">
             <Building2 className="w-6 h-6 text-primary" />
             <h1 className="text-xl font-bold">APDO HABITAT</h1>
