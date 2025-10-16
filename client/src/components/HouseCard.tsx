@@ -27,7 +27,7 @@ interface HouseCardProps {
   totalBeds: number;
   occupiedBeds: number;
   rooms: Room[];
-  onBedClick?: (bed: Bed, room: Room) => void;
+  onBedClick?: (bed: Bed) => void;
 }
 
 export default function HouseCard({
@@ -70,7 +70,7 @@ export default function HouseCard({
             roomNumber={room.roomNumber}
             floor={room.floor}
             beds={room.beds}
-            onBedClick={(bed) => onBedClick?.(bed, room)}
+            onBedClick={onBedClick}
           />
         ))}
       </div>
