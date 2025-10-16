@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Search, Building2, MapPin, Edit, Bed, Trash2, ChevronsUpDown, Check, Zap, Droplet } from "lucide-react";
+import { Plus, Search, Building2, MapPin, Edit, Bed, Trash2, ChevronsUpDown, Check, Zap, Droplet, FileText, Bell, Calendar, AlertCircle } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -259,6 +259,23 @@ export default function Houses() {
     date: new Date().toISOString().split("T")[0],
     value: "",
     note: "",
+  });
+  
+  // Lease contract state
+  const [isLeaseDialogOpen, setIsLeaseDialogOpen] = useState(false);
+  const [selectedHouseForLease, setSelectedHouseForLease] = useState<typeof initialMockHouses[0] | null>(null);
+  
+  // Reminders state
+  const [isRemindersDialogOpen, setIsRemindersDialogOpen] = useState(false);
+  const [selectedHouseForReminders, setSelectedHouseForReminders] = useState<typeof initialMockHouses[0] | null>(null);
+  const [isAddReminderOpen, setIsAddReminderOpen] = useState(false);
+  const [newReminder, setNewReminder] = useState({
+    type: "maintenance" as Reminder["type"],
+    title: "",
+    date: new Date().toISOString().split("T")[0],
+    alertDaysBefore: 7,
+    note: "",
+    recurring: "none" as Reminder["recurring"],
   });
   
   // Form state
@@ -676,6 +693,32 @@ export default function Houses() {
                       >
                         <Zap className="w-4 h-4 mr-2" />
                         Sayaçlar
+                      </Button>
+                      
+                      {(house.ownershipType === "Kiralık" || house.ownershipType === "3. Taraf") && (
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedHouseForLease(house);
+                            setIsLeaseDialogOpen(true);
+                          }}
+                          data-testid={`button-lease-${house.id}`}
+                        >
+                          <FileText className="w-4 h-4 mr-2" />
+                          Kira Detayları
+                        </Button>
+                      )}
+                      
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedHouseForReminders(house);
+                          setIsRemindersDialogOpen(true);
+                        }}
+                        data-testid={`button-reminders-${house.id}`}
+                      >
+                        <Bell className="w-4 h-4 mr-2" />
+                        Hatırlatıcılar
                       </Button>
                     </div>
                   </CardContent>
@@ -1294,6 +1337,367 @@ export default function Houses() {
             <Button 
               onClick={handleAddMeterReading}
               data-testid="button-save-reading"
+            >
+              Kaydet
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Lease Contract Dialog */}
+      <Dialog open={isLeaseDialogOpen} onOpenChange={setIsLeaseDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Kira Sözleşmesi Bilgileri</DialogTitle>
+            <DialogDescription>
+              {selectedHouseForLease?.name}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedHouseForLease?.leaseContract ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Başlangıç Tarihi</p>
+                  <p className="font-medium" data-testid="text-lease-start">
+                    {new Date(selectedHouseForLease.leaseContract.startDate).toLocaleDateString("tr-TR")}
+                  </p>
+                </div>
+                
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Bitiş Tarihi</p>
+                  <p className="font-medium" data-testid="text-lease-end">
+                    {selectedHouseForLease.leaseContract.endDate 
+                      ? new Date(selectedHouseForLease.leaseContract.endDate).toLocaleDateString("tr-TR")
+                      : "Belirsiz"}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Aylık Kira</p>
+                  <p className="text-2xl font-semibold" data-testid="text-lease-rent">
+                    {selectedHouseForLease.leaseContract.monthlyRent.toLocaleString()} {selectedHouseForLease.leaseContract.currency}
+                  </p>
+                </div>
+                
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Ödeme Günü</p>
+                  <p className="font-medium" data-testid="text-lease-payment-day">
+                    Her ayın {selectedHouseForLease.leaseContract.paymentDay}. günü
+                  </p>
+                </div>
+              </div>
+              
+              {selectedHouseForLease.leaseContract.endDate && (
+                <div className="p-4 bg-muted/50 rounded-lg border">
+                  <div className="flex items-start gap-3">
+                    <Calendar className="w-5 h-5 text-amber-600 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-sm">Sözleşme Bitiş Uyarısı</p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Sözleşme {Math.ceil(
+                          (new Date(selectedHouseForLease.leaseContract.endDate).getTime() - new Date().getTime()) / 
+                          (1000 * 60 * 60 * 24)
+                        )} gün sonra bitiyor
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+              <p className="text-muted-foreground">Bu konut için kira sözleşmesi bilgisi bulunamadı</p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Reminders Dialog */}
+      <Dialog open={isRemindersDialogOpen} onOpenChange={setIsRemindersDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Hatırlatıcılar</DialogTitle>
+            <DialogDescription>
+              {selectedHouseForReminders?.name}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {selectedHouseForReminders?.reminders && selectedHouseForReminders.reminders.length > 0 ? (
+              <>
+                <div className="space-y-3">
+                  {selectedHouseForReminders.reminders.map((reminder) => {
+                    const daysUntil = Math.ceil(
+                      (new Date(reminder.date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+                    );
+                    const shouldAlert = daysUntil <= reminder.alertDaysBefore && daysUntil >= 0;
+                    
+                    const typeLabels = {
+                      maintenance: "Bakım",
+                      lease_end: "Kira Sonu",
+                      meter_reading: "Sayaç Okuma",
+                      inspection: "Denetim",
+                      other: "Diğer",
+                    };
+                    
+                    const typeColors = {
+                      maintenance: "bg-blue-100 text-blue-700",
+                      lease_end: "bg-purple-100 text-purple-700",
+                      meter_reading: "bg-green-100 text-green-700",
+                      inspection: "bg-amber-100 text-amber-700",
+                      other: "bg-gray-100 text-gray-700",
+                    };
+                    
+                    return (
+                      <div
+                        key={reminder.id}
+                        className={cn(
+                          "p-4 rounded-lg border",
+                          shouldAlert ? "bg-amber-50 border-amber-300" : "bg-card"
+                        )}
+                        data-testid={`reminder-${reminder.id}`}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge className={typeColors[reminder.type]} variant="secondary">
+                                {typeLabels[reminder.type]}
+                              </Badge>
+                              {reminder.recurring && reminder.recurring !== "none" && (
+                                <Badge variant="outline" className="text-xs">
+                                  {reminder.recurring === "monthly" ? "Aylık" : "Yıllık"}
+                                </Badge>
+                              )}
+                              {shouldAlert && (
+                                <Badge variant="default" className="bg-amber-600">
+                                  <AlertCircle className="w-3 h-3 mr-1" />
+                                  Yaklaşıyor
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            <h4 className="font-semibold mb-1" data-testid={`text-reminder-title-${reminder.id}`}>
+                              {reminder.title}
+                            </h4>
+                            
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                              <div className="flex items-center gap-1">
+                                <Calendar className="w-4 h-4" />
+                                {new Date(reminder.date).toLocaleDateString("tr-TR")}
+                              </div>
+                              <div>
+                                {daysUntil > 0 ? `${daysUntil} gün sonra` : daysUntil === 0 ? "Bugün" : `${Math.abs(daysUntil)} gün önce`}
+                              </div>
+                            </div>
+                            
+                            {reminder.note && (
+                              <p className="text-sm text-muted-foreground mt-2" data-testid={`text-reminder-note-${reminder.id}`}>
+                                {reminder.note}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                
+                <Button
+                  onClick={() => setIsAddReminderOpen(true)}
+                  className="w-full"
+                  data-testid="button-add-reminder"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Yeni Hatırlatıcı Ekle
+                </Button>
+              </>
+            ) : (
+              <div className="text-center py-8">
+                <Bell className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground mb-4">Henüz hatırlatıcı eklenmedi</p>
+                <Button
+                  onClick={() => setIsAddReminderOpen(true)}
+                  data-testid="button-add-first-reminder"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  İlk Hatırlatıcıyı Ekle
+                </Button>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Reminder Dialog */}
+      <Dialog open={isAddReminderOpen} onOpenChange={setIsAddReminderOpen}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Yeni Hatırlatıcı Ekle</DialogTitle>
+            <DialogDescription>
+              {selectedHouseForReminders?.name} için hatırlatıcı oluştur
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="reminder-type">Hatırlatıcı Türü *</Label>
+              <Select
+                value={newReminder.type}
+                onValueChange={(value) => setNewReminder({ ...newReminder, type: value as Reminder["type"] })}
+              >
+                <SelectTrigger id="reminder-type" data-testid="select-reminder-type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="maintenance">Bakım</SelectItem>
+                  <SelectItem value="lease_end">Kira Sonu</SelectItem>
+                  <SelectItem value="meter_reading">Sayaç Okuma</SelectItem>
+                  <SelectItem value="inspection">Denetim</SelectItem>
+                  <SelectItem value="other">Diğer</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="reminder-title">Başlık *</Label>
+              <Input
+                id="reminder-title"
+                placeholder="örn: Yıllık bakım"
+                value={newReminder.title}
+                onChange={(e) => setNewReminder({ ...newReminder, title: e.target.value })}
+                data-testid="input-reminder-title"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="reminder-date">Tarih *</Label>
+              <Input
+                id="reminder-date"
+                type="date"
+                value={newReminder.date}
+                onChange={(e) => setNewReminder({ ...newReminder, date: e.target.value })}
+                data-testid="input-reminder-date"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="reminder-alert">Kaç Gün Önce Uyarı? *</Label>
+              <Select
+                value={newReminder.alertDaysBefore.toString()}
+                onValueChange={(value) => setNewReminder({ ...newReminder, alertDaysBefore: parseInt(value) })}
+              >
+                <SelectTrigger id="reminder-alert" data-testid="select-reminder-alert">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">1 gün önce</SelectItem>
+                  <SelectItem value="3">3 gün önce</SelectItem>
+                  <SelectItem value="7">1 hafta önce</SelectItem>
+                  <SelectItem value="14">2 hafta önce</SelectItem>
+                  <SelectItem value="30">1 ay önce</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="reminder-recurring">Tekrarlama</Label>
+              <Select
+                value={newReminder.recurring || "none"}
+                onValueChange={(value) => setNewReminder({ ...newReminder, recurring: value as Reminder["recurring"] })}
+              >
+                <SelectTrigger id="reminder-recurring" data-testid="select-reminder-recurring">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Tekrarlanmaz</SelectItem>
+                  <SelectItem value="monthly">Aylık</SelectItem>
+                  <SelectItem value="yearly">Yıllık</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="reminder-note">Not (Opsiyonel)</Label>
+              <Input
+                id="reminder-note"
+                placeholder="örn: Kalorifer bakımı yapılacak"
+                value={newReminder.note}
+                onChange={(e) => setNewReminder({ ...newReminder, note: e.target.value })}
+                data-testid="input-reminder-note"
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-3 justify-end pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsAddReminderOpen(false);
+                setNewReminder({
+                  type: "maintenance",
+                  title: "",
+                  date: new Date().toISOString().split("T")[0],
+                  alertDaysBefore: 7,
+                  note: "",
+                  recurring: "none",
+                });
+              }}
+              data-testid="button-cancel-reminder"
+            >
+              İptal
+            </Button>
+            <Button
+              onClick={() => {
+                if (!newReminder.title || !newReminder.date) {
+                  toast({
+                    title: "Eksik Bilgi",
+                    description: "Lütfen tüm zorunlu alanları doldurun",
+                    variant: "destructive",
+                  });
+                  return;
+                }
+
+                if (selectedHouseForReminders) {
+                  const updatedHouses = houses.map((h) => {
+                    if (h.id === selectedHouseForReminders.id) {
+                      return {
+                        ...h,
+                        reminders: [
+                          ...(h.reminders || []),
+                          {
+                            id: `r${Date.now()}`,
+                            ...newReminder,
+                          },
+                        ],
+                      };
+                    }
+                    return h;
+                  });
+                  
+                  setHouses(updatedHouses);
+                  setSelectedHouseForReminders(updatedHouses.find(h => h.id === selectedHouseForReminders.id) || null);
+                  
+                  toast({
+                    title: "Başarılı",
+                    description: "Hatırlatıcı eklendi",
+                  });
+
+                  setIsAddReminderOpen(false);
+                  setNewReminder({
+                    type: "maintenance",
+                    title: "",
+                    date: new Date().toISOString().split("T")[0],
+                    alertDaysBefore: 7,
+                    note: "",
+                    recurring: "none",
+                  });
+                }
+              }}
+              data-testid="button-save-reminder"
             >
               Kaydet
             </Button>
