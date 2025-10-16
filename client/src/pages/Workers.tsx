@@ -18,25 +18,141 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
-// Mock data
-const mockWorkers = [
-  { id: "1", name: "John Doe", birthDate: "1980-10-22", gender: "Erkek", country: "Hollanda", house: "Geldernstrasse 13", room: "45", bed: "1" },
-  { id: "2", name: "Jane Smith", birthDate: "1992-05-15", gender: "Kadın", country: "Almanya", house: "Geldernstrasse 13", room: "45", bed: "3" },
-  { id: "3", name: "Mike Johnson", birthDate: "1985-11-30", gender: "Erkek", country: "Polonya", house: "Geldernstrasse 13", room: "47", bed: "1" },
-  { id: "4", name: "Sarah Williams", birthDate: "1988-03-08", gender: "Kadın", country: "Romanya", house: "Hauptstrasse 45", room: "101", bed: "2" },
-  { id: "5", name: "Tom Brown", birthDate: "1995-07-12", gender: "Erkek", country: "Hollanda", house: "Hauptstrasse 45", room: "102", bed: "1" },
+type Worker = {
+  id: string;
+  name: string;
+  birthDate: string;
+  gender: string;
+  country: string;
+  house: string;
+  room: string;
+  bed: string;
+};
+
+// Mock houses for dropdowns
+const mockHouses = [
+  { id: "h1", name: "Geldernstrasse 13", rooms: ["45", "46", "47"] },
+  { id: "h2", name: "Hauptstrasse 45", rooms: ["101", "102"] },
+  { id: "h3", name: "Marktplatz 7", rooms: ["201", "202"] },
 ];
 
 export default function Workers() {
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
+  const [workers, setWorkers] = useState<Worker[]>([
+    { id: "1", name: "John Doe", birthDate: "1980-10-22", gender: "Erkek", country: "Hollanda", house: "Geldernstrasse 13", room: "45", bed: "1" },
+    { id: "2", name: "Jane Smith", birthDate: "1992-05-15", gender: "Kadın", country: "Almanya", house: "Geldernstrasse 13", room: "45", bed: "3" },
+    { id: "3", name: "Mike Johnson", birthDate: "1985-11-30", gender: "Erkek", country: "Polonya", house: "Geldernstrasse 13", room: "47", bed: "1" },
+    { id: "4", name: "Sarah Williams", birthDate: "1988-03-08", gender: "Kadın", country: "Romanya", house: "Hauptstrasse 45", room: "101", bed: "2" },
+    { id: "5", name: "Tom Brown", birthDate: "1995-07-12", gender: "Erkek", country: "Hollanda", house: "Hauptstrasse 45", room: "102", bed: "1" },
+  ]);
+  
+  // Dialog states
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedWorker, setSelectedWorker] = useState<Worker | null>(null);
+  
+  // Form states
+  const [formData, setFormData] = useState({
+    name: "",
+    birthDate: "",
+    gender: "",
+    country: "",
+    house: "",
+    room: "",
+    bed: "",
+  });
 
-  const filteredWorkers = mockWorkers.filter((worker) =>
+  const filteredWorkers = workers.filter((worker) =>
     worker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     worker.country.toLowerCase().includes(searchQuery.toLowerCase()) ||
     worker.house.toLowerCase().includes(searchQuery.toLowerCase()) ||
     worker.birthDate.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  
+  const handleOpenAddDialog = () => {
+    setFormData({
+      name: "",
+      birthDate: "",
+      gender: "",
+      country: "",
+      house: "",
+      room: "",
+      bed: "",
+    });
+    setIsAddDialogOpen(true);
+  };
+  
+  const handleOpenEditDialog = (worker: Worker) => {
+    setSelectedWorker(worker);
+    setFormData({
+      name: worker.name,
+      birthDate: worker.birthDate,
+      gender: worker.gender,
+      country: worker.country,
+      house: worker.house,
+      room: worker.room,
+      bed: worker.bed,
+    });
+    setIsEditDialogOpen(true);
+  };
+  
+  const handleSaveWorker = () => {
+    if (!formData.name || !formData.birthDate || !formData.gender || !formData.country) {
+      toast({
+        title: "Hata",
+        description: "Lütfen tüm zorunlu alanları doldurun",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (selectedWorker) {
+      // Edit mode
+      setWorkers(workers.map((w) => 
+        w.id === selectedWorker.id ? { ...w, ...formData } : w
+      ));
+      toast({
+        title: "Başarılı",
+        description: "Çalışan bilgileri güncellendi",
+      });
+      setIsEditDialogOpen(false);
+    } else {
+      // Add mode
+      const newWorker: Worker = {
+        id: Date.now().toString(),
+        ...formData,
+      };
+      setWorkers([...workers, newWorker]);
+      toast({
+        title: "Başarılı",
+        description: "Yeni çalışan eklendi",
+      });
+      setIsAddDialogOpen(false);
+    }
+    
+    setSelectedWorker(null);
+  };
+  
+  const selectedHouseData = mockHouses.find(h => h.name === formData.house);
+  const availableRooms = selectedHouseData?.rooms || [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -49,7 +165,7 @@ export default function Workers() {
               <h2 className="text-2xl font-bold mb-2">Çalışanlar</h2>
               <p className="text-muted-foreground">Tüm çalışanları görüntüleyin ve yönetin</p>
             </div>
-            <Button data-testid="button-add-worker">
+            <Button onClick={handleOpenAddDialog} data-testid="button-add-worker">
               <Plus className="w-4 h-4 mr-2" />
               Yeni Çalışan Ekle
             </Button>
@@ -118,7 +234,12 @@ export default function Workers() {
                       <Badge variant="secondary">Yatak {worker.bed}</Badge>
                     </TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="sm" data-testid={`button-edit-${worker.id}`}>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleOpenEditDialog(worker)}
+                        data-testid={`button-edit-${worker.id}`}
+                      >
                         Düzenle
                       </Button>
                     </TableCell>
@@ -135,6 +256,288 @@ export default function Workers() {
           )}
         </div>
       </main>
+
+      {/* Add Worker Dialog */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Yeni Çalışan Ekle</DialogTitle>
+            <DialogDescription>
+              Yeni bir çalışan kaydı oluşturun
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="add-name">İsim Soyisim *</Label>
+                <Input
+                  id="add-name"
+                  placeholder="John Doe"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  data-testid="input-worker-name"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="add-birthdate">Doğum Tarihi *</Label>
+                <Input
+                  id="add-birthdate"
+                  type="date"
+                  value={formData.birthDate}
+                  onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
+                  data-testid="input-worker-birthdate"
+                />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="add-gender">Cinsiyet *</Label>
+                <Select
+                  value={formData.gender}
+                  onValueChange={(value) => setFormData({ ...formData, gender: value })}
+                >
+                  <SelectTrigger id="add-gender" data-testid="select-worker-gender">
+                    <SelectValue placeholder="Cinsiyet seçin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Erkek">Erkek</SelectItem>
+                    <SelectItem value="Kadın">Kadın</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="add-country">Ülke *</Label>
+                <Input
+                  id="add-country"
+                  placeholder="Hollanda"
+                  value={formData.country}
+                  onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                  data-testid="input-worker-country"
+                />
+              </div>
+            </div>
+            
+            <div className="border-t pt-4">
+              <h4 className="font-medium mb-3">Konaklama Bilgileri (İsteğe Bağlı)</h4>
+              
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="add-house">Ev</Label>
+                  <Select
+                    value={formData.house}
+                    onValueChange={(value) => {
+                      setFormData({ ...formData, house: value, room: "", bed: "" });
+                    }}
+                  >
+                    <SelectTrigger id="add-house" data-testid="select-worker-house">
+                      <SelectValue placeholder="Ev seçin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {mockHouses.map((house) => (
+                        <SelectItem key={house.id} value={house.name}>
+                          {house.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="add-room">Oda</Label>
+                  <Select
+                    value={formData.room}
+                    onValueChange={(value) => setFormData({ ...formData, room: value })}
+                    disabled={!formData.house}
+                  >
+                    <SelectTrigger id="add-room" data-testid="select-worker-room">
+                      <SelectValue placeholder="Oda seçin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableRooms.map((room) => (
+                        <SelectItem key={room} value={room}>
+                          Oda {room}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="add-bed">Yatak</Label>
+                  <Input
+                    id="add-bed"
+                    placeholder="1"
+                    value={formData.bed}
+                    onChange={(e) => setFormData({ ...formData, bed: e.target.value })}
+                    data-testid="input-worker-bed"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex justify-end gap-3 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setIsAddDialogOpen(false)}
+                data-testid="button-cancel-add"
+              >
+                İptal
+              </Button>
+              <Button
+                onClick={handleSaveWorker}
+                data-testid="button-save-worker"
+              >
+                Kaydet
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Worker Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Çalışan Düzenle</DialogTitle>
+            <DialogDescription>
+              {selectedWorker?.name} bilgilerini güncelleyin
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-name">İsim Soyisim *</Label>
+                <Input
+                  id="edit-name"
+                  placeholder="John Doe"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  data-testid="input-edit-worker-name"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="edit-birthdate">Doğum Tarihi *</Label>
+                <Input
+                  id="edit-birthdate"
+                  type="date"
+                  value={formData.birthDate}
+                  onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
+                  data-testid="input-edit-worker-birthdate"
+                />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-gender">Cinsiyet *</Label>
+                <Select
+                  value={formData.gender}
+                  onValueChange={(value) => setFormData({ ...formData, gender: value })}
+                >
+                  <SelectTrigger id="edit-gender" data-testid="select-edit-worker-gender">
+                    <SelectValue placeholder="Cinsiyet seçin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Erkek">Erkek</SelectItem>
+                    <SelectItem value="Kadın">Kadın</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="edit-country">Ülke *</Label>
+                <Input
+                  id="edit-country"
+                  placeholder="Hollanda"
+                  value={formData.country}
+                  onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                  data-testid="input-edit-worker-country"
+                />
+              </div>
+            </div>
+            
+            <div className="border-t pt-4">
+              <h4 className="font-medium mb-3">Konaklama Bilgileri (İsteğe Bağlı)</h4>
+              
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-house">Ev</Label>
+                  <Select
+                    value={formData.house}
+                    onValueChange={(value) => {
+                      setFormData({ ...formData, house: value, room: "", bed: "" });
+                    }}
+                  >
+                    <SelectTrigger id="edit-house" data-testid="select-edit-worker-house">
+                      <SelectValue placeholder="Ev seçin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {mockHouses.map((house) => (
+                        <SelectItem key={house.id} value={house.name}>
+                          {house.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="edit-room">Oda</Label>
+                  <Select
+                    value={formData.room}
+                    onValueChange={(value) => setFormData({ ...formData, room: value })}
+                    disabled={!formData.house}
+                  >
+                    <SelectTrigger id="edit-room" data-testid="select-edit-worker-room">
+                      <SelectValue placeholder="Oda seçin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableRooms.map((room) => (
+                        <SelectItem key={room} value={room}>
+                          Oda {room}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="edit-bed">Yatak</Label>
+                  <Input
+                    id="edit-bed"
+                    placeholder="1"
+                    value={formData.bed}
+                    onChange={(e) => setFormData({ ...formData, bed: e.target.value })}
+                    data-testid="input-edit-worker-bed"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex justify-end gap-3 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setIsEditDialogOpen(false)}
+                data-testid="button-cancel-edit"
+              >
+                İptal
+              </Button>
+              <Button
+                onClick={handleSaveWorker}
+                data-testid="button-update-worker"
+              >
+                Güncelle
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
