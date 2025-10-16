@@ -1,4 +1,4 @@
-import { Building2, User, LogOut, Menu, Home, Users, Settings } from "lucide-react";
+import { Building2, User, LogOut, Menu, Home, Users, Settings, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/sheet";
 import { useLocation } from "wouter";
 import { useState } from "react";
+import { useTheme } from "@/components/ThemeProvider";
 
 interface HeaderProps {
   tenantName?: string;
@@ -27,6 +28,7 @@ interface HeaderProps {
 export default function Header({ tenantName = "Cova B.V.", userName = "Admin" }: HeaderProps) {
   const [location, setLocation] = useLocation();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   const menuItems = [
     { icon: Home, label: "Konaklama Genel Bakış", path: "/dashboard" },
@@ -91,25 +93,40 @@ export default function Header({ tenantName = "Cova B.V.", userName = "Admin" }:
           </span>
         </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" data-testid="button-user-menu">
-              <User className="w-5 h-5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel>{userName}</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => console.log("Profile clicked")}>
-              <User className="w-4 h-4 mr-2" />
-              Profil
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => console.log("Logout clicked")}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Çıkış Yap
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            data-testid="button-theme-toggle"
+          >
+            {theme === "light" ? (
+              <Moon className="w-5 h-5" />
+            ) : (
+              <Sun className="w-5 h-5" />
+            )}
+          </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" data-testid="button-user-menu">
+                <User className="w-5 h-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>{userName}</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => console.log("Profile clicked")}>
+                <User className="w-4 h-4 mr-2" />
+                Profil
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => console.log("Logout clicked")}>
+                <LogOut className="w-4 h-4 mr-2" />
+                Çıkış Yap
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
     </header>
   );
