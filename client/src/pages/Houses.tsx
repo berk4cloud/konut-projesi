@@ -51,6 +51,19 @@ type RoomInfo = {
   floor?: number;
 };
 
+// Meter reading type
+type MeterReading = {
+  id: string;
+  date: string;
+  value: number;
+  note?: string;
+};
+
+type MeterLogs = {
+  electricity: MeterReading[];
+  water: MeterReading[];
+};
+
 // Initial mock data
 const initialMockHouses = [
   {
@@ -69,6 +82,18 @@ const initialMockHouses = [
     totalBeds: 7,
     occupiedBeds: 5,
     ownershipType: "Kiralık",
+    meterLogs: {
+      electricity: [
+        { id: "e1", date: "2024-12-15", value: 15420, note: "Normal okuma" },
+        { id: "e2", date: "2024-11-15", value: 15180 },
+        { id: "e3", date: "2024-10-15", value: 14950 },
+      ],
+      water: [
+        { id: "w1", date: "2024-12-15", value: 8520, note: "Normal okuma" },
+        { id: "w2", date: "2024-11-15", value: 8410 },
+        { id: "w3", date: "2024-10-15", value: 8305 },
+      ],
+    },
   },
   {
     id: "h2",
@@ -85,6 +110,16 @@ const initialMockHouses = [
     totalBeds: 6,
     occupiedBeds: 4,
     ownershipType: "Mülk",
+    meterLogs: {
+      electricity: [
+        { id: "e4", date: "2024-12-10", value: 22150, note: "Yılsonu okuması" },
+        { id: "e5", date: "2024-11-10", value: 21890 },
+      ],
+      water: [
+        { id: "w4", date: "2024-12-10", value: 12340 },
+        { id: "w5", date: "2024-11-10", value: 12210 },
+      ],
+    },
   },
   {
     id: "h3",
@@ -101,6 +136,16 @@ const initialMockHouses = [
     totalBeds: 5,
     occupiedBeds: 3,
     ownershipType: "3. Taraf",
+    meterLogs: {
+      electricity: [
+        { id: "e6", date: "2024-12-01", value: 18920 },
+        { id: "e7", date: "2024-11-01", value: 18720 },
+      ],
+      water: [
+        { id: "w6", date: "2024-12-01", value: 9850, note: "Kaçak kontrol edildi" },
+        { id: "w7", date: "2024-11-01", value: 9730 },
+      ],
+    },
   },
 ];
 
