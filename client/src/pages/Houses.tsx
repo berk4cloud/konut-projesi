@@ -65,6 +65,26 @@ type MeterLogs = {
   water: MeterReading[];
 };
 
+// Lease contract type (for rented properties)
+type LeaseContract = {
+  startDate: string;
+  endDate?: string; // Optional for indefinite leases
+  monthlyRent: number;
+  currency: string;
+  paymentDay: number; // Day of month (1-31)
+};
+
+// Reminder/Alert type
+type Reminder = {
+  id: string;
+  type: "maintenance" | "lease_end" | "meter_reading" | "inspection" | "other";
+  title: string;
+  date: string;
+  alertDaysBefore: number; // How many days before to alert
+  note?: string;
+  recurring?: "monthly" | "yearly" | "none";
+};
+
 // Initial mock data
 const initialMockHouses = [
   {
@@ -83,6 +103,33 @@ const initialMockHouses = [
     totalBeds: 7,
     occupiedBeds: 5,
     ownershipType: "Kiralık",
+    leaseContract: {
+      startDate: "2023-01-15",
+      endDate: "2025-01-14",
+      monthlyRent: 2500,
+      currency: "EUR",
+      paymentDay: 1,
+    },
+    reminders: [
+      {
+        id: "r1",
+        type: "lease_end" as const,
+        title: "Kira sözleşmesi bitiyor",
+        date: "2025-01-14",
+        alertDaysBefore: 30,
+        note: "Yenileme görüşmesi yapılmalı",
+        recurring: "none" as const,
+      },
+      {
+        id: "r2",
+        type: "maintenance" as const,
+        title: "Yıllık bakım",
+        date: "2025-03-15",
+        alertDaysBefore: 10,
+        note: "Kalorifer bakımı",
+        recurring: "yearly" as const,
+      },
+    ],
     meterLogs: {
       electricity: [
         { id: "e1", date: "2024-12-15", value: 15420, note: "Normal okuma" },
@@ -111,6 +158,24 @@ const initialMockHouses = [
     totalBeds: 6,
     occupiedBeds: 4,
     ownershipType: "Mülk",
+    reminders: [
+      {
+        id: "r3",
+        type: "inspection" as const,
+        title: "Yangın güvenlik kontrolü",
+        date: "2025-02-20",
+        alertDaysBefore: 7,
+        recurring: "yearly" as const,
+      },
+      {
+        id: "r4",
+        type: "meter_reading" as const,
+        title: "Sayaç okuma günü",
+        date: "2025-01-10",
+        alertDaysBefore: 3,
+        recurring: "monthly" as const,
+      },
+    ],
     meterLogs: {
       electricity: [
         { id: "e4", date: "2024-12-10", value: 22150, note: "Yılsonu okuması" },
@@ -137,6 +202,23 @@ const initialMockHouses = [
     totalBeds: 5,
     occupiedBeds: 3,
     ownershipType: "3. Taraf",
+    leaseContract: {
+      startDate: "2024-06-01",
+      monthlyRent: 1800,
+      currency: "EUR",
+      paymentDay: 5,
+    },
+    reminders: [
+      {
+        id: "r5",
+        type: "other" as const,
+        title: "Bina toplantısı",
+        date: "2025-01-25",
+        alertDaysBefore: 5,
+        note: "Yönetim kurulu toplantısı",
+        recurring: "none" as const,
+      },
+    ],
     meterLogs: {
       electricity: [
         { id: "e6", date: "2024-12-01", value: 18920 },
