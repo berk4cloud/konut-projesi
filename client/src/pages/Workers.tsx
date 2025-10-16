@@ -2,7 +2,7 @@ import { useState } from "react";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, User } from "lucide-react";
+import { Plus, Search, User, Info } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -12,6 +12,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Mock data
 const mockWorkers = [
@@ -28,7 +34,8 @@ export default function Workers() {
   const filteredWorkers = mockWorkers.filter((worker) =>
     worker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     worker.country.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    worker.house.toLowerCase().includes(searchQuery.toLowerCase())
+    worker.house.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    worker.birthDate.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -54,9 +61,19 @@ export default function Workers() {
               placeholder="Çalışan ara..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 pr-10"
               data-testid="input-search-worker"
             />
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 cursor-help" data-testid="icon-search-info" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-sm">İsim, ev, doğum tarihi veya ülke ile arama yapabilirsiniz</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
 
           <div className="bg-white rounded-lg border">
