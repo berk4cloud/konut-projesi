@@ -47,6 +47,8 @@ type RoomInfo = {
   roomNumber: string;
   beds: number;
   canRentAsRoom: boolean;
+  useFloor: boolean;
+  floor?: number;
 };
 
 // Initial mock data
@@ -60,9 +62,9 @@ const initialMockHouses = [
     city: "Geilenkirchen",
     country: "Almanya",
     rooms: [
-      { roomNumber: "45", beds: 3, canRentAsRoom: false },
-      { roomNumber: "46", beds: 2, canRentAsRoom: true },
-      { roomNumber: "47", beds: 2, canRentAsRoom: false },
+      { roomNumber: "45", beds: 3, canRentAsRoom: false, useFloor: true, floor: 2 },
+      { roomNumber: "46", beds: 2, canRentAsRoom: true, useFloor: true, floor: 2 },
+      { roomNumber: "47", beds: 2, canRentAsRoom: false, useFloor: true, floor: 2 },
     ],
     totalBeds: 7,
     occupiedBeds: 5,
@@ -77,8 +79,8 @@ const initialMockHouses = [
     city: "Venlo",
     country: "Hollanda",
     rooms: [
-      { roomNumber: "101", beds: 4, canRentAsRoom: false },
-      { roomNumber: "102", beds: 2, canRentAsRoom: false },
+      { roomNumber: "101", beds: 4, canRentAsRoom: false, useFloor: true, floor: 1 },
+      { roomNumber: "102", beds: 2, canRentAsRoom: false, useFloor: true, floor: 1 },
     ],
     totalBeds: 6,
     occupiedBeds: 4,
@@ -93,8 +95,8 @@ const initialMockHouses = [
     city: "Roermond",
     country: "Hollanda",
     rooms: [
-      { roomNumber: "201", beds: 3, canRentAsRoom: true },
-      { roomNumber: "202", beds: 2, canRentAsRoom: false },
+      { roomNumber: "201", beds: 3, canRentAsRoom: true, useFloor: true, floor: 2 },
+      { roomNumber: "202", beds: 2, canRentAsRoom: false, useFloor: true, floor: 2 },
     ],
     totalBeds: 5,
     occupiedBeds: 3,
@@ -174,7 +176,7 @@ export default function Houses() {
   const handleAddRoom = () => {
     setFormData({
       ...formData,
-      rooms: [...formData.rooms, { roomNumber: "", beds: 1, canRentAsRoom: false }],
+      rooms: [...formData.rooms, { roomNumber: "", beds: 1, canRentAsRoom: false, useFloor: false, floor: undefined }],
     });
   };
 
@@ -223,6 +225,10 @@ export default function Houses() {
       }
       if (!room.beds || room.beds < 1) {
         alert(`Oda ${i + 1}: Yatak sayısı en az 1 olmalıdır`);
+        return;
+      }
+      if (room.useFloor && (room.floor === undefined || room.floor === null)) {
+        alert(`Oda ${i + 1}: Kat bilgisi girmelisiniz`);
         return;
       }
     }
@@ -360,7 +366,14 @@ export default function Houses() {
                             className="flex items-center justify-between text-sm bg-muted/40 rounded px-2 py-1.5"
                             data-testid={`room-info-${house.id}-${room.roomNumber}`}
                           >
-                            <span className="font-medium">Oda {room.roomNumber}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">Oda {room.roomNumber}</span>
+                              {room.useFloor && room.floor !== undefined && (
+                                <span className="text-xs text-muted-foreground" data-testid={`text-floor-${house.id}-${room.roomNumber}`}>
+                                  (Kat {room.floor})
+                                </span>
+                              )}
+                            </div>
                             <div className="flex items-center gap-2">
                               <span className="text-muted-foreground">{room.beds} yatak</span>
                               {room.canRentAsRoom && (
@@ -633,19 +646,62 @@ export default function Houses() {
                       </div>
                     </div>
 
-                    <div className="flex items-center space-x-2 pt-2">
-                      <Checkbox
-                        id={`can-rent-${index}`}
-                        checked={room.canRentAsRoom}
-                        onCheckedChange={(checked) => handleRoomChange(index, "canRentAsRoom", checked)}
-                        data-testid={`checkbox-can-rent-${index}`}
-                      />
-                      <Label
-                        htmlFor={`can-rent-${index}`}
-                        className="text-sm font-normal cursor-pointer"
-                      >
-                        Oda olarak kiraya verilebilir
-                      </Label>
+                    <div className="space-y-2 pt-2">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`can-rent-${index}`}
+                          checked={room.canRentAsRoom}
+                          onCheckedChange={(checked) => handleRoomChange(index, "canRentAsRoom", !!checked)}
+                          data-testid={`checkbox-can-rent-${index}`}
+                        />
+                        <Label
+                          htmlFor={`can-rent-${index}`}
+                          className="text-sm font-normal cursor-pointer"
+                        >
+                          Oda olarak kiraya verilebilir
+                        </Label>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`use-floor-${index}`}
+                            checked={room.useFloor}
+                            onCheckedChange={(checked) => {
+                              handleRoomChange(index, "useFloor", !!checked);
+                              if (!checked) {
+                                handleRoomChange(index, "floor", undefined);
+                              }
+                            }}
+                            data-testid={`checkbox-use-floor-${index}`}
+                          />
+                          <Label
+                            htmlFor={`use-floor-${index}`}
+                            className="text-sm font-normal cursor-pointer"
+                          >
+                            Kat bilgisi gir
+                          </Label>
+                        </div>
+
+                        {room.useFloor && (
+                          <div className="flex items-center gap-2">
+                            <Label htmlFor={`floor-${index}`} className="text-sm">Kat:</Label>
+                            <Input
+                              id={`floor-${index}`}
+                              type="number"
+                              min="0"
+                              placeholder="2"
+                              value={room.floor ?? ""}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                handleRoomChange(index, "floor", val === "" ? undefined : parseInt(val));
+                              }}
+                              className="w-20"
+                              data-testid={`input-floor-${index}`}
+                            />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
