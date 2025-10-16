@@ -30,6 +30,7 @@ export default function Header({ tenantName = "Cova B.V.", userName = "Admin" }:
 
   const menuItems = [
     { icon: Home, label: "Konaklama Genel Bakış", path: "/dashboard" },
+    { icon: Building2, label: "Konutlar", path: "/houses" },
     { icon: Users, label: "Çalışanlar", path: "/workers" },
     { icon: Settings, label: "Ayarlar", path: "/settings" },
   ];
