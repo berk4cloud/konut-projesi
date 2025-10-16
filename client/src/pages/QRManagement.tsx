@@ -126,6 +126,10 @@ export default function QRManagement() {
     expiryDays: "30" as string,
   });
   const [generatedCode, setGeneratedCode] = useState("");
+  
+  // View QR Dialog States
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [selectedQR, setSelectedQR] = useState<QRCodeData | null>(null);
 
   const filteredQRCodes = qrCodes.filter((qr) =>
     qr.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -268,6 +272,11 @@ export default function QRManagement() {
     setStep(1);
   };
 
+  const handleViewQR = (qr: QRCodeData) => {
+    setSelectedQR(qr);
+    setIsViewDialogOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header tenantName="Cova B.V." userName="Admin" />
@@ -358,6 +367,7 @@ export default function QRManagement() {
                               <Button
                                 variant="ghost"
                                 size="icon"
+                                onClick={() => handleViewQR(qr)}
                                 data-testid={`button-view-qr-${qr.id}`}
                               >
                                 <Eye className="w-4 h-4" />
@@ -600,6 +610,97 @@ export default function QRManagement() {
                 <Button onClick={handleCloseDialog} data-testid="button-close-success">
                   Tamam
                 </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* View QR Dialog */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>QR Kod Detayları</DialogTitle>
+            <DialogDescription>
+              {selectedQR?.title || getTypeLabel(selectedQR?.type || "worker_registration")}
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedQR && (
+            <div className="space-y-6 py-4">
+              <div className="flex flex-col items-center space-y-4">
+                <div className="w-64 h-64 bg-muted rounded-lg flex items-center justify-center border">
+                  <QrCode className="w-48 h-48 text-muted-foreground" />
+                </div>
+
+                <div className="w-full space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Link</p>
+                      <code className="text-sm">https://apdohabitat.app/qr/{selectedQR.code}</code>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleCopyLink(selectedQR.code)}
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 bg-muted rounded-lg">
+                      <p className="text-xs text-muted-foreground mb-1">Tip</p>
+                      <Badge variant={getTypeVariant(selectedQR.type)}>
+                        {getTypeLabel(selectedQR.type)}
+                      </Badge>
+                    </div>
+                    <div className="p-3 bg-muted rounded-lg">
+                      <p className="text-xs text-muted-foreground mb-1">Durum</p>
+                      <Badge variant={getStatusBadge(selectedQR.status).variant}>
+                        {getStatusBadge(selectedQR.status).label}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 bg-muted rounded-lg">
+                      <p className="text-xs text-muted-foreground mb-1">Kullanım</p>
+                      <p className="text-sm font-medium">{getUsageText(selectedQR)}</p>
+                    </div>
+                    <div className="p-3 bg-muted rounded-lg">
+                      <p className="text-xs text-muted-foreground mb-1">Geçerlilik</p>
+                      <p className="text-sm font-medium">{getExpiryText(selectedQR.expiryDate)}</p>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-muted rounded-lg">
+                    <p className="text-xs text-muted-foreground mb-1">Oluşturulma Tarihi</p>
+                    <p className="text-sm font-medium">
+                      {new Date(selectedQR.createdAt).toLocaleDateString("tr-TR")}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 w-full pt-4">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => handleCopyLink(selectedQR.code)}
+                    data-testid="button-copy-qr-link"
+                  >
+                    <Copy className="w-4 h-4 mr-2" />
+                    Linki Kopyala
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    data-testid="button-download-qr-view"
+                  >
+                    <QrCode className="w-4 h-4 mr-2" />
+                    QR İndir
+                  </Button>
+                </div>
               </div>
             </div>
           )}
