@@ -2,6 +2,7 @@ import { useState } from "react";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Plus, Search, Building2, MapPin, Edit, Bed } from "lucide-react";
 import {
   Card,
@@ -11,9 +12,23 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-// Mock data
-const mockHouses = [
+// Initial mock data
+const initialMockHouses = [
   {
     id: "h1",
     name: "Geldernstrasse 13",
@@ -50,14 +65,94 @@ const mockHouses = [
 ];
 
 export default function Houses() {
+  const [houses, setHouses] = useState(initialMockHouses);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingHouse, setEditingHouse] = useState<typeof initialMockHouses[0] | null>(null);
+  
+  // Form state
+  const [formData, setFormData] = useState({
+    name: "",
+    address: "",
+    city: "",
+    country: "Hollanda", // Default from settings
+    totalRooms: "",
+    totalBeds: "",
+    ownershipType: "Kiralık",
+  });
 
-  const filteredHouses = mockHouses.filter(
+  const filteredHouses = houses.filter(
     (house) =>
       house.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       house.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
       house.address.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleAddNew = () => {
+    setEditingHouse(null);
+    setFormData({
+      name: "",
+      address: "",
+      city: "",
+      country: "Hollanda",
+      totalRooms: "",
+      totalBeds: "",
+      ownershipType: "Kiralık",
+    });
+    setIsDialogOpen(true);
+  };
+
+  const handleEdit = (house: typeof initialMockHouses[0]) => {
+    setEditingHouse(house);
+    setFormData({
+      name: house.name,
+      address: house.address,
+      city: house.city,
+      country: house.country,
+      totalRooms: house.totalRooms.toString(),
+      totalBeds: house.totalBeds.toString(),
+      ownershipType: house.ownershipType,
+    });
+    setIsDialogOpen(true);
+  };
+
+  const handleSave = () => {
+    console.log("Saving house:", formData);
+    
+    if (editingHouse) {
+      // Update existing house
+      setHouses(houses.map(h => 
+        h.id === editingHouse.id 
+          ? {
+              ...h,
+              name: formData.name,
+              address: formData.address,
+              city: formData.city,
+              country: formData.country,
+              totalRooms: parseInt(formData.totalRooms) || 0,
+              totalBeds: parseInt(formData.totalBeds) || 0,
+              ownershipType: formData.ownershipType,
+            }
+          : h
+      ));
+    } else {
+      // Add new house (mock - no occupiedBeds data)
+      const newHouse = {
+        id: `h${houses.length + 1}`,
+        name: formData.name,
+        address: formData.address,
+        city: formData.city,
+        country: formData.country,
+        totalRooms: parseInt(formData.totalRooms) || 0,
+        totalBeds: parseInt(formData.totalBeds) || 0,
+        occupiedBeds: 0, // Default to 0 for new houses
+        ownershipType: formData.ownershipType,
+      };
+      setHouses([...houses, newHouse]);
+    }
+    
+    setIsDialogOpen(false);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -70,7 +165,7 @@ export default function Houses() {
               <h2 className="text-2xl font-bold mb-2">Konutlar</h2>
               <p className="text-gray-600">Tüm konutları görüntüleyin ve yönetin</p>
             </div>
-            <Button data-testid="button-add-house">
+            <Button onClick={handleAddNew} data-testid="button-add-house">
               <Plus className="w-4 h-4 mr-2" />
               Yeni Konut Ekle
             </Button>
@@ -165,6 +260,7 @@ export default function Houses() {
                     <Button
                       variant="outline"
                       className="w-full"
+                      onClick={() => handleEdit(house)}
                       data-testid={`button-edit-house-${house.id}`}
                     >
                       <Edit className="w-4 h-4 mr-2" />
@@ -186,6 +282,132 @@ export default function Houses() {
           )}
         </div>
       </main>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editingHouse ? "Konut Düzenle" : "Yeni Konut Ekle"}
+            </DialogTitle>
+            <DialogDescription>
+              {editingHouse 
+                ? "Konut bilgilerini güncelleyin" 
+                : "Yeni konut bilgilerini girin. Varsayılan ülke ayarlardan otomatik seçilir."}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Konut Adı *</Label>
+              <Input
+                id="name"
+                placeholder="örn: Geldernstrasse 13"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                data-testid="input-house-name"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="address">Adres *</Label>
+              <Input
+                id="address"
+                placeholder="örn: Geldernstrasse 13, 52511"
+                value={formData.address}
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                data-testid="input-house-address"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="city">Şehir *</Label>
+                <Input
+                  id="city"
+                  placeholder="örn: Geilenkirchen"
+                  value={formData.city}
+                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  data-testid="input-house-city"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="country">Ülke *</Label>
+                <Select
+                  value={formData.country}
+                  onValueChange={(value) => setFormData({ ...formData, country: value })}
+                >
+                  <SelectTrigger id="country" data-testid="select-house-country">
+                    <SelectValue placeholder="Ülke seçin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Hollanda">Hollanda</SelectItem>
+                    <SelectItem value="Almanya">Almanya</SelectItem>
+                    <SelectItem value="Polonya">Polonya</SelectItem>
+                    <SelectItem value="Romanya">Romanya</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="ownershipType">Mülkiyet Tipi *</Label>
+              <Select
+                value={formData.ownershipType}
+                onValueChange={(value) => setFormData({ ...formData, ownershipType: value })}
+              >
+                <SelectTrigger id="ownershipType" data-testid="select-ownership-type">
+                  <SelectValue placeholder="Mülkiyet tipi seçin" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Kiralık">Kiralık</SelectItem>
+                  <SelectItem value="Mülk">Mülk</SelectItem>
+                  <SelectItem value="3. Taraf">3. Taraf</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="totalRooms">Oda Sayısı *</Label>
+                <Input
+                  id="totalRooms"
+                  type="number"
+                  placeholder="örn: 3"
+                  value={formData.totalRooms}
+                  onChange={(e) => setFormData({ ...formData, totalRooms: e.target.value })}
+                  data-testid="input-total-rooms"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="totalBeds">Toplam Yatak *</Label>
+                <Input
+                  id="totalBeds"
+                  type="number"
+                  placeholder="örn: 18"
+                  value={formData.totalBeds}
+                  onChange={(e) => setFormData({ ...formData, totalBeds: e.target.value })}
+                  data-testid="input-total-beds"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-3 justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setIsDialogOpen(false)}
+              data-testid="button-cancel"
+            >
+              İptal
+            </Button>
+            <Button onClick={handleSave} data-testid="button-save-house">
+              {editingHouse ? "Güncelle" : "Kaydet"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
