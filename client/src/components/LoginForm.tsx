@@ -1,33 +1,64 @@
 import { useState } from "react";
-import { useLocation } from "wouter";
+import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
 export default function LoginForm() {
-  const [, setLocation] = useLocation();
+  const { login } = useAuth();
+  const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [tenant, setTenant] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = () => {
-    console.log("Login triggered:", { email, password, tenant });
-    setLocation("/dashboard");
+  const handleLogin = async () => {
+    if (!email || !password) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please enter email and password",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await login(email, password);
+      toast({
+        title: "Success",
+        description: "Logged in successfully",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Login failed",
+        description: error.message || "Invalid credentials",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleDemoLogin = () => {
+  const handleDemoLogin = async () => {
     setEmail("admin@cova.nl");
     setPassword("demo123");
-    setTenant("cova");
-    console.log("Demo login triggered");
-    setTimeout(() => setLocation("/dashboard"), 100);
+    setIsLoading(true);
+    try {
+      await login("admin@cova.nl", "demo123");
+      toast({
+        title: "Success",
+        description: "Logged in successfully",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Login failed",
+        description: error.message || "Invalid credentials",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -39,27 +70,15 @@ export default function LoginForm() {
 
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="tenant">Company</Label>
-          <Select value={tenant} onValueChange={setTenant}>
-            <SelectTrigger id="tenant" data-testid="select-tenant">
-              <SelectValue placeholder="Select your company" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="cova">Cova B.V.</SelectItem>
-              <SelectItem value="oneflex">Oneflex B.V.</SelectItem>
-              <SelectItem value="covagmbh">Cova GmbH</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input
             id="email"
             type="email"
-            placeholder="admin@company.com"
+            placeholder="admin@cova.nl"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+            disabled={isLoading}
             data-testid="input-email"
           />
         </div>
@@ -72,6 +91,8 @@ export default function LoginForm() {
             placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+            disabled={isLoading}
             data-testid="input-password"
           />
         </div>
@@ -79,19 +100,28 @@ export default function LoginForm() {
         <Button
           className="w-full"
           onClick={handleLogin}
+          disabled={isLoading}
           data-testid="button-login"
         >
-          Sign In
+          {isLoading ? "Signing in..." : "Sign In"}
         </Button>
 
         <Button
           variant="outline"
           className="w-full"
           onClick={handleDemoLogin}
+          disabled={isLoading}
           data-testid="button-demo-login"
         >
           Demo Login (Cova B.V.)
         </Button>
+
+        <div className="text-xs text-muted-foreground text-center space-y-1">
+          <p>Demo Credentials:</p>
+          <p>admin@cova.nl / demo123</p>
+          <p>admin@oneflex.nl / demo123</p>
+          <p>admin@covagmbh.de / demo123</p>
+        </div>
       </div>
     </div>
   );

@@ -1,177 +1,101 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/lib/auth";
+import { api } from "@/lib/api";
+import { useLocation } from "wouter";
 import Header from "@/components/Header";
 import FilterPanel from "@/components/FilterPanel";
 import CapacityWidget from "@/components/CapacityWidget";
 import HouseCard from "@/components/HouseCard";
 import WorkerAssignmentModal from "@/components/WorkerAssignmentModal";
 import GenderWarningModal from "@/components/GenderWarningModal";
-
-// TODO: Remove mock data when implementing real API
-const mockHouses = [
-  {
-    id: "h1",
-    name: "Geldernstrasse 13",
-    city: "Geilenkirchen",
-    totalBeds: 18,
-    occupiedBeds: 12,
-    rooms: [
-      {
-        id: "r1",
-        roomNumber: "45",
-        floor: 2,
-        beds: [
-          {
-            id: "b1",
-            bedNumber: 1,
-            status: "occupied" as const,
-            worker: { id: "w1", name: "Canny", gender: "male" as const },
-          },
-          { id: "b2", bedNumber: 2, status: "available" as const },
-          {
-            id: "b3",
-            bedNumber: 3,
-            status: "occupied" as const,
-            worker: { id: "w2", name: "Sarah", gender: "female" as const },
-          },
-        ],
-      },
-      {
-        id: "r2",
-        roomNumber: "46",
-        floor: 2,
-        beds: [
-          { id: "b4", bedNumber: 1, status: "available" as const },
-          { id: "b5", bedNumber: 2, status: "reserved" as const },
-        ],
-      },
-      {
-        id: "r3",
-        roomNumber: "47",
-        floor: 3,
-        beds: [
-          {
-            id: "b6",
-            bedNumber: 1,
-            status: "occupied" as const,
-            worker: { id: "w3", name: "Mike", gender: "male" as const },
-          },
-          { id: "b7", bedNumber: 2, status: "oos" as const },
-        ],
-      },
-    ],
-  },
-  {
-    id: "h2",
-    name: "Hauptstrasse 45",
-    city: "Venlo",
-    totalBeds: 24,
-    occupiedBeds: 18,
-    rooms: [
-      {
-        id: "r4",
-        roomNumber: "101",
-        floor: 1,
-        beds: [
-          {
-            id: "b8",
-            bedNumber: 1,
-            status: "occupied" as const,
-            worker: { id: "w4", name: "John", gender: "male" as const },
-          },
-          {
-            id: "b9",
-            bedNumber: 2,
-            status: "occupied" as const,
-            worker: { id: "w5", name: "Emma", gender: "female" as const },
-          },
-          { id: "b10", bedNumber: 3, status: "available" as const },
-          { id: "b11", bedNumber: 4, status: "available" as const },
-        ],
-      },
-      {
-        id: "r5",
-        roomNumber: "102",
-        floor: 1,
-        beds: [
-          {
-            id: "b12",
-            bedNumber: 1,
-            status: "occupied" as const,
-            worker: { id: "w6", name: "Tom", gender: "male" as const },
-          },
-          { id: "b13", bedNumber: 2, status: "available" as const },
-        ],
-      },
-    ],
-  },
-  {
-    id: "h3",
-    name: "Marktplatz 7",
-    city: "Roermond",
-    totalBeds: 12,
-    occupiedBeds: 8,
-    rooms: [
-      {
-        id: "r6",
-        roomNumber: "201",
-        floor: 2,
-        beds: [
-          {
-            id: "b14",
-            bedNumber: 1,
-            status: "occupied" as const,
-            worker: { id: "w7", name: "Lisa", gender: "female" as const },
-          },
-          { id: "b15", bedNumber: 2, status: "available" as const },
-          {
-            id: "b16",
-            bedNumber: 3,
-            status: "occupied" as const,
-            worker: { id: "w8", name: "Paul", gender: "male" as const },
-          },
-        ],
-      },
-      {
-        id: "r7",
-        roomNumber: "202",
-        floor: 2,
-        beds: [
-          { id: "b17", bedNumber: 1, status: "available" as const },
-          { id: "b18", bedNumber: 2, status: "reserved" as const },
-        ],
-      },
-    ],
-  },
-];
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function HousingDashboard() {
+  const { user, tenant, isAuthenticated } = useAuth();
+  const [, setLocation] = useLocation();
   const [assignmentModalOpen, setAssignmentModalOpen] = useState(false);
   const [warningModalOpen, setWarningModalOpen] = useState(false);
   const [selectedBed, setSelectedBed] = useState<any>(null);
+  const [selectedRoom, setSelectedRoom] = useState<any>(null);
+  const [selectedHouse, setSelectedHouse] = useState<any>(null);
 
-  const totalBeds = mockHouses.reduce((sum, house) => sum + house.totalBeds, 0);
-  const occupiedBeds = mockHouses.reduce((sum, house) => sum + house.occupiedBeds, 0);
-  const emptyBeds = totalBeds - occupiedBeds;
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setLocation("/");
+    }
+  }, [isAuthenticated, setLocation]);
 
-  const handleBedClick = (bed: any) => {
+  // Fetch houses
+  const { data: housesData, isLoading, refetch } = useQuery({
+    queryKey: ["/api/houses"],
+    enabled: isAuthenticated,
+  });
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  const handleBedClick = (bed: any, room: any, house: any) => {
     setSelectedBed(bed);
+    setSelectedRoom(room);
+    setSelectedHouse(house);
     if (bed.status === "available") {
       setAssignmentModalOpen(true);
     }
   };
 
+  const handleAssignmentSuccess = () => {
+    refetch();
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header tenantName={tenant?.name || ""} userName={user?.name || ""} />
+        <div className="flex">
+          <aside className="w-80 border-r bg-muted/30 min-h-[calc(100vh-4rem)] p-6 sticky top-16 overflow-y-auto">
+            <div className="space-y-6">
+              <Skeleton className="h-48 w-full" />
+              <Skeleton className="h-64 w-full" />
+            </div>
+          </aside>
+          <main className="flex-1 p-6">
+            <div className="max-w-7xl mx-auto space-y-6">
+              <div>
+                <Skeleton className="h-8 w-64 mb-2" />
+                <Skeleton className="h-5 w-96" />
+              </div>
+              <div className="space-y-6">
+                <Skeleton className="h-96 w-full" />
+                <Skeleton className="h-96 w-full" />
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  const houses = (housesData as any)?.data?.houses || [];
+  const totalBeds = (housesData as any)?.data?.totalBeds || 0;
+  const occupiedBeds = (housesData as any)?.data?.occupiedBeds || 0;
+  const emptyBeds = (housesData as any)?.data?.emptyBeds || 0;
+  const oosBeds = (housesData as any)?.data?.oosBeds || 0;
+
   return (
     <div className="min-h-screen bg-background">
-      <Header tenantName="Cova B.V." userName="Admin" />
+      <Header tenantName={tenant?.name || ""} userName={user?.name || ""} />
 
       <div className="flex">
-        <aside className="w-80 border-r border-gray-200 bg-gray-50 min-h-[calc(100vh-4rem)] p-6 sticky top-16 overflow-y-auto">
+        <aside className="w-80 border-r bg-muted/30 min-h-[calc(100vh-4rem)] p-6 sticky top-16 overflow-y-auto">
           <div className="space-y-6">
             <CapacityWidget
               totalBeds={totalBeds}
               occupiedBeds={occupiedBeds}
               emptyBeds={emptyBeds}
-              oosBeds={1}
+              oosBeds={oosBeds}
             />
             <FilterPanel />
           </div>
@@ -181,23 +105,29 @@ export default function HousingDashboard() {
           <div className="max-w-7xl mx-auto space-y-6">
             <div>
               <h2 className="text-2xl font-bold mb-2">Housing Overview</h2>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 Manage worker accommodation across all properties
               </p>
             </div>
 
             <div className="space-y-6">
-              {mockHouses.map((house) => (
-                <HouseCard
-                  key={house.id}
-                  name={house.name}
-                  city={house.city}
-                  totalBeds={house.totalBeds}
-                  occupiedBeds={house.occupiedBeds}
-                  rooms={house.rooms}
-                  onBedClick={handleBedClick}
-                />
-              ))}
+              {houses.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground">No houses found</p>
+                </div>
+              ) : (
+                houses.map((house: any) => (
+                  <HouseCard
+                    key={house.id}
+                    name={house.name}
+                    city={house.city}
+                    totalBeds={house.totalBeds}
+                    occupiedBeds={house.occupiedBeds}
+                    rooms={house.rooms}
+                    onBedClick={(bed, room) => handleBedClick(bed, room, house)}
+                  />
+                ))
+              )}
             </div>
           </div>
         </main>
@@ -207,7 +137,11 @@ export default function HousingDashboard() {
         open={assignmentModalOpen}
         onClose={() => setAssignmentModalOpen(false)}
         bedNumber={selectedBed?.bedNumber}
-        roomNumber="45"
+        roomNumber={selectedRoom?.roomNumber}
+        bedId={selectedBed?.id}
+        roomId={selectedRoom?.id}
+        houseId={selectedHouse?.id}
+        onSuccess={handleAssignmentSuccess}
       />
 
       <GenderWarningModal

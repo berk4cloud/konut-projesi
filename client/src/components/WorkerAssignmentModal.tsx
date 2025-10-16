@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -23,6 +26,10 @@ interface WorkerAssignmentModalProps {
   onClose: () => void;
   bedNumber?: number;
   roomNumber?: string;
+  bedId?: string;
+  roomId?: string;
+  houseId?: string;
+  onSuccess?: () => void;
 }
 
 export default function WorkerAssignmentModal({
@@ -30,20 +37,63 @@ export default function WorkerAssignmentModal({
   onClose,
   bedNumber,
   roomNumber,
+  bedId,
+  roomId,
+  houseId,
+  onSuccess,
 }: WorkerAssignmentModalProps) {
+  const { toast } = useToast();
   const [selectedWorker, setSelectedWorker] = useState("");
   const [startDate, setStartDate] = useState(new Date().toISOString().split("T")[0]);
   const [endDate, setEndDate] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleAssign = () => {
-    console.log("Worker assigned:", {
-      worker: selectedWorker,
-      startDate,
-      endDate,
-      bed: bedNumber,
-      room: roomNumber,
-    });
-    onClose();
+  // Fetch workers
+  const { data: workersData } = useQuery({
+    queryKey: ["/api/workers"],
+    enabled: open,
+  });
+
+  const workers = workersData?.data || [];
+
+  const handleAssign = async () => {
+    if (!selectedWorker || !startDate || !bedId) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please select a worker and start date",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await api.createReservation({
+        workerId: selectedWorker,
+        bedId,
+        startDate,
+        endDate: endDate || undefined,
+      });
+
+      toast({
+        title: "Success",
+        description: "Worker assigned successfully",
+      });
+
+      onSuccess?.();
+      onClose();
+      setSelectedWorker("");
+      setStartDate(new Date().toISOString().split("T")[0]);
+      setEndDate("");
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Assignment failed",
+        description: error.message || "Failed to assign worker",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -66,10 +116,11 @@ export default function WorkerAssignmentModal({
                 <SelectValue placeholder="Select worker" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="w1">John Doe (Male)</SelectItem>
-                <SelectItem value="w2">Jane Smith (Female)</SelectItem>
-                <SelectItem value="w3">Mike Johnson (Male)</SelectItem>
-                <SelectItem value="w4">Sarah Williams (Female)</SelectItem>
+                {workers.map((worker: any) => (
+                  <SelectItem key={worker.id} value={worker.id}>
+                    {worker.firstName} {worker.lastName} ({worker.gender})
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -103,16 +154,17 @@ export default function WorkerAssignmentModal({
           <Button
             variant="outline"
             onClick={onClose}
+            disabled={isLoading}
             data-testid="button-cancel-assignment"
           >
             Cancel
           </Button>
           <Button
             onClick={handleAssign}
-            disabled={!selectedWorker || !startDate}
+            disabled={!selectedWorker || !startDate || isLoading}
             data-testid="button-confirm-assignment"
           >
-            Assign Worker
+            {isLoading ? "Assigning..." : "Assign Worker"}
           </Button>
         </DialogFooter>
       </DialogContent>
