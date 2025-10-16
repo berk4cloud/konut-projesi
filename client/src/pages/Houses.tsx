@@ -167,6 +167,13 @@ export default function Houses() {
   // Meter logs state
   const [isMeterDialogOpen, setIsMeterDialogOpen] = useState(false);
   const [selectedHouseForMeters, setSelectedHouseForMeters] = useState<typeof initialMockHouses[0] | null>(null);
+  const [isAddReadingOpen, setIsAddReadingOpen] = useState(false);
+  const [newReading, setNewReading] = useState({
+    meterType: "electricity" as "electricity" | "water",
+    date: new Date().toISOString().split("T")[0],
+    value: "",
+    note: "",
+  });
   
   // Form state
   const [formData, setFormData] = useState({
@@ -244,6 +251,61 @@ export default function Houses() {
 
   const calculateTotalBeds = () => {
     return formData.rooms.reduce((sum, room) => sum + (room.beds || 0), 0);
+  };
+
+  const handleAddMeterReading = () => {
+    if (!selectedHouseForMeters || !newReading.value) {
+      alert("Lütfen tüm alanları doldurun");
+      return;
+    }
+
+    const readingValue = parseFloat(newReading.value);
+    if (isNaN(readingValue) || readingValue <= 0) {
+      alert("Geçerli bir sayaç değeri girin");
+      return;
+    }
+
+    const newReadingData: MeterReading = {
+      id: `${newReading.meterType.charAt(0)}${Date.now()}`,
+      date: newReading.date,
+      value: readingValue,
+      note: newReading.note || undefined,
+    };
+
+    // Update the house with the new reading
+    setHouses(houses.map(h => {
+      if (h.id === selectedHouseForMeters.id) {
+        const updatedLogs = { ...h.meterLogs };
+        if (newReading.meterType === "electricity") {
+          updatedLogs.electricity = [newReadingData, ...(updatedLogs.electricity || [])];
+        } else {
+          updatedLogs.water = [newReadingData, ...(updatedLogs.water || [])];
+        }
+        return { ...h, meterLogs: updatedLogs };
+      }
+      return h;
+    }));
+
+    // Update selectedHouseForMeters to reflect changes
+    const updatedHouse = houses.find(h => h.id === selectedHouseForMeters.id);
+    if (updatedHouse) {
+      const updatedLogs = { ...updatedHouse.meterLogs };
+      if (newReading.meterType === "electricity") {
+        updatedLogs.electricity = [newReadingData, ...(updatedLogs.electricity || [])];
+      } else {
+        updatedLogs.water = [newReadingData, ...(updatedLogs.water || [])];
+      }
+      setSelectedHouseForMeters({ ...updatedHouse, meterLogs: updatedLogs });
+    }
+
+    // Reset form
+    setNewReading({
+      meterType: "electricity",
+      date: new Date().toISOString().split("T")[0],
+      value: "",
+      note: "",
+    });
+    setIsAddReadingOpen(false);
   };
 
   const handleSave = () => {
@@ -939,9 +1001,115 @@ export default function Houses() {
             >
               Kapat
             </Button>
-            <Button data-testid="button-add-meter-reading">
+            <Button 
+              onClick={() => setIsAddReadingOpen(true)}
+              data-testid="button-add-meter-reading"
+            >
               <Plus className="w-4 h-4 mr-2" />
               Yeni Okuma Ekle
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add New Meter Reading Dialog */}
+      <Dialog open={isAddReadingOpen} onOpenChange={setIsAddReadingOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Yeni Sayaç Okuması Ekle</DialogTitle>
+            <DialogDescription>
+              Elektrik veya su sayacı için yeni okuma değeri girin
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="meter-type">Sayaç Türü *</Label>
+              <Select
+                value={newReading.meterType}
+                onValueChange={(value: "electricity" | "water") => 
+                  setNewReading({ ...newReading, meterType: value })
+                }
+              >
+                <SelectTrigger id="meter-type" data-testid="select-meter-type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="electricity">
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-amber-600" />
+                      Elektrik
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="water">
+                    <div className="flex items-center gap-2">
+                      <Droplet className="w-4 h-4 text-blue-600" />
+                      Su
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="reading-date">Tarih *</Label>
+              <Input
+                id="reading-date"
+                type="date"
+                value={newReading.date}
+                onChange={(e) => setNewReading({ ...newReading, date: e.target.value })}
+                data-testid="input-reading-date"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="reading-value">
+                Sayaç Değeri * ({newReading.meterType === "electricity" ? "kWh" : "m³"})
+              </Label>
+              <Input
+                id="reading-value"
+                type="number"
+                step="0.01"
+                placeholder={newReading.meterType === "electricity" ? "örn: 15420" : "örn: 8520"}
+                value={newReading.value}
+                onChange={(e) => setNewReading({ ...newReading, value: e.target.value })}
+                data-testid="input-reading-value"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="reading-note">Not (Opsiyonel)</Label>
+              <Input
+                id="reading-note"
+                placeholder="örn: Normal okuma, kaçak kontrol edildi"
+                value={newReading.note}
+                onChange={(e) => setNewReading({ ...newReading, note: e.target.value })}
+                data-testid="input-reading-note"
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-3 justify-end pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsAddReadingOpen(false);
+                setNewReading({
+                  meterType: "electricity",
+                  date: new Date().toISOString().split("T")[0],
+                  value: "",
+                  note: "",
+                });
+              }}
+              data-testid="button-cancel-reading"
+            >
+              İptal
+            </Button>
+            <Button 
+              onClick={handleAddMeterReading}
+              data-testid="button-save-reading"
+            >
+              Kaydet
             </Button>
           </div>
         </DialogContent>
