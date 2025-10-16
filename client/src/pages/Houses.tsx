@@ -53,7 +53,9 @@ type RoomInfo = {
 const initialMockHouses = [
   {
     id: "h1",
-    name: "Geldernstrasse 13",
+    name: "Geldernstrasse 13, 52511", // Display name = address (no custom name)
+    useCustomName: false,
+    customName: "",
     address: "Geldernstrasse 13, 52511",
     city: "Geilenkirchen",
     country: "Almanya",
@@ -68,7 +70,9 @@ const initialMockHouses = [
   },
   {
     id: "h2",
-    name: "Hauptstrasse 45",
+    name: "Hauptstrasse 45, 5911",
+    useCustomName: false,
+    customName: "",
     address: "Hauptstrasse 45, 5911",
     city: "Venlo",
     country: "Hollanda",
@@ -82,7 +86,9 @@ const initialMockHouses = [
   },
   {
     id: "h3",
-    name: "Marktplatz 7",
+    name: "Marktplatz 7, 6041",
+    useCustomName: false,
+    customName: "",
     address: "Marktplatz 7, 6041",
     city: "Roermond",
     country: "Hollanda",
@@ -113,7 +119,8 @@ export default function Houses() {
   
   // Form state
   const [formData, setFormData] = useState({
-    name: "",
+    useCustomName: false,
+    customName: "",
     address: "",
     city: "",
     country: "Hollanda", // Default from settings
@@ -131,7 +138,8 @@ export default function Houses() {
   const handleAddNew = () => {
     setEditingHouse(null);
     setFormData({
-      name: "",
+      useCustomName: false,
+      customName: "",
       address: "",
       city: "",
       country: "Hollanda",
@@ -140,11 +148,20 @@ export default function Houses() {
     });
     setIsDialogOpen(true);
   };
+  
+  // Display name helper: if custom name enabled, show "CustomName - Address", else just "Address"
+  const getDisplayName = (customName: string, address: string, useCustomName: boolean) => {
+    if (useCustomName && customName.trim()) {
+      return `${customName.trim()} - ${address}`;
+    }
+    return address;
+  };
 
   const handleEdit = (house: typeof initialMockHouses[0]) => {
     setEditingHouse(house);
     setFormData({
-      name: house.name,
+      useCustomName: house.useCustomName || false,
+      customName: house.customName || "",
       address: house.address,
       city: house.city,
       country: house.country,
@@ -180,16 +197,16 @@ export default function Houses() {
 
   const handleSave = () => {
     // Validation
-    if (!formData.name.trim()) {
-      alert("Konut adı zorunludur");
-      return;
-    }
     if (!formData.address.trim()) {
       alert("Adres zorunludur");
       return;
     }
     if (!formData.city.trim()) {
       alert("Şehir zorunludur");
+      return;
+    }
+    if (formData.useCustomName && !formData.customName.trim()) {
+      alert("Özel isim kullanıyorsanız, isim girmelisiniz");
       return;
     }
     if (formData.rooms.length === 0) {
@@ -220,7 +237,9 @@ export default function Houses() {
         h.id === editingHouse.id 
           ? {
               ...h,
-              name: formData.name,
+              name: getDisplayName(formData.customName, formData.address, formData.useCustomName),
+              useCustomName: formData.useCustomName,
+              customName: formData.customName,
               address: formData.address,
               city: formData.city,
               country: formData.country,
@@ -234,7 +253,9 @@ export default function Houses() {
       // Add new house (mock - no occupiedBeds data)
       const newHouse = {
         id: `h${houses.length + 1}`,
-        name: formData.name,
+        name: getDisplayName(formData.customName, formData.address, formData.useCustomName),
+        useCustomName: formData.useCustomName,
+        customName: formData.customName,
         address: formData.address,
         city: formData.city,
         country: formData.country,
@@ -417,17 +438,6 @@ export default function Houses() {
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Konut Adı *</Label>
-              <Input
-                id="name"
-                placeholder="örn: Geldernstrasse 13"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                data-testid="input-house-name"
-              />
-            </div>
-
-            <div className="space-y-2">
               <Label htmlFor="address">Adres *</Label>
               <Input
                 id="address"
@@ -436,6 +446,44 @@ export default function Houses() {
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                 data-testid="input-house-address"
               />
+              <p className="text-xs text-muted-foreground">
+                Konut adı olarak varsayılan adres kullanılır
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="useCustomName"
+                  checked={formData.useCustomName}
+                  onCheckedChange={(checked) => 
+                    setFormData({ ...formData, useCustomName: checked as boolean })
+                  }
+                  data-testid="checkbox-custom-name"
+                />
+                <Label 
+                  htmlFor="useCustomName" 
+                  className="text-sm font-normal cursor-pointer"
+                >
+                  Özel bir isim kullan
+                </Label>
+              </div>
+
+              {formData.useCustomName && (
+                <div className="space-y-2 pl-6">
+                  <Label htmlFor="customName">Özel İsim *</Label>
+                  <Input
+                    id="customName"
+                    placeholder="örn: Villa Sunset"
+                    value={formData.customName}
+                    onChange={(e) => setFormData({ ...formData, customName: e.target.value })}
+                    data-testid="input-custom-name"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Girilen isim: "{formData.customName || "..."} - {formData.address || "..."}"
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
