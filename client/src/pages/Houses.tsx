@@ -315,6 +315,26 @@ export default function Houses() {
     });
   };
   
+  // Calculate upcoming reminders count (for header notification)
+  const upcomingRemindersCount = houses.reduce((count, house) => {
+    if (!house.reminders) return count;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const upcomingCount = house.reminders.filter(reminder => {
+      const reminderDate = new Date(reminder.date);
+      reminderDate.setHours(0, 0, 0, 0);
+      
+      const daysUntil = Math.ceil((reminderDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      
+      // Show if within alert window
+      return daysUntil >= 0 && daysUntil <= reminder.alertDaysBefore;
+    }).length;
+    
+    return count + upcomingCount;
+  }, 0);
+  
   // Lease contract state
   const [isLeaseDialogOpen, setIsLeaseDialogOpen] = useState(false);
   const [selectedHouseForLease, setSelectedHouseForLease] = useState<typeof initialMockHouses[0] | null>(null);
@@ -598,7 +618,7 @@ export default function Houses() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header tenantName="Cova B.V." userName="Admin" />
+      <Header tenantName="Cova B.V." userName="Admin" upcomingRemindersCount={upcomingRemindersCount} />
 
       <main className="p-6">
         <div className="max-w-7xl mx-auto space-y-6">

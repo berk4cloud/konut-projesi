@@ -24,9 +24,10 @@ import { useTheme } from "@/components/ThemeProvider";
 interface HeaderProps {
   tenantName?: string;
   userName?: string;
+  upcomingRemindersCount?: number;
 }
 
-export default function Header({ tenantName = "Cova B.V.", userName = "Admin" }: HeaderProps) {
+export default function Header({ tenantName = "Cova B.V.", userName = "Admin", upcomingRemindersCount = 0 }: HeaderProps) {
   const [location, setLocation] = useLocation();
   const [sheetOpen, setSheetOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
@@ -41,6 +42,9 @@ export default function Header({ tenantName = "Cova B.V.", userName = "Admin" }:
 
   // Mock pending approvals count
   const pendingApprovalsCount = 5;
+  
+  // Total notifications (QR approvals + upcoming reminders)
+  const totalNotifications = pendingApprovalsCount + upcomingRemindersCount;
 
   const handleNavigation = (path: string) => {
     setLocation(path);
@@ -120,13 +124,13 @@ export default function Header({ tenantName = "Cova B.V.", userName = "Admin" }:
             data-testid="button-notifications"
           >
             <Bell className="w-5 h-5" />
-            {pendingApprovalsCount > 0 && (
+            {totalNotifications > 0 && (
               <Badge 
                 variant="destructive" 
                 className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center p-0 text-xs"
                 data-testid="badge-notification-count"
               >
-                {pendingApprovalsCount}
+                {totalNotifications}
               </Badge>
             )}
           </Button>
