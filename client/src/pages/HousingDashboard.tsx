@@ -6,7 +6,18 @@ import HouseCard from "@/components/HouseCard";
 import WorkerAssignmentModal from "@/components/WorkerAssignmentModal";
 import GenderWarningModal from "@/components/GenderWarningModal";
 import { Button } from "@/components/ui/button";
-import { FileText, Bell, Calendar, AlertCircle, Plus } from "lucide-react";
+import { FileText, Bell, Calendar, AlertCircle, Plus, ChevronDown, ChevronUp, MapPin, Clock } from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   Dialog,
   DialogContent,
@@ -85,6 +96,7 @@ const mockHouses = [
             bedNumber: 1,
             status: "occupied" as const,
             worker: { id: "w1", name: "Canny", gender: "male" as const },
+            expectedMoveOutDate: "2025-11-05", // 5 gün sonra
           },
           { id: "b2", bedNumber: 2, status: "available" as const },
           {
@@ -149,6 +161,7 @@ const mockHouses = [
             bedNumber: 1,
             status: "occupied" as const,
             worker: { id: "w4", name: "John", gender: "male" as const },
+            expectedMoveOutDate: "2025-11-15", // 15 gün sonra
           },
           {
             id: "b9",
@@ -293,6 +306,9 @@ export default function HousingDashboard() {
   // Reminders state
   const [isRemindersDialogOpen, setIsRemindersDialogOpen] = useState(false);
   const [selectedHouseForReminders, setSelectedHouseForReminders] = useState<typeof mockHouses[0] | null>(null);
+  
+  // UI state for mobile
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
   // Filter houses based on selected filters
   const filteredHouses = mockHouses.filter((house) => {
@@ -323,6 +339,32 @@ export default function HousingDashboard() {
   const occupiedBeds = filteredHouses.reduce((sum, house) => sum + house.occupiedBeds, 0);
   const emptyBeds = totalBeds - occupiedBeds;
 
+  // Helper: Calculate upcoming vacancies (within 30 days)
+  const getUpcomingVacancies = (house: typeof mockHouses[0]) => {
+    const vacancies: { bedNumber: number; roomNumber: string; daysUntil: number; workerName: string }[] = [];
+    const today = new Date();
+    const thirtyDaysLater = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+    house.rooms.forEach((room) => {
+      room.beds.forEach((bed: any) => {
+        if (bed.expectedMoveOutDate) {
+          const moveOutDate = new Date(bed.expectedMoveOutDate);
+          if (moveOutDate >= today && moveOutDate <= thirtyDaysLater) {
+            const daysUntil = Math.ceil((moveOutDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+            vacancies.push({
+              bedNumber: bed.bedNumber,
+              roomNumber: room.roomNumber,
+              daysUntil,
+              workerName: bed.worker?.name || "Bilinmiyor",
+            });
+          }
+        }
+      });
+    });
+
+    return vacancies.sort((a, b) => a.daysUntil - b.daysUntil);
+  };
+
   const handleBedClick = (bed: any) => {
     setSelectedBed(bed);
     if (bed.status === "available") {
@@ -334,8 +376,10 @@ export default function HousingDashboard() {
     <div className="min-h-screen bg-background">
       <Header tenantName="Cova B.V." userName="Admin" />
 
-      <div className="flex">
-        <aside className="w-80 border-r bg-muted/30 min-h-[calc(100vh-4rem)] p-6 sticky top-16 overflow-y-auto">
+      {/* Mobile-first responsive layout */}
+      <div className="lg:grid lg:grid-cols-[320px_1fr]">
+        {/* Left Sidebar - Desktop only, sticky */}
+        <aside className="hidden lg:block border-r bg-muted/30 min-h-[calc(100vh-4rem)] p-6 sticky top-16 overflow-y-auto">
           <div className="space-y-6">
             <CapacityWidget
               totalBeds={totalBeds}
@@ -359,69 +403,186 @@ export default function HousingDashboard() {
           </div>
         </aside>
 
-        <main className="flex-1 p-6">
-          <div className="max-w-7xl mx-auto space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">Konaklama Genel Bakış</h2>
-              <p className="text-muted-foreground">
-                Tüm mülklerdeki çalışan konaklamalarını yönetin
-              </p>
-            </div>
-
-            <div className="space-y-6">
-              {filteredHouses.length > 0 ? (
-                filteredHouses.map((house) => (
-                  <div key={house.id} className="space-y-3">
-                    <HouseCard
-                      name={house.name}
-                      city={house.city}
-                      totalBeds={house.totalBeds}
-                      occupiedBeds={house.occupiedBeds}
-                      rooms={house.rooms}
-                      onBedClick={handleBedClick}
-                    />
-                    
-                    <div className="flex gap-2 px-2">
-                      {(house.ownershipType === "Kiralık" || house.ownershipType === "3. Taraf") && house.leaseContract && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedHouseForLease(house);
-                            setIsLeaseDialogOpen(true);
-                          }}
-                          data-testid={`button-lease-${house.id}`}
-                        >
-                          <FileText className="w-4 h-4 mr-2" />
-                          Kira Detayları
-                        </Button>
-                      )}
-                      
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedHouseForReminders(house);
-                          setIsRemindersDialogOpen(true);
-                        }}
-                        data-testid={`button-reminders-${house.id}`}
-                      >
-                        <Bell className="w-4 h-4 mr-2" />
-                        Hatırlatıcılar
-                        {house.reminders && house.reminders.length > 0 && (
-                          <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-xs">
-                            {house.reminders.length}
-                          </Badge>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-12 bg-card rounded-lg border" data-testid="text-no-houses">
-                  <p className="text-muted-foreground">Seçilen filtrelere uygun konut bulunamadı</p>
+        <main className="flex-1">
+          {/* Mobile Top Section - Sticky */}
+          <div className="lg:hidden sticky top-16 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10 border-b">
+            <div className="p-4 space-y-3">
+              {/* Capacity Summary - Always Visible */}
+              <div className="grid grid-cols-3 gap-2">
+                <div className="bg-card border rounded-lg p-3">
+                  <p className="text-xs text-muted-foreground">Toplam</p>
+                  <p className="text-2xl font-bold">{totalBeds}</p>
                 </div>
-              )}
+                <div className="bg-card border rounded-lg p-3">
+                  <p className="text-xs text-muted-foreground">Dolu</p>
+                  <p className="text-2xl font-bold text-green-600">{occupiedBeds}</p>
+                </div>
+                <div className="bg-card border rounded-lg p-3">
+                  <p className="text-xs text-muted-foreground">Boş</p>
+                  <p className="text-2xl font-bold text-red-600">{emptyBeds}</p>
+                </div>
+              </div>
+
+              {/* Collapsible Filters */}
+              <Collapsible open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
+                <CollapsibleTrigger asChild>
+                  <Button variant="outline" className="w-full justify-between" size="sm">
+                    <span>Filtreler</span>
+                    {isFiltersOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pt-3">
+                  <FilterPanel
+                    dateString={dateString}
+                    setDateString={setDateString}
+                    selectedHouse={selectedHouse}
+                    setSelectedHouse={setSelectedHouse}
+                    selectedCity={selectedCity}
+                    setSelectedCity={setSelectedCity}
+                    selectedCountry={selectedCountry}
+                    setSelectedCountry={setSelectedCountry}
+                    showEmptyOnly={showEmptyOnly}
+                    setShowEmptyOnly={setShowEmptyOnly}
+                    houses={mockHouses}
+                  />
+                </CollapsibleContent>
+              </Collapsible>
+            </div>
+          </div>
+
+          {/* Main Content Area */}
+          <div className="p-4 lg:p-6">
+            <div className="max-w-7xl mx-auto space-y-4">
+              <div className="hidden lg:block">
+                <h2 className="text-2xl font-bold mb-2">Konaklama Genel Bakış</h2>
+                <p className="text-muted-foreground">
+                  Tüm mülklerdeki çalışan konaklamalarını yönetin
+                </p>
+              </div>
+
+              {/* House List */}
+              <div className="space-y-3">
+                {filteredHouses.length > 0 ? (
+                  <Accordion type="multiple" className="space-y-3">
+                    {filteredHouses.map((house) => {
+                      const upcomingVacancies = getUpcomingVacancies(house);
+                      return (
+                        <AccordionItem
+                          key={house.id}
+                          value={house.id}
+                          className="border rounded-lg bg-card"
+                        >
+                          <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                            <div className="flex flex-1 items-center justify-between gap-3 text-left">
+                              <div className="flex-1">
+                                <h3 className="font-semibold text-base md:text-lg flex items-center gap-2 flex-wrap">
+                                  {house.name}
+                                  <span className="text-sm font-normal text-muted-foreground">
+                                    - {house.occupiedBeds}/{house.totalBeds} Dolu
+                                  </span>
+                                  {upcomingVacancies.length > 0 && (
+                                    <Badge variant="outline" className="text-amber-600 border-amber-600">
+                                      <Clock className="w-3 h-3 mr-1" />
+                                      {upcomingVacancies.length} boşalıyor
+                                    </Badge>
+                                  )}
+                                </h3>
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                                  <MapPin className="w-3 h-3" />
+                                  {house.city}
+                                  <span>•</span>
+                                  <span>{house.totalBeds - house.occupiedBeds > 0 ? `${house.totalBeds - house.occupiedBeds} boş yatak` : 'Tam dolu'}</span>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge variant={house.occupiedBeds === house.totalBeds ? "destructive" : "secondary"}>
+                                  %{Math.round((house.occupiedBeds / house.totalBeds) * 100)}
+                                </Badge>
+                              </div>
+                            </div>
+                          </AccordionTrigger>
+                        
+                        <AccordionContent className="px-4 pb-4">
+                          {upcomingVacancies.length > 0 && (
+                            <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-lg">
+                              <div className="flex items-start gap-2">
+                                <Clock className="w-4 h-4 text-amber-600 mt-0.5" />
+                                <div className="flex-1">
+                                  <h4 className="font-medium text-sm text-amber-900 dark:text-amber-100 mb-2">
+                                    Yakında Boşalacak Yataklar
+                                  </h4>
+                                  <div className="space-y-1">
+                                    {upcomingVacancies.map((vacancy, idx) => (
+                                      <div key={idx} className="text-sm text-amber-800 dark:text-amber-200">
+                                        <span className="font-medium">Oda {vacancy.roomNumber}</span>
+                                        <span className="text-amber-600 dark:text-amber-400"> • </span>
+                                        <span>Yatak {vacancy.bedNumber}</span>
+                                        <span className="text-amber-600 dark:text-amber-400"> • </span>
+                                        <span className="font-medium">{vacancy.daysUntil} gün sonra</span>
+                                        <span className="text-amber-600 dark:text-amber-400"> • </span>
+                                        <span>{vacancy.workerName}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          <HouseCard
+                            name={house.name}
+                            city={house.city}
+                            totalBeds={house.totalBeds}
+                            occupiedBeds={house.occupiedBeds}
+                            rooms={house.rooms}
+                            onBedClick={handleBedClick}
+                          />
+                          
+                          <div className="flex gap-2 mt-3">
+                            {(house.ownershipType === "Kiralık" || house.ownershipType === "3. Taraf") && house.leaseContract && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedHouseForLease(house);
+                                  setIsLeaseDialogOpen(true);
+                                }}
+                                data-testid={`button-lease-${house.id}`}
+                              >
+                                <FileText className="w-4 h-4 mr-2" />
+                                Kira Detayları
+                              </Button>
+                            )}
+                            
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedHouseForReminders(house);
+                                setIsRemindersDialogOpen(true);
+                              }}
+                              data-testid={`button-reminders-${house.id}`}
+                            >
+                              <Bell className="w-4 h-4 mr-2" />
+                              Hatırlatıcılar
+                              {house.reminders && house.reminders.length > 0 && (
+                                <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-xs">
+                                  {house.reminders.length}
+                                </Badge>
+                              )}
+                            </Button>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                      );
+                    })}
+                  </Accordion>
+                ) : (
+                  <div className="text-center py-12 bg-card rounded-lg border" data-testid="text-no-houses">
+                    <p className="text-muted-foreground">Seçilen filtrelere uygun konut bulunamadı</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </main>

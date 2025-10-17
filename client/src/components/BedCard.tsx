@@ -1,4 +1,11 @@
 import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { User } from "lucide-react";
 
 interface Worker {
   id: string;
@@ -26,7 +33,7 @@ export default function BedCard({ bedNumber, status, worker, onClick }: BedCardP
     female: "bg-gender-female",
   };
 
-  return (
+  const bedContent = (
     <button
       onClick={onClick}
       className={cn(
@@ -46,7 +53,6 @@ export default function BedCard({ bedNumber, status, worker, onClick }: BedCardP
             "absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-background",
             genderColors[worker.gender]
           )}
-          title={worker.name}
         />
       )}
 
@@ -57,4 +63,24 @@ export default function BedCard({ bedNumber, status, worker, onClick }: BedCardP
       )}
     </button>
   );
+
+  if (worker) {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            {bedContent}
+          </TooltipTrigger>
+          <TooltipContent>
+            <div className="flex items-center gap-2">
+              <User className="w-3 h-3" />
+              <span className="font-medium">{worker.name}</span>
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+
+  return bedContent;
 }
