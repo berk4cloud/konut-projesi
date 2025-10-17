@@ -73,8 +73,14 @@ export default function Header({
       taskType: "worker_registration" as const,
       submittedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
       data: {
-        workerName: "Ali Yılmaz",
+        firstName: "Ali",
+        lastName: "Yılmaz",
         nationality: "Türkiye",
+        phone: "+90 555 123 4567",
+        email: "ali.yilmaz@example.com",
+        idNumber: "12345678901",
+        dateOfBirth: "1990-05-15",
+        gender: "male",
       },
     },
     {
@@ -83,9 +89,10 @@ export default function Header({
       taskType: "meter_reading" as const,
       submittedAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), // 5 hours ago
       data: {
-        meterType: "electricity",
+        meterType: "electricity" as const,
         meterValue: "15750",
-        photo: "data:image/svg+xml,...",
+        houseName: "Geldernstrasse 13",
+        photo: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&auto=format&fit=crop&q=60",
       },
     },
     {
@@ -95,7 +102,7 @@ export default function Header({
       submittedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
       data: {
         documentType: "Kimlik Belgesi",
-        photo: "data:image/svg+xml,...",
+        photo: "https://images.unsplash.com/photo-1554224311-beee2c256099?w=800&auto=format&fit=crop&q=60",
       },
     },
     {
@@ -104,8 +111,14 @@ export default function Header({
       taskType: "worker_registration" as const,
       submittedAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), // 3 hours ago
       data: {
-        workerName: "Maria Kowalski",
+        firstName: "Maria",
+        lastName: "Kowalski",
         nationality: "Polonya",
+        phone: "+48 601 234 567",
+        email: "maria.k@example.com",
+        idNumber: "POL987654321",
+        dateOfBirth: "1988-12-10",
+        gender: "female",
       },
     },
     {
@@ -114,8 +127,10 @@ export default function Header({
       taskType: "meter_reading" as const,
       submittedAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), // 6 hours ago
       data: {
-        meterType: "water",
-        meterValue: "8650",
+        meterType: "gas" as const,
+        meterValue: "2850",
+        houseName: "Hauptstrasse 45",
+        photo: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&auto=format&fit=crop&q=60",
       },
     },
   ];

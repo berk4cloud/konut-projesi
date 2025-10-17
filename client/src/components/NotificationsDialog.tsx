@@ -5,10 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { Bell, CheckCircle2, Calendar, Building2, AlertCircle, StickyNote, User, FileText, CheckCircle, XCircle, Image as ImageIcon } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Bell, CheckCircle2, Calendar, Building2, AlertCircle, StickyNote, User, FileText, CheckCircle, XCircle, Image as ImageIcon, ChevronDown, Phone, Mail, Hash, Cake, Users, Zap, Droplet, Flame } from "lucide-react";
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { tr } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 type Reminder = {
   id: string;
@@ -29,11 +31,23 @@ type QRSubmission = {
   taskType: "worker_registration" | "meter_reading" | "document_upload";
   submittedAt: string;
   data: {
-    workerName?: string;
+    // Worker registration fields
+    firstName?: string;
+    lastName?: string;
+    workerName?: string; // For backward compatibility
     nationality?: string;
-    meterType?: string;
+    phone?: string;
+    email?: string;
+    idNumber?: string;
+    dateOfBirth?: string;
+    gender?: string;
+    // Meter reading fields
+    meterType?: "electricity" | "water" | "gas";
     meterValue?: string;
+    houseName?: string;
+    // Document upload fields
     documentType?: string;
+    // Photo for both meter reading and documents
     photo?: string;
   };
 };
@@ -63,6 +77,19 @@ export default function NotificationsDialog({
 }: NotificationsDialogProps) {
   const [editingNote, setEditingNote] = useState<string | null>(null);
   const [noteText, setNoteText] = useState("");
+  const [expandedSubmissions, setExpandedSubmissions] = useState<Set<string>>(new Set());
+
+  const toggleSubmissionExpanded = (id: string) => {
+    setExpandedSubmissions(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
 
   const getReminderTypeLabel = (type: Reminder["type"]) => {
     const labels = {
@@ -154,11 +181,17 @@ export default function NotificationsDialog({
                   return "bg-purple-500/10 text-purple-700 dark:text-purple-400";
                 };
 
+                const isExpanded = expandedSubmissions.has(submission.id);
+                const displayName = submission.data.firstName && submission.data.lastName
+                  ? `${submission.data.firstName} ${submission.data.lastName}`
+                  : submission.data.workerName || "İsimsiz";
+
                 return (
                   <Card key={submission.id} data-testid={`qr-approval-${submission.id}`}>
                     <CardContent className="p-4 space-y-3">
-                      <div className="flex items-start gap-3">
-                        <div className="space-y-1 flex-1">
+                      {/* Header */}
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="space-y-2 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
                             <Badge className={getTaskTypeColor()}>
                               {getTaskTypeLabel()}
@@ -168,38 +201,159 @@ export default function NotificationsDialog({
                             </span>
                           </div>
                           
-                          {/* Submission Data */}
-                          <div className="space-y-1 text-sm">
-                            {submission.data.workerName && (
+                          {/* Quick Preview */}
+                          <div className="space-y-1">
+                            {submission.taskType === "worker_registration" && (
                               <div className="flex items-center gap-2">
                                 <User className="w-4 h-4 text-muted-foreground" />
-                                <span>{submission.data.workerName}</span>
+                                <span className="font-medium">{displayName}</span>
                                 {submission.data.nationality && (
                                   <span className="text-muted-foreground">({submission.data.nationality})</span>
                                 )}
                               </div>
                             )}
-                            {submission.data.meterType && (
+                            {submission.taskType === "meter_reading" && (
                               <div className="flex items-center gap-2">
-                                <FileText className="w-4 h-4 text-muted-foreground" />
-                                <span>{submission.data.meterType === "electricity" ? "Elektrik" : "Su"}: {submission.data.meterValue}</span>
-                              </div>
-                            )}
-                            {submission.data.documentType && (
-                              <div className="flex items-center gap-2">
-                                <FileText className="w-4 h-4 text-muted-foreground" />
-                                <span>{submission.data.documentType}</span>
-                              </div>
-                            )}
-                            {submission.data.photo && (
-                              <div className="flex items-center gap-2 text-muted-foreground">
-                                <ImageIcon className="w-4 h-4" />
-                                <span>Fotoğraf eklendi</span>
+                                {submission.data.meterType === "electricity" && <Zap className="w-4 h-4 text-amber-600" />}
+                                {submission.data.meterType === "water" && <Droplet className="w-4 h-4 text-blue-600" />}
+                                {submission.data.meterType === "gas" && <Flame className="w-4 h-4 text-orange-600" />}
+                                <span>
+                                  {submission.data.meterType === "electricity" && "Elektrik"}
+                                  {submission.data.meterType === "water" && "Su"}
+                                  {submission.data.meterType === "gas" && "Gaz"}
+                                  : <span className="font-medium">{submission.data.meterValue}</span>
+                                </span>
                               </div>
                             )}
                           </div>
                         </div>
+
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleSubmissionExpanded(submission.id)}
+                          data-testid={`button-toggle-details-${submission.id}`}
+                        >
+                          <ChevronDown className={cn("w-4 h-4 transition-transform", isExpanded && "rotate-180")} />
+                        </Button>
                       </div>
+
+                      {/* Detailed Information (Collapsible) */}
+                      <Collapsible open={isExpanded}>
+                        <CollapsibleContent className="space-y-3 pt-3 border-t">
+                          {submission.taskType === "worker_registration" && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                              {submission.data.firstName && (
+                                <div className="flex items-center gap-2">
+                                  <User className="w-4 h-4 text-muted-foreground" />
+                                  <span className="text-muted-foreground">Ad:</span>
+                                  <span className="font-medium">{submission.data.firstName}</span>
+                                </div>
+                              )}
+                              {submission.data.lastName && (
+                                <div className="flex items-center gap-2">
+                                  <User className="w-4 h-4 text-muted-foreground" />
+                                  <span className="text-muted-foreground">Soyad:</span>
+                                  <span className="font-medium">{submission.data.lastName}</span>
+                                </div>
+                              )}
+                              {submission.data.nationality && (
+                                <div className="flex items-center gap-2">
+                                  <Users className="w-4 h-4 text-muted-foreground" />
+                                  <span className="text-muted-foreground">Uyruk:</span>
+                                  <span className="font-medium">{submission.data.nationality}</span>
+                                </div>
+                              )}
+                              {submission.data.phone && (
+                                <div className="flex items-center gap-2">
+                                  <Phone className="w-4 h-4 text-muted-foreground" />
+                                  <span className="text-muted-foreground">Telefon:</span>
+                                  <span className="font-medium">{submission.data.phone}</span>
+                                </div>
+                              )}
+                              {submission.data.email && (
+                                <div className="flex items-center gap-2">
+                                  <Mail className="w-4 h-4 text-muted-foreground" />
+                                  <span className="text-muted-foreground">Email:</span>
+                                  <span className="font-medium">{submission.data.email}</span>
+                                </div>
+                              )}
+                              {submission.data.idNumber && (
+                                <div className="flex items-center gap-2">
+                                  <Hash className="w-4 h-4 text-muted-foreground" />
+                                  <span className="text-muted-foreground">Kimlik No:</span>
+                                  <span className="font-medium">{submission.data.idNumber}</span>
+                                </div>
+                              )}
+                              {submission.data.dateOfBirth && (
+                                <div className="flex items-center gap-2">
+                                  <Cake className="w-4 h-4 text-muted-foreground" />
+                                  <span className="text-muted-foreground">Doğum Tarihi:</span>
+                                  <span className="font-medium">{new Date(submission.data.dateOfBirth).toLocaleDateString('tr-TR')}</span>
+                                </div>
+                              )}
+                              {submission.data.gender && (
+                                <div className="flex items-center gap-2">
+                                  <Users className="w-4 h-4 text-muted-foreground" />
+                                  <span className="text-muted-foreground">Cinsiyet:</span>
+                                  <span className="font-medium">{submission.data.gender === 'male' ? 'Erkek' : 'Kadın'}</span>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {submission.taskType === "meter_reading" && (
+                            <div className="space-y-3">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                                {submission.data.houseName && (
+                                  <div className="flex items-center gap-2">
+                                    <Building2 className="w-4 h-4 text-muted-foreground" />
+                                    <span className="text-muted-foreground">Konut:</span>
+                                    <span className="font-medium">{submission.data.houseName}</span>
+                                  </div>
+                                )}
+                                {submission.data.meterValue && (
+                                  <div className="flex items-center gap-2">
+                                    <FileText className="w-4 h-4 text-muted-foreground" />
+                                    <span className="text-muted-foreground">Değer:</span>
+                                    <span className="font-medium">{submission.data.meterValue}</span>
+                                  </div>
+                                )}
+                              </div>
+                              
+                              {submission.data.photo && (
+                                <div className="space-y-2">
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <ImageIcon className="w-4 h-4" />
+                                    <span>Sayaç Fotoğrafı</span>
+                                  </div>
+                                  <img 
+                                    src={submission.data.photo} 
+                                    alt="Sayaç okuma fotoğrafı" 
+                                    className="w-full h-48 object-cover rounded-lg border"
+                                    data-testid={`photo-preview-${submission.id}`}
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {submission.taskType === "document_upload" && submission.data.photo && (
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <ImageIcon className="w-4 h-4" />
+                                <span>{submission.data.documentType || "Belge"}</span>
+                              </div>
+                              <img 
+                                src={submission.data.photo} 
+                                alt="Belge fotoğrafı" 
+                                className="w-full h-48 object-cover rounded-lg border"
+                                data-testid={`document-preview-${submission.id}`}
+                              />
+                            </div>
+                          )}
+                        </CollapsibleContent>
+                      </Collapsible>
 
                       {/* Actions */}
                       <div className="flex gap-2 pt-2">
