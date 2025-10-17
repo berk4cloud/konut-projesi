@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, User, Info, ArrowUpDown, ChevronUp, ChevronDown } from "lucide-react";
+import { Plus, Search, User, Info, ArrowUpDown, ChevronUp, ChevronDown, Bed, X } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -42,6 +42,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import AccommodationFinder from "@/components/AccommodationFinder";
 
 type Worker = {
   id: string;
@@ -78,6 +79,7 @@ export default function Workers() {
   // Dialog states
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isAccommodationFinderOpen, setIsAccommodationFinderOpen] = useState(false);
   const [selectedWorker, setSelectedWorker] = useState<Worker | null>(null);
   
   // Form states
@@ -126,6 +128,15 @@ export default function Workers() {
   const handlePageSizeChange = (newSize: number) => {
     setPageSize(newSize);
     setCurrentPage(1);
+  };
+  
+  const handleAccommodationAssign = (accommodation: { house: string; room: string; bed: string }) => {
+    setFormData({
+      ...formData,
+      house: accommodation.house,
+      room: accommodation.room,
+      bed: accommodation.bed,
+    });
   };
   
   const handleOpenAddDialog = () => {
@@ -476,10 +487,15 @@ export default function Workers() {
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    toast({
-                      title: "Yakında",
-                      description: "Uygun konaklama bulma özelliği geliştirilme aşamasında",
-                    });
+                    if (!formData.name || !formData.gender) {
+                      toast({
+                        title: "Eksik Bilgi",
+                        description: "Konaklama bulabilmek için önce isim ve cinsiyet bilgilerini girin",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+                    setIsAccommodationFinderOpen(true);
                   }}
                   data-testid="button-find-accommodation"
                 >
@@ -488,11 +504,35 @@ export default function Workers() {
                 </Button>
               </div>
               
-              <div className="bg-muted/50 p-4 rounded-lg">
-                <p className="text-sm text-muted-foreground text-center">
-                  Çalışan kaydedildikten sonra "Uygun Konaklama Bul" butonunu kullanarak konaklama atayabilirsiniz
-                </p>
-              </div>
+              {formData.house ? (
+                <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <Bed className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-primary">{formData.house}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Oda {formData.room} • Yatak {formData.bed}
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setFormData({ ...formData, house: "", room: "", bed: "" })}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-muted/50 p-4 rounded-lg">
+                  <p className="text-sm text-muted-foreground text-center">
+                    "Uygun Konaklama Bul" butonunu kullanarak konaklama atayabilirsiniz
+                  </p>
+                </div>
+              )}
             </div>
             
             <div className="flex justify-end gap-3 pt-4">
@@ -625,6 +665,16 @@ export default function Workers() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Accommodation Finder Dialog */}
+      <AccommodationFinder
+        open={isAccommodationFinderOpen}
+        onOpenChange={setIsAccommodationFinderOpen}
+        workerGender={formData.gender as "Erkek" | "Kadın"}
+        workerName={formData.name}
+        workerCity={formData.country}
+        onAssign={handleAccommodationAssign}
+      />
     </div>
   );
 }
