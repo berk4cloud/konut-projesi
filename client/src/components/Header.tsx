@@ -1,4 +1,4 @@
-import { Building2, User, LogOut, Menu, Home, Users, Settings, Moon, Sun, QrCode, Bell } from "lucide-react";
+import { Building2, User, LogOut, Menu, Home, Users, Settings, Moon, Sun, QrCode, Bell, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -61,6 +61,7 @@ export default function Header({
     { icon: Home, label: "Konaklama Genel Bakış", path: "/dashboard" },
     { icon: Building2, label: "Konutlar", path: "/houses" },
     { icon: Users, label: "Çalışanlar", path: "/workers" },
+    { icon: ClipboardList, label: "Tahsisler", path: "/assignments" },
     { icon: QrCode, label: "QR Yönetimi", path: "/qr-management" },
     { icon: Settings, label: "Ayarlar", path: "/settings" },
   ];

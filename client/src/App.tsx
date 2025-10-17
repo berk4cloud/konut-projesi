@@ -13,6 +13,7 @@ import QRManagement from "@/pages/QRManagement";
 import PendingApprovals from "@/pages/PendingApprovals";
 import QRPublicPage from "@/pages/QRPublicPage";
 import Settings from "@/pages/Settings";
+import Assignments from "@/pages/Assignments";
 
 function Router() {
   return (
@@ -22,6 +23,7 @@ function Router() {
       <Route path="/dashboard" component={HousingDashboard} />
       <Route path="/houses" component={Houses} />
       <Route path="/workers" component={Workers} />
+      <Route path="/assignments" component={Assignments} />
       <Route path="/qr-management" component={QRManagement} />
       <Route path="/pending-approvals" component={PendingApprovals} />
       <Route path="/settings" component={Settings} />

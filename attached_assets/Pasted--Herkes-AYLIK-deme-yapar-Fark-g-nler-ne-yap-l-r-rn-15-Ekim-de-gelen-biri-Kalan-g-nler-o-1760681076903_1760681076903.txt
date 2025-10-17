@@ -1,0 +1,181 @@
+- Herkes AYLIK ödeme yapar
+- Fark günler ne yapılır?
+  * Örn: 15 Ekim'de gelen biri → Kalan günler oransal hesaplanır
+  * Oransal günlük = aylık_fiyat ÷ 30
+```
+
+---
+
+### **2. ÖDEME BAŞLANGIÇ TARİHİ (Standard Koymalıyız)**
+
+**Tavsiyem: Her ayın 1'inde ödeme**
+
+Avantajları:
+- ✅ Tüm kişiler için aynı gün
+- ✅ Muhasebeci açısından temiz
+- ✅ Otomatik ödeme kolaylaşır
+- ✅ Hatırlatmaları kolay gönderebilirsin
+
+**Algoritma:**
+```
+Kişi konaklamaya başladı: 15 Ekim
+│
+├─ 15-31 Ekim arası = KALAN GÜN HESABı (oransal)
+│  Ücret = (17 gün ÷ 30) × €600 = €340
+│
+└─ 1 Kasım'dan itibaren = NORMAL AYLIK
+   Ücret = €600/ay (otomatik her ay 1'inde)
+```
+
+---
+
+### **3. DEPOZITO TAKIBI**
+
+**Tavsiyem: Sistem açılırken depozito bilgisi kaydedilmeli**
+
+Neler takip edilmeli:
+```
+Her tahsis için:
+├─ Depozito Alındı Mı? (Evet/Hayır)
+├─ Depozito Tutarı (€500 gibi)
+├─ Depozito Tarihi (İade edildi mi tarihiyle)
+├─ İade Durumu (Ödenmemiş / İade Bekliyor / İade Edildi)
+└─ İade Tarihi
+
+Çıkış Yapıldığında:
+├─ Hasar Var Mı?
+├─ Hasar Tutarı
+├─ Depozito - Hasar = İade Tutarı
+└─ İade Tarihini Kaydet
+```
+
+---
+
+### **4. ÜCRET TAHSISI PROBLEMI**
+
+**Tavsiyem: Sistemde tahsi seçeneği olmalı**
+
+Senaryo:
+```
+Konut Sahibi (Employer):
+├─ Her ay 10 kişi konaklandı
+├─ Toplam Ücret: €6000
+└─ Sorun: Hangisine kaç lira tahsis edileceğini hesapla?
+
+Sistem otomatik yapmalı:
+├─ Her kişinin ayrı ödeme kaydı
+├─ Kişiye göre günlük dosya
+├─ Otomatik tahsiye önerisi
+└─ Manuel override seçeneği
+```
+
+---
+
+### **5. TAHSIS SORUNLARI VE UYARILAR**
+
+**Tavsiyem: Risk bazlı uyarı sistemi**
+```
+UYARI TİPLERİ:
+
+🔴 KRİTİK (HEMEN AYARLA):
+   - Ödeme tarihi geçti, ödeme alınmadı
+   - Depozito kaydı eksik
+   - Kişi konaklıyor ama ücret hesaplanmadı
+
+🟡 UYARI (TAKIP ET):
+   - Ödeme tarihi 3 gün kaldı
+   - Depozito iadesi gecikmiş
+   - Tahsiye yapılmadı
+
+🟢 BİLGİ (DÜZENLI TAKIP):
+   - Ödeme alındı
+   - Depozito iade edildi
+```
+
+---
+
+### **6. PERIYODIK AYARLAMALAR**
+
+**Önemli Durum:** Kişi orta ayda ayrılırsa ne olur?
+```
+Örnek:
+- 1-30 Kasım: €600 (tam ay)
+- Orta ayda çıktı: 1-15 Kasım (15 gün)
+  Geri ödemesi lazım mı? (Kurala bağlı)
+  
+Seçenek 1: Tam ay ödemiş, fark geri ödenir
+Seçenek 2: Orantılı hesapla, hiçbir geri ödeme yok
+Seçenek 3: Sistem karar verir, manuel override
+
+TAVSIYE: Seçenek 1 (Müşteri dostu)
+```
+
+---
+
+### **7. ÖNÜ ALMALI SORUNLAR**
+```
+❌ Sorun 1: Kişi ödeme yapmıyor (Çözüm)
+   → SMS/Email hatırlatması (T-7, T-3, T-0 günde)
+   → Otomatik blok (ödemezse yeni tahsis yapma)
+   → Kanunen hukuk müdürüne bildir
+
+❌ Sorun 2: Depozito kaydı unutuldu (Çözüm)
+   → Tahsis yapılırken ZORUNLU form
+   → Depozito almadan tahsis kapanmasın
+
+❌ Sorun 3: Farklı para birimleri (Çözüm)
+   → MVP'de sadece EUR
+   → Gelecekte multi-currency
+
+❌ Sorun 4: Kesintili konaklama (Çözüm)
+   → Örn: 1-10 Kasım, 20-30 Kasım (iki kesit)
+   → Sistem her kesiti ayrı faturalamalı
+   → Biz MVP'de desteklemeyiz (basit tutalım)
+```
+
+---
+
+## 📋 Önerilen Sistem Mimarisi
+```
+┌──────────────────────────────────────────────────────────┐
+│ TAHSIS (Room Assignment)                                │
+├──────────────────────────────────────────────────────────┤
+│                                                          │
+│ Koşullar:                                               │
+│ • Başlangıç Tarihi                                      │
+│ • Bitiş Tarihi (Opsiyonel)                             │
+│ • Konaklama Fiyatı (Sistem hesaplar)                  │
+│ • Depozito Alındı Mı? ✓ (ZORUNLU)                    │
+│ • Depozito Tutarı: €500                               │
+│ • Depozito Tarihi: 6 Ekim                             │
+│ • Ödeme Şekli: Nakit / Banka Transferi                │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+        ↓
+┌──────────────────────────────────────────────────────────┐
+│ ÜCRETLENDÄ°RME (Charges)                               │
+├──────────────────────────────────────────────────────────┤
+│                                                          │
+│ Otomatik Her Ay 1'inde:                                │
+│ 1. Kişi hala konaklamıyor mu? Kontrol et              │
+│ 2. Aylık ücret hesapla                                │
+│ 3. Kalan gün varsa orantılı hesapla                   │
+│ 4. Ücret kaydı oluştur                                │
+│ 5. Ödeme hatırlatması gönder                          │
+│ 6. Ödeme bekleniyor: PENDING                          │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+        ↓
+┌──────────────────────────────────────────────────────────┐
+│ ÖDEMESİ (Payment)                                      │
+├──────────────────────────────────────────────────────────┤
+│                                                          │
+│ Ödeme Yönetmeni:                                       │
+│ • Ödeme Alındı Mı? Evet/Hayır                         │
+│ • Ödeme Tarihi: 5 Ekim                                │
+│ • Ödeme Tutarı: €600                                  │
+│ • Ödeme Yöntemi: Banka Transferi                      │
+│ • Referans: Invoice #123                              │
+│ • Not: Ödeme alındı                                   │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
