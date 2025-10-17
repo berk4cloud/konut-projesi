@@ -89,6 +89,33 @@ export default function Workers() {
     }
     return age;
   };
+
+  const getStatusBadge = (worker: Worker) => {
+    switch (worker.status) {
+      case "active":
+        return null; // Don't show badge for active status
+      case "on_vacation":
+        return (
+          <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300" data-testid={`badge-status-${worker.id}`}>
+            Tatilde {worker.vacationEndDate && `(${new Date(worker.vacationEndDate).toLocaleDateString("tr-TR")} dönüş)`}
+          </Badge>
+        );
+      case "notice_period":
+        return (
+          <Badge variant="secondary" className="bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300" data-testid={`badge-status-${worker.id}`}>
+            Çıkış Bildirdi {worker.plannedExitDate && `(${new Date(worker.plannedExitDate).toLocaleDateString("tr-TR")})`}
+          </Badge>
+        );
+      case "left_no_notice":
+        return (
+          <Badge variant="secondary" className="bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300" data-testid={`badge-status-${worker.id}`}>
+            Haber Vermeden Gitti {worker.leftDate && `(${new Date(worker.leftDate).toLocaleDateString("tr-TR")})`}
+          </Badge>
+        );
+      default:
+        return null;
+    }
+  };
   const [workers, setWorkers] = useState<Worker[]>([
     { id: "1", name: "John Doe", birthDate: "1980-10-22", gender: "Erkek", country: "Hollanda", house: "Geldernstrasse 13", room: "45", bed: "1", status: "active" },
     { id: "2", name: "Jane Smith", birthDate: "1992-05-15", gender: "Kadın", country: "Almanya", house: "Geldernstrasse 13", room: "45", bed: "3", status: "on_vacation", vacationStartDate: "2025-10-15", vacationEndDate: "2025-10-30" },
@@ -334,6 +361,11 @@ export default function Workers() {
                           >
                             {worker.birthDate}
                           </div>
+                          {getStatusBadge(worker) && (
+                            <div className="mt-2">
+                              {getStatusBadge(worker)}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </TableCell>
