@@ -15,6 +15,35 @@ All UI text must be in Turkish language.
 
 ## Recent Updates (October 2025)
 
+### House Archiving System (Latest)
+Implemented soft-delete archiving for houses with visual indicators:
+- Archive/unarchive toggle in house edit dialog
+- "Arşiv olanları da göster" switch in main view (default: hide archived)
+- Visual indicators: reduced opacity, dashed border, "Arşiv" badge
+- New houses initialize with `archived: false`
+- All three meter types supported: electricity (kWh), water (m³), gas (m³)
+
+### QR Approval Details Enhancement (Latest)
+Expanded QR submission detail display in notifications:
+- **Worker Registration**: Full details including firstName, lastName, phone, email, idNumber, dateOfBirth, gender
+- **Meter Reading**: House name, meter type (electricity/water/gas), value, photo preview
+- **Document Upload**: Document type with photo preview
+- Collapsible detail sections with expand/collapse functionality
+- Photo previews for all submission types with proper image display
+
+### Check-in/Check-out System Infrastructure (Latest)
+Added worker status management and key tracking system:
+- **New Worker Statuses**: 
+  - `new_registration`: Yeni kayıt (giriş bekliyor)
+  - `checked_out`: Çıkış yaptı (no accommodation)
+  - Plus existing: active, on_vacation, notice_period, left_no_notice
+- **Check-in/Check-out Tracking**:
+  - checkInDate: Giriş tarihi
+  - checkOutDate: Çıkış tarihi
+  - keyHandedOverDate: Anahtar teslim tarihi
+  - keyReturnedDate: Anahtar iade tarihi
+- **Business Logic**: Workers without active status (checked_out, new_registration) have no bed assignment
+
 ### QR Code Task Delegation System
 Implemented comprehensive QR code system for delegating tasks to workers and external users. The system allows admins to create unique public links for:
 - Worker self-registration (foreign nationals enter their own data)

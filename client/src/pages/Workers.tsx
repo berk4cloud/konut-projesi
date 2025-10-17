@@ -44,7 +44,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import AccommodationFinder from "@/components/AccommodationFinder";
 
-type WorkerStatus = "active" | "left_no_notice" | "notice_period" | "on_vacation";
+type WorkerStatus = "active" | "left_no_notice" | "notice_period" | "on_vacation" | "new_registration" | "checked_out";
 
 type Worker = {
   id: string;
@@ -59,6 +59,11 @@ type Worker = {
   room: string;
   bed: string;
   status: WorkerStatus;
+  // Check-in/Check-out dates
+  checkInDate?: string; // Giriş tarihi
+  checkOutDate?: string; // Çıkış tarihi
+  keyHandedOverDate?: string; // Anahtar teslim tarihi
+  keyReturnedDate?: string; // Anahtar iade tarihi
   // Status-specific dates
   vacationStartDate?: string; // For on_vacation
   vacationEndDate?: string; // For on_vacation
@@ -115,6 +120,18 @@ export default function Workers() {
             Haber Vermeden Gitti {worker.leftDate && `(${new Date(worker.leftDate).toLocaleDateString("tr-TR")})`}
           </Badge>
         );
+      case "new_registration":
+        return (
+          <Badge variant="secondary" className="bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300" data-testid={`badge-status-${worker.id}`}>
+            Yeni Kayıt (Giriş Bekliyor)
+          </Badge>
+        );
+      case "checked_out":
+        return (
+          <Badge variant="secondary" className="bg-gray-100 text-gray-700 dark:bg-gray-950 dark:text-gray-300" data-testid={`badge-status-${worker.id}`}>
+            Çıkış Yaptı {worker.checkOutDate && `(${new Date(worker.checkOutDate).toLocaleDateString("tr-TR")})`}
+          </Badge>
+        );
       default:
         return null;
     }
@@ -147,6 +164,10 @@ export default function Workers() {
     room: "",
     bed: "",
     status: "active" as WorkerStatus,
+    checkInDate: "",
+    checkOutDate: "",
+    keyHandedOverDate: "",
+    keyReturnedDate: "",
     vacationStartDate: "",
     vacationEndDate: "",
     plannedExitDate: "",
@@ -214,6 +235,10 @@ export default function Workers() {
       room: "",
       bed: "",
       status: "active",
+      checkInDate: "",
+      checkOutDate: "",
+      keyHandedOverDate: "",
+      keyReturnedDate: "",
       vacationStartDate: "",
       vacationEndDate: "",
       plannedExitDate: "",
@@ -236,6 +261,10 @@ export default function Workers() {
       room: worker.room,
       bed: worker.bed,
       status: worker.status,
+      checkInDate: worker.checkInDate || "",
+      checkOutDate: worker.checkOutDate || "",
+      keyHandedOverDate: worker.keyHandedOverDate || "",
+      keyReturnedDate: worker.keyReturnedDate || "",
       vacationStartDate: worker.vacationStartDate || "",
       vacationEndDate: worker.vacationEndDate || "",
       plannedExitDate: worker.plannedExitDate || "",
