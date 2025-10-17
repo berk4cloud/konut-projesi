@@ -297,6 +297,7 @@ export default function HousingDashboard() {
   const [assignmentModalOpen, setAssignmentModalOpen] = useState(false);
   const [warningModalOpen, setWarningModalOpen] = useState(false);
   const [selectedBed, setSelectedBed] = useState<any>(null);
+  const [checkInWizardOpen, setCheckInWizardOpen] = useState(false);
 
   // Prepare upcoming reminders for notifications dialog
   const today = new Date();
@@ -543,11 +544,21 @@ export default function HousingDashboard() {
           {/* Main Content Area */}
           <div className="p-4 lg:p-6">
             <div className="max-w-7xl mx-auto space-y-4">
-              <div className="hidden lg:block">
-                <h2 className="text-2xl font-bold mb-2">Konaklama Genel Bakış</h2>
-                <p className="text-muted-foreground">
-                  Tüm mülklerdeki çalışan konaklamalarını yönetin
-                </p>
+              <div className="hidden lg:flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold mb-2">Konaklama Genel Bakış</h2>
+                  <p className="text-muted-foreground">
+                    Tüm mülklerdeki çalışan konaklamalarını yönetin
+                  </p>
+                </div>
+                <Button 
+                  onClick={() => setCheckInWizardOpen(true)}
+                  data-testid="button-new-check-in"
+                  className="gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  Yeni Konaklama Girişi
+                </Button>
               </div>
 
               {/* House List */}
@@ -875,6 +886,27 @@ export default function HousingDashboard() {
                 <p className="text-muted-foreground">Henüz hatırlatıcı eklenmedi</p>
               </div>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Check-in Wizard Dialog */}
+      <Dialog open={checkInWizardOpen} onOpenChange={setCheckInWizardOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Yeni Konaklama Girişi</DialogTitle>
+            <DialogDescription>
+              İşçi seçin veya oluşturun, uygun oda/yatak bulun ve konaklama bilgilerini kaydedin
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-6">
+            <p className="text-center text-muted-foreground">
+              🚧 Wizard geliştirme devam ediyor...
+            </p>
+            <p className="text-center text-sm text-muted-foreground mt-2">
+              Adımlar: İşçi Seçimi → Oda/Yatak Seçimi → Fiyat/Depozito → Kaydet
+            </p>
           </div>
         </DialogContent>
       </Dialog>
