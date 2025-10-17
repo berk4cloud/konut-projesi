@@ -1,0 +1,124 @@
+Konaklama uygulaması için fiyatlandırma sistemi geliştir.
+
+## ⚠️ ÖNEMLİ AYAR
+
+"Günlük Kiralama Modu" sistem genelinde çalışan ve tüm fiyatlandırma UI'ını etkileyen kritik bir ayardır.
+
+### Günlük Kiralama Açık ise:
+- Tüm fiyat alanlarında HEM günlük HEMDE aylık fiyat girişi gösterilir
+- Sistemin her yerinde (Standart, Konut, Oda) iki fiyat görünür
+- Kısa dönem ve uzun dönem kiralama desteklenir
+
+### Günlük Kiralama Kapalı ise:
+- Tüm fiyat alanlarında SADECE aylık fiyat girişi gösterilir
+- Günlük fiyat alanı gizlenir
+- Minimum 30 gün kiralama zorunlu olur
+
+Bu ayarın değiştirilmesi tüm UI'ı etkilediği için, sistem başında doğru konfigüre edilmesi çok önemlidir.
+
+---
+
+## Gereksinimler
+
+### 1. STANDART FİYATLAR (Ayarlar'da)
+- Ayarlar bölümünde "Standart Fiyatlar" seçeneği olacak
+- Buradan şunlar ayarlanacak:
+  * **Günlük Kiralama Modu:** On/Off Toggle
+  
+  **Eğer Günlük Kiralama AÇIK ise:**
+    * Yatak Günlük Fiyatı (€/gün)
+    * Yatak Aylık Fiyatı (€/ay) - isteğe bağlı, sistem hesaplayabilir (günlük × 30)
+    * Oda Günlük Fiyatı (€/gün)
+    * Oda Aylık Fiyatı (€/ay) - isteğe bağlı, sistem hesaplayabilir (günlük × 30)
+  
+  **Eğer Günlük Kiralama KAPALI ise:**
+    * Yatak Aylık Fiyatı (€/ay)
+    * Oda Aylık Fiyatı (€/ay)
+    * (Günlük alanları gizle)
+
+### 2. KONUT ÖZELLİ FIYATLAR (Konut Detay Sayfası)
+- Her konut detay sayfasında "Fiyat Ayarları" bölümü olacak
+- Checkbox: "Bu konut için özel fiyat kullan"
+- Eğer işaretlenirse:
+  
+  **Eğer Günlük Kiralama AÇIK ise:**
+    * Yatak Günlük Fiyatı gir (€/gün)
+    * Yatak Aylık Fiyatı gir (€/ay)
+    * Oda Günlük Fiyatı gir (€/gün)
+    * Oda Aylık Fiyatı gir (€/ay)
+  
+  **Eğer Günlük Kiralama KAPALI ise:**
+    * Yatak Aylık Fiyatı gir (€/ay)
+    * Oda Aylık Fiyatı gir (€/ay)
+    * (Günlük alanları gizle)
+
+- Boş bırakılırsa veya unchecked ise standart fiyat kullanılır
+
+### 3. ODA ÖZELLİ FIYATLAR (Oda Detay Sayfası)
+- Her oda detay sayfasında "Fiyat Ayarları" bölümü olacak
+- Checkbox: "Bu oda için özel fiyat kullan"
+- Eğer işaretlenirse:
+  
+  **Eğer Günlük Kiralama AÇIK ise:**
+    * Yatak Günlük Fiyatı gir (€/gün)
+    * Yatak Aylık Fiyatı gir (€/ay)
+    * Oda Günlük Fiyatı gir (€/gün)
+    * Oda Aylık Fiyatı gir (€/ay)
+  
+  **Eğer Günlük Kiralama KAPALI ise:**
+    * Yatak Aylık Fiyatı gir (€/ay)
+    * Oda Aylık Fiyatı gir (€/ay)
+    * (Günlük alanları gizle)
+
+- Boş bırakılırsa veya unchecked ise konut veya standart fiyat kullanılır
+
+### 4. FİYAT HESAPLAMA MANTIGI
+
+Fiyat belirleme önceliği (en spesifikten en genele):
+1. ODA ÖZELLİ fiyat varsa → Onu kullan
+2. ODA ÖZELLİ fiyat yoksa, KONUT ÖZELLİ fiyat varsa → Onu kullan
+3. KONUT ÖZELLİ fiyat yoksa → STANDART fiyatı kullan
+
+### 5. KİRALAMA TİPLERİ
+
+İki kiralama modu desteklenecek:
+- **Yatak Bazlı Kiralama:** Odadaki belirli bir yatağın fiyatı
+- **Oda Bazlı Kiralama:** Tüm odanın (tüm yatakların) fiyatı
+
+Aynı oda için sadece biri aktif olabilir (seçim yapılmalı).
+
+### 6. FİYATLANDIRMA HESAPLAMASI
+
+Kiralama sürelerine göre hesapla:
+
+**Eğer günlük kiralama AÇIK ise:**
+- Eğer konaklama süresi < 30 gün → Günlük fiyat × gün sayısı
+- Eğer konaklama süresi >= 30 gün → (Tam aylar × aylık fiyat) + (kalan günler × günlük fiyat)
+  * Örn: 40 gün = (1 ay × €600) + (10 gün × €20/gün) = €800
+
+**Eğer günlük kiralama KAPALI ise:**
+- Eğer konaklama süresi < 30 gün → HATA: "En az 30 gün seçmelisiniz"
+- Eğer konaklama süresi >= 30 gün → (Tam aylar × aylık fiyat) + (kalan günler × günlük fiyat)
+  * Günlük fiyat otomatik hesaplanır: aylık_fiyat ÷ 30
+
+### 7. AYLIQ FİYAT OTOMATIĞI
+
+- Eğer sistem "Aylık Fiyat" alanı oluşturmazsa → Otomatik hesapla: günlük_fiyat × 30
+- Eğer manuel aylık fiyat girilirse → O fiyatı kullan
+- Günlük fiyat = aylık_fiyat ÷ 30 olarak hesaplanır
+
+### 8. ÖRNEK SENARYOLAR
+
+**Senaryo 1: Standart, Günlük Kiralama AÇIK, 15 gün**
+- Standart: Yatak €30/gün
+- Hesap: 15 × €30 = €450
+
+**Senaryo 2: Standart, Günlük Kiralama KAPALI, 15 gün**
+- HATA: En az 30 gün seçmelisiniz
+
+**Senaryo 3: Konut Özel, Günlük Kiralama AÇIK, 40 gün**
+- Konut Fiyatı: Yatak €20/gün, Aylık €600
+- Hesap: (1 ay × €600) + (10 gün × €20) = €800
+
+**Senaryo 4: Oda Özel, Günlük Kiralama AÇIK, 25 gün**
+- O

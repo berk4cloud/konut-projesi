@@ -682,6 +682,7 @@ export default function Houses() {
         meterLogs: {
           electricity: [],
           water: [],
+          gas: [],
         },
       };
       setHouses([...houses, newHouse]);
