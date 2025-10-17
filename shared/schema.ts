@@ -12,12 +12,14 @@ export const roomTypeEnum = pgEnum("room_type", ["single", "double", "triple", "
 export const genderRestrictionEnum = pgEnum("gender_restriction", ["male", "female", "mixed", "none"]);
 export const workerGenderEnum = pgEnum("worker_gender", ["male", "female"]);
 export const workerStatusEnum = pgEnum("worker_status", ["active", "inactive", "new_registration", "checked_out"]);
+export const currencyEnum = pgEnum("currency", ["EUR", "USD", "TRY"]);
 
 // Tenants table
 export const tenants = pgTable("tenants", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
   email: text("email"),
+  currency: currencyEnum("currency").default("EUR").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

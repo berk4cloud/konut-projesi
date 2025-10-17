@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Globe, Star, Save } from "lucide-react";
+import { Plus, Trash2, Globe, Star, Save, DollarSign } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -23,6 +24,10 @@ interface Country {
 
 export default function Settings() {
   const { toast } = useToast();
+  
+  // Currency settings
+  const [currency, setCurrency] = useState<"EUR" | "USD" | "TRY">("EUR");
+  const [hasCurrencyChanges, setHasCurrencyChanges] = useState(false);
   
   const [countries, setCountries] = useState<Country[]>([
     { name: "Hollanda", isDefault: true },
@@ -55,6 +60,20 @@ export default function Settings() {
       ...c,
       isDefault: c.name === countryName
     })));
+  };
+  
+  const handleCurrencyChange = (value: "EUR" | "USD" | "TRY") => {
+    setCurrency(value);
+    setHasCurrencyChanges(true);
+  };
+  
+  const handleSaveCurrency = () => {
+    // TODO: API call to update tenant currency
+    toast({
+      title: "Para Birimi Güncellendi",
+      description: `Sistem para birimi ${currency} olarak ayarlandı.`,
+    });
+    setHasCurrencyChanges(false);
   };
   
   const handleSavePricing = () => {
@@ -113,6 +132,92 @@ export default function Settings() {
             <h2 className="text-2xl font-bold mb-2">Ayarlar</h2>
             <p className="text-muted-foreground">Sistem ayarlarını yönetin</p>
           </div>
+
+          {/* Currency Settings Card */}
+          <Card data-testid="card-currency-settings">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <DollarSign className="w-5 h-5" />
+                Para Birimi
+              </CardTitle>
+              <CardDescription>
+                Sistemde kullanılacak para birimini belirleyin. Bu ayar tüm fiyatlandırma ve faturalandırma işlemlerinde kullanılacaktır.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="currency-select">Para Birimi Seçin</Label>
+                <Select value={currency} onValueChange={handleCurrencyChange}>
+                  <SelectTrigger id="currency-select" data-testid="select-currency" className="w-full sm:w-[300px]">
+                    <SelectValue placeholder="Para birimi seçin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="EUR" data-testid="option-currency-EUR">
+                      <div className="flex items-center gap-3">
+                        <span className="text-lg font-semibold text-primary">€</span>
+                        <div>
+                          <div className="font-medium">Euro (EUR)</div>
+                          <div className="text-xs text-muted-foreground">Avrupa</div>
+                        </div>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="USD" data-testid="option-currency-USD">
+                      <div className="flex items-center gap-3">
+                        <span className="text-lg font-semibold text-primary">$</span>
+                        <div>
+                          <div className="font-medium">Amerikan Doları (USD)</div>
+                          <div className="text-xs text-muted-foreground">Amerika</div>
+                        </div>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="TRY" data-testid="option-currency-TRY">
+                      <div className="flex items-center gap-3">
+                        <span className="text-lg font-semibold text-primary">₺</span>
+                        <div>
+                          <div className="font-medium">Türk Lirası (TRY)</div>
+                          <div className="text-xs text-muted-foreground">Türkiye</div>
+                        </div>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Current Selection Display */}
+              <div className="rounded-lg border bg-muted/50 p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Seçili Para Birimi</p>
+                    <p className="text-2xl font-bold" data-testid="text-selected-currency">
+                      {currency === "EUR" && "€"} 
+                      {currency === "USD" && "$"}
+                      {currency === "TRY" && "₺"}
+                      {" "}{currency}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-muted-foreground">
+                      {currency === "EUR" && "Euro"}
+                      {currency === "USD" && "Amerikan Doları"}
+                      {currency === "TRY" && "Türk Lirası"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Save Button */}
+              <div className="flex justify-end pt-2">
+                <Button
+                  onClick={handleSaveCurrency}
+                  disabled={!hasCurrencyChanges}
+                  data-testid="button-save-currency"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Para Birimini Kaydet
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
 
           <Card>
             <CardHeader>
