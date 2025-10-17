@@ -48,10 +48,13 @@ type WorkerStatus = "active" | "left_no_notice" | "notice_period" | "on_vacation
 
 type Worker = {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   birthDate: string;
   gender: string;
   country: string;
+  email?: string;
+  phone?: string;
   house: string;
   room: string;
   bed: string;
@@ -117,12 +120,12 @@ export default function Workers() {
     }
   };
   const [workers, setWorkers] = useState<Worker[]>([
-    { id: "1", name: "John Doe", birthDate: "1980-10-22", gender: "Erkek", country: "Hollanda", house: "Geldernstrasse 13", room: "45", bed: "1", status: "active" },
-    { id: "2", name: "Jane Smith", birthDate: "1992-05-15", gender: "Kadın", country: "Almanya", house: "Geldernstrasse 13", room: "45", bed: "3", status: "on_vacation", vacationStartDate: "2025-10-15", vacationEndDate: "2025-10-30" },
-    { id: "3", name: "Mike Johnson", birthDate: "1985-11-30", gender: "Erkek", country: "Polonya", house: "Geldernstrasse 13", room: "47", bed: "1", status: "active" },
-    { id: "4", name: "Sarah Williams", birthDate: "1988-03-08", gender: "Kadın", country: "Romanya", house: "Hauptstrasse 45", room: "101", bed: "2", status: "notice_period", plannedExitDate: "2025-10-31" },
-    { id: "5", name: "Tom Brown", birthDate: "1995-07-12", gender: "Erkek", country: "Hollanda", house: "Hauptstrasse 45", room: "102", bed: "1", status: "left_no_notice", leftDate: "2025-10-16" },
-    { id: "6", name: "Ahmet Yılmaz", birthDate: "1990-08-20", gender: "Erkek", country: "Türkiye", house: "Atatürk Caddesi 42", room: "1", bed: "2", status: "active" },
+    { id: "1", firstName: "John", lastName: "Doe", birthDate: "1980-10-22", gender: "Erkek", country: "Hollanda", email: "john.doe@example.com", phone: "+31612345678", house: "Geldernstrasse 13", room: "45", bed: "1", status: "active" },
+    { id: "2", firstName: "Jane", lastName: "Smith", birthDate: "1992-05-15", gender: "Kadın", country: "Almanya", email: "jane.smith@example.com", house: "Geldernstrasse 13", room: "45", bed: "3", status: "on_vacation", vacationStartDate: "2025-10-15", vacationEndDate: "2025-10-30" },
+    { id: "3", firstName: "Mike", lastName: "Johnson", birthDate: "1985-11-30", gender: "Erkek", country: "Polonya", phone: "+48123456789", house: "Geldernstrasse 13", room: "47", bed: "1", status: "active" },
+    { id: "4", firstName: "Sarah", lastName: "Williams", birthDate: "1988-03-08", gender: "Kadın", country: "Romanya", email: "sarah.w@example.com", phone: "+40123456789", house: "Hauptstrasse 45", room: "101", bed: "2", status: "notice_period", plannedExitDate: "2025-10-31" },
+    { id: "5", firstName: "Tom", lastName: "Brown", birthDate: "1995-07-12", gender: "Erkek", country: "Hollanda", house: "Hauptstrasse 45", room: "102", bed: "1", status: "left_no_notice", leftDate: "2025-10-16" },
+    { id: "6", firstName: "Ahmet", lastName: "Yılmaz", birthDate: "1990-08-20", gender: "Erkek", country: "Türkiye", email: "ahmet.yilmaz@example.com", phone: "+905551234567", house: "Atatürk Caddesi 42", room: "1", bed: "2", status: "active" },
   ]);
   
   // Dialog states
@@ -133,10 +136,13 @@ export default function Workers() {
   
   // Form states
   const [formData, setFormData] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     birthDate: "",
     gender: "",
     country: "",
+    email: "",
+    phone: "",
     house: "",
     room: "",
     bed: "",
@@ -149,14 +155,16 @@ export default function Workers() {
 
   const filteredWorkers = workers
     .filter((worker) =>
-      worker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      `${worker.firstName} ${worker.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
       worker.country.toLowerCase().includes(searchQuery.toLowerCase()) ||
       worker.house.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      worker.birthDate.toLowerCase().includes(searchQuery.toLowerCase())
+      worker.birthDate.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (worker.email && worker.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (worker.phone && worker.phone.includes(searchQuery))
     )
     .sort((a, b) => {
       if (!sortOrder) return 0;
-      const comparison = a.name.localeCompare(b.name, 'tr');
+      const comparison = `${a.lastName} ${a.firstName}`.localeCompare(`${b.lastName} ${b.firstName}`, 'tr');
       return sortOrder === 'asc' ? comparison : -comparison;
     });
   
@@ -195,10 +203,13 @@ export default function Workers() {
   
   const handleOpenAddDialog = () => {
     setFormData({
-      name: "",
+      firstName: "",
+      lastName: "",
       birthDate: "",
       gender: "",
       country: "",
+      email: "",
+      phone: "",
       house: "",
       room: "",
       bed: "",
@@ -214,10 +225,13 @@ export default function Workers() {
   const handleOpenEditDialog = (worker: Worker) => {
     setSelectedWorker(worker);
     setFormData({
-      name: worker.name,
+      firstName: worker.firstName,
+      lastName: worker.lastName,
       birthDate: worker.birthDate,
       gender: worker.gender,
       country: worker.country,
+      email: worker.email || "",
+      phone: worker.phone || "",
       house: worker.house,
       room: worker.room,
       bed: worker.bed,
@@ -231,7 +245,7 @@ export default function Workers() {
   };
   
   const handleSaveWorker = () => {
-    if (!formData.name || !formData.birthDate || !formData.gender || !formData.country) {
+    if (!formData.firstName || !formData.lastName || !formData.birthDate || !formData.gender || !formData.country) {
       toast({
         title: "Hata",
         description: "Lütfen tüm zorunlu alanları doldurun",
@@ -355,16 +369,23 @@ export default function Workers() {
                         </div>
                         <div>
                           <div className="flex items-center gap-2" data-testid={`text-worker-name-${worker.id}`}>
-                            <span>{worker.name}</span>
+                            <span>{worker.firstName} {worker.lastName}</span>
                             <span className="text-sm text-muted-foreground" data-testid={`text-worker-age-${worker.id}`}>
                               ({calculateAge(worker.birthDate)})
                             </span>
                           </div>
-                          <div 
-                            className="text-xs text-muted-foreground mt-0.5" 
-                            data-testid={`text-worker-birthdate-${worker.id}`}
-                          >
+                          <div className="text-xs text-muted-foreground mt-0.5">
                             {worker.birthDate}
+                            {worker.email && (
+                              <span className="ml-2" data-testid={`text-worker-email-${worker.id}`}>
+                                • {worker.email}
+                              </span>
+                            )}
+                            {worker.phone && (
+                              <span className="ml-2" data-testid={`text-worker-phone-${worker.id}`}>
+                                • {worker.phone}
+                              </span>
+                            )}
                           </div>
                           {getStatusBadge(worker) && (
                             <div className="mt-2">
@@ -509,16 +530,29 @@ export default function Workers() {
           <div className="space-y-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="add-name">İsim Soyisim *</Label>
+                <Label htmlFor="add-firstname">İsim *</Label>
                 <Input
-                  id="add-name"
-                  placeholder="John Doe"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  data-testid="input-worker-name"
+                  id="add-firstname"
+                  placeholder="John"
+                  value={formData.firstName}
+                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                  data-testid="input-worker-firstname"
                 />
               </div>
               
+              <div className="space-y-2">
+                <Label htmlFor="add-lastname">Soyisim *</Label>
+                <Input
+                  id="add-lastname"
+                  placeholder="Doe"
+                  value={formData.lastName}
+                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                  data-testid="input-worker-lastname"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="add-birthdate">Doğum Tarihi *</Label>
                 <Input
@@ -529,9 +563,7 @@ export default function Workers() {
                   data-testid="input-worker-birthdate"
                 />
               </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
+
               <div className="space-y-2">
                 <Label htmlFor="add-gender">Cinsiyet *</Label>
                 <Select
@@ -547,7 +579,9 @@ export default function Workers() {
                   </SelectContent>
                 </Select>
               </div>
-              
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="add-country">Ülke *</Label>
                 <Input
@@ -556,6 +590,32 @@ export default function Workers() {
                   value={formData.country}
                   onChange={(e) => setFormData({ ...formData, country: e.target.value })}
                   data-testid="input-worker-country"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="add-email">E-posta</Label>
+                <Input
+                  id="add-email"
+                  type="email"
+                  placeholder="ornek@example.com"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  data-testid="input-worker-email"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="add-phone">Telefon</Label>
+                <Input
+                  id="add-phone"
+                  type="tel"
+                  placeholder="+31 6 12345678"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  data-testid="input-worker-phone"
                 />
               </div>
             </div>
@@ -568,10 +628,10 @@ export default function Workers() {
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    if (!formData.name || !formData.gender) {
+                    if (!formData.firstName || !formData.lastName || !formData.gender) {
                       toast({
                         title: "Eksik Bilgi",
-                        description: "Konaklama bulabilmek için önce isim ve cinsiyet bilgilerini girin",
+                        description: "Konaklama bulabilmek için önce isim, soyisim ve cinsiyet bilgilerini girin",
                         variant: "destructive",
                       });
                       return;
@@ -641,23 +701,36 @@ export default function Workers() {
           <DialogHeader>
             <DialogTitle>Çalışan Düzenle</DialogTitle>
             <DialogDescription>
-              {selectedWorker?.name} bilgilerini güncelleyin
+              {selectedWorker && `${selectedWorker.firstName} ${selectedWorker.lastName}`} bilgilerini güncelleyin
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-name">İsim Soyisim *</Label>
+                <Label htmlFor="edit-firstname">İsim *</Label>
                 <Input
-                  id="edit-name"
-                  placeholder="John Doe"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  data-testid="input-edit-worker-name"
+                  id="edit-firstname"
+                  placeholder="John"
+                  value={formData.firstName}
+                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                  data-testid="input-edit-worker-firstname"
                 />
               </div>
               
+              <div className="space-y-2">
+                <Label htmlFor="edit-lastname">Soyisim *</Label>
+                <Input
+                  id="edit-lastname"
+                  placeholder="Doe"
+                  value={formData.lastName}
+                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                  data-testid="input-edit-worker-lastname"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="edit-birthdate">Doğum Tarihi *</Label>
                 <Input
@@ -668,9 +741,7 @@ export default function Workers() {
                   data-testid="input-edit-worker-birthdate"
                 />
               </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
+
               <div className="space-y-2">
                 <Label htmlFor="edit-gender">Cinsiyet *</Label>
                 <Select
@@ -686,7 +757,9 @@ export default function Workers() {
                   </SelectContent>
                 </Select>
               </div>
-              
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="edit-country">Ülke *</Label>
                 <Input
@@ -695,6 +768,32 @@ export default function Workers() {
                   value={formData.country}
                   onChange={(e) => setFormData({ ...formData, country: e.target.value })}
                   data-testid="input-edit-worker-country"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-email">E-posta</Label>
+                <Input
+                  id="edit-email"
+                  type="email"
+                  placeholder="ornek@example.com"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  data-testid="input-edit-worker-email"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-phone">Telefon</Label>
+                <Input
+                  id="edit-phone"
+                  type="tel"
+                  placeholder="+31 6 12345678"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  data-testid="input-edit-worker-phone"
                 />
               </div>
             </div>
@@ -831,7 +930,7 @@ export default function Workers() {
         open={isAccommodationFinderOpen}
         onOpenChange={setIsAccommodationFinderOpen}
         workerGender={formData.gender as "Erkek" | "Kadın"}
-        workerName={formData.name}
+        workerName={`${formData.firstName} ${formData.lastName}`}
         workerCity={formData.country}
         onAssign={handleAccommodationAssign}
       />
