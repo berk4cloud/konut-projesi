@@ -1048,18 +1048,63 @@ export default function HousingDashboard() {
       }}>
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              Yeni Konaklama Girişi
-              <Badge variant="outline">Adım {wizardStep}/3</Badge>
-            </DialogTitle>
+            <DialogTitle>Yeni Konaklama Girişi</DialogTitle>
             <DialogDescription>
               {wizardStep === 1 && "İşçi seçin veya yeni işçi bilgilerini girin"}
               {wizardStep === 2 && "Uygun oda ve yatak seçin"}
               {wizardStep === 3 && "Fiyat ve depozito bilgilerini girin"}
             </DialogDescription>
           </DialogHeader>
+
+          {/* Horizontal Stepper */}
+          <div className="flex items-center justify-center gap-2 py-6">
+            {/* Step 1 */}
+            <div className="flex flex-col items-center gap-2">
+              <div className={cn(
+                "w-12 h-12 rounded-full flex items-center justify-center font-semibold transition-colors",
+                wizardStep > 1 ? "bg-green-500 text-white" : wizardStep === 1 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+              )}>
+                {wizardStep > 1 ? <Check className="w-6 h-6" /> : "1"}
+              </div>
+              <span className="text-xs text-muted-foreground">İşçi</span>
+            </div>
+
+            {/* Connector 1-2 */}
+            <div className={cn(
+              "w-24 h-1 rounded-full transition-colors",
+              wizardStep > 1 ? "bg-green-500" : "bg-muted"
+            )} />
+
+            {/* Step 2 */}
+            <div className="flex flex-col items-center gap-2">
+              <div className={cn(
+                "w-12 h-12 rounded-full flex items-center justify-center font-semibold transition-colors",
+                wizardStep > 2 ? "bg-green-500 text-white" : wizardStep === 2 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+              )}>
+                {wizardStep > 2 ? <Check className="w-6 h-6" /> : "2"}
+              </div>
+              <span className="text-xs text-muted-foreground">Oda/Yatak</span>
+            </div>
+
+            {/* Connector 2-3 */}
+            <div className={cn(
+              "w-24 h-1 rounded-full transition-colors",
+              wizardStep > 2 ? "bg-green-500" : "bg-muted"
+            )} />
+
+            {/* Step 3 */}
+            <div className="flex flex-col items-center gap-2">
+              <div className={cn(
+                "w-12 h-12 rounded-full flex items-center justify-center font-semibold transition-colors",
+                wizardStep === 3 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+              )}>
+                3
+              </div>
+              <span className="text-xs text-muted-foreground">Fiyat</span>
+            </div>
+          </div>
           
-          <div className="py-4 space-y-4">
+          <div className="space-y-4">
             {/* Step 1: Worker Selection */}
             {wizardStep === 1 && (
               <div className="space-y-4">
