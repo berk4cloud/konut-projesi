@@ -281,6 +281,7 @@ export default function Assignments() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [chargesFilter, setChargesFilter] = useState<string>("all"); // New filter for charges
   const [assignments] = useState(mockAssignments);
   const [charges] = useState(mockCharges);
   const [payments] = useState(mockPayments);
@@ -369,10 +370,33 @@ export default function Assignments() {
     return matchesSearch && matchesStatus;
   });
 
-  // Filter charges based on search
+  // Filter charges based on search and due date
   const filteredCharges = charges.filter(charge => {
-    return searchQuery === "" || 
+    const matchesSearch = searchQuery === "" || 
       charge.workerName.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    if (!matchesSearch) return false;
+    
+    // Date-based filtering
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dueDate = new Date(charge.dueDate);
+    dueDate.setHours(0, 0, 0, 0);
+    const threeDaysFromNow = new Date(today);
+    threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
+    
+    switch (chargesFilter) {
+      case "all":
+        return charge.status !== "paid"; // Exclude paid charges from "All" filter
+      case "today":
+        return dueDate.getTime() === today.getTime() && charge.status !== "paid";
+      case "upcoming":
+        return dueDate <= threeDaysFromNow && dueDate >= today && charge.status !== "paid";
+      case "overdue":
+        return dueDate < today && charge.status !== "paid";
+      default:
+        return charge.status !== "paid";
+    }
   });
 
   // Filter payments based on search
@@ -599,6 +623,21 @@ export default function Assignments() {
 
             {/* Charges Tab */}
             <TabsContent value="charges" className="space-y-4">
+              {/* Charges Filter */}
+              <div className="flex items-center gap-4">
+                <Select value={chargesFilter} onValueChange={setChargesFilter}>
+                  <SelectTrigger className="w-[250px]" data-testid="select-charges-filter">
+                    <SelectValue placeholder="Ödeme durumu filtrele" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tümü</SelectItem>
+                    <SelectItem value="today">Bugün Vadesi Gelenler</SelectItem>
+                    <SelectItem value="upcoming">3 Gün İçinde</SelectItem>
+                    <SelectItem value="overdue">Gecikmiş Ödemeler</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="space-y-4">
                 {filteredCharges.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
