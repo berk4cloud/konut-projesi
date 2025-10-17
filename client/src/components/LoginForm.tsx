@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,12 +14,27 @@ import {
 
 export default function LoginForm() {
   const [, setLocation] = useLocation();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [tenant, setTenant] = useState("");
 
   const handleLogin = () => {
     console.log("Login triggered:", { email, password, tenant });
+    
+    // Mock user data for demo - in production this would come from API
+    const mockUser = {
+      id: "user-1",
+      tenantId: tenant || "cova",
+      email: email,
+      password: "", // Never store in context
+      name: "Admin User",
+      role: "tenant_admin",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    
+    login(mockUser);
     setLocation("/dashboard");
   };
 
@@ -27,6 +43,20 @@ export default function LoginForm() {
     setPassword("demo123");
     setTenant("cova");
     console.log("Demo login triggered");
+    
+    // Mock demo user
+    const demoUser = {
+      id: "demo-user-1",
+      tenantId: "cova",
+      email: "admin@cova.nl",
+      password: "",
+      name: "Admin Demo",
+      role: "tenant_admin",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    
+    login(demoUser);
     setTimeout(() => setLocation("/dashboard"), 100);
   };
 
