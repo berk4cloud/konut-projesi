@@ -11,6 +11,33 @@ APDO HABITAT is a multi-tenant SaaS platform for managing worker accommodation i
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+All UI text must be in Turkish language.
+
+## Recent Updates (October 2025)
+
+### QR Code Task Delegation System
+Implemented comprehensive QR code system for delegating tasks to workers and external users. The system allows admins to create unique public links for:
+- Worker self-registration (foreign nationals enter their own data)
+- Meter readings with photo uploads
+- Document uploads (ID cards, contracts, etc.)
+
+**Key Features**:
+- QR code generation with 10-character alphanumeric codes (case-sensitive)
+- Configurable usage limits (unlimited, 1x, Xx times)
+- Configurable expiry dates (unlimited, 1 day, 3 days, 1 month, 6 months)
+- Status management (active, disabled, expired)
+- Real-time pending approvals queue
+- Public link validation with error handling
+- Notification system (header bell icon with badge count)
+
+**Implementation Status**: 
+- ✅ Frontend UI mockups complete with mock data
+- ✅ QR Management dashboard
+- ✅ 3-step QR creation dialog
+- ✅ Pending approvals page with approve/reject actions
+- ✅ Public QR link pages (valid/invalid states)
+- ⏳ Backend API integration pending
+- ⏳ Database schema for QR codes pending
 
 ## System Architecture
 
@@ -90,6 +117,8 @@ Tenants
 - **Beds**: Individual sleeping units with status tracking
 - **Workers**: Personnel with gender and status information
 - **Reservations**: Time-bound bed assignments with check-in/out tracking
+- **QR Codes** (Future): Task delegation codes with usage limits and expiry
+- **QR Submissions** (Future): Pending approvals from public QR forms
 
 **Critical Fields**:
 - Ownership types: owned, rented, third_party
@@ -114,7 +143,18 @@ Tenants
 - `POST /api/reservations` - Create bed assignment
 - `GET /api/reservations` - Query reservations by bed/room/date
 
-**Authorization**: All endpoints (except login) require JWT token in Authorization header
+**QR Codes** (Future Backend Implementation):
+- `GET /api/qr-codes` - List QR codes for tenant
+- `POST /api/qr-codes` - Create new QR code
+- `PATCH /api/qr-codes/:id` - Update QR code (disable/enable)
+- `DELETE /api/qr-codes/:id` - Delete QR code
+- `GET /api/qr-codes/:code/validate` - Validate QR code for public access
+- `POST /api/qr-submissions` - Submit form data from public QR link
+- `GET /api/pending-approvals` - List pending submissions awaiting approval
+- `POST /api/pending-approvals/:id/approve` - Approve pending submission
+- `POST /api/pending-approvals/:id/reject` - Reject pending submission
+
+**Authorization**: All endpoints (except login and public QR pages) require JWT token in Authorization header
 
 ### Business Logic Components
 
