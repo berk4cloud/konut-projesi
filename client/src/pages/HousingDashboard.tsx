@@ -7,6 +7,7 @@ import WorkerAssignmentModal from "@/components/WorkerAssignmentModal";
 import GenderWarningModal from "@/components/GenderWarningModal";
 import LeaseContractDialog from "@/components/LeaseContractDialog";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import { FileText, Bell, Calendar, AlertCircle, Plus, ChevronDown, ChevronUp, MapPin, Clock } from "lucide-react";
 import {
   Accordion,
@@ -47,6 +48,8 @@ type Reminder = {
   alertDaysBefore: number;
   note?: string;
   recurring?: "monthly" | "yearly" | "none";
+  completed?: boolean;
+  completedAt?: string;
 };
 
 // TODO: Remove mock data when implementing real API
@@ -71,7 +74,7 @@ const initialMockHouses = [
         id: "r1",
         type: "lease_end" as const,
         title: "Kira sözleşmesi bitiyor",
-        date: "2025-01-14",
+        date: "2025-11-15",
         alertDaysBefore: 30,
         note: "Yenileme görüşmesi yapılmalı",
         recurring: "none" as const,
@@ -80,7 +83,7 @@ const initialMockHouses = [
         id: "r2",
         type: "maintenance" as const,
         title: "Yıllık bakım",
-        date: "2025-03-15",
+        date: "2025-10-20",
         alertDaysBefore: 10,
         note: "Kalorifer bakımı",
         recurring: "yearly" as const,
@@ -146,7 +149,7 @@ const initialMockHouses = [
         id: "r3",
         type: "inspection" as const,
         title: "Yangın güvenlik kontrolü",
-        date: "2025-02-20",
+        date: "2025-10-22",
         alertDaysBefore: 7,
         recurring: "yearly" as const,
       },
@@ -209,7 +212,7 @@ const initialMockHouses = [
         id: "r4",
         type: "other" as const,
         title: "Bina toplantısı",
-        date: "2025-01-25",
+        date: "2025-10-21",
         alertDaysBefore: 5,
         note: "Yönetim kurulu toplantısı",
         recurring: "none" as const,
@@ -289,10 +292,88 @@ const initialMockHouses = [
 ];
 
 export default function HousingDashboard() {
+  const { toast } = useToast();
   const [houses, setHouses] = useState(initialMockHouses);
   const [assignmentModalOpen, setAssignmentModalOpen] = useState(false);
   const [warningModalOpen, setWarningModalOpen] = useState(false);
   const [selectedBed, setSelectedBed] = useState<any>(null);
+
+  // Prepare upcoming reminders for notifications dialog
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const upcomingReminders = houses.flatMap(house => {
+    if (!house.reminders) return [];
+    
+    return house.reminders
+      .filter(reminder => {
+        // Exclude completed reminders from upcoming list
+        if (reminder.completed) return false;
+        
+        const reminderDate = new Date(reminder.date);
+        reminderDate.setHours(0, 0, 0, 0);
+        const daysUntil = Math.ceil((reminderDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+        return daysUntil >= 0 && daysUntil <= reminder.alertDaysBefore;
+      })
+      .map(reminder => ({
+        ...reminder,
+        houseName: house.name,
+        houseId: house.id,
+      }));
+  });
+  
+  // Get all completed reminders (regardless of date)
+  const completedReminders = houses.flatMap(house => {
+    if (!house.reminders) return [];
+    
+    return house.reminders
+      .filter(reminder => reminder.completed)
+      .map(reminder => ({
+        ...reminder,
+        houseName: house.name,
+        houseId: house.id,
+      }));
+  });
+  
+  // Combine upcoming + completed for dialog display
+  const allRemindersForDialog = [...upcomingReminders, ...completedReminders];
+  
+  const upcomingRemindersCount = upcomingReminders.length;
+  
+  // Reminder management functions
+  const handleCompleteReminder = (reminderId: string) => {
+    setHouses(prevHouses =>
+      prevHouses.map(house => ({
+        ...house,
+        reminders: house.reminders?.map(reminder =>
+          reminder.id === reminderId
+            ? { ...reminder, completed: true, completedAt: new Date().toISOString() }
+            : reminder
+        ),
+      }))
+    );
+    
+    toast({
+      title: "Hatırlatma tamamlandı",
+      description: "Hatırlatma başarıyla tamamlandı olarak işaretlendi.",
+    });
+  };
+  
+  const handleAddNoteToReminder = (reminderId: string, note: string) => {
+    setHouses(prevHouses =>
+      prevHouses.map(house => ({
+        ...house,
+        reminders: house.reminders?.map(reminder =>
+          reminder.id === reminderId ? { ...reminder, note } : reminder
+        ),
+      }))
+    );
+    
+    toast({
+      title: "Not eklendi",
+      description: "Hatırlatmaya not başarıyla eklendi.",
+    });
+  };
 
   // Filter states
   const [dateString, setDateString] = useState(new Date().toISOString().split("T")[0]);
@@ -376,7 +457,14 @@ export default function HousingDashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header tenantName="Cova B.V." userName="Admin" />
+      <Header 
+        tenantName="Cova B.V." 
+        userName="Admin" 
+        upcomingRemindersCount={upcomingRemindersCount}
+        upcomingReminders={allRemindersForDialog as any}
+        onCompleteReminder={handleCompleteReminder}
+        onAddNote={handleAddNoteToReminder}
+      />
 
       {/* Mobile-first responsive layout */}
       <div className="lg:grid lg:grid-cols-[320px_1fr]">

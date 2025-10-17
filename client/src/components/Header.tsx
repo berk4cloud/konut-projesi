@@ -20,16 +20,41 @@ import {
 import { useLocation } from "wouter";
 import { useState } from "react";
 import { useTheme } from "@/components/ThemeProvider";
+import NotificationsDialog from "@/components/NotificationsDialog";
+
+type Reminder = {
+  id: string;
+  type: "maintenance" | "lease_end" | "meter_reading" | "inspection" | "other";
+  title: string;
+  date: string;
+  alertDaysBefore: number;
+  note?: string;
+  recurring?: "monthly" | "yearly" | "none";
+  completed?: boolean;
+  completedAt?: string;
+  houseName?: string;
+};
 
 interface HeaderProps {
   tenantName?: string;
   userName?: string;
   upcomingRemindersCount?: number;
+  upcomingReminders?: Reminder[];
+  onCompleteReminder?: (reminderId: string) => void;
+  onAddNote?: (reminderId: string, note: string) => void;
 }
 
-export default function Header({ tenantName = "Cova B.V.", userName = "Admin", upcomingRemindersCount = 0 }: HeaderProps) {
+export default function Header({ 
+  tenantName = "Cova B.V.", 
+  userName = "Admin", 
+  upcomingRemindersCount = 0,
+  upcomingReminders = [],
+  onCompleteReminder,
+  onAddNote,
+}: HeaderProps) {
   const [location, setLocation] = useLocation();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
 
   const menuItems = [
@@ -40,8 +65,62 @@ export default function Header({ tenantName = "Cova B.V.", userName = "Admin", u
     { icon: Settings, label: "Ayarlar", path: "/settings" },
   ];
 
-  // Mock pending approvals count
-  const pendingApprovalsCount = 5;
+  // Mock QR submissions (pending approvals)
+  const mockQRSubmissions = [
+    {
+      id: "qs1",
+      qrCode: "QR2024ABC1",
+      taskType: "worker_registration" as const,
+      submittedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
+      data: {
+        workerName: "Ali Yılmaz",
+        nationality: "Türkiye",
+      },
+    },
+    {
+      id: "qs2",
+      qrCode: "QR2024XYZ2",
+      taskType: "meter_reading" as const,
+      submittedAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), // 5 hours ago
+      data: {
+        meterType: "electricity",
+        meterValue: "15750",
+        photo: "data:image/svg+xml,...",
+      },
+    },
+    {
+      id: "qs3",
+      qrCode: "QR2024DEF3",
+      taskType: "document_upload" as const,
+      submittedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
+      data: {
+        documentType: "Kimlik Belgesi",
+        photo: "data:image/svg+xml,...",
+      },
+    },
+    {
+      id: "qs4",
+      qrCode: "QR2024GHI4",
+      taskType: "worker_registration" as const,
+      submittedAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), // 3 hours ago
+      data: {
+        workerName: "Maria Kowalski",
+        nationality: "Polonya",
+      },
+    },
+    {
+      id: "qs5",
+      qrCode: "QR2024JKL5",
+      taskType: "meter_reading" as const,
+      submittedAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), // 6 hours ago
+      data: {
+        meterType: "water",
+        meterValue: "8650",
+      },
+    },
+  ];
+  
+  const pendingApprovalsCount = mockQRSubmissions.length;
   
   // Total notifications (QR approvals + upcoming reminders)
   const totalNotifications = pendingApprovalsCount + upcomingRemindersCount;
@@ -119,7 +198,7 @@ export default function Header({ tenantName = "Cova B.V.", userName = "Admin", u
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => handleNavigation("/pending-approvals")}
+            onClick={() => setNotificationsOpen(true)}
             className="relative"
             data-testid="button-notifications"
           >
@@ -156,6 +235,18 @@ export default function Header({ tenantName = "Cova B.V.", userName = "Admin", u
           </DropdownMenu>
         </div>
       </div>
+
+      <NotificationsDialog
+        open={notificationsOpen}
+        onOpenChange={setNotificationsOpen}
+        pendingApprovalsCount={pendingApprovalsCount}
+        pendingApprovals={mockQRSubmissions}
+        upcomingReminders={upcomingReminders}
+        onCompleteReminder={onCompleteReminder || (() => {})}
+        onAddNote={onAddNote || (() => {})}
+        onApproveSubmission={(id) => console.log("Approve:", id)}
+        onRejectSubmission={(id) => console.log("Reject:", id)}
+      />
     </header>
   );
 }

@@ -84,6 +84,8 @@ type Reminder = {
   alertDaysBefore: number; // How many days before to alert
   note?: string;
   recurring?: "monthly" | "yearly" | "none";
+  completed?: boolean;
+  completedAt?: string;
 };
 
 // Initial mock data
@@ -116,7 +118,7 @@ const initialMockHouses = [
         id: "r1",
         type: "lease_end" as const,
         title: "Kira sözleşmesi bitiyor",
-        date: "2025-01-14",
+        date: "2025-11-15",
         alertDaysBefore: 30,
         note: "Yenileme görüşmesi yapılmalı",
         recurring: "none" as const,
@@ -125,7 +127,7 @@ const initialMockHouses = [
         id: "r2",
         type: "maintenance" as const,
         title: "Yıllık bakım",
-        date: "2025-03-15",
+        date: "2025-10-20",
         alertDaysBefore: 10,
         note: "Kalorifer bakımı",
         recurring: "yearly" as const,
@@ -164,7 +166,7 @@ const initialMockHouses = [
         id: "r3",
         type: "inspection" as const,
         title: "Yangın güvenlik kontrolü",
-        date: "2025-02-20",
+        date: "2025-10-22",
         alertDaysBefore: 7,
         recurring: "yearly" as const,
       },
@@ -172,7 +174,7 @@ const initialMockHouses = [
         id: "r4",
         type: "meter_reading" as const,
         title: "Sayaç okuma günü",
-        date: "2025-01-10",
+        date: "2025-10-18",
         alertDaysBefore: 3,
         recurring: "monthly" as const,
       },
@@ -214,7 +216,7 @@ const initialMockHouses = [
         id: "r5",
         type: "other" as const,
         title: "Bina toplantısı",
-        date: "2025-01-25",
+        date: "2025-10-21",
         alertDaysBefore: 5,
         note: "Yönetim kurulu toplantısı",
         recurring: "none" as const,
@@ -315,25 +317,82 @@ export default function Houses() {
     });
   };
   
-  // Calculate upcoming reminders count (for header notification)
-  const upcomingRemindersCount = houses.reduce((count, house) => {
-    if (!house.reminders) return count;
+  // Prepare upcoming reminders for notifications dialog
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const upcomingReminders = houses.flatMap(house => {
+    if (!house.reminders) return [];
     
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    return house.reminders
+      .filter(reminder => {
+        // Exclude completed reminders from upcoming list
+        if (reminder.completed) return false;
+        
+        const reminderDate = new Date(reminder.date);
+        reminderDate.setHours(0, 0, 0, 0);
+        const daysUntil = Math.ceil((reminderDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+        return daysUntil >= 0 && daysUntil <= reminder.alertDaysBefore;
+      })
+      .map(reminder => ({
+        ...reminder,
+        houseName: house.name,
+        houseId: house.id,
+      }));
+  });
+  
+  // Get all completed reminders (regardless of date)
+  const completedReminders = houses.flatMap(house => {
+    if (!house.reminders) return [];
     
-    const upcomingCount = house.reminders.filter(reminder => {
-      const reminderDate = new Date(reminder.date);
-      reminderDate.setHours(0, 0, 0, 0);
-      
-      const daysUntil = Math.ceil((reminderDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-      
-      // Show if within alert window
-      return daysUntil >= 0 && daysUntil <= reminder.alertDaysBefore;
-    }).length;
+    return house.reminders
+      .filter(reminder => reminder.completed)
+      .map(reminder => ({
+        ...reminder,
+        houseName: house.name,
+        houseId: house.id,
+      }));
+  });
+  
+  // Combine upcoming + completed for dialog display
+  const allRemindersForDialog = [...upcomingReminders, ...completedReminders];
+  
+  const upcomingRemindersCount = upcomingReminders.length;
+  
+  // Reminder management functions
+  const handleCompleteReminder = (reminderId: string) => {
+    setHouses(prevHouses =>
+      prevHouses.map(house => ({
+        ...house,
+        reminders: house.reminders?.map(reminder =>
+          reminder.id === reminderId
+            ? { ...reminder, completed: true, completedAt: new Date().toISOString() }
+            : reminder
+        ),
+      }))
+    );
     
-    return count + upcomingCount;
-  }, 0);
+    toast({
+      title: "Hatırlatma tamamlandı",
+      description: "Hatırlatma başarıyla tamamlandı olarak işaretlendi.",
+    });
+  };
+  
+  const handleAddNoteToReminder = (reminderId: string, note: string) => {
+    setHouses(prevHouses =>
+      prevHouses.map(house => ({
+        ...house,
+        reminders: house.reminders?.map(reminder =>
+          reminder.id === reminderId ? { ...reminder, note } : reminder
+        ),
+      }))
+    );
+    
+    toast({
+      title: "Not eklendi",
+      description: "Hatırlatmaya not başarıyla eklendi.",
+    });
+  };
   
   // Lease contract state
   const [isLeaseDialogOpen, setIsLeaseDialogOpen] = useState(false);
@@ -618,7 +677,14 @@ export default function Houses() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header tenantName="Cova B.V." userName="Admin" upcomingRemindersCount={upcomingRemindersCount} />
+      <Header 
+        tenantName="Cova B.V." 
+        userName="Admin" 
+        upcomingRemindersCount={upcomingRemindersCount}
+        upcomingReminders={allRemindersForDialog as any}
+        onCompleteReminder={handleCompleteReminder}
+        onAddNote={handleAddNoteToReminder}
+      />
 
       <main className="p-6">
         <div className="max-w-7xl mx-auto space-y-6">
