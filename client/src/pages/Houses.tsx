@@ -111,6 +111,73 @@ export const systemSettings = {
   }
 };
 
+// Pricing calculation helper functions
+type HouseWithPricing = typeof initialMockHouses[0];
+
+/**
+ * Get the applicable price for a bed/room based on priority hierarchy:
+ * 1. Room-specific pricing (if enabled)
+ * 2. House-specific pricing (if enabled)
+ * 3. Standard system pricing
+ */
+export function getApplicablePrice(
+  room: RoomInfo,
+  house: HouseWithPricing,
+  priceType: 'bedDaily' | 'bedMonthly' | 'roomDaily' | 'roomMonthly'
+): number {
+  const priceField = priceType === 'bedDaily' ? 'bedDailyPrice' :
+                     priceType === 'bedMonthly' ? 'bedMonthlyPrice' :
+                     priceType === 'roomDaily' ? 'roomDailyPrice' :
+                     'roomMonthlyPrice';
+  
+  // Priority 1: Room-specific pricing
+  if (room.pricing?.useCustomPricing && room.pricing[priceField]) {
+    return room.pricing[priceField]!;
+  }
+  
+  // Priority 2: House-specific pricing
+  if (house.pricing?.useCustomPricing && house.pricing[priceField]) {
+    return house.pricing[priceField]!;
+  }
+  
+  // Priority 3: Standard pricing
+  return systemSettings.standardPricing[priceField];
+}
+
+/**
+ * Calculate rental price for a given number of days
+ * Logic:
+ * - If days < 30: Use daily rate × days
+ * - If days >= 30: Use (full months × monthly rate) + (remaining days × daily rate)
+ */
+export function calculateRentalPrice(
+  days: number,
+  dailyPrice: number,
+  monthlyPrice: number
+): { total: number; breakdown: string } {
+  if (days < 30) {
+    return {
+      total: days * dailyPrice,
+      breakdown: `${days} gün × €${dailyPrice}/gün`
+    };
+  }
+  
+  const fullMonths = Math.floor(days / 30);
+  const remainingDays = days % 30;
+  const monthlyTotal = fullMonths * monthlyPrice;
+  const dailyTotal = remainingDays * dailyPrice;
+  const total = monthlyTotal + dailyTotal;
+  
+  const parts = [];
+  if (fullMonths > 0) parts.push(`${fullMonths} ay × €${monthlyPrice}/ay`);
+  if (remainingDays > 0) parts.push(`${remainingDays} gün × €${dailyPrice}/gün`);
+  
+  return {
+    total,
+    breakdown: parts.join(' + ')
+  };
+}
+
 // Initial mock data
 const initialMockHouses = [
   {
