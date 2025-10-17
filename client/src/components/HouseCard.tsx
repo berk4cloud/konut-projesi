@@ -1,6 +1,4 @@
-import { Building2, MapPin, FileText } from "lucide-react";
 import RoomCard from "./RoomCard";
-import { Button } from "@/components/ui/button";
 
 interface Worker {
   id: string;
@@ -47,27 +45,6 @@ export default function HouseCard({
 
   return (
     <div className="bg-card border rounded-xl p-6 space-y-4 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between">
-        <div className="space-y-1">
-          <h3 className="text-xl font-semibold" data-testid={`house-${name}`}>
-            {name}
-          </h3>
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <MapPin className="w-4 h-4" />
-            <span>{city}</span>
-          </div>
-        </div>
-
-        <div className="text-right">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
-            <Building2 className="w-4 h-4" />
-            <span data-testid={`house-bed-count-${name}`}>
-              {occupiedBeds}/{totalBeds}
-            </span>
-          </div>
-        </div>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {rooms.map((room) => (
           <RoomCard
@@ -80,8 +57,8 @@ export default function HouseCard({
         ))}
       </div>
 
-      <div className="pt-3 border-t border-gray-200 flex items-center justify-between text-sm">
-        <div className="flex items-center gap-4">
+      <div className="pt-3 border-t border-gray-200">
+        <div className="flex items-center gap-4 text-sm">
           <span className="text-gray-600">
             Boş: <span className="font-semibold text-status-empty">{emptyBeds}</span>
           </span>
@@ -89,18 +66,6 @@ export default function HouseCard({
             Dolu: <span className="font-semibold text-status-occupied">{occupiedBeds}</span>
           </span>
         </div>
-        {ownershipType === "Kiralık" && onLeaseClick && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onLeaseClick}
-            className="gap-2"
-            data-testid={`button-lease-${name}`}
-          >
-            <FileText className="w-4 h-4" />
-            Kira Sözleşmesi
-          </Button>
-        )}
       </div>
     </div>
   );

@@ -883,7 +883,7 @@ export default function HousingDashboard() {
                               </div>
                               <div className="flex items-center gap-2">
                                 <Badge variant={house.occupiedBeds === house.totalBeds ? "destructive" : "secondary"}>
-                                  %{Math.round((house.occupiedBeds / house.totalBeds) * 100)}
+                                  {house.occupiedBeds}/{house.totalBeds} • %{Math.round((house.occupiedBeds / house.totalBeds) * 100)}
                                 </Badge>
                               </div>
                             </div>
@@ -931,21 +931,6 @@ export default function HousingDashboard() {
                           />
                           
                           <div className="flex gap-2 mt-3">
-                            {(house.ownershipType === "Kiralık" || house.ownershipType === "3. Taraf") && house.leaseContract && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  setSelectedHouseForLease(house);
-                                  setIsLeaseDialogOpen(true);
-                                }}
-                                data-testid={`button-lease-${house.id}`}
-                              >
-                                <FileText className="w-4 h-4 mr-2" />
-                                Kira Detayları
-                              </Button>
-                            )}
-                            
                             <Button
                               variant="outline"
                               size="sm"
