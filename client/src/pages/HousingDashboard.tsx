@@ -31,7 +31,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { useToast } from "@/hooks/use-toast";
-import { FileText, Bell, Calendar, AlertCircle, Plus, ChevronDown, ChevronUp, MapPin, Clock, CheckCircle, Check, ChevronsUpDown } from "lucide-react";
+import { FileText, Bell, Calendar, AlertCircle, Plus, ChevronDown, ChevronUp, MapPin, Clock, CheckCircle, Check, ChevronsUpDown, UserPlus } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -340,6 +340,21 @@ export default function HousingDashboard() {
     depositCollector: "",
   });
 
+  // Workers state (for dynamic addition)
+  const [workers, setWorkers] = useState([
+    { id: "w1", name: "Ahmet Yılmaz", dateOfBirth: "1990-05-15", gender: "male" as const },
+    { id: "w2", name: "Mehmet Demir", dateOfBirth: "1988-08-22", gender: "male" as const },
+    { id: "w3", name: "Ayşe Kaya", dateOfBirth: "1995-03-10", gender: "female" as const },
+  ]);
+
+  // Quick worker registration state
+  const [quickRegisterOpen, setQuickRegisterOpen] = useState(false);
+  const [quickRegisterData, setQuickRegisterData] = useState({
+    name: "",
+    dateOfBirth: "",
+    gender: "" as "male" | "female" | "",
+  });
+
   // Prepare upcoming reminders for notifications dialog
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -497,12 +512,38 @@ export default function HousingDashboard() {
     }
   };
 
-  // Mock workers for wizard
-  const mockWorkers = [
-    { id: "w1", name: "Ahmet Yılmaz", dateOfBirth: "1990-05-15" },
-    { id: "w2", name: "Mehmet Demir", dateOfBirth: "1988-08-22" },
-    { id: "w3", name: "Ayşe Kaya", dateOfBirth: "1995-03-10" },
-  ];
+  // Quick worker registration handler
+  const handleQuickRegister = () => {
+    if (!quickRegisterData.name || !quickRegisterData.dateOfBirth || !quickRegisterData.gender) {
+      toast({
+        title: "Eksik Bilgi",
+        description: "Lütfen tüm alanları doldurun.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newWorker = {
+      id: `w${Date.now()}`,
+      name: quickRegisterData.name,
+      dateOfBirth: quickRegisterData.dateOfBirth,
+      gender: quickRegisterData.gender,
+    };
+
+    setWorkers([...workers, newWorker]);
+    setWizardData({
+      ...wizardData,
+      workerId: newWorker.id,
+      workerName: newWorker.name,
+    });
+    setQuickRegisterData({ name: "", dateOfBirth: "", gender: "" });
+    setQuickRegisterOpen(false);
+
+    toast({
+      title: "İşçi Eklendi",
+      description: `${newWorker.name} başarıyla eklendi ve seçildi.`,
+    });
+  };
 
   // Wizard handlers
   const handleWizardNext = () => {
@@ -1121,7 +1162,7 @@ export default function HousingDashboard() {
                       >
                         {wizardData.workerId 
                           ? (() => {
-                              const worker = mockWorkers.find(w => w.id === wizardData.workerId);
+                              const worker = workers.find(w => w.id === wizardData.workerId);
                               return worker ? `${worker.name} (${worker.dateOfBirth})` : "İşçi seçin";
                             })()
                           : "İşçi seçin"}
@@ -1134,7 +1175,7 @@ export default function HousingDashboard() {
                         <CommandList>
                           <CommandEmpty>İşçi bulunamadı</CommandEmpty>
                           <CommandGroup>
-                            {mockWorkers.map(worker => (
+                            {workers.map(worker => (
                               <CommandItem
                                 key={worker.id}
                                 value={`${worker.name} ${worker.dateOfBirth}`}
@@ -1161,10 +1202,76 @@ export default function HousingDashboard() {
                       </Command>
                     </PopoverContent>
                   </Popover>
-                  <p className="text-sm text-muted-foreground">
-                    * Yeni işçi kaydı için İşçiler sayfasını kullanın
-                  </p>
                 </div>
+
+                {/* Quick Worker Registration */}
+                <Collapsible open={quickRegisterOpen} onOpenChange={setQuickRegisterOpen}>
+                  <CollapsibleTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      data-testid="button-quick-register-toggle"
+                    >
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      Hızlı İşçi Kaydı
+                      {quickRegisterOpen ? <ChevronUp className="w-4 h-4 ml-auto" /> : <ChevronDown className="w-4 h-4 ml-auto" />}
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="space-y-4 pt-4">
+                    <div className="border rounded-lg p-4 space-y-4 bg-muted/30">
+                      <p className="text-sm text-muted-foreground">
+                        Minimum bilgilerle hızlı işçi kaydı yapın
+                      </p>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="quick-name">Ad Soyad *</Label>
+                        <Input
+                          id="quick-name"
+                          placeholder="Örn: Mehmet Yılmaz"
+                          value={quickRegisterData.name}
+                          onChange={(e) => setQuickRegisterData({ ...quickRegisterData, name: e.target.value })}
+                          data-testid="input-quick-name"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="quick-dob">Doğum Tarihi *</Label>
+                        <Input
+                          id="quick-dob"
+                          type="date"
+                          value={quickRegisterData.dateOfBirth}
+                          onChange={(e) => setQuickRegisterData({ ...quickRegisterData, dateOfBirth: e.target.value })}
+                          data-testid="input-quick-dob"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="quick-gender">Cinsiyet *</Label>
+                        <Select
+                          value={quickRegisterData.gender}
+                          onValueChange={(value: "male" | "female") => setQuickRegisterData({ ...quickRegisterData, gender: value })}
+                        >
+                          <SelectTrigger id="quick-gender" data-testid="select-quick-gender">
+                            <SelectValue placeholder="Cinsiyet seçin" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="male">Erkek</SelectItem>
+                            <SelectItem value="female">Kadın</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <Button
+                        onClick={handleQuickRegister}
+                        className="w-full"
+                        data-testid="button-quick-register-save"
+                      >
+                        <UserPlus className="w-4 h-4 mr-2" />
+                        Kaydet ve Seç
+                      </Button>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
               </div>
             )}
 
