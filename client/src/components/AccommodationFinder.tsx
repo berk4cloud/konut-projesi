@@ -149,8 +149,8 @@ export default function AccommodationFinder({
       return false;
     }
 
-    // Only show empty beds filter
-    if (showOnlyEmpty && bed.occupiedBedsInRoom >= bed.totalBedsInRoom) {
+    // Only show empty beds filter (rooms with 0 occupancy)
+    if (showOnlyEmpty && bed.occupiedBedsInRoom > 0) {
       return false;
     }
 
