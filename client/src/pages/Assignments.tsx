@@ -854,7 +854,7 @@ export default function Assignments() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold mb-2">Konaklama Yönetimi</h2>
-              <p className="text-muted-foreground">Tahsisler, ücretlendirme ve ödeme takibi</p>
+              <p className="text-muted-foreground">Aktif konaklamalar, ücretlendirme ve ödeme takibi</p>
             </div>
           </div>
 
@@ -862,7 +862,7 @@ export default function Assignments() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Aktif Tahsisler</CardTitle>
+                <CardTitle className="text-sm font-medium">Aktif Konaklamalar</CardTitle>
                 <UserCheck className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -908,7 +908,7 @@ export default function Assignments() {
           {/* Tabs */}
           <Tabs defaultValue="assignments" className="w-full">
             <TabsList className="grid w-full max-w-md grid-cols-3">
-              <TabsTrigger value="assignments" data-testid="tab-assignments">Tahsisler</TabsTrigger>
+              <TabsTrigger value="assignments" data-testid="tab-assignments">Konaklamalar</TabsTrigger>
               <TabsTrigger value="charges" data-testid="tab-charges">Ücretlendirme</TabsTrigger>
               <TabsTrigger value="payments" data-testid="tab-payments">Ödemeler</TabsTrigger>
             </TabsList>

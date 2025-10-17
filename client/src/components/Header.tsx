@@ -61,7 +61,7 @@ export default function Header({
     { icon: Home, label: "Konaklama Genel Bakış", path: "/dashboard" },
     { icon: Building2, label: "Konutlar", path: "/houses" },
     { icon: Users, label: "Çalışanlar", path: "/workers" },
-    { icon: ClipboardList, label: "Tahsisler", path: "/assignments" },
+    { icon: ClipboardList, label: "Konaklama", path: "/assignments" },
     { icon: QrCode, label: "QR Yönetimi", path: "/qr-management" },
     { icon: Settings, label: "Ayarlar", path: "/settings" },
   ];

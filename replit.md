@@ -43,7 +43,7 @@ TanStack Query is used for server state management (caching, refetching). React'
 
 ### Features
 
-- **Accommodation Billing & Assignment Management**: A "Tahsisler" (Assignments) module manages worker-bed assignments, automatically calculates monthly charges (prorated for partial months), tracks deposits, and monitors payment statuses. It includes a statistics dashboard and risk-based warnings.
+- **Accommodation Billing & Assignment Management**: The "Konaklama" (Accommodation) module manages worker-bed assignments, automatically calculates monthly charges (prorated for partial months), tracks deposits, and monitors payment statuses. It includes a statistics dashboard and risk-based warnings.
 - **Multi-Level Pricing System**: Supports a 3-level pricing hierarchy (Room-specific > House-specific > Standard system pricing) with a global daily rental mode toggle. Calculations adapt for daily or monthly rates based on duration.
 - **House Archiving System**: Implements soft-delete for houses with visual indicators (opacity, dashed border, "Arşiv" badge) and a toggle to show/hide archived houses.
 - **QR Code Task Delegation System**: Enables creation of unique public QR links for worker self-registration, meter readings, and document uploads. Features include configurable usage limits, expiry dates, status management, and a pending approvals queue with notifications.
