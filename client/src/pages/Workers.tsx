@@ -137,12 +137,14 @@ export default function Workers() {
     }
   };
   const [workers, setWorkers] = useState<Worker[]>([
-    { id: "1", firstName: "John", lastName: "Doe", birthDate: "1980-10-22", gender: "Erkek", country: "Hollanda", email: "john.doe@example.com", phone: "+31612345678", house: "Geldernstrasse 13", room: "45", bed: "1", status: "active" },
-    { id: "2", firstName: "Jane", lastName: "Smith", birthDate: "1992-05-15", gender: "Kadın", country: "Almanya", email: "jane.smith@example.com", house: "Geldernstrasse 13", room: "45", bed: "3", status: "on_vacation", vacationStartDate: "2025-10-15", vacationEndDate: "2025-10-30" },
-    { id: "3", firstName: "Mike", lastName: "Johnson", birthDate: "1985-11-30", gender: "Erkek", country: "Polonya", phone: "+48123456789", house: "Geldernstrasse 13", room: "47", bed: "1", status: "active" },
-    { id: "4", firstName: "Sarah", lastName: "Williams", birthDate: "1988-03-08", gender: "Kadın", country: "Romanya", email: "sarah.w@example.com", phone: "+40123456789", house: "Hauptstrasse 45", room: "101", bed: "2", status: "notice_period", plannedExitDate: "2025-10-31" },
-    { id: "5", firstName: "Tom", lastName: "Brown", birthDate: "1995-07-12", gender: "Erkek", country: "Hollanda", house: "Hauptstrasse 45", room: "102", bed: "1", status: "left_no_notice", leftDate: "2025-10-16" },
-    { id: "6", firstName: "Ahmet", lastName: "Yılmaz", birthDate: "1990-08-20", gender: "Erkek", country: "Türkiye", email: "ahmet.yilmaz@example.com", phone: "+905551234567", house: "Atatürk Caddesi 42", room: "1", bed: "2", status: "active" },
+    { id: "1", firstName: "John", lastName: "Doe", birthDate: "1980-10-22", gender: "Erkek", country: "Hollanda", email: "john.doe@example.com", phone: "+31612345678", house: "Geldernstrasse 13", room: "45", bed: "1", status: "active", checkInDate: "2025-01-15", keyHandedOverDate: "2025-01-15" },
+    { id: "2", firstName: "Jane", lastName: "Smith", birthDate: "1992-05-15", gender: "Kadın", country: "Almanya", email: "jane.smith@example.com", house: "Geldernstrasse 13", room: "45", bed: "3", status: "on_vacation", vacationStartDate: "2025-10-15", vacationEndDate: "2025-10-30", checkInDate: "2025-02-01", keyHandedOverDate: "2025-02-01" },
+    { id: "3", firstName: "Mike", lastName: "Johnson", birthDate: "1985-11-30", gender: "Erkek", country: "Polonya", phone: "+48123456789", house: "Geldernstrasse 13", room: "47", bed: "1", status: "active", checkInDate: "2025-03-10", keyHandedOverDate: "2025-03-10" },
+    { id: "4", firstName: "Sarah", lastName: "Williams", birthDate: "1988-03-08", gender: "Kadın", country: "Romanya", email: "sarah.w@example.com", phone: "+40123456789", house: "Hauptstrasse 45", room: "101", bed: "2", status: "notice_period", plannedExitDate: "2025-10-31", checkInDate: "2024-11-05", keyHandedOverDate: "2024-11-05" },
+    { id: "5", firstName: "Tom", lastName: "Brown", birthDate: "1995-07-12", gender: "Erkek", country: "Hollanda", house: "", room: "", bed: "", status: "left_no_notice", leftDate: "2025-10-16", checkOutDate: "2025-10-16", keyReturnedDate: "2025-10-16" },
+    { id: "6", firstName: "Ahmet", lastName: "Yılmaz", birthDate: "1990-08-20", gender: "Erkek", country: "Türkiye", email: "ahmet.yilmaz@example.com", phone: "+905551234567", house: "Atatürk Caddesi 42", room: "1", bed: "2", status: "active", checkInDate: "2025-05-20", keyHandedOverDate: "2025-05-20" },
+    { id: "7", firstName: "Maria", lastName: "Garcia", birthDate: "1993-04-12", gender: "Kadın", country: "İspanya", email: "maria.g@example.com", phone: "+34612345678", house: "", room: "", bed: "", status: "new_registration" },
+    { id: "8", firstName: "Pavel", lastName: "Novak", birthDate: "1989-09-25", gender: "Erkek", country: "Çek Cumhuriyeti", email: "pavel.n@example.com", phone: "+420123456789", house: "", room: "", bed: "", status: "checked_out", checkInDate: "2024-06-01", checkOutDate: "2025-10-10", keyHandedOverDate: "2024-06-01", keyReturnedDate: "2025-10-10" },
   ]);
   
   // Dialog states
@@ -290,6 +292,11 @@ export default function Workers() {
       vacationEndDate: formData.status === "on_vacation" ? formData.vacationEndDate : undefined,
       plannedExitDate: formData.status === "notice_period" ? formData.plannedExitDate : undefined,
       leftDate: formData.status === "left_no_notice" ? formData.leftDate : undefined,
+      checkOutDate: (formData.status === "checked_out" || formData.status === "left_no_notice") ? formData.checkOutDate : undefined,
+      // Workers with new_registration or checked_out status should not have bed assignments
+      house: (formData.status === "new_registration" || formData.status === "checked_out") ? "" : formData.house,
+      room: (formData.status === "new_registration" || formData.status === "checked_out") ? "" : formData.room,
+      bed: (formData.status === "new_registration" || formData.status === "checked_out") ? "" : formData.bed,
     };
     
     if (selectedWorker) {
@@ -648,6 +655,102 @@ export default function Workers() {
                 />
               </div>
             </div>
+
+            <div className="border-t pt-4">
+              <h4 className="font-medium mb-3">Durum Yönetimi</h4>
+              
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="add-status">Çalışan Durumu</Label>
+                  <Select
+                    value={formData.status}
+                    onValueChange={(value: WorkerStatus) => setFormData({ ...formData, status: value })}
+                  >
+                    <SelectTrigger id="add-status" data-testid="select-worker-status">
+                      <SelectValue placeholder="Durum seçin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Aktif - Konaklamada</SelectItem>
+                      <SelectItem value="new_registration">Yeni Kayıt</SelectItem>
+                      <SelectItem value="on_vacation">Tatilde</SelectItem>
+                      <SelectItem value="notice_period">Çıkış Bildirdi</SelectItem>
+                      <SelectItem value="left_no_notice">Haber Vermeden Gitti</SelectItem>
+                      <SelectItem value="checked_out">Çıkış Yaptı</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {formData.status === "on_vacation" && (
+                  <div className="grid grid-cols-2 gap-4 bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg">
+                    <div className="space-y-2">
+                      <Label htmlFor="add-vacation-start">Tatil Başlangıcı</Label>
+                      <Input
+                        id="add-vacation-start"
+                        type="date"
+                        value={formData.vacationStartDate}
+                        onChange={(e) => setFormData({ ...formData, vacationStartDate: e.target.value })}
+                        data-testid="input-vacation-start"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="add-vacation-end">Dönüş Tarihi</Label>
+                      <Input
+                        id="add-vacation-end"
+                        type="date"
+                        value={formData.vacationEndDate}
+                        onChange={(e) => setFormData({ ...formData, vacationEndDate: e.target.value })}
+                        data-testid="input-vacation-end"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {formData.status === "notice_period" && (
+                  <div className="bg-amber-50 dark:bg-amber-950/20 p-3 rounded-lg">
+                    <div className="space-y-2">
+                      <Label htmlFor="add-planned-exit">Planlanan Çıkış Tarihi</Label>
+                      <Input
+                        id="add-planned-exit"
+                        type="date"
+                        value={formData.plannedExitDate}
+                        onChange={(e) => setFormData({ ...formData, plannedExitDate: e.target.value })}
+                        data-testid="input-planned-exit"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {formData.status === "left_no_notice" && (
+                  <div className="bg-red-50 dark:bg-red-950/20 p-3 rounded-lg">
+                    <div className="space-y-2">
+                      <Label htmlFor="add-left-date">Ayrılış Tarihi</Label>
+                      <Input
+                        id="add-left-date"
+                        type="date"
+                        value={formData.leftDate}
+                        onChange={(e) => setFormData({ ...formData, leftDate: e.target.value })}
+                        data-testid="input-left-date"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {formData.status === "checked_out" && (
+                  <div className="bg-gray-50 dark:bg-gray-950/20 p-3 rounded-lg">
+                    <div className="space-y-2">
+                      <Label htmlFor="add-checkout-date">Çıkış Tarihi</Label>
+                      <Input
+                        id="add-checkout-date"
+                        type="date"
+                        value={formData.checkOutDate}
+                        onChange={(e) => setFormData({ ...formData, checkOutDate: e.target.value })}
+                        data-testid="input-checkout-date"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
             
             <div className="border-t pt-4">
               <div className="flex items-center justify-between mb-3">
@@ -656,6 +759,7 @@ export default function Workers() {
                   type="button"
                   variant="outline"
                   size="sm"
+                  disabled={formData.status === "new_registration" || formData.status === "checked_out"}
                   onClick={() => {
                     if (!formData.firstName || !formData.lastName || !formData.gender) {
                       toast({
@@ -842,9 +946,11 @@ export default function Workers() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="active">Aktif - Konaklamada</SelectItem>
+                      <SelectItem value="new_registration">Yeni Kayıt</SelectItem>
                       <SelectItem value="on_vacation">Tatilde</SelectItem>
                       <SelectItem value="notice_period">Çıkış Bildirdi</SelectItem>
                       <SelectItem value="left_no_notice">Haber Vermeden Gitti</SelectItem>
+                      <SelectItem value="checked_out">Çıkış Yaptı</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -899,6 +1005,21 @@ export default function Workers() {
                         value={formData.leftDate}
                         onChange={(e) => setFormData({ ...formData, leftDate: e.target.value })}
                         data-testid="input-left-date"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {formData.status === "checked_out" && (
+                  <div className="bg-gray-50 dark:bg-gray-950/20 p-3 rounded-lg">
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-checkout-date">Çıkış Tarihi</Label>
+                      <Input
+                        id="edit-checkout-date"
+                        type="date"
+                        value={formData.checkOutDate}
+                        onChange={(e) => setFormData({ ...formData, checkOutDate: e.target.value })}
+                        data-testid="input-checkout-date"
                       />
                     </div>
                   </div>
