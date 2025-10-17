@@ -15,7 +15,19 @@ All UI text must be in Turkish language.
 
 ## Recent Updates (October 2025)
 
-### Multi-Level Pricing System (Latest)
+### Room Highlight UX Enhancement (Latest - Oct 17, 2025)
+Implemented temporary visual highlighting for newly added rooms in house edit dialog:
+- **Problem Solved**: Users couldn't identify which room they just added in long room lists
+- **Solution**: 3-second blue highlight on newly added room only (not last room)
+- **Implementation**: 
+  - useEffect monitors formData.rooms.length changes
+  - useRef tracks previous room count to detect additions
+  - Highlight classes: `bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800`
+  - Automatic cleanup after 3 seconds via setTimeout
+  - Highlight clears when dialog closes or form saves
+- **Status**: ✅ Complete and tested with Playwright e2e tests
+
+### Multi-Level Pricing System
 Implemented comprehensive 3-level pricing hierarchy for rental management:
 - **Daily Rental Mode**: Global toggle in Settings (ON/OFF) - when enabled, shows both daily and monthly rates
 - **Pricing Hierarchy** (priority order):

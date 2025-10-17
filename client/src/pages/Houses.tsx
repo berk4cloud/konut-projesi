@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -636,6 +636,32 @@ export default function Houses() {
     },
   });
 
+  // State to track newly added room for temporary highlighting
+  const [newlyAddedRoomIndex, setNewlyAddedRoomIndex] = useState<number | null>(null);
+  
+  // Track previous room count to detect when new room is added
+  const prevRoomsLength = useRef(formData.rooms.length);
+
+  // Effect to highlight newly added room
+  useEffect(() => {
+    // If a new room was added (rooms length increased)
+    if (formData.rooms.length > prevRoomsLength.current) {
+      const newRoomIndex = formData.rooms.length - 1;
+      setNewlyAddedRoomIndex(newRoomIndex);
+      
+      // Remove highlight after 3 seconds
+      const timeoutId = setTimeout(() => {
+        setNewlyAddedRoomIndex(null);
+      }, 3000);
+      
+      // Cleanup timeout if component unmounts or rooms change again
+      return () => clearTimeout(timeoutId);
+    }
+    
+    // Update previous rooms length
+    prevRoomsLength.current = formData.rooms.length;
+  }, [formData.rooms.length]);
+
   const filteredHouses = houses.filter(
     (house) => {
       // Filter by search query
@@ -702,9 +728,9 @@ export default function Houses() {
   };
 
   const handleAddRoom = () => {
-    setFormData({
-      ...formData,
-      rooms: [...formData.rooms, { 
+    setFormData(prevFormData => ({
+      ...prevFormData,
+      rooms: [...prevFormData.rooms, { 
         roomNumber: "", 
         beds: 1, 
         canRentAsRoom: false, 
@@ -714,7 +740,7 @@ export default function Houses() {
           useCustomPricing: false,
         }
       }],
-    });
+    }));
   };
 
   const handleRemoveRoom = (index: number) => {
@@ -929,6 +955,7 @@ export default function Houses() {
     }
     
     setIsDialogOpen(false);
+    setNewlyAddedRoomIndex(null); // Clear highlight when saving
     
     toast({
       title: "Başarılı",
@@ -1327,12 +1354,12 @@ export default function Houses() {
 
               <div className="space-y-3">
                 {formData.rooms.map((room, index) => {
-                  const isLastRoom = index === formData.rooms.length - 1;
+                  const isNewlyAdded = index === newlyAddedRoomIndex;
                   return (
                   <div
                     key={index}
                     className={`p-4 rounded-lg border space-y-3 transition-colors duration-300 ${
-                      isLastRoom 
+                      isNewlyAdded 
                         ? 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800' 
                         : 'bg-muted/30'
                     }`}
@@ -1780,7 +1807,10 @@ export default function Houses() {
             <div className="flex gap-3 ml-auto">
               <Button
                 variant="outline"
-                onClick={() => setIsDialogOpen(false)}
+                onClick={() => {
+                  setIsDialogOpen(false);
+                  setNewlyAddedRoomIndex(null); // Clear highlight when closing dialog
+                }}
                 data-testid="button-cancel"
               >
                 İptal
