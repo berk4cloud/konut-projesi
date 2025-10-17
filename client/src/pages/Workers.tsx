@@ -44,6 +44,8 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import AccommodationFinder from "@/components/AccommodationFinder";
 
+type WorkerStatus = "active" | "left_no_notice" | "notice_period" | "on_vacation";
+
 type Worker = {
   id: string;
   name: string;
@@ -53,6 +55,12 @@ type Worker = {
   house: string;
   room: string;
   bed: string;
+  status: WorkerStatus;
+  // Status-specific dates
+  vacationStartDate?: string; // For on_vacation
+  vacationEndDate?: string; // For on_vacation
+  plannedExitDate?: string; // For notice_period
+  leftDate?: string; // For left_no_notice
 };
 
 // Mock houses for dropdowns
@@ -82,12 +90,12 @@ export default function Workers() {
     return age;
   };
   const [workers, setWorkers] = useState<Worker[]>([
-    { id: "1", name: "John Doe", birthDate: "1980-10-22", gender: "Erkek", country: "Hollanda", house: "Geldernstrasse 13", room: "45", bed: "1" },
-    { id: "2", name: "Jane Smith", birthDate: "1992-05-15", gender: "Kadın", country: "Almanya", house: "Geldernstrasse 13", room: "45", bed: "3" },
-    { id: "3", name: "Mike Johnson", birthDate: "1985-11-30", gender: "Erkek", country: "Polonya", house: "Geldernstrasse 13", room: "47", bed: "1" },
-    { id: "4", name: "Sarah Williams", birthDate: "1988-03-08", gender: "Kadın", country: "Romanya", house: "Hauptstrasse 45", room: "101", bed: "2" },
-    { id: "5", name: "Tom Brown", birthDate: "1995-07-12", gender: "Erkek", country: "Hollanda", house: "Hauptstrasse 45", room: "102", bed: "1" },
-    { id: "6", name: "Ahmet Yılmaz", birthDate: "1990-08-20", gender: "Erkek", country: "Türkiye", house: "Atatürk Caddesi 42", room: "1", bed: "2" },
+    { id: "1", name: "John Doe", birthDate: "1980-10-22", gender: "Erkek", country: "Hollanda", house: "Geldernstrasse 13", room: "45", bed: "1", status: "active" },
+    { id: "2", name: "Jane Smith", birthDate: "1992-05-15", gender: "Kadın", country: "Almanya", house: "Geldernstrasse 13", room: "45", bed: "3", status: "on_vacation", vacationStartDate: "2025-10-15", vacationEndDate: "2025-10-30" },
+    { id: "3", name: "Mike Johnson", birthDate: "1985-11-30", gender: "Erkek", country: "Polonya", house: "Geldernstrasse 13", room: "47", bed: "1", status: "active" },
+    { id: "4", name: "Sarah Williams", birthDate: "1988-03-08", gender: "Kadın", country: "Romanya", house: "Hauptstrasse 45", room: "101", bed: "2", status: "notice_period", plannedExitDate: "2025-10-31" },
+    { id: "5", name: "Tom Brown", birthDate: "1995-07-12", gender: "Erkek", country: "Hollanda", house: "Hauptstrasse 45", room: "102", bed: "1", status: "left_no_notice", leftDate: "2025-10-16" },
+    { id: "6", name: "Ahmet Yılmaz", birthDate: "1990-08-20", gender: "Erkek", country: "Türkiye", house: "Atatürk Caddesi 42", room: "1", bed: "2", status: "active" },
   ]);
   
   // Dialog states
@@ -105,6 +113,11 @@ export default function Workers() {
     house: "",
     room: "",
     bed: "",
+    status: "active" as WorkerStatus,
+    vacationStartDate: "",
+    vacationEndDate: "",
+    plannedExitDate: "",
+    leftDate: "",
   });
 
   const filteredWorkers = workers
