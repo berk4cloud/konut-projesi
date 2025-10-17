@@ -1570,6 +1570,7 @@ export default function Houses() {
                         </div>
                       )}
                     </div>
+                  </div>
                   );
                 })}
               </div>
