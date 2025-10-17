@@ -60,6 +60,7 @@ const mockHouses = [
   { id: "h1", name: "Geldernstrasse 13", rooms: ["45", "46", "47"] },
   { id: "h2", name: "Hauptstrasse 45", rooms: ["101", "102"] },
   { id: "h3", name: "Marktplatz 7", rooms: ["201", "202"] },
+  { id: "h4", name: "Atatürk Caddesi 42", rooms: ["1", "2", "3"] },
 ];
 
 export default function Workers() {
@@ -74,6 +75,7 @@ export default function Workers() {
     { id: "3", name: "Mike Johnson", birthDate: "1985-11-30", gender: "Erkek", country: "Polonya", house: "Geldernstrasse 13", room: "47", bed: "1" },
     { id: "4", name: "Sarah Williams", birthDate: "1988-03-08", gender: "Kadın", country: "Romanya", house: "Hauptstrasse 45", room: "101", bed: "2" },
     { id: "5", name: "Tom Brown", birthDate: "1995-07-12", gender: "Erkek", country: "Hollanda", house: "Hauptstrasse 45", room: "102", bed: "1" },
+    { id: "6", name: "Ahmet Yılmaz", birthDate: "1990-08-20", gender: "Erkek", country: "Türkiye", house: "Atatürk Caddesi 42", room: "1", bed: "2" },
   ]);
   
   // Dialog states
