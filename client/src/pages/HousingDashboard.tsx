@@ -126,7 +126,7 @@ const initialMockHouses = [
             bedNumber: 1,
             status: "occupied" as const,
             worker: { id: "w1", name: "Canny", gender: "male" as const },
-            expectedMoveOutDate: "2025-11-05", // 5 gün sonra
+            expectedMoveOutDate: "2025-11-05", // 19 gün sonra
           },
           { id: "b2", bedNumber: 2, status: "available" as const },
           {
@@ -143,7 +143,13 @@ const initialMockHouses = [
         floor: 2,
         beds: [
           { id: "b4", bedNumber: 1, status: "available" as const },
-          { id: "b5", bedNumber: 2, status: "reserved" as const },
+          { 
+            id: "b5", 
+            bedNumber: 2, 
+            status: "reserved" as const,
+            expectedMoveInDate: "2025-10-22", // 5 gün sonra
+            reservedForWorkerName: "Ahmet Yılmaz",
+          },
         ],
       },
       {
@@ -524,7 +530,7 @@ export default function HousingDashboard() {
   const occupiedBeds = filteredHouses.reduce((sum, house) => sum + house.occupiedBeds, 0);
   const emptyBeds = totalBeds - occupiedBeds;
 
-  // Helper: Calculate upcoming vacancies (within 30 days)
+  // Helper: Calculate upcoming check-outs (within 30 days)
   const getUpcomingVacancies = (house: typeof initialMockHouses[0]) => {
     const vacancies: { bedNumber: number; roomNumber: string; daysUntil: number; workerName: string }[] = [];
     const today = new Date();
@@ -548,6 +554,32 @@ export default function HousingDashboard() {
     });
 
     return vacancies.sort((a, b) => a.daysUntil - b.daysUntil);
+  };
+
+  // Helper: Calculate upcoming check-ins (within 30 days)
+  const getUpcomingCheckIns = (house: typeof initialMockHouses[0]) => {
+    const checkIns: { bedNumber: number; roomNumber: string; daysUntil: number; workerName: string }[] = [];
+    const today = new Date();
+    const thirtyDaysLater = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+    house.rooms.forEach((room) => {
+      room.beds.forEach((bed: any) => {
+        if (bed.expectedMoveInDate) {
+          const moveInDate = new Date(bed.expectedMoveInDate);
+          if (moveInDate >= today && moveInDate <= thirtyDaysLater) {
+            const daysUntil = Math.ceil((moveInDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+            checkIns.push({
+              bedNumber: bed.bedNumber,
+              roomNumber: room.roomNumber,
+              daysUntil,
+              workerName: bed.reservedForWorkerName || "Yeni işçi",
+            });
+          }
+        }
+      });
+    });
+
+    return checkIns.sort((a, b) => a.daysUntil - b.daysUntil);
   };
 
   const handleBedClick = (bed: any) => {
@@ -853,6 +885,7 @@ export default function HousingDashboard() {
                   <Accordion type="multiple" className="space-y-3">
                     {filteredHouses.map((house) => {
                       const upcomingVacancies = getUpcomingVacancies(house);
+                      const upcomingCheckIns = getUpcomingCheckIns(house);
                       return (
                         <AccordionItem
                           key={house.id}
@@ -870,7 +903,13 @@ export default function HousingDashboard() {
                                   {upcomingVacancies.length > 0 && (
                                     <Badge variant="outline" className="text-amber-600 border-amber-600">
                                       <Clock className="w-3 h-3 mr-1" />
-                                      {upcomingVacancies.length} boşalıyor
+                                      {upcomingVacancies.length} çıkış yapıyor
+                                    </Badge>
+                                  )}
+                                  {upcomingCheckIns.length > 0 && (
+                                    <Badge variant="outline" className="text-green-600 border-green-600">
+                                      <Clock className="w-3 h-3 mr-1" />
+                                      {upcomingCheckIns.length} giriş yapıyor
                                     </Badge>
                                   )}
                                 </h3>
@@ -896,7 +935,7 @@ export default function HousingDashboard() {
                                 <Clock className="w-4 h-4 text-amber-600 mt-0.5" />
                                 <div className="flex-1">
                                   <h4 className="font-medium text-sm text-amber-900 dark:text-amber-100 mb-2">
-                                    Yakında Boşalacak Yataklar
+                                    Yakında Çıkış Yapacak İşçiler
                                   </h4>
                                   <div className="space-y-1">
                                     {upcomingVacancies.map((vacancy, idx) => (
@@ -908,6 +947,32 @@ export default function HousingDashboard() {
                                         <span className="font-medium">{vacancy.daysUntil} gün sonra</span>
                                         <span className="text-amber-600 dark:text-amber-400"> • </span>
                                         <span>{vacancy.workerName}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {upcomingCheckIns.length > 0 && (
+                            <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800 rounded-lg">
+                              <div className="flex items-start gap-2">
+                                <Clock className="w-4 h-4 text-green-600 mt-0.5" />
+                                <div className="flex-1">
+                                  <h4 className="font-medium text-sm text-green-900 dark:text-green-100 mb-2">
+                                    Yakında Giriş Yapacak İşçiler
+                                  </h4>
+                                  <div className="space-y-1">
+                                    {upcomingCheckIns.map((checkIn, idx) => (
+                                      <div key={idx} className="text-sm text-green-800 dark:text-green-200">
+                                        <span className="font-medium">Oda {checkIn.roomNumber}</span>
+                                        <span className="text-green-600 dark:text-green-400"> • </span>
+                                        <span>Yatak {checkIn.bedNumber}</span>
+                                        <span className="text-green-600 dark:text-green-400"> • </span>
+                                        <span className="font-medium">{checkIn.daysUntil} gün sonra</span>
+                                        <span className="text-green-600 dark:text-green-400"> • </span>
+                                        <span>{checkIn.workerName}</span>
                                       </div>
                                     ))}
                                   </div>
