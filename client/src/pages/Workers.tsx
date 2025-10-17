@@ -69,6 +69,18 @@ export default function Workers() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
+
+  // Calculate age from birth date
+  const calculateAge = (birthDate: string) => {
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  };
   const [workers, setWorkers] = useState<Worker[]>([
     { id: "1", name: "John Doe", birthDate: "1980-10-22", gender: "Erkek", country: "Hollanda", house: "Geldernstrasse 13", room: "45", bed: "1" },
     { id: "2", name: "Jane Smith", birthDate: "1992-05-15", gender: "Kadın", country: "Almanya", house: "Geldernstrasse 13", room: "45", bed: "3" },
@@ -283,8 +295,11 @@ export default function Workers() {
                           <User className="w-4 h-4 text-primary" />
                         </div>
                         <div>
-                          <div data-testid={`text-worker-name-${worker.id}`}>
-                            {worker.name}
+                          <div className="flex items-center gap-2" data-testid={`text-worker-name-${worker.id}`}>
+                            <span>{worker.name}</span>
+                            <span className="text-sm text-muted-foreground" data-testid={`text-worker-age-${worker.id}`}>
+                              ({calculateAge(worker.birthDate)})
+                            </span>
                           </div>
                           <div 
                             className="text-xs text-muted-foreground mt-0.5" 
