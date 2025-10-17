@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Search, Building2, MapPin, Edit, Bed, Trash2, ChevronsUpDown, Check, Zap, Droplet, FileText, Bell, Calendar, AlertCircle } from "lucide-react";
+import { Plus, Search, Building2, MapPin, Edit, Bed, Trash2, ChevronsUpDown, Check, Zap, Droplet, FileText, Bell, Calendar, AlertCircle, Camera, X, Eye } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -58,6 +58,7 @@ type MeterReading = {
   date: string;
   value: number;
   note?: string;
+  photo?: string; // Base64 encoded image
 };
 
 type MeterLogs = {
@@ -132,12 +133,12 @@ const initialMockHouses = [
     ],
     meterLogs: {
       electricity: [
-        { id: "e1", date: "2024-12-15", value: 15420, note: "Normal okuma" },
+        { id: "e1", date: "2024-12-15", value: 15420, note: "Normal okuma", photo: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23f0f0f0' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' fill='%23666' font-size='24'%3EElektrik Sayacı%3C/text%3E%3C/svg%3E" },
         { id: "e2", date: "2024-11-15", value: 15180 },
         { id: "e3", date: "2024-10-15", value: 14950 },
       ],
       water: [
-        { id: "w1", date: "2024-12-15", value: 8520, note: "Normal okuma" },
+        { id: "w1", date: "2024-12-15", value: 8520, note: "Normal okuma", photo: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23e0f0ff' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' fill='%23006699' font-size='24'%3ESu Sayacı%3C/text%3E%3C/svg%3E" },
         { id: "w2", date: "2024-11-15", value: 8410 },
         { id: "w3", date: "2024-10-15", value: 8305 },
       ],
@@ -259,6 +260,7 @@ export default function Houses() {
     date: new Date().toISOString().split("T")[0],
     value: "",
     note: "",
+    photo: "",
   });
   
   // Lease contract state
@@ -381,6 +383,7 @@ export default function Houses() {
       date: newReading.date,
       value: readingValue,
       note: newReading.note || undefined,
+      photo: newReading.photo || undefined,
     };
 
     // Update the house with the new reading
@@ -415,6 +418,7 @@ export default function Houses() {
       date: new Date().toISOString().split("T")[0],
       value: "",
       note: "",
+      photo: "",
     });
     setIsAddReadingOpen(false);
     
@@ -1089,7 +1093,7 @@ export default function Houses() {
                             className="p-3 border rounded-lg bg-card"
                             data-testid={`electricity-reading-${reading.id}`}
                           >
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between mb-2">
                               <div className="space-y-1">
                                 <p className="text-sm font-medium" data-testid={`text-reading-date-${reading.id}`}>
                                   {new Date(reading.date).toLocaleDateString("tr-TR", { 
@@ -1115,6 +1119,20 @@ export default function Houses() {
                                 )}
                               </div>
                             </div>
+                            {reading.photo && (
+                              <div className="mt-2 group relative">
+                                <img 
+                                  src={reading.photo} 
+                                  alt="Sayaç fotoğrafı" 
+                                  className="w-full h-32 object-cover rounded border cursor-pointer"
+                                  onClick={() => window.open(reading.photo, '_blank')}
+                                  data-testid={`img-reading-photo-${reading.id}`}
+                                />
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded flex items-center justify-center">
+                                  <Eye className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </div>
+                              </div>
+                            )}
                           </div>
                         );
                       })}
@@ -1170,7 +1188,7 @@ export default function Houses() {
                             className="p-3 border rounded-lg bg-card"
                             data-testid={`water-reading-${reading.id}`}
                           >
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between mb-2">
                               <div className="space-y-1">
                                 <p className="text-sm font-medium" data-testid={`text-reading-date-${reading.id}`}>
                                   {new Date(reading.date).toLocaleDateString("tr-TR", { 
@@ -1196,6 +1214,20 @@ export default function Houses() {
                                 )}
                               </div>
                             </div>
+                            {reading.photo && (
+                              <div className="mt-2 group relative">
+                                <img 
+                                  src={reading.photo} 
+                                  alt="Sayaç fotoğrafı" 
+                                  className="w-full h-32 object-cover rounded border cursor-pointer"
+                                  onClick={() => window.open(reading.photo, '_blank')}
+                                  data-testid={`img-reading-photo-${reading.id}`}
+                                />
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded flex items-center justify-center">
+                                  <Eye className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </div>
+                              </div>
+                            )}
                           </div>
                         );
                       })}
@@ -1320,6 +1352,54 @@ export default function Houses() {
                 data-testid="input-reading-note"
               />
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="reading-photo">Sayaç Fotoğrafı (Opsiyonel)</Label>
+              {newReading.photo ? (
+                <div className="relative">
+                  <img 
+                    src={newReading.photo} 
+                    alt="Sayaç fotoğrafı" 
+                    className="w-full h-48 object-cover rounded-lg border"
+                  />
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="destructive"
+                    className="absolute top-2 right-2"
+                    onClick={() => setNewReading({ ...newReading, photo: "" })}
+                    data-testid="button-remove-photo"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              ) : (
+                <label
+                  htmlFor="reading-photo"
+                  className="flex items-center justify-center gap-2 w-full p-6 border-2 border-dashed rounded-lg cursor-pointer hover-elevate"
+                >
+                  <Camera className="w-5 h-5" />
+                  <span className="text-sm">Fotoğraf Ekle</span>
+                  <input
+                    id="reading-photo"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setNewReading({ ...newReading, photo: reader.result as string });
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    data-testid="input-reading-photo"
+                  />
+                </label>
+              )}
+            </div>
           </div>
 
           <div className="flex gap-3 justify-end pt-4 border-t">
@@ -1332,6 +1412,7 @@ export default function Houses() {
                   date: new Date().toISOString().split("T")[0],
                   value: "",
                   note: "",
+                  photo: "",
                 });
               }}
               data-testid="button-cancel-reading"
