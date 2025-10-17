@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Search, Building2, MapPin, Edit, Bed, Trash2, ChevronsUpDown, Check, Zap, Droplet, Flame, FileText, Bell, Calendar, AlertCircle, Camera, X, Eye } from "lucide-react";
+import { Plus, Search, Building2, MapPin, Edit, Bed, Trash2, ChevronsUpDown, Check, Zap, Droplet, Flame, FileText, Bell, Calendar, AlertCircle, Camera, X, Eye, Archive, ArchiveRestore } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -41,6 +41,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 
 // Room type definition
@@ -107,6 +108,7 @@ const initialMockHouses = [
     totalBeds: 7,
     occupiedBeds: 5,
     ownershipType: "Kiralık",
+    archived: false,
     leaseContract: {
       startDate: "2023-01-15",
       endDate: "2025-01-14",
@@ -167,6 +169,7 @@ const initialMockHouses = [
     totalBeds: 6,
     occupiedBeds: 4,
     ownershipType: "Mülk",
+    archived: false,
     reminders: [
       {
         id: "r3",
@@ -215,6 +218,7 @@ const initialMockHouses = [
     totalBeds: 5,
     occupiedBeds: 3,
     ownershipType: "3. Taraf",
+    archived: false,
     leaseContract: {
       startDate: "2024-06-01",
       monthlyRent: 1800,
@@ -261,6 +265,7 @@ export default function Houses() {
   const { toast } = useToast();
   const [houses, setHouses] = useState(initialMockHouses);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showArchived, setShowArchived] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingHouse, setEditingHouse] = useState<typeof initialMockHouses[0] | null>(null);
   const [countryOpen, setCountryOpen] = useState(false);
@@ -438,10 +443,18 @@ export default function Houses() {
   });
 
   const filteredHouses = houses.filter(
-    (house) =>
-      house.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      house.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      house.address.toLowerCase().includes(searchQuery.toLowerCase())
+    (house) => {
+      // Filter by search query
+      const matchesSearch = 
+        house.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        house.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        house.address.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      // Filter by archived status
+      const matchesArchiveFilter = showArchived ? true : !house.archived;
+      
+      return matchesSearch && matchesArchiveFilter;
+    }
   );
 
   const handleAddNew = () => {
@@ -679,6 +692,7 @@ export default function Houses() {
         totalBeds,
         occupiedBeds: 0, // Default to 0 for new houses
         ownershipType: formData.ownershipType,
+        archived: false,
         meterLogs: {
           electricity: [],
           water: [],
@@ -720,15 +734,27 @@ export default function Houses() {
             </Button>
           </div>
 
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Konut ara (adres, şehir)..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-              data-testid="input-search-house"
-            />
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Konut ara (adres, şehir)..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+                data-testid="input-search-house"
+              />
+            </div>
+            
+            <div className="flex items-center gap-3 px-4 py-2 border rounded-lg bg-card">
+              <Archive className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-medium">Arşiv olanları da göster</span>
+              <Switch
+                checked={showArchived}
+                onCheckedChange={setShowArchived}
+                data-testid="switch-show-archived"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -737,7 +763,14 @@ export default function Houses() {
               const emptyBeds = house.totalBeds - house.occupiedBeds;
 
               return (
-                <Card key={house.id} className="hover:shadow-lg transition-shadow" data-testid={`house-card-${house.id}`}>
+                <Card 
+                  key={house.id} 
+                  className={cn(
+                    "hover:shadow-lg transition-shadow",
+                    house.archived && "opacity-60 border-dashed"
+                  )} 
+                  data-testid={`house-card-${house.id}`}
+                >
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3">
@@ -745,9 +778,17 @@ export default function Houses() {
                           <Building2 className="w-5 h-5 text-blue-600" />
                         </div>
                         <div>
-                          <CardTitle className="text-lg" data-testid={`text-house-name-${house.id}`}>
-                            {house.name}
-                          </CardTitle>
+                          <div className="flex items-center gap-2">
+                            <CardTitle className="text-lg" data-testid={`text-house-name-${house.id}`}>
+                              {house.name}
+                            </CardTitle>
+                            {house.archived && (
+                              <Badge variant="secondary" className="text-xs" data-testid={`badge-archived-${house.id}`}>
+                                <Archive className="w-3 h-3 mr-1" />
+                                Arşiv
+                              </Badge>
+                            )}
+                          </div>
                           <CardDescription className="flex items-center gap-1 mt-1" data-testid={`text-house-city-${house.id}`}>
                             <MapPin className="w-3 h-3" />
                             {house.city}
@@ -1198,17 +1239,53 @@ export default function Houses() {
             </div>
           </div>
 
-          <div className="flex gap-3 justify-end">
-            <Button
-              variant="outline"
-              onClick={() => setIsDialogOpen(false)}
-              data-testid="button-cancel"
-            >
-              İptal
-            </Button>
-            <Button onClick={handleSave} data-testid="button-save-house">
-              {editingHouse ? "Güncelle" : "Kaydet"}
-            </Button>
+          <div className="flex gap-3 justify-between">
+            {editingHouse && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  const updatedHouses = houses.map(h =>
+                    h.id === editingHouse.id
+                      ? { ...h, archived: !h.archived }
+                      : h
+                  );
+                  setHouses(updatedHouses);
+                  setIsDialogOpen(false);
+                  toast({
+                    title: editingHouse.archived ? "Arşivden Çıkarıldı" : "Arşive Kaldırıldı",
+                    description: editingHouse.archived 
+                      ? "Konut arşivden çıkarıldı ve aktif hale getirildi" 
+                      : "Konut arşive kaldırıldı",
+                  });
+                }}
+                data-testid="button-toggle-archive"
+              >
+                {editingHouse.archived ? (
+                  <>
+                    <ArchiveRestore className="w-4 h-4 mr-2" />
+                    Arşivden Çıkar
+                  </>
+                ) : (
+                  <>
+                    <Archive className="w-4 h-4 mr-2" />
+                    Arşive Kaldır
+                  </>
+                )}
+              </Button>
+            )}
+            
+            <div className="flex gap-3 ml-auto">
+              <Button
+                variant="outline"
+                onClick={() => setIsDialogOpen(false)}
+                data-testid="button-cancel"
+              >
+                İptal
+              </Button>
+              <Button onClick={handleSave} data-testid="button-save-house">
+                {editingHouse ? "Güncelle" : "Kaydet"}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
