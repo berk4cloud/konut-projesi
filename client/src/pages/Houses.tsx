@@ -1235,9 +1235,10 @@ export default function Houses() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <Button
                         variant="outline"
+                        size="sm"
                         onClick={() => handleEdit(house)}
                         data-testid={`button-edit-house-${house.id}`}
                       >
@@ -1246,6 +1247,7 @@ export default function Houses() {
                       </Button>
                       <Button
                         variant="outline"
+                        size="sm"
                         onClick={() => {
                           setSelectedHouseForMeters(house);
                           setIsMeterDialogOpen(true);
@@ -1259,6 +1261,7 @@ export default function Houses() {
                       {(house.ownershipType === "Kiralık" || house.ownershipType === "3. Taraf") && (
                         <Button
                           variant="outline"
+                          size="sm"
                           onClick={() => {
                             setSelectedHouseForLease(house);
                             setIsLeaseDialogOpen(true);
@@ -1272,6 +1275,7 @@ export default function Houses() {
                       
                       <Button
                         variant="outline"
+                        size="sm"
                         onClick={() => {
                           setSelectedHouseForReminders(house);
                           setIsRemindersDialogOpen(true);
