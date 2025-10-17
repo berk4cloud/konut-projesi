@@ -315,6 +315,40 @@ const initialMockHouses = [
       },
     ],
   },
+  {
+    id: "h5",
+    name: "Çankaya Residences",
+    city: "Ankara",
+    country: "tr",
+    totalBeds: 12,
+    occupiedBeds: 6,
+    rooms: [
+      {
+        id: "r10",
+        roomNumber: "101",
+        floor: 1,
+        beds: [
+          { id: "b24", bedNumber: 1, status: "available" as const },
+          {
+            id: "b25",
+            bedNumber: 2,
+            status: "occupied" as const,
+            worker: { id: "w11", name: "Mustafa", gender: "male" as const },
+          },
+          { id: "b26", bedNumber: 3, status: "available" as const },
+        ],
+      },
+      {
+        id: "r11",
+        roomNumber: "102",
+        floor: 1,
+        beds: [
+          { id: "b27", bedNumber: 1, status: "available" as const },
+          { id: "b28", bedNumber: 2, status: "reserved" as const },
+        ],
+      },
+    ],
+  },
 ];
 
 export default function HousingDashboard() {
