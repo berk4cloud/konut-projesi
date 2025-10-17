@@ -455,6 +455,8 @@ export default function Houses() {
   const [showAllElectricity, setShowAllElectricity] = useState(false);
   const [showAllWater, setShowAllWater] = useState(false);
   const [showAllGas, setShowAllGas] = useState(false);
+  const [photoModalOpen, setPhotoModalOpen] = useState(false);
+  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
   const [newReading, setNewReading] = useState({
     meterType: "electricity" as "electricity" | "water" | "gas",
     date: new Date().toISOString().split("T")[0],
@@ -1310,10 +1312,16 @@ export default function Houses() {
               )}
 
               <div className="space-y-3">
-                {formData.rooms.map((room, index) => (
+                {formData.rooms.map((room, index) => {
+                  const isLastRoom = index === formData.rooms.length - 1;
+                  return (
                   <div
                     key={index}
-                    className="p-4 bg-muted/30 rounded-lg border space-y-3"
+                    className={`p-4 rounded-lg border space-y-3 transition-colors duration-300 ${
+                      isLastRoom 
+                        ? 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800' 
+                        : 'bg-muted/30'
+                    }`}
                     data-testid={`room-item-${index}`}
                   >
                     <div className="flex items-center justify-between mb-3">
@@ -1562,8 +1570,8 @@ export default function Houses() {
                         </div>
                       )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               <Button
@@ -1836,18 +1844,17 @@ export default function Houses() {
                               </div>
                             </div>
                             {reading.photo && (
-                              <div className="mt-2 group relative">
-                                <img 
-                                  src={reading.photo} 
-                                  alt="Sayaç fotoğrafı" 
-                                  className="w-full h-32 object-cover rounded border cursor-pointer"
-                                  onClick={() => window.open(reading.photo, '_blank')}
-                                  data-testid={`img-reading-photo-${reading.id}`}
-                                />
-                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded flex items-center justify-center">
-                                  <Eye className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                                </div>
-                              </div>
+                              <button
+                                onClick={() => {
+                                  setSelectedPhoto(reading.photo);
+                                  setPhotoModalOpen(true);
+                                }}
+                                className="mt-2 text-sm text-primary hover:underline flex items-center gap-1"
+                                data-testid={`button-photo-${reading.id}`}
+                              >
+                                <Eye className="w-3 h-3" />
+                                {reading.photo.split('/').pop() || 'foto.jpg'}
+                              </button>
                             )}
                           </div>
                         );
@@ -1931,18 +1938,17 @@ export default function Houses() {
                               </div>
                             </div>
                             {reading.photo && (
-                              <div className="mt-2 group relative">
-                                <img 
-                                  src={reading.photo} 
-                                  alt="Sayaç fotoğrafı" 
-                                  className="w-full h-32 object-cover rounded border cursor-pointer"
-                                  onClick={() => window.open(reading.photo, '_blank')}
-                                  data-testid={`img-reading-photo-${reading.id}`}
-                                />
-                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded flex items-center justify-center">
-                                  <Eye className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                                </div>
-                              </div>
+                              <button
+                                onClick={() => {
+                                  setSelectedPhoto(reading.photo);
+                                  setPhotoModalOpen(true);
+                                }}
+                                className="mt-2 text-sm text-primary hover:underline flex items-center gap-1"
+                                data-testid={`button-photo-${reading.id}`}
+                              >
+                                <Eye className="w-3 h-3" />
+                                {reading.photo.split('/').pop() || 'foto.jpg'}
+                              </button>
                             )}
                           </div>
                         );
@@ -2026,18 +2032,17 @@ export default function Houses() {
                               </div>
                             </div>
                             {reading.photo && (
-                              <div className="mt-2 group relative">
-                                <img 
-                                  src={reading.photo} 
-                                  alt="Sayaç fotoğrafı" 
-                                  className="w-full h-32 object-cover rounded border cursor-pointer"
-                                  onClick={() => window.open(reading.photo, '_blank')}
-                                  data-testid={`img-reading-photo-${reading.id}`}
-                                />
-                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded flex items-center justify-center">
-                                  <Eye className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                                </div>
-                              </div>
+                              <button
+                                onClick={() => {
+                                  setSelectedPhoto(reading.photo);
+                                  setPhotoModalOpen(true);
+                                }}
+                                className="mt-2 text-sm text-primary hover:underline flex items-center gap-1"
+                                data-testid={`button-photo-${reading.id}`}
+                              >
+                                <Eye className="w-3 h-3" />
+                                {reading.photo.split('/').pop() || 'foto.jpg'}
+                              </button>
                             )}
                           </div>
                         );
@@ -2610,6 +2615,27 @@ export default function Houses() {
               Kaydet
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Photo Modal */}
+      <Dialog open={photoModalOpen} onOpenChange={setPhotoModalOpen}>
+        <DialogContent className="max-w-4xl p-0">
+          <button
+            onClick={() => setPhotoModalOpen(false)}
+            className="absolute top-4 right-4 z-50 w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center text-white transition-colors"
+            data-testid="button-close-photo-modal"
+          >
+            <X className="w-4 h-4" />
+          </button>
+          {selectedPhoto && (
+            <img 
+              src={selectedPhoto} 
+              alt="Sayaç fotoğrafı" 
+              className="w-full h-auto"
+              data-testid="img-modal-photo"
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>
