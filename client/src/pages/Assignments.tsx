@@ -39,7 +39,7 @@ import {
 type AssignmentStatus = "active" | "ending_soon" | "ended" | "pending";
 type DepositStatus = "collected" | "pending" | "refunded" | "partial_refund";
 type PaymentStatus = "paid" | "pending" | "overdue" | "partial";
-type PaymentMethod = "bank_transfer" | "cash" | "automatic";
+type PaymentMethod = "bank_transfer" | "pos" | "cash" | "automatic" | "other";
 
 type Assignment = {
   id: string;
@@ -58,11 +58,15 @@ type Assignment = {
   depositCollected: boolean;
   depositAmount: number;
   depositDate?: string;
+  depositCollector?: string; // Who collected the deposit
   depositStatus: DepositStatus;
   depositRefundDate?: string;
   depositRefundAmount?: number;
   damageAmount?: number;
   damageNote?: string;
+  
+  // Agreement notes
+  agreementNotes?: string; // Payment agreements and conversations
 };
 
 type Charge = {
@@ -70,7 +74,9 @@ type Charge = {
   assignmentId: string;
   workerName: string;
   month: string; // "2025-11" format
-  amount: number;
+  amount: number; // Total charge amount
+  expectedAmount: number; // Expected payment amount (usually same as amount)
+  remainingAmount: number; // Remaining unpaid amount (for partial payments)
   days: number; // Number of days in this charge period
   calculationType: "full_month" | "partial" | "prorated";
   dueDate: string;
@@ -85,6 +91,8 @@ type Payment = {
   amount: number;
   paymentDate: string;
   paymentMethod: PaymentMethod;
+  collectorName?: string; // Who collected this payment
+  recordedAt?: string; // When was this payment recorded
   reference?: string;
   notes?: string;
 };
@@ -164,6 +172,8 @@ const mockCharges: Charge[] = [
     workerName: "Ahmet Yılmaz",
     month: "2024-10",
     amount: 340,
+    expectedAmount: 340,
+    remainingAmount: 0,
     days: 17,
     calculationType: "partial",
     dueDate: "2024-11-01",
@@ -176,10 +186,13 @@ const mockCharges: Charge[] = [
     workerName: "Ahmet Yılmaz",
     month: "2024-11",
     amount: 600,
+    expectedAmount: 600,
+    remainingAmount: 200,
     days: 30,
     calculationType: "full_month",
     dueDate: "2024-12-01",
-    status: "paid",
+    status: "partial",
+    notes: "€400 ödendi, €200 kalan (kısmi ödeme)",
   },
   {
     id: "c3",
@@ -187,6 +200,8 @@ const mockCharges: Charge[] = [
     workerName: "Mehmet Kaya",
     month: "2024-11",
     amount: 600,
+    expectedAmount: 600,
+    remainingAmount: 600,
     days: 30,
     calculationType: "full_month",
     dueDate: "2024-12-01",
@@ -198,6 +213,8 @@ const mockCharges: Charge[] = [
     workerName: "Ali Demir",
     month: "2024-11",
     amount: 275,
+    expectedAmount: 275,
+    remainingAmount: 275,
     days: 15,
     calculationType: "partial",
     dueDate: "2024-11-15",
@@ -210,6 +227,8 @@ const mockCharges: Charge[] = [
     workerName: "Fatma Şahin",
     month: "2024-11",
     amount: 430,
+    expectedAmount: 430,
+    remainingAmount: 430,
     days: 20,
     calculationType: "prorated",
     dueDate: "2024-12-01",
@@ -226,16 +245,34 @@ const mockPayments: Payment[] = [
     amount: 340,
     paymentDate: "2024-10-30",
     paymentMethod: "bank_transfer",
+    collectorName: "Elif Yılmaz",
+    recordedAt: "2024-10-30T14:30:00",
     reference: "INV-2024-10-001",
+    notes: "Banka havalesi ile ödendi",
   },
   {
     id: "p2",
     chargeId: "c2",
     workerName: "Ahmet Yılmaz",
-    amount: 600,
-    paymentDate: "2024-11-28",
-    paymentMethod: "bank_transfer",
-    reference: "INV-2024-11-001",
+    amount: 400,
+    paymentDate: "2024-11-15",
+    paymentMethod: "cash",
+    collectorName: "Elif Yılmaz",
+    recordedAt: "2024-11-15T10:15:00",
+    reference: "CASH-001",
+    notes: "Nakit ödeme - ilk kısım (€400)",
+  },
+  {
+    id: "p3",
+    chargeId: "c2",
+    workerName: "Ahmet Yılmaz",
+    amount: 200,
+    paymentDate: "2024-11-20",
+    paymentMethod: "pos",
+    collectorName: "Mehmet Arslan",
+    recordedAt: "2024-11-20T16:45:00",
+    reference: "POS-2024-112",
+    notes: "POS ile ödeme - kalan kısım (€200)",
   },
 ];
 
