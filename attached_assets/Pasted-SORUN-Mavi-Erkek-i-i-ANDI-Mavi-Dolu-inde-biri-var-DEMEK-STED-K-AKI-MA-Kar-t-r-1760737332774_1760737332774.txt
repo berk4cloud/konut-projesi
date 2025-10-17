@@ -1,0 +1,93 @@
+SORUN:
+🔵 Mavi = Erkek işçi ANDI
+🔵 Mavi = Dolu (İçinde biri var) DEMEK İSTEDİK
+
+= ÇAKIŞMA! Karıştırıcı!
+```
+
+## 🎯 LOJIK OLARAK YENİDEN DÜŞÜN
+
+Konaklama Müdürü'nün **İŞ AKIŞI:**
+```
+Sabah Kontrol:
+"Kaç odayı satabilirim?"
+  ↓
+[SAT AÇAK ODALARI GÖSTER]
+  ↓
+"Hangileri meşgul (para geliyor)?"
+  ↓
+[DOLU ODALARI GÖSTER]
+  ↓
+"Hangilerine biri gelmek üzere?"
+  ↓
+[REZERVE ODALARI GÖSTER]
+  ↓
+"Hangilerinde sorun var?"
+  ↓
+[SORUN ODALARI GÖSTER]
+```
+
+## ✅ SADE RENK KODU (Cinsiyet Kodu Ayrı!)
+```
+SAT AÇAK / DURUM renkleri:
+
+🟢 YEŞİL = Kiraya Verilebilir (Boş)
+🟠 TURUNCU = Şu Anda Dolu
+🟡 SARI = Rezerve Edilmiş
+🔴 KIRMIZI = Sorun Var
+
+CİNSİYET göstergesi (OPSIYONEL, simge):
+
+  Yatak 1: 🟢 [👨] = Yeşil + Erkek simgesi
+  Yatak 2: 🟢 [👩] = Yeşil + Kadın simgesi
+  Yatak 3: 🟢 [?] = Yeşil + Belirsiz
+```
+
+## 📊 GÖRSEL
+```
+┌──────────────────────────────────────────┐
+│  Hauptstrasse 45                       │
+├──────────────────────────────────────────┤
+│                                          │
+│  Oda 101:                               │
+│  ┌──────┬──────┬──────┬──────┐          │
+│  │🟢    │🟢    │🟠    │🟡    │          │
+│  │👨    │👩    │John  │John2 │          │
+│  │KİRA  │KİRA  │DOLU  │RES.  │          │
+│  │[AT!] │[AT!] │      │      │          │
+│  └──────┴──────┴──────┴──────┘          │
+│                                          │
+│  Oda 102:                               │
+│  ┌──────┬──────┐                        │
+│  │🟠    │🔴    │                        │
+│  │Ayşe  │TAMIR │                        │
+│  │DOLU  │      │                        │
+│  └──────┴──────┘                        │
+│                                          │
+│  📊 Özet:                               │
+│  🟢 Satılabilir: 2   🟠 Dolu: 2        │
+│  🟡 Rezerve: 1      🔴 Sorun: 1       │
+│                                          │
+└──────────────────────────────────────────┘
+```
+
+## 🎯 TIKLAMA AKIŞI
+```
+🟢 KİRA VERİLEBİLİR:
+  ├─ 👨 Erkek için uygun
+  ├─ 👩 Kadın için uygun
+  └─ ? Karışık/Aile
+
+🟠 DOLU (İçinde Biri Var):
+  ├─ John (Erkek)
+  ├─ Cinsiyet: Erkek
+  ├─ Kira: €30/gün ✅
+  └─ "Dokunma, para geliyor"
+
+🟡 REZERVE:
+  ├─ John2 (4 gün sonra giriş)
+  └─ "Hazırlanma, gelecek"
+
+🔴 SORUN:
+  ├─ Tamir yapılıyor
+  └─ "Hemen çöz!"

@@ -76,14 +76,14 @@ export default {
           border: "var(--sidebar-accent-border)"
         },
         status: {
-          empty: "#ef4444",
-          occupied: "#10b981",
-          oos: "#f59e0b",
-          reserved: "#a855f7",
+          empty: "hsl(var(--status-empty) / <alpha-value>)",       // GREEN - Available for rent
+          occupied: "hsl(var(--status-occupied) / <alpha-value>)", // ORANGE - Currently occupied
+          reserved: "hsl(var(--status-reserved) / <alpha-value>)", // YELLOW - Reserved
+          oos: "hsl(var(--status-oos) / <alpha-value>)",           // RED - Out of service
         },
         gender: {
-          male: "#3b82f6",
-          female: "#ec4899",
+          male: "hsl(var(--gender-male) / <alpha-value>)",         // BLUE - Male
+          female: "hsl(var(--gender-female) / <alpha-value>)",     // PINK - Female
         },
       },
       fontFamily: {

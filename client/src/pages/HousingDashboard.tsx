@@ -34,7 +34,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { useToast } from "@/hooks/use-toast";
-import { FileText, Bell, Calendar, AlertCircle, Plus, ChevronDown, ChevronUp, MapPin, Clock, CheckCircle, Check, ChevronsUpDown, UserPlus } from "lucide-react";
+import { FileText, Bell, Calendar, AlertCircle, Plus, ChevronDown, ChevronUp, MapPin, Clock, CheckCircle, Check, ChevronsUpDown, UserPlus, Info } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -54,6 +54,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 // Lease contract type (for rented properties)
@@ -864,7 +870,41 @@ export default function HousingDashboard() {
             <div className="max-w-7xl mx-auto space-y-4">
               <div className="hidden lg:flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold mb-2">Konaklama Genel Bakış</h2>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h2 className="text-2xl font-bold">Konaklama Genel Bakış</h2>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button className="text-muted-foreground hover:text-foreground transition-colors" data-testid="button-color-info">
+                            <Info className="w-5 h-5" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="right" className="max-w-sm">
+                          <div className="space-y-2 text-xs">
+                            <p className="font-semibold">Renk Sistemi - LOJİK Perspektifi:</p>
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 rounded-sm bg-status-empty" />
+                                <span><strong>Yeşil:</strong> Kiraya Verilebilir (Boş)</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 rounded-sm bg-status-occupied" />
+                                <span><strong>Turuncu:</strong> Dolu (Para geliyor)</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 rounded-sm bg-status-reserved" />
+                                <span><strong>Sarı:</strong> Rezerve (Biri gelecek)</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 rounded-sm bg-status-oos" />
+                                <span><strong>Kırmızı:</strong> Sorun Var (Hizmet dışı)</span>
+                              </div>
+                            </div>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                   <p className="text-muted-foreground">
                     Tüm mülklerdeki çalışan konaklamalarını yönetin
                   </p>

@@ -81,6 +81,16 @@
 
   --chart-5: 0 84% 55%;
 
+  /* Bed Status Colors - LOJIK Perspective (Sales/Accommodation Manager) */
+  --status-empty: 142 71% 45%;       /* GREEN - Available for rent */
+  --status-occupied: 25 95% 53%;     /* ORANGE - Currently occupied (money coming in) */
+  --status-reserved: 45 93% 47%;     /* YELLOW - Reserved (someone coming) */
+  --status-oos: 0 84% 60%;           /* RED - Out of service (problem) */
+  
+  /* Gender Indicators */
+  --gender-male: 217 91% 60%;        /* BLUE - Male */
+  --gender-female: 340 82% 52%;      /* PINK - Female */
+
   --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: Menlo, monospace;
@@ -203,6 +213,16 @@
   --chart-4: 38 92% 60%;
 
   --chart-5: 0 84% 65%;
+
+  /* Bed Status Colors - LOJIK Perspective (Sales/Accommodation Manager) */
+  --status-empty: 142 71% 50%;       /* GREEN - Available for rent (brighter in dark mode) */
+  --status-occupied: 25 95% 58%;     /* ORANGE - Currently occupied (brighter in dark mode) */
+  --status-reserved: 45 93% 52%;     /* YELLOW - Reserved (brighter in dark mode) */
+  --status-oos: 0 84% 65%;           /* RED - Out of service (brighter in dark mode) */
+  
+  /* Gender Indicators */
+  --gender-male: 217 91% 65%;        /* BLUE - Male (brighter in dark mode) */
+  --gender-female: 340 82% 57%;      /* PINK - Female (brighter in dark mode) */
 
   --shadow-2xs: 0px 1px 1px 0px hsl(0 0% 0% / 0.15);
   --shadow-xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.20);
