@@ -1,5 +1,6 @@
-import { Building2, MapPin } from "lucide-react";
+import { Building2, MapPin, FileText } from "lucide-react";
 import RoomCard from "./RoomCard";
+import { Button } from "@/components/ui/button";
 
 interface Worker {
   id: string;
@@ -27,7 +28,9 @@ interface HouseCardProps {
   totalBeds: number;
   occupiedBeds: number;
   rooms: Room[];
+  ownershipType?: string;
   onBedClick?: (bed: Bed) => void;
+  onLeaseClick?: () => void;
 }
 
 export default function HouseCard({
@@ -36,7 +39,9 @@ export default function HouseCard({
   totalBeds,
   occupiedBeds,
   rooms,
+  ownershipType,
   onBedClick,
+  onLeaseClick,
 }: HouseCardProps) {
   const emptyBeds = totalBeds - occupiedBeds;
 
@@ -84,6 +89,18 @@ export default function HouseCard({
             Dolu: <span className="font-semibold text-status-occupied">{occupiedBeds}</span>
           </span>
         </div>
+        {ownershipType === "Kiralık" && onLeaseClick && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onLeaseClick}
+            className="gap-2"
+            data-testid={`button-lease-${name}`}
+          >
+            <FileText className="w-4 h-4" />
+            Kira Sözleşmesi
+          </Button>
+        )}
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import CapacityWidget from "@/components/CapacityWidget";
 import HouseCard from "@/components/HouseCard";
 import WorkerAssignmentModal from "@/components/WorkerAssignmentModal";
 import GenderWarningModal from "@/components/GenderWarningModal";
+import LeaseContractDialog from "@/components/LeaseContractDialog";
 import { Button } from "@/components/ui/button";
 import { FileText, Bell, Calendar, AlertCircle, Plus, ChevronDown, ChevronUp, MapPin, Clock } from "lucide-react";
 import {
@@ -49,7 +50,7 @@ type Reminder = {
 };
 
 // TODO: Remove mock data when implementing real API
-const mockHouses = [
+const initialMockHouses = [
   {
     id: "h1",
     name: "Geldernstrasse 13",
@@ -288,6 +289,7 @@ const mockHouses = [
 ];
 
 export default function HousingDashboard() {
+  const [houses, setHouses] = useState(initialMockHouses);
   const [assignmentModalOpen, setAssignmentModalOpen] = useState(false);
   const [warningModalOpen, setWarningModalOpen] = useState(false);
   const [selectedBed, setSelectedBed] = useState<any>(null);
@@ -301,17 +303,17 @@ export default function HousingDashboard() {
   
   // Lease contract state
   const [isLeaseDialogOpen, setIsLeaseDialogOpen] = useState(false);
-  const [selectedHouseForLease, setSelectedHouseForLease] = useState<typeof mockHouses[0] | null>(null);
+  const [selectedHouseForLease, setSelectedHouseForLease] = useState<typeof initialMockHouses[0] | null>(null);
   
   // Reminders state
   const [isRemindersDialogOpen, setIsRemindersDialogOpen] = useState(false);
-  const [selectedHouseForReminders, setSelectedHouseForReminders] = useState<typeof mockHouses[0] | null>(null);
+  const [selectedHouseForReminders, setSelectedHouseForReminders] = useState<typeof initialMockHouses[0] | null>(null);
   
   // UI state for mobile
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
   // Filter houses based on selected filters
-  const filteredHouses = mockHouses.filter((house) => {
+  const filteredHouses = houses.filter((house) => {
     // Filter by house
     if (selectedHouse !== "all" && house.id !== selectedHouse) {
       return false;
@@ -340,7 +342,7 @@ export default function HousingDashboard() {
   const emptyBeds = totalBeds - occupiedBeds;
 
   // Helper: Calculate upcoming vacancies (within 30 days)
-  const getUpcomingVacancies = (house: typeof mockHouses[0]) => {
+  const getUpcomingVacancies = (house: typeof initialMockHouses[0]) => {
     const vacancies: { bedNumber: number; roomNumber: string; daysUntil: number; workerName: string }[] = [];
     const today = new Date();
     const thirtyDaysLater = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
@@ -398,7 +400,7 @@ export default function HousingDashboard() {
               setSelectedCountry={setSelectedCountry}
               showEmptyOnly={showEmptyOnly}
               setShowEmptyOnly={setShowEmptyOnly}
-              houses={mockHouses}
+              houses={houses}
             />
           </div>
         </aside>
@@ -443,7 +445,7 @@ export default function HousingDashboard() {
                     setSelectedCountry={setSelectedCountry}
                     showEmptyOnly={showEmptyOnly}
                     setShowEmptyOnly={setShowEmptyOnly}
-                    houses={mockHouses}
+                    houses={houses}
                   />
                 </CollapsibleContent>
               </Collapsible>
@@ -535,7 +537,12 @@ export default function HousingDashboard() {
                             totalBeds={house.totalBeds}
                             occupiedBeds={house.occupiedBeds}
                             rooms={house.rooms}
+                            ownershipType={house.ownershipType}
                             onBedClick={handleBedClick}
+                            onLeaseClick={() => {
+                              setSelectedHouseForLease(house);
+                              setIsLeaseDialogOpen(true);
+                            }}
                           />
                           
                           <div className="flex gap-2 mt-3">
@@ -783,6 +790,40 @@ export default function HousingDashboard() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Lease Contract Dialog */}
+      {selectedHouseForLease && (
+        <LeaseContractDialog
+          open={isLeaseDialogOpen}
+          onOpenChange={setIsLeaseDialogOpen}
+          houseName={selectedHouseForLease.name}
+          existingContract={selectedHouseForLease.leaseContract ? {
+            startDate: selectedHouseForLease.leaseContract.startDate,
+            endDate: selectedHouseForLease.leaseContract.endDate || "",
+            monthlyRent: selectedHouseForLease.leaseContract.monthlyRent,
+            paymentDay: selectedHouseForLease.leaseContract.paymentDay,
+          } : undefined}
+          onSave={(contract) => {
+            // Update houses state with new contract
+            setHouses((prevHouses) =>
+              prevHouses.map((h) =>
+                h.id === selectedHouseForLease.id
+                  ? {
+                      ...h,
+                      leaseContract: {
+                        startDate: contract.startDate,
+                        endDate: contract.endDate,
+                        monthlyRent: contract.monthlyRent,
+                        currency: "EUR",
+                        paymentDay: contract.paymentDay,
+                      },
+                    }
+                  : h
+              )
+            );
+          }}
+        />
+      )}
     </div>
   );
 }
