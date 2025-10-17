@@ -157,7 +157,7 @@ export default function NotificationsDialog({
                 return (
                   <Card key={submission.id} data-testid={`qr-approval-${submission.id}`}>
                     <CardContent className="p-4 space-y-3">
-                      <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3">
                         <div className="space-y-1 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
                             <Badge className={getTaskTypeColor()}>
@@ -247,15 +247,14 @@ export default function NotificationsDialog({
                       return (
                         <Card key={reminder.id} data-testid={`reminder-card-${reminder.id}`}>
                           <CardContent className="p-4 space-y-3">
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="flex items-start gap-3 flex-1">
-                                <Checkbox
-                                  checked={false}
-                                  onCheckedChange={() => onCompleteReminder(reminder.id)}
-                                  className="mt-1"
-                                  data-testid={`checkbox-complete-${reminder.id}`}
-                                />
-                                <div className="space-y-1 flex-1">
+                            <div className="flex items-start gap-3">
+                              <Checkbox
+                                checked={false}
+                                onCheckedChange={() => onCompleteReminder(reminder.id)}
+                                className="mt-1"
+                                data-testid={`checkbox-complete-${reminder.id}`}
+                              />
+                              <div className="space-y-1 flex-1">
                                   <div className="flex items-center gap-2 flex-wrap">
                                     <h4 className="font-medium">{reminder.title}</h4>
                                     <Badge className={getReminderTypeColor(reminder.type)}>
@@ -277,7 +276,6 @@ export default function NotificationsDialog({
                                       </span>
                                     )}
                                   </div>
-                                </div>
                               </div>
                             </div>
 
