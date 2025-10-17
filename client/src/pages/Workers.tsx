@@ -661,7 +661,7 @@ export default function Workers() {
               
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="add-status">Çalışan Durumu</Label>
+                  <Label htmlFor="add-status">Konaklama Durumu</Label>
                   <Select
                     value={formData.status}
                     onValueChange={(value: WorkerStatus) => setFormData({ ...formData, status: value })}
@@ -936,7 +936,7 @@ export default function Workers() {
               
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="edit-status">Çalışan Durumu</Label>
+                  <Label htmlFor="edit-status">Konaklama Durumu</Label>
                   <Select
                     value={formData.status}
                     onValueChange={(value: WorkerStatus) => setFormData({ ...formData, status: value })}

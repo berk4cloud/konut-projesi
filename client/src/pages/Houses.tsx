@@ -253,6 +253,7 @@ const initialMockHouses = [
         alertDaysBefore: 30,
         note: "Yenileme görüşmesi yapılmalı",
         recurring: "none" as const,
+        completed: false,
       },
       {
         id: "r2",
@@ -262,23 +263,24 @@ const initialMockHouses = [
         alertDaysBefore: 10,
         note: "Kalorifer bakımı",
         recurring: "yearly" as const,
+        completed: false,
       },
     ],
     meterLogs: {
       electricity: [
         { id: "e1", date: "2024-12-15", value: 15420, note: "Normal okuma", photo: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23f0f0f0' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' fill='%23666' font-size='24'%3EElektrik Sayacı%3C/text%3E%3C/svg%3E" },
-        { id: "e2", date: "2024-11-15", value: 15180 },
-        { id: "e3", date: "2024-10-15", value: 14950 },
+        { id: "e2", date: "2024-11-15", value: 15180, note: "", photo: "" },
+        { id: "e3", date: "2024-10-15", value: 14950, note: "", photo: "" },
       ],
       water: [
         { id: "w1", date: "2024-12-15", value: 8520, note: "Normal okuma", photo: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23e0f0ff' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' fill='%23006699' font-size='24'%3ESu Sayacı%3C/text%3E%3C/svg%3E" },
-        { id: "w2", date: "2024-11-15", value: 8410 },
-        { id: "w3", date: "2024-10-15", value: 8305 },
+        { id: "w2", date: "2024-11-15", value: 8410, note: "", photo: "" },
+        { id: "w3", date: "2024-10-15", value: 8305, note: "", photo: "" },
       ],
       gas: [
         { id: "g1", date: "2024-12-15", value: 3420, note: "Normal okuma", photo: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23fff8e0' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' fill='%23cc8800' font-size='24'%3EGaz Sayacı%3C/text%3E%3C/svg%3E" },
-        { id: "g2", date: "2024-11-15", value: 3280 },
-        { id: "g3", date: "2024-10-15", value: 3150 },
+        { id: "g2", date: "2024-11-15", value: 3280, note: "", photo: "" },
+        { id: "g3", date: "2024-10-15", value: 3150, note: "", photo: "" },
       ],
     },
   },
@@ -326,7 +328,9 @@ const initialMockHouses = [
         title: "Yangın güvenlik kontrolü",
         date: "2025-10-22",
         alertDaysBefore: 7,
+        note: "",
         recurring: "yearly" as const,
+        completed: false,
       },
       {
         id: "r4",
@@ -334,21 +338,23 @@ const initialMockHouses = [
         title: "Sayaç okuma günü",
         date: "2025-10-18",
         alertDaysBefore: 3,
+        note: "",
         recurring: "monthly" as const,
+        completed: false,
       },
     ],
     meterLogs: {
       electricity: [
-        { id: "e4", date: "2024-12-10", value: 22150, note: "Yılsonu okuması" },
-        { id: "e5", date: "2024-11-10", value: 21890 },
+        { id: "e4", date: "2024-12-10", value: 22150, note: "Yılsonu okuması", photo: "" },
+        { id: "e5", date: "2024-11-10", value: 21890, note: "", photo: "" },
       ],
       water: [
-        { id: "w4", date: "2024-12-10", value: 12340 },
-        { id: "w5", date: "2024-11-10", value: 12210 },
+        { id: "w4", date: "2024-12-10", value: 12340, note: "", photo: "" },
+        { id: "w5", date: "2024-11-10", value: 12210, note: "", photo: "" },
       ],
       gas: [
-        { id: "g4", date: "2024-12-10", value: 4580 },
-        { id: "g5", date: "2024-11-10", value: 4420 },
+        { id: "g4", date: "2024-12-10", value: 4580, note: "", photo: "" },
+        { id: "g5", date: "2024-11-10", value: 4420, note: "", photo: "" },
       ],
     },
   },
@@ -412,20 +418,21 @@ const initialMockHouses = [
         alertDaysBefore: 5,
         note: "Yönetim kurulu toplantısı",
         recurring: "none" as const,
+        completed: false,
       },
     ],
     meterLogs: {
       electricity: [
-        { id: "e6", date: "2024-12-01", value: 18920 },
-        { id: "e7", date: "2024-11-01", value: 18720 },
+        { id: "e6", date: "2024-12-01", value: 18920, note: "", photo: "" },
+        { id: "e7", date: "2024-11-01", value: 18720, note: "", photo: "" },
       ],
       water: [
-        { id: "w6", date: "2024-12-01", value: 9850, note: "Kaçak kontrol edildi" },
-        { id: "w7", date: "2024-11-01", value: 9730 },
+        { id: "w6", date: "2024-12-01", value: 9850, note: "Kaçak kontrol edildi", photo: "" },
+        { id: "w7", date: "2024-11-01", value: 9730, note: "", photo: "" },
       ],
       gas: [
-        { id: "g6", date: "2024-12-01", value: 3850 },
-        { id: "g7", date: "2024-11-01", value: 3720 },
+        { id: "g6", date: "2024-12-01", value: 3850, note: "", photo: "" },
+        { id: "g7", date: "2024-11-01", value: 3720, note: "", photo: "" },
       ],
     },
   },
@@ -751,8 +758,8 @@ export default function Houses() {
       id: `${newReading.meterType.charAt(0)}${Date.now()}`,
       date: newReading.date,
       value: readingValue,
-      note: newReading.note || undefined,
-      photo: newReading.photo || undefined,
+      note: newReading.note || "",
+      photo: newReading.photo || "",
     };
 
     // Update the house with the new reading
@@ -760,11 +767,11 @@ export default function Houses() {
       if (h.id === selectedHouseForMeters.id) {
         const updatedLogs = { ...h.meterLogs };
         if (newReading.meterType === "electricity") {
-          updatedLogs.electricity = [newReadingData, ...(updatedLogs.electricity || [])];
+          updatedLogs.electricity = [newReadingData, ...(updatedLogs.electricity || [])] as MeterReading[];
         } else if (newReading.meterType === "water") {
-          updatedLogs.water = [newReadingData, ...(updatedLogs.water || [])];
+          updatedLogs.water = [newReadingData, ...(updatedLogs.water || [])] as MeterReading[];
         } else {
-          updatedLogs.gas = [newReadingData, ...(updatedLogs.gas || [])];
+          updatedLogs.gas = [newReadingData, ...(updatedLogs.gas || [])] as MeterReading[];
         }
         return { ...h, meterLogs: updatedLogs };
       }
@@ -776,11 +783,11 @@ export default function Houses() {
     if (updatedHouse) {
       const updatedLogs = { ...updatedHouse.meterLogs };
       if (newReading.meterType === "electricity") {
-        updatedLogs.electricity = [newReadingData, ...(updatedLogs.electricity || [])];
+        updatedLogs.electricity = [newReadingData, ...(updatedLogs.electricity || [])] as MeterReading[];
       } else if (newReading.meterType === "water") {
-        updatedLogs.water = [newReadingData, ...(updatedLogs.water || [])];
+        updatedLogs.water = [newReadingData, ...(updatedLogs.water || [])] as MeterReading[];
       } else {
-        updatedLogs.gas = [newReadingData, ...(updatedLogs.gas || [])];
+        updatedLogs.gas = [newReadingData, ...(updatedLogs.gas || [])] as MeterReading[];
       }
       setSelectedHouseForMeters({ ...updatedHouse, meterLogs: updatedLogs });
     }
@@ -905,6 +912,13 @@ export default function Houses() {
         ownershipType: formData.ownershipType,
         archived: false,
         pricing: formData.pricing,
+        leaseContract: formData.ownershipType === "Kiralık" ? {
+          startDate: new Date().toISOString().split('T')[0],
+          monthlyRent: 0,
+          currency: "EUR",
+          paymentDay: 1,
+        } : undefined,
+        reminders: [],
         meterLogs: {
           electricity: [],
           water: [],
