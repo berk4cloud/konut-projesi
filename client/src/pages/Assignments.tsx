@@ -334,6 +334,13 @@ export default function Assignments() {
   const [payments] = useState(mockPayments);
   const [conversationNotes, setConversationNotes] = useState(mockConversationNotes);
   
+  // Payment Filter State
+  const [paymentDateFilter, setPaymentDateFilter] = useState({
+    startDate: "",
+    endDate: "",
+  });
+  const [expandedWorkers, setExpandedWorkers] = useState<Set<string>>(new Set());
+  
   // Payment Dialog State
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [selectedCharge, setSelectedCharge] = useState<Charge | null>(null);
@@ -505,11 +512,62 @@ export default function Assignments() {
     }
   });
 
-  // Filter payments based on search
+  // Filter payments based on search and date range
   const filteredPayments = payments.filter(payment => {
-    return searchQuery === "" || 
+    const matchesSearch = searchQuery === "" || 
       payment.workerName.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    if (!matchesSearch) return false;
+    
+    // Date range filtering
+    if (paymentDateFilter.startDate || paymentDateFilter.endDate) {
+      const paymentDate = new Date(payment.paymentDate);
+      paymentDate.setHours(0, 0, 0, 0);
+      
+      if (paymentDateFilter.startDate) {
+        const startDate = new Date(paymentDateFilter.startDate);
+        startDate.setHours(0, 0, 0, 0);
+        if (paymentDate < startDate) return false;
+      }
+      
+      if (paymentDateFilter.endDate) {
+        const endDate = new Date(paymentDateFilter.endDate);
+        endDate.setHours(23, 59, 59, 999);
+        if (paymentDate > endDate) return false;
+      }
+    }
+    
+    return true;
   });
+  
+  // Group payments by worker name and sort by date (newest first)
+  const groupedPayments: Record<string, Payment[]> = {};
+  filteredPayments.forEach(payment => {
+    if (!groupedPayments[payment.workerName]) {
+      groupedPayments[payment.workerName] = [];
+    }
+    groupedPayments[payment.workerName].push(payment);
+  });
+  
+  // Sort each worker's payments by date (newest first)
+  Object.keys(groupedPayments).forEach(workerName => {
+    groupedPayments[workerName].sort((a, b) => 
+      new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime()
+    );
+  });
+  
+  // Toggle worker expansion
+  const toggleWorkerExpansion = (workerName: string) => {
+    setExpandedWorkers(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(workerName)) {
+        newSet.delete(workerName);
+      } else {
+        newSet.add(workerName);
+      }
+      return newSet;
+    });
+  };
 
   // Statistics
   const activeAssignments = assignments.filter(a => a.status === "active").length;
@@ -831,55 +889,142 @@ export default function Assignments() {
 
             {/* Payments Tab */}
             <TabsContent value="payments" className="space-y-4">
+              {/* Date Filter */}
+              <div className="flex items-center gap-4 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="payment-start-date" className="whitespace-nowrap">Başlangıç:</Label>
+                  <Input
+                    id="payment-start-date"
+                    type="date"
+                    value={paymentDateFilter.startDate}
+                    onChange={(e) => setPaymentDateFilter({...paymentDateFilter, startDate: e.target.value})}
+                    className="w-[160px]"
+                    data-testid="input-payment-start-date"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="payment-end-date" className="whitespace-nowrap">Bitiş:</Label>
+                  <Input
+                    id="payment-end-date"
+                    type="date"
+                    value={paymentDateFilter.endDate}
+                    onChange={(e) => setPaymentDateFilter({...paymentDateFilter, endDate: e.target.value})}
+                    className="w-[160px]"
+                    data-testid="input-payment-end-date"
+                  />
+                </div>
+                {(paymentDateFilter.startDate || paymentDateFilter.endDate) && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setPaymentDateFilter({ startDate: "", endDate: "" })}
+                    data-testid="button-clear-payment-filter"
+                  >
+                    Temizle
+                  </Button>
+                )}
+              </div>
+
               <div className="space-y-4">
-                {filteredPayments.length === 0 ? (
+                {Object.keys(groupedPayments).length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     Kayıt bulunamadı
                   </div>
                 ) : (
-                  filteredPayments.map((payment) => (
-                  <Card key={payment.id} data-testid={`payment-card-${payment.id}`}>
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="space-y-1">
-                          <CardTitle className="text-lg">{payment.workerName}</CardTitle>
-                          <CardDescription>
-                            {new Date(payment.paymentDate).toLocaleDateString('tr-TR', { 
-                              year: 'numeric', 
-                              month: 'long', 
-                              day: 'numeric' 
-                            })}
-                          </CardDescription>
-                        </div>
-                        <Badge variant="default" className="bg-green-500">
-                          Ödendi
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                        <div>
-                          <p className="text-muted-foreground mb-1">Tutar</p>
-                          <p className="font-bold text-lg flex items-center gap-1">
-                            <CreditCard className="w-4 h-4" />
-                            €{payment.amount}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground mb-1">Ödeme Yöntemi</p>
-                          <p className="font-medium">
-                            {payment.paymentMethod === "bank_transfer" ? "Banka Transferi" :
-                             payment.paymentMethod === "cash" ? "Nakit" : "Otomatik"}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground mb-1">Referans</p>
-                          <p className="font-medium">{payment.reference || "-"}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  ))
+                  Object.entries(groupedPayments).map(([workerName, workerPayments]) => {
+                    const isExpanded = expandedWorkers.has(workerName);
+                    const latestPayment = workerPayments[0];
+                    const totalAmount = workerPayments.reduce((sum, p) => sum + p.amount, 0);
+                    const paymentsToShow = isExpanded ? workerPayments : [latestPayment];
+                    
+                    return (
+                      <Card key={workerName} data-testid={`payment-group-${workerName}`}>
+                        <CardHeader>
+                          <div className="flex items-start justify-between">
+                            <div className="space-y-1">
+                              <CardTitle className="text-lg">{workerName}</CardTitle>
+                              <CardDescription>
+                                {workerPayments.length} ödeme • Toplam: €{totalAmount.toFixed(2)}
+                              </CardDescription>
+                            </div>
+                            <Badge variant="default" className="bg-green-500">
+                              Ödendi
+                            </Badge>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          {paymentsToShow.map((payment, index) => (
+                            <div 
+                              key={payment.id} 
+                              className={`p-3 rounded-lg border ${index === 0 ? 'bg-muted/30' : 'bg-background'}`}
+                              data-testid={`payment-item-${payment.id}`}
+                            >
+                              <div className="flex items-start justify-between mb-2">
+                                <div className="text-sm text-muted-foreground">
+                                  {new Date(payment.paymentDate).toLocaleDateString('tr-TR', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                  })}
+                                </div>
+                                {payment.collectorName && (
+                                  <div className="text-xs text-muted-foreground flex items-center gap-1">
+                                    <UserCheck className="w-3 h-3" />
+                                    {payment.collectorName}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                                <div>
+                                  <p className="text-muted-foreground mb-1">Tutar</p>
+                                  <p className="font-bold text-base flex items-center gap-1">
+                                    <CreditCard className="w-4 h-4" />
+                                    €{payment.amount}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-muted-foreground mb-1">Ödeme Yöntemi</p>
+                                  <p className="font-medium">
+                                    {payment.paymentMethod === "bank_transfer" ? "Banka Transferi" :
+                                     payment.paymentMethod === "pos" ? "POS" :
+                                     payment.paymentMethod === "cash" ? "Nakit" :
+                                     payment.paymentMethod === "automatic" ? "Otomatik" : "Diğer"}
+                                  </p>
+                                </div>
+                                {payment.reference && (
+                                  <div>
+                                    <p className="text-muted-foreground mb-1">Referans</p>
+                                    <p className="font-medium text-xs">{payment.reference}</p>
+                                  </div>
+                                )}
+                              </div>
+                              {payment.notes && (
+                                <p className="text-sm text-muted-foreground mt-2 p-2 bg-muted/50 rounded">
+                                  {payment.notes}
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                          
+                          {workerPayments.length > 1 && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleWorkerExpansion(workerName)}
+                              className="w-full"
+                              data-testid={`button-toggle-${workerName}`}
+                            >
+                              {isExpanded ? (
+                                <>Daha Az Göster</>
+                              ) : (
+                                <>+{workerPayments.length - 1} Daha Fazla Göster</>
+                              )}
+                            </Button>
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })
                 )}
               </div>
             </TabsContent>
