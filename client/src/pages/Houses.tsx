@@ -652,6 +652,13 @@ export default function Houses() {
       country: "Hollanda",
       rooms: [],
       ownershipType: "Kiralık",
+      pricing: {
+        useCustomPricing: false,
+        bedDailyPrice: undefined,
+        bedMonthlyPrice: undefined,
+        roomDailyPrice: undefined,
+        roomMonthlyPrice: undefined,
+      },
     });
     setIsDialogOpen(true);
   };
@@ -688,7 +695,16 @@ export default function Houses() {
   const handleAddRoom = () => {
     setFormData({
       ...formData,
-      rooms: [...formData.rooms, { roomNumber: "", beds: 1, canRentAsRoom: false, useFloor: false, floor: undefined }],
+      rooms: [...formData.rooms, { 
+        roomNumber: "", 
+        beds: 1, 
+        canRentAsRoom: false, 
+        useFloor: false, 
+        floor: undefined,
+        pricing: {
+          useCustomPricing: false,
+        }
+      }],
     });
   };
 
@@ -1406,6 +1422,145 @@ export default function Houses() {
                           </div>
                         )}
                       </div>
+                    </div>
+
+                    {/* Room Pricing */}
+                    <div className="space-y-2 pt-3 border-t mt-3">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`use-room-pricing-${index}`}
+                          checked={room.pricing?.useCustomPricing || false}
+                          onCheckedChange={(checked) => {
+                            const newRooms = [...formData.rooms];
+                            newRooms[index] = { 
+                              ...newRooms[index], 
+                              pricing: {
+                                useCustomPricing: !!checked,
+                                bedDailyPrice: room.pricing?.bedDailyPrice,
+                                bedMonthlyPrice: room.pricing?.bedMonthlyPrice,
+                                roomDailyPrice: room.pricing?.roomDailyPrice,
+                                roomMonthlyPrice: room.pricing?.roomMonthlyPrice,
+                              }
+                            };
+                            setFormData({ ...formData, rooms: newRooms });
+                          }}
+                          data-testid={`checkbox-use-room-pricing-${index}`}
+                        />
+                        <Label
+                          htmlFor={`use-room-pricing-${index}`}
+                          className="text-sm font-normal cursor-pointer"
+                        >
+                          Oda için özel fiyat
+                        </Label>
+                      </div>
+
+                      {room.pricing?.useCustomPricing && (
+                        <div className="space-y-3 pl-6">
+                          <div className="grid grid-cols-2 gap-3">
+                            {systemSettings.dailyRentalEnabled && (
+                              <div className="space-y-2">
+                                <Label htmlFor={`room-bed-daily-${index}`} className="text-xs">Yatak Günlük (€)</Label>
+                                <Input
+                                  id={`room-bed-daily-${index}`}
+                                  data-testid={`input-room-bed-daily-${index}`}
+                                  type="number"
+                                  step="0.01"
+                                  min="0"
+                                  placeholder={`€${getApplicablePrice(room, formData as any, 'bedDaily')}`}
+                                  value={room.pricing?.bedDailyPrice ?? ""}
+                                  onChange={(e) => {
+                                    const newRooms = [...formData.rooms];
+                                    newRooms[index] = {
+                                      ...newRooms[index],
+                                      pricing: {
+                                        ...newRooms[index].pricing!,
+                                        bedDailyPrice: e.target.value ? parseFloat(e.target.value) : undefined
+                                      }
+                                    };
+                                    setFormData({ ...formData, rooms: newRooms });
+                                  }}
+                                />
+                              </div>
+                            )}
+                            <div className="space-y-2">
+                              <Label htmlFor={`room-bed-monthly-${index}`} className="text-xs">Yatak Aylık (€)</Label>
+                              <Input
+                                id={`room-bed-monthly-${index}`}
+                                data-testid={`input-room-bed-monthly-${index}`}
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                placeholder={`€${getApplicablePrice(room, formData as any, 'bedMonthly')}`}
+                                value={room.pricing?.bedMonthlyPrice ?? ""}
+                                onChange={(e) => {
+                                  const newRooms = [...formData.rooms];
+                                  newRooms[index] = {
+                                    ...newRooms[index],
+                                    pricing: {
+                                      ...newRooms[index].pricing!,
+                                      bedMonthlyPrice: e.target.value ? parseFloat(e.target.value) : undefined
+                                    }
+                                  };
+                                  setFormData({ ...formData, rooms: newRooms });
+                                }}
+                              />
+                            </div>
+                          </div>
+
+                          {room.canRentAsRoom && (
+                            <div className="grid grid-cols-2 gap-3">
+                              {systemSettings.dailyRentalEnabled && (
+                                <div className="space-y-2">
+                                  <Label htmlFor={`room-room-daily-${index}`} className="text-xs">Oda Günlük (€)</Label>
+                                  <Input
+                                    id={`room-room-daily-${index}`}
+                                    data-testid={`input-room-room-daily-${index}`}
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    placeholder={`€${getApplicablePrice(room, formData as any, 'roomDaily')}`}
+                                    value={room.pricing?.roomDailyPrice ?? ""}
+                                    onChange={(e) => {
+                                      const newRooms = [...formData.rooms];
+                                      newRooms[index] = {
+                                        ...newRooms[index],
+                                        pricing: {
+                                          ...newRooms[index].pricing!,
+                                          roomDailyPrice: e.target.value ? parseFloat(e.target.value) : undefined
+                                        }
+                                      };
+                                      setFormData({ ...formData, rooms: newRooms });
+                                    }}
+                                  />
+                                </div>
+                              )}
+                              <div className="space-y-2">
+                                <Label htmlFor={`room-room-monthly-${index}`} className="text-xs">Oda Aylık (€)</Label>
+                                <Input
+                                  id={`room-room-monthly-${index}`}
+                                  data-testid={`input-room-room-monthly-${index}`}
+                                  type="number"
+                                  step="0.01"
+                                  min="0"
+                                  placeholder={`€${getApplicablePrice(room, formData as any, 'roomMonthly')}`}
+                                  value={room.pricing?.roomMonthlyPrice ?? ""}
+                                  onChange={(e) => {
+                                    const newRooms = [...formData.rooms];
+                                    newRooms[index] = {
+                                      ...newRooms[index],
+                                      pricing: {
+                                        ...newRooms[index].pricing!,
+                                        roomMonthlyPrice: e.target.value ? parseFloat(e.target.value) : undefined
+                                      }
+                                    };
+                                    setFormData({ ...formData, rooms: newRooms });
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}

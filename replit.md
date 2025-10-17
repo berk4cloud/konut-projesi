@@ -15,7 +15,25 @@ All UI text must be in Turkish language.
 
 ## Recent Updates (October 2025)
 
-### House Archiving System (Latest)
+### Multi-Level Pricing System (Latest)
+Implemented comprehensive 3-level pricing hierarchy for rental management:
+- **Daily Rental Mode**: Global toggle in Settings (ON/OFF) - when enabled, shows both daily and monthly rates
+- **Pricing Hierarchy** (priority order):
+  1. Room-specific pricing (highest priority)
+  2. House-specific pricing
+  3. Standard system pricing (Settings page)
+- **Calculation Logic**:
+  - <30 days: Daily rate × number of days
+  - ≥30 days: (Full months × monthly rate) + (remaining days × daily rate)
+- **Rental Types**: Per-bed or per-room basis (configurable per room)
+- **UI Integration**:
+  - Settings page: Daily rental toggle + standard pricing configuration
+  - House dialog: House-level custom pricing (optional)
+  - Room dialog: Room-level custom pricing (optional, only for rooms that can rent as whole)
+- **Helper Functions**: `getApplicablePrice()` for hierarchy resolution, `calculateRentalPrice()` for cost computation
+- **Implementation Status**: ✅ Complete with mock data and full UI
+
+### House Archiving System
 Implemented soft-delete archiving for houses with visual indicators:
 - Archive/unarchive toggle in house edit dialog
 - "Arşiv olanları da göster" switch in main view (default: hide archived)
