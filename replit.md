@@ -47,7 +47,7 @@ TanStack Query is used for server state management (caching, refetching). React'
 - **Multi-Level Pricing System**: Supports a 3-level pricing hierarchy (Room-specific > House-specific > Standard system pricing) with a global daily rental mode toggle. Calculations adapt for daily or monthly rates based on duration.
 - **House Archiving System**: Implements soft-delete for houses with visual indicators (opacity, dashed border, "Arşiv" badge) and a toggle to show/hide archived houses.
 - **QR Code Task Delegation System**: Enables creation of unique public QR links for worker self-registration, meter readings, and document uploads. Features include configurable usage limits, expiry dates, status management, and a pending approvals queue with notifications.
-- **Check-in/Check-out System**: Manages worker statuses (e.g., `new_registration`, `checked_out`) and tracks check-in/out dates, key handover, and return dates. Uses searchable combobox (Command + Popover pattern) for worker selection with type-ahead filtering.
+- **Check-in/Check-out System**: 4-step wizard managing worker bed assignments with real-time dashboard updates. All dropdowns use SearchCombobox (Command + Popover) for type-ahead filtering. Date pickers include "Bugün" (Today) button and validation. Auto-populates deposit collector with logged-in user. Updates bed occupancy, capacity counters, and worker assignments instantly upon completion.
 
 ## External Dependencies
 

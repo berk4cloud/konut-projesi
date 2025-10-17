@@ -334,7 +334,6 @@ export default function HousingDashboard() {
     startDate: "",
     endDate: "",
     searchCity: "all",
-    searchCountry: "all",
     searchType: "any" as "room" | "bed" | "any", // Oda mı, yatak mı arıyor
     // Step 2: İşçi
     workerId: "",
@@ -665,7 +664,6 @@ export default function HousingDashboard() {
       startDate: "",
       endDate: "",
       searchCity: "all",
-      searchCountry: "all",
       searchType: "any",
       workerId: "",
       workerName: "",
@@ -1147,7 +1145,6 @@ export default function HousingDashboard() {
             startDate: "",
             endDate: "",
             searchCity: "all",
-            searchCountry: "all",
             searchType: "any",
             workerId: "",
             workerName: "",
@@ -1259,47 +1256,24 @@ export default function HousingDashboard() {
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Şehir</Label>
-                    <SearchCombobox
-                      options={[
-                        { value: "all", label: "Tüm Şehirler" },
-                        ...Array.from(new Set(houses.map(h => h.city))).map(city => ({
-                          value: city.toLowerCase(),
-                          label: city
-                        }))
-                      ]}
-                      value={wizardData.searchCity}
-                      onValueChange={(value) => setWizardData({ ...wizardData, searchCity: value })}
-                      placeholder="Şehir seçin"
-                      searchPlaceholder="Şehir ara..."
-                      emptyText="Şehir bulunamadı"
-                      data-testid="select-wizard-city"
-                      className="w-full"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Ülke</Label>
-                    <SearchCombobox
-                      options={[
-                        { value: "all", label: "Tüm Ülkeler" },
-                        { value: "nl", label: "Hollanda" },
-                        { value: "de", label: "Almanya" },
-                        { value: "pl", label: "Polonya" },
-                        { value: "ro", label: "Romanya" },
-                        { value: "tr", label: "Türkiye" }
-                      ]}
-                      value={wizardData.searchCountry}
-                      onValueChange={(value) => setWizardData({ ...wizardData, searchCountry: value })}
-                      placeholder="Ülke seçin"
-                      searchPlaceholder="Ülke ara..."
-                      emptyText="Ülke bulunamadı"
-                      data-testid="select-wizard-country"
-                      className="w-full"
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label>Şehir</Label>
+                  <SearchCombobox
+                    options={[
+                      { value: "all", label: "Tüm Şehirler" },
+                      ...Array.from(new Set(houses.map(h => h.city))).map(city => ({
+                        value: city.toLowerCase(),
+                        label: city
+                      }))
+                    ]}
+                    value={wizardData.searchCity}
+                    onValueChange={(value) => setWizardData({ ...wizardData, searchCity: value })}
+                    placeholder="Şehir seçin"
+                    searchPlaceholder="Şehir ara..."
+                    emptyText="Şehir bulunamadı"
+                    data-testid="select-wizard-city"
+                    className="w-full"
+                  />
                 </div>
 
                 <div className="space-y-2">
