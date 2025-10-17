@@ -64,6 +64,7 @@ type MeterReading = {
 type MeterLogs = {
   electricity: MeterReading[];
   water: MeterReading[];
+  gas: MeterReading[];
 };
 
 // Lease contract type (for rented properties)
@@ -144,6 +145,11 @@ const initialMockHouses = [
         { id: "w2", date: "2024-11-15", value: 8410 },
         { id: "w3", date: "2024-10-15", value: 8305 },
       ],
+      gas: [
+        { id: "g1", date: "2024-12-15", value: 3420, note: "Normal okuma", photo: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23fff8e0' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' fill='%23cc8800' font-size='24'%3EGaz Sayacı%3C/text%3E%3C/svg%3E" },
+        { id: "g2", date: "2024-11-15", value: 3280 },
+        { id: "g3", date: "2024-10-15", value: 3150 },
+      ],
     },
   },
   {
@@ -188,6 +194,10 @@ const initialMockHouses = [
         { id: "w4", date: "2024-12-10", value: 12340 },
         { id: "w5", date: "2024-11-10", value: 12210 },
       ],
+      gas: [
+        { id: "g4", date: "2024-12-10", value: 4580 },
+        { id: "g5", date: "2024-11-10", value: 4420 },
+      ],
     },
   },
   {
@@ -230,6 +240,10 @@ const initialMockHouses = [
       water: [
         { id: "w6", date: "2024-12-01", value: 9850, note: "Kaçak kontrol edildi" },
         { id: "w7", date: "2024-11-01", value: 9730 },
+      ],
+      gas: [
+        { id: "g6", date: "2024-12-01", value: 3850 },
+        { id: "g7", date: "2024-11-01", value: 3720 },
       ],
     },
   },
