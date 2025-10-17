@@ -625,6 +625,89 @@ export default function Houses() {
   // Lease contract state
   const [isLeaseDialogOpen, setIsLeaseDialogOpen] = useState(false);
   const [selectedHouseForLease, setSelectedHouseForLease] = useState<typeof initialMockHouses[0] | null>(null);
+  const [isEditingLease, setIsEditingLease] = useState(false);
+  const [editedLeaseData, setEditedLeaseData] = useState<{
+    startDate: string;
+    endDate: string;
+    monthlyRent: string;
+    paymentDay: string;
+  }>({
+    startDate: "",
+    endDate: "",
+    monthlyRent: "",
+    paymentDay: "1",
+  });
+  
+  const handleEditLease = () => {
+    if (selectedHouseForLease?.leaseContract) {
+      setEditedLeaseData({
+        startDate: selectedHouseForLease.leaseContract.startDate,
+        endDate: selectedHouseForLease.leaseContract.endDate || "",
+        monthlyRent: selectedHouseForLease.leaseContract.monthlyRent.toString(),
+        paymentDay: selectedHouseForLease.leaseContract.paymentDay.toString(),
+      });
+      setIsEditingLease(true);
+    }
+  };
+  
+  const handleSaveLease = () => {
+    if (!selectedHouseForLease) return;
+    
+    const monthlyRent = parseFloat(editedLeaseData.monthlyRent);
+    const paymentDay = parseInt(editedLeaseData.paymentDay);
+    
+    if (isNaN(monthlyRent) || monthlyRent <= 0) {
+      toast({
+        title: "Hata",
+        description: "Geçerli bir kira tutarı girin",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (isNaN(paymentDay) || paymentDay < 1 || paymentDay > 31) {
+      toast({
+        title: "Hata",
+        description: "Ödeme günü 1-31 arasında olmalıdır",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setHouses(prevHouses =>
+      prevHouses.map(house =>
+        house.id === selectedHouseForLease.id
+          ? {
+              ...house,
+              leaseContract: {
+                ...house.leaseContract!,
+                startDate: editedLeaseData.startDate,
+                endDate: editedLeaseData.endDate || null,
+                monthlyRent,
+                paymentDay,
+              },
+            }
+          : house
+      )
+    );
+    
+    toast({
+      title: "Başarılı",
+      description: "Kira sözleşmesi güncellendi",
+    });
+    
+    setIsEditingLease(false);
+  };
+  
+  const handleCancelEditLease = () => {
+    setIsEditingLease(false);
+    setEditedLeaseData({
+      startDate: "",
+      endDate: "",
+      monthlyRent: "",
+      paymentDay: "1",
+    });
+  };
   
   // Reminders state
   const [isRemindersDialogOpen, setIsRemindersDialogOpen] = useState(false);
@@ -2324,7 +2407,12 @@ export default function Houses() {
       </Dialog>
 
       {/* Lease Contract Dialog */}
-      <Dialog open={isLeaseDialogOpen} onOpenChange={setIsLeaseDialogOpen}>
+      <Dialog open={isLeaseDialogOpen} onOpenChange={(open) => {
+        setIsLeaseDialogOpen(open);
+        if (!open) {
+          setIsEditingLease(false);
+        }
+      }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Kira Sözleşmesi Bilgileri</DialogTitle>
@@ -2334,58 +2422,143 @@ export default function Houses() {
           </DialogHeader>
           
           {selectedHouseForLease?.leaseContract ? (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Başlangıç Tarihi</p>
-                  <p className="font-medium" data-testid="text-lease-start">
-                    {new Date(selectedHouseForLease.leaseContract.startDate).toLocaleDateString("tr-TR")}
-                  </p>
-                </div>
-                
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Bitiş Tarihi</p>
-                  <p className="font-medium" data-testid="text-lease-end">
-                    {selectedHouseForLease.leaseContract.endDate 
-                      ? new Date(selectedHouseForLease.leaseContract.endDate).toLocaleDateString("tr-TR")
-                      : "Belirsiz"}
-                  </p>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Aylık Kira</p>
-                  <p className="text-2xl font-semibold" data-testid="text-lease-rent">
-                    {selectedHouseForLease.leaseContract.monthlyRent.toLocaleString()} {selectedHouseForLease.leaseContract.currency}
-                  </p>
-                </div>
-                
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Ödeme Günü</p>
-                  <p className="font-medium" data-testid="text-lease-payment-day">
-                    Her ayın {selectedHouseForLease.leaseContract.paymentDay}. günü
-                  </p>
-                </div>
-              </div>
-              
-              {selectedHouseForLease.leaseContract.endDate && (
-                <div className="p-4 bg-muted/50 rounded-lg border">
-                  <div className="flex items-start gap-3">
-                    <Calendar className="w-5 h-5 text-amber-600 mt-0.5" />
-                    <div>
-                      <p className="font-medium text-sm">Sözleşme Bitiş Uyarısı</p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Sözleşme {Math.ceil(
-                          (new Date(selectedHouseForLease.leaseContract.endDate).getTime() - new Date().getTime()) / 
-                          (1000 * 60 * 60 * 24)
-                        )} gün sonra bitiyor
+            <>
+              {!isEditingLease ? (
+                // View Mode
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">Başlangıç Tarihi</p>
+                      <p className="font-medium" data-testid="text-lease-start">
+                        {new Date(selectedHouseForLease.leaseContract.startDate).toLocaleDateString("tr-TR")}
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">Bitiş Tarihi</p>
+                      <p className="font-medium" data-testid="text-lease-end">
+                        {selectedHouseForLease.leaseContract.endDate 
+                          ? new Date(selectedHouseForLease.leaseContract.endDate).toLocaleDateString("tr-TR")
+                          : "Belirsiz"}
                       </p>
                     </div>
                   </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">Aylık Kira</p>
+                      <p className="text-2xl font-semibold" data-testid="text-lease-rent">
+                        {selectedHouseForLease.leaseContract.monthlyRent.toLocaleString()} {selectedHouseForLease.leaseContract.currency}
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">Ödeme Günü</p>
+                      <p className="font-medium" data-testid="text-lease-payment-day">
+                        Her ayın {selectedHouseForLease.leaseContract.paymentDay}. günü
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {selectedHouseForLease.leaseContract.endDate && (
+                    <div className="p-4 bg-muted/50 rounded-lg border">
+                      <div className="flex items-start gap-3">
+                        <Calendar className="w-5 h-5 text-amber-600 mt-0.5" />
+                        <div>
+                          <p className="font-medium text-sm">Sözleşme Bitiş Uyarısı</p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Sözleşme {Math.ceil(
+                              (new Date(selectedHouseForLease.leaseContract.endDate).getTime() - new Date().getTime()) / 
+                              (1000 * 60 * 60 * 24)
+                            )} gün sonra bitiyor
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="flex justify-end pt-4 border-t">
+                    <Button onClick={handleEditLease} data-testid="button-edit-lease">
+                      <Edit className="w-4 h-4 mr-2" />
+                      Düzenle
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                // Edit Mode
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-lease-start">Başlangıç Tarihi *</Label>
+                      <Input
+                        id="edit-lease-start"
+                        type="date"
+                        value={editedLeaseData.startDate}
+                        onChange={(e) => setEditedLeaseData({ ...editedLeaseData, startDate: e.target.value })}
+                        data-testid="input-edit-lease-start"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-lease-end">Bitiş Tarihi</Label>
+                      <Input
+                        id="edit-lease-end"
+                        type="date"
+                        value={editedLeaseData.endDate}
+                        onChange={(e) => setEditedLeaseData({ ...editedLeaseData, endDate: e.target.value })}
+                        data-testid="input-edit-lease-end"
+                      />
+                      <p className="text-xs text-muted-foreground">Boş bırakılırsa belirsiz süre</p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-lease-rent">Aylık Kira ({selectedHouseForLease.leaseContract.currency}) *</Label>
+                      <Input
+                        id="edit-lease-rent"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={editedLeaseData.monthlyRent}
+                        onChange={(e) => setEditedLeaseData({ ...editedLeaseData, monthlyRent: e.target.value })}
+                        data-testid="input-edit-lease-rent"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-lease-payment-day">Ödeme Günü (1-31) *</Label>
+                      <Input
+                        id="edit-lease-payment-day"
+                        type="number"
+                        min="1"
+                        max="31"
+                        value={editedLeaseData.paymentDay}
+                        onChange={(e) => setEditedLeaseData({ ...editedLeaseData, paymentDay: e.target.value })}
+                        data-testid="input-edit-lease-payment-day"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-3 justify-end pt-4 border-t">
+                    <Button
+                      variant="outline"
+                      onClick={handleCancelEditLease}
+                      data-testid="button-cancel-edit-lease"
+                    >
+                      İptal
+                    </Button>
+                    <Button
+                      onClick={handleSaveLease}
+                      data-testid="button-save-lease"
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      Kaydet
+                    </Button>
+                  </div>
                 </div>
               )}
-            </div>
+            </>
           ) : (
             <div className="text-center py-8">
               <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
