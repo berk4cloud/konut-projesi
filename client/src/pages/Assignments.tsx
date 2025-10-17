@@ -1,6 +1,8 @@
 import { useState } from "react";
 import Header from "@/components/Header";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,6 +13,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Search, 
   Calendar,
@@ -20,7 +32,8 @@ import {
   Clock,
   UserCheck,
   Home,
-  CreditCard
+  CreditCard,
+  Plus
 } from "lucide-react";
 
 // Types for Assignment Management System
@@ -265,11 +278,85 @@ const mockPayments: Payment[] = [
 ];
 
 export default function Assignments() {
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [assignments] = useState(mockAssignments);
   const [charges] = useState(mockCharges);
   const [payments] = useState(mockPayments);
+  
+  // Payment Dialog State
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [selectedCharge, setSelectedCharge] = useState<Charge | null>(null);
+  const [newPayment, setNewPayment] = useState({
+    amount: 0,
+    paymentDate: new Date().toISOString().split('T')[0],
+    paymentMethod: "cash" as PaymentMethod,
+    collectorName: "",
+    notes: "",
+  });
+
+  // Open payment dialog for a specific charge
+  const handleOpenPaymentDialog = (charge: Charge) => {
+    setSelectedCharge(charge);
+    setNewPayment({
+      amount: charge.remainingAmount, // Default to remaining amount
+      paymentDate: new Date().toISOString().split('T')[0],
+      paymentMethod: "cash",
+      collectorName: "",
+      notes: "",
+    });
+    setPaymentDialogOpen(true);
+  };
+
+  // Save payment
+  const handleSavePayment = () => {
+    if (!selectedCharge) return;
+    
+    // Validation
+    if (newPayment.amount <= 0) {
+      toast({
+        title: "Hata",
+        description: "Ödeme tutarı 0'dan büyük olmalıdır.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (newPayment.amount > selectedCharge.remainingAmount) {
+      toast({
+        title: "Hata",
+        description: `Ödeme tutarı kalan borçtan (€${selectedCharge.remainingAmount}) fazla olamaz.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!newPayment.collectorName.trim()) {
+      toast({
+        title: "Hata",
+        description: "Ödemeyi alan kişinin adı gereklidir.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Ödeme Kaydedildi",
+      description: `€${newPayment.amount} tutarında ödeme ${newPayment.collectorName} tarafından kaydedildi.`,
+    });
+    
+    // Close dialog and reset
+    setPaymentDialogOpen(false);
+    setSelectedCharge(null);
+    setNewPayment({
+      amount: 0,
+      paymentDate: new Date().toISOString().split('T')[0],
+      paymentMethod: "cash",
+      collectorName: "",
+      notes: "",
+    });
+  };
 
   // Filter assignments based on search and status
   const filteredAssignments = assignments.filter(assignment => {
@@ -557,6 +644,25 @@ export default function Assignments() {
                           </p>
                         </div>
                       </div>
+                      
+                      {/* Show remaining amount and payment button for unpaid/partial charges */}
+                      {charge.status !== "paid" && (
+                        <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                          <div>
+                            <p className="text-sm text-muted-foreground">Kalan Borç</p>
+                            <p className="font-bold text-lg text-red-600">€{charge.remainingAmount}</p>
+                          </div>
+                          <Button 
+                            onClick={() => handleOpenPaymentDialog(charge)}
+                            data-testid={`button-add-payment-${charge.id}`}
+                            size="sm"
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Ödeme Gir
+                          </Button>
+                        </div>
+                      )}
+                      
                       {charge.notes && (
                         <p className="text-sm text-muted-foreground mt-3 p-2 bg-muted/50 rounded">
                           {charge.notes}
@@ -626,6 +732,145 @@ export default function Assignments() {
           </Tabs>
         </div>
       </main>
+
+      {/* Payment Dialog */}
+      <Dialog 
+        open={paymentDialogOpen} 
+        onOpenChange={(open) => {
+          setPaymentDialogOpen(open);
+          if (!open) {
+            // Reset state when dialog closes
+            setSelectedCharge(null);
+            setNewPayment({
+              amount: 0,
+              paymentDate: new Date().toISOString().split('T')[0],
+              paymentMethod: "cash",
+              collectorName: "",
+              notes: "",
+            });
+          }
+        }}
+      >
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Yeni Ödeme Gir</DialogTitle>
+            <DialogDescription>
+              {selectedCharge && (
+                <>
+                  <span className="font-medium">{selectedCharge.workerName}</span> için ödeme kaydı oluşturun
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedCharge && (
+            <div className="space-y-4 py-4">
+              {/* Charge Info */}
+              <div className="p-3 bg-muted/50 rounded-lg space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Toplam Tutar:</span>
+                  <span className="font-semibold">€{selectedCharge.amount}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Kalan Borç:</span>
+                  <span className="font-bold text-red-600">€{selectedCharge.remainingAmount}</span>
+                </div>
+              </div>
+
+              {/* Amount */}
+              <div className="space-y-2">
+                <Label htmlFor="payment-amount">Ödeme Tutarı (€) *</Label>
+                <Input
+                  id="payment-amount"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max={selectedCharge.remainingAmount}
+                  value={newPayment.amount}
+                  onChange={(e) => setNewPayment({ ...newPayment, amount: parseFloat(e.target.value) || 0 })}
+                  data-testid="input-payment-amount"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Maksimum: €{selectedCharge.remainingAmount}
+                </p>
+              </div>
+
+              {/* Payment Method */}
+              <div className="space-y-2">
+                <Label htmlFor="payment-method">Ödeme Yöntemi *</Label>
+                <Select 
+                  value={newPayment.paymentMethod} 
+                  onValueChange={(value) => setNewPayment({ ...newPayment, paymentMethod: value as PaymentMethod })}
+                >
+                  <SelectTrigger id="payment-method" data-testid="select-payment-method">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cash">Nakit</SelectItem>
+                    <SelectItem value="bank_transfer">Banka Transferi</SelectItem>
+                    <SelectItem value="pos">POS/Kart</SelectItem>
+                    <SelectItem value="automatic">Otomatik Ödeme</SelectItem>
+                    <SelectItem value="other">Diğer</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Collector Name */}
+              <div className="space-y-2">
+                <Label htmlFor="collector-name">Ödemeyi Alan Kişi *</Label>
+                <Input
+                  id="collector-name"
+                  value={newPayment.collectorName}
+                  onChange={(e) => setNewPayment({ ...newPayment, collectorName: e.target.value })}
+                  placeholder="İsim Soyisim"
+                  data-testid="input-collector-name"
+                />
+              </div>
+
+              {/* Payment Date */}
+              <div className="space-y-2">
+                <Label htmlFor="payment-date">Ödeme Tarihi *</Label>
+                <Input
+                  id="payment-date"
+                  type="date"
+                  value={newPayment.paymentDate}
+                  onChange={(e) => setNewPayment({ ...newPayment, paymentDate: e.target.value })}
+                  data-testid="input-payment-date"
+                />
+              </div>
+
+              {/* Notes */}
+              <div className="space-y-2">
+                <Label htmlFor="payment-notes">Not (Opsiyonel)</Label>
+                <Textarea
+                  id="payment-notes"
+                  value={newPayment.notes}
+                  onChange={(e) => setNewPayment({ ...newPayment, notes: e.target.value })}
+                  placeholder="Ödeme ile ilgili notlar..."
+                  rows={3}
+                  data-testid="textarea-payment-notes"
+                />
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setPaymentDialogOpen(false)}
+              data-testid="button-cancel-payment"
+            >
+              İptal
+            </Button>
+            <Button 
+              onClick={handleSavePayment}
+              data-testid="button-save-payment"
+            >
+              Ödeme Kaydet
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
     </div>
   );
