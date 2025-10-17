@@ -159,28 +159,19 @@ export default function Settings() {
                     <SelectItem value="EUR" data-testid="option-currency-EUR">
                       <div className="flex items-center gap-3">
                         <span className="text-lg font-semibold text-primary">€</span>
-                        <div>
-                          <div className="font-medium">Euro (EUR)</div>
-                          <div className="text-xs text-muted-foreground">Avrupa</div>
-                        </div>
+                        <span className="font-medium">Euro (EUR)</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="USD" data-testid="option-currency-USD">
                       <div className="flex items-center gap-3">
                         <span className="text-lg font-semibold text-primary">$</span>
-                        <div>
-                          <div className="font-medium">Amerikan Doları (USD)</div>
-                          <div className="text-xs text-muted-foreground">Amerika</div>
-                        </div>
+                        <span className="font-medium">Amerikan Doları (USD)</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="TRY" data-testid="option-currency-TRY">
                       <div className="flex items-center gap-3">
                         <span className="text-lg font-semibold text-primary">₺</span>
-                        <div>
-                          <div className="font-medium">Türk Lirası (TRY)</div>
-                          <div className="text-xs text-muted-foreground">Türkiye</div>
-                        </div>
+                        <span className="font-medium">Türk Lirası (TRY)</span>
                       </div>
                     </SelectItem>
                   </SelectContent>
