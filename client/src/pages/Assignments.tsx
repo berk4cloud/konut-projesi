@@ -480,6 +480,9 @@ export default function Assignments() {
     const threeDaysFromNow = new Date(today);
     threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
     
+    // Calculate days overdue
+    const daysDiff = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
+    
     switch (chargesFilter) {
       case "all":
         return charge.status !== "paid"; // Exclude paid charges from "All" filter
@@ -489,6 +492,14 @@ export default function Assignments() {
         return dueDate <= threeDaysFromNow && dueDate >= today && charge.status !== "paid";
       case "overdue":
         return dueDate < today && charge.status !== "paid";
+      case "overdue7":
+        return daysDiff >= 7 && daysDiff < 14 && charge.status !== "paid";
+      case "overdue14":
+        return daysDiff >= 14 && daysDiff < 30 && charge.status !== "paid";
+      case "overdue30":
+        return daysDiff >= 30 && daysDiff < 90 && charge.status !== "paid";
+      case "overdue30plus":
+        return daysDiff >= 90 && charge.status !== "paid";
       default:
         return charge.status !== "paid";
     }
@@ -726,14 +737,18 @@ export default function Assignments() {
               {/* Charges Filter */}
               <div className="flex items-center gap-4">
                 <Select value={chargesFilter} onValueChange={setChargesFilter}>
-                  <SelectTrigger className="w-[250px]" data-testid="select-charges-filter">
+                  <SelectTrigger className="w-[280px]" data-testid="select-charges-filter">
                     <SelectValue placeholder="Ödeme durumu filtrele" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Tümü</SelectItem>
                     <SelectItem value="today">Bugün Vadesi Gelenler</SelectItem>
                     <SelectItem value="upcoming">3 Gün İçinde</SelectItem>
-                    <SelectItem value="overdue">Gecikmiş Ödemeler</SelectItem>
+                    <SelectItem value="overdue">Tüm Gecikmiş Ödemeler</SelectItem>
+                    <SelectItem value="overdue7">7-14 Gün Gecikmeli</SelectItem>
+                    <SelectItem value="overdue14">14-30 Gün Gecikmeli</SelectItem>
+                    <SelectItem value="overdue30">30-90 Gün Gecikmeli</SelectItem>
+                    <SelectItem value="overdue30plus">90+ Gün Gecikmeli</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
