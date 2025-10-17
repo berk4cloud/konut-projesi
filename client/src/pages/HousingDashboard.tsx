@@ -1426,12 +1426,17 @@ export default function HousingDashboard() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="quick-dob">Doğum Tarihi *</Label>
-                        <Input
-                          id="quick-dob"
-                          type="date"
-                          value={quickRegisterData.dateOfBirth}
-                          onChange={(e) => setQuickRegisterData({ ...quickRegisterData, dateOfBirth: e.target.value })}
+                        <Label>Doğum Tarihi *</Label>
+                        <ModernDatePicker
+                          date={quickRegisterData.dateOfBirth ? new Date(quickRegisterData.dateOfBirth) : undefined}
+                          onDateChange={(date) => {
+                            setQuickRegisterData({
+                              ...quickRegisterData,
+                              dateOfBirth: date ? date.toISOString().split('T')[0] : ""
+                            });
+                          }}
+                          placeholder="Tarih seçin"
+                          className="w-full"
                           data-testid="input-quick-dob"
                         />
                       </div>
