@@ -199,9 +199,7 @@ export default function Workers() {
                   <TableHead>Çalışan</TableHead>
                   <TableHead>Cinsiyet</TableHead>
                   <TableHead>Ülke</TableHead>
-                  <TableHead>Ev</TableHead>
-                  <TableHead>Oda</TableHead>
-                  <TableHead>Yatak</TableHead>
+                  <TableHead>Konaklama</TableHead>
                   <TableHead>İşlemler</TableHead>
                 </TableRow>
               </TableHeader>
@@ -228,10 +226,17 @@ export default function Workers() {
                     </TableCell>
                     <TableCell>{worker.gender}</TableCell>
                     <TableCell>{worker.country}</TableCell>
-                    <TableCell className="text-sm">{worker.house}</TableCell>
-                    <TableCell>Oda {worker.room}</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">Yatak {worker.bed}</Badge>
+                    <TableCell className="text-sm">
+                      {worker.house ? (
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-foreground">{worker.house}</span>
+                          <span className="text-muted-foreground text-xs">
+                            Oda {worker.room} • Yatak {worker.bed}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">Atanmamış</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Button 
