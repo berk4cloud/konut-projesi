@@ -12,7 +12,10 @@ export const roomTypeEnum = pgEnum("room_type", ["single", "double", "triple", "
 export const genderRestrictionEnum = pgEnum("gender_restriction", ["male", "female", "mixed", "none"]);
 export const workerGenderEnum = pgEnum("worker_gender", ["male", "female"]);
 export const workerStatusEnum = pgEnum("worker_status", ["active", "inactive", "new_registration", "checked_out"]);
-export const currencyEnum = pgEnum("currency", ["EUR", "USD", "TRY"]);
+export const currencyEnum = pgEnum("currency", [
+  "EUR", "USD", "TRY", "GBP", "CHF", "CAD", "MXN", "CNY", "JPY",
+  "RUB", "SEK", "NOK", "DKK", "HUF", "PLN", "CZK", "RON", "BGN", "RSD", "UAH"
+]);
 
 // Tenants table
 export const tenants = pgTable("tenants", {

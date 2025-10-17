@@ -43,7 +43,7 @@ TanStack Query is used for server state management (caching, refetching). React'
 
 ### Features
 
-- **Currency Settings**: Tenant admins can configure system-wide currency (EUR, USD, TRY) from Settings page. Currency persists in systemSettings and applies to all pricing displays. Schema includes currency field on tenants table with EUR as default.
+- **Currency Settings**: Tenant admins can configure system-wide currency from Settings page. Supports 20 major currencies: EUR, USD, GBP, CHF, CAD, MXN, CNY, JPY, TRY, RUB, SEK, NOK, DKK, HUF, PLN, CZK, RON, BGN, RSD, UAH. Currency persists in localStorage via systemSettings and applies to all pricing displays. Schema includes currency enum and field on tenants table with EUR as default.
 - **Accommodation Billing & Assignment Management**: The "Konaklama" (Accommodation) module manages worker-bed assignments, automatically calculates monthly charges (prorated for partial months), tracks deposits, and monitors payment statuses. Includes enhanced filtering with granular overdue categories (7-14 days, 14-30 days, 30-90 days, 90+ days), worker-grouped payment history with expandable records, and date range filtering for payment queries.
 - **Multi-Level Pricing System**: Supports a 3-level pricing hierarchy (Room-specific > House-specific > Standard system pricing) with a global daily rental mode toggle. Calculations adapt for daily or monthly rates based on duration.
 - **House Archiving System**: Implements soft-delete for houses with visual indicators (opacity, dashed border, "Arşiv" badge) and a toggle to show/hide archived houses.

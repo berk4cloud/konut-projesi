@@ -120,7 +120,7 @@ export const saveSystemSettings = (settings: typeof systemSettings) => {
 
 // Global system settings for pricing
 const defaultSettings = {
-  currency: "EUR" as "EUR" | "USD" | "TRY",
+  currency: "EUR" as "EUR" | "USD" | "TRY" | "GBP" | "CHF" | "CAD" | "MXN" | "CNY" | "JPY" | "RUB" | "SEK" | "NOK" | "DKK" | "HUF" | "PLN" | "CZK" | "RON" | "BGN" | "RSD" | "UAH",
   dailyRentalEnabled: true, // Günlük Kiralama Modu ON
   standardPricing: {
     bedDailyPrice: 25, // €25/gün

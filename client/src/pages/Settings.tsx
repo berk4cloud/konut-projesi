@@ -22,11 +22,36 @@ interface Country {
   isDefault: boolean;
 }
 
+type CurrencyType = "EUR" | "USD" | "TRY" | "GBP" | "CHF" | "CAD" | "MXN" | "CNY" | "JPY" | "RUB" | "SEK" | "NOK" | "DKK" | "HUF" | "PLN" | "CZK" | "RON" | "BGN" | "RSD" | "UAH";
+
+const currencyOptions: { value: CurrencyType; label: string; symbol: string }[] = [
+  { value: "EUR", label: "Euro (EUR)", symbol: "€" },
+  { value: "USD", label: "Amerikan Doları (USD)", symbol: "$" },
+  { value: "GBP", label: "İngiliz Sterlini (GBP)", symbol: "£" },
+  { value: "CHF", label: "İsviçre Frangı (CHF)", symbol: "CHF" },
+  { value: "CAD", label: "Kanada Doları (CAD)", symbol: "C$" },
+  { value: "MXN", label: "Meksika Pesosu (MXN)", symbol: "$" },
+  { value: "CNY", label: "Çin Yuanı (CNY)", symbol: "¥" },
+  { value: "JPY", label: "Japon Yeni (JPY)", symbol: "¥" },
+  { value: "TRY", label: "Türk Lirası (TRY)", symbol: "₺" },
+  { value: "RUB", label: "Rus Rublesi (RUB)", symbol: "₽" },
+  { value: "SEK", label: "İsveç Kronu (SEK)", symbol: "kr" },
+  { value: "NOK", label: "Norveç Kronu (NOK)", symbol: "kr" },
+  { value: "DKK", label: "Danimarka Kronu (DKK)", symbol: "kr" },
+  { value: "HUF", label: "Macar Forinti (HUF)", symbol: "Ft" },
+  { value: "PLN", label: "Polonya Zlotisi (PLN)", symbol: "zł" },
+  { value: "CZK", label: "Çek Korunası (CZK)", symbol: "Kč" },
+  { value: "RON", label: "Romanya Leyi (RON)", symbol: "lei" },
+  { value: "BGN", label: "Bulgar Levası (BGN)", symbol: "лв" },
+  { value: "RSD", label: "Sırp Dinarı (RSD)", symbol: "дин" },
+  { value: "UAH", label: "Ukrayna Hryvnyası (UAH)", symbol: "₴" },
+];
+
 export default function Settings() {
   const { toast } = useToast();
   
   // Currency settings - initialize from systemSettings
-  const [currency, setCurrency] = useState<"EUR" | "USD" | "TRY">(systemSettings.currency);
+  const [currency, setCurrency] = useState<CurrencyType>(systemSettings.currency);
   const [hasCurrencyChanges, setHasCurrencyChanges] = useState(false);
   
   const [countries, setCountries] = useState<Country[]>([
@@ -62,7 +87,7 @@ export default function Settings() {
     })));
   };
   
-  const handleCurrencyChange = (value: "EUR" | "USD" | "TRY") => {
+  const handleCurrencyChange = (value: CurrencyType) => {
     setCurrency(value);
     setHasCurrencyChanges(true);
   };
@@ -152,28 +177,18 @@ export default function Settings() {
               <div className="space-y-2">
                 <Label htmlFor="currency-select">Para Birimi Seçin</Label>
                 <Select value={currency} onValueChange={handleCurrencyChange}>
-                  <SelectTrigger id="currency-select" data-testid="select-currency" className="w-full sm:w-[300px]">
+                  <SelectTrigger id="currency-select" data-testid="select-currency" className="w-full sm:w-[360px]">
                     <SelectValue placeholder="Para birimi seçin" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="EUR" data-testid="option-currency-EUR">
-                      <div className="flex items-center gap-3">
-                        <span className="text-lg font-semibold text-primary">€</span>
-                        <span className="font-medium">Euro (EUR)</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="USD" data-testid="option-currency-USD">
-                      <div className="flex items-center gap-3">
-                        <span className="text-lg font-semibold text-primary">$</span>
-                        <span className="font-medium">Amerikan Doları (USD)</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="TRY" data-testid="option-currency-TRY">
-                      <div className="flex items-center gap-3">
-                        <span className="text-lg font-semibold text-primary">₺</span>
-                        <span className="font-medium">Türk Lirası (TRY)</span>
-                      </div>
-                    </SelectItem>
+                  <SelectContent className="max-h-[300px]">
+                    {currencyOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value} data-testid={`option-currency-${option.value}`}>
+                        <div className="flex items-center gap-3">
+                          <span className="text-lg font-semibold text-primary min-w-[32px]">{option.symbol}</span>
+                          <span className="font-medium">{option.label}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -184,17 +199,12 @@ export default function Settings() {
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Seçili Para Birimi</p>
                     <p className="text-2xl font-bold" data-testid="text-selected-currency">
-                      {currency === "EUR" && "€"} 
-                      {currency === "USD" && "$"}
-                      {currency === "TRY" && "₺"}
-                      {" "}{currency}
+                      {currencyOptions.find(o => o.value === currency)?.symbol} {currency}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-muted-foreground">
-                      {currency === "EUR" && "Euro"}
-                      {currency === "USD" && "Amerikan Doları"}
-                      {currency === "TRY" && "Türk Lirası"}
+                      {currencyOptions.find(o => o.value === currency)?.label.replace(/\s*\([A-Z]{3}\)/, '')}
                     </p>
                   </div>
                 </div>
