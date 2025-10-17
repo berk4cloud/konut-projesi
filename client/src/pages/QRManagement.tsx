@@ -36,79 +36,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-
-type QRCodeType = "worker_registration" | "meter_reading" | "document_upload";
-type QRStatus = "active" | "disabled" | "expired";
-
-type QRCodeData = {
-  id: string;
-  code: string;
-  type: QRCodeType;
-  title: string;
-  usageLimit: number | null;
-  usageCount: number;
-  expiryDate: string | null;
-  status: QRStatus;
-  createdAt: string;
-};
-
-const mockQRCodes: QRCodeData[] = [
-  {
-    id: "1",
-    code: "Kts3542MMA",
-    type: "worker_registration",
-    title: "Geilenkirchen Evleri Kayıt Formu",
-    usageLimit: 50,
-    usageCount: 12,
-    expiryDate: "2025-11-15",
-    status: "active",
-    createdAt: "2025-10-01",
-  },
-  {
-    id: "2",
-    code: "Br9Xm2pQwE",
-    type: "meter_reading",
-    title: "Aylık Elektrik Sayaç Okuma",
-    usageLimit: null,
-    usageCount: 28,
-    expiryDate: "2025-10-30",
-    status: "active",
-    createdAt: "2025-10-05",
-  },
-  {
-    id: "3",
-    code: "Pq4Hn8TyLk",
-    type: "document_upload",
-    title: "Kimlik Belgesi Yükleme",
-    usageLimit: 20,
-    usageCount: 20,
-    expiryDate: null,
-    status: "disabled",
-    createdAt: "2025-09-20",
-  },
-  {
-    id: "4",
-    code: "Zm7Wv5RnGh",
-    type: "worker_registration",
-    title: "Yeni Sezon Çalışan Kaydı",
-    usageLimit: 100,
-    usageCount: 45,
-    expiryDate: "2025-09-30",
-    status: "expired",
-    createdAt: "2025-08-15",
-  },
-  {
-    id: "5",
-    code: "Dj3Ks9FmYu",
-    type: "meter_reading",
-    title: "Su Sayacı Okuma - Hauptstrasse",
-    usageLimit: null,
-    usageCount: 8,
-    expiryDate: null,
-    status: "active",
-    createdAt: "2025-10-10",
-  },
-];
+import { mockQRCodes, type QRCodeData, type QRCodeType, type QRStatus } from "@shared/mockQRData";
 
 export default function QRManagement() {
   const { toast } = useToast();
@@ -196,9 +124,9 @@ export default function QRManagement() {
 
   const getUsageText = (qr: QRCodeData) => {
     if (qr.usageLimit === null) {
-      return `${qr.usageCount} / Sınırsız`;
+      return `${qr.usedCount} / Sınırsız`;
     }
-    return `${qr.usageCount} / ${qr.usageLimit}`;
+    return `${qr.usedCount} / ${qr.usageLimit}`;
   };
 
   const getExpiryText = (expiryDate: string | null) => {
@@ -251,7 +179,7 @@ export default function QRManagement() {
         type: formData.type,
         title: formData.title || getTypeLabel(formData.type),
         usageLimit,
-        usageCount: 0,
+        usedCount: 0,
         expiryDate,
         status: "active",
         createdAt: new Date().toISOString().split('T')[0],

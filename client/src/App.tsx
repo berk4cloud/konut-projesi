@@ -11,12 +11,14 @@ import Houses from "@/pages/Houses";
 import Workers from "@/pages/Workers";
 import QRManagement from "@/pages/QRManagement";
 import PendingApprovals from "@/pages/PendingApprovals";
+import QRPublicPage from "@/pages/QRPublicPage";
 import Settings from "@/pages/Settings";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={LoginPage} />
+      <Route path="/qr/:code" component={QRPublicPage} />
       <Route path="/dashboard" component={HousingDashboard} />
       <Route path="/houses" component={Houses} />
       <Route path="/workers" component={Workers} />

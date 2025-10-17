@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Users, Gauge, FileUp, Check, X, Eye, RefreshCw } from "lucide-react";
+import { Users, Gauge, FileUp, Check, X, Eye, RefreshCw, Camera, File } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -221,7 +221,10 @@ export default function PendingApprovals() {
               <span className="ml-2 font-medium">{approval.data.value} {approval.data.unit}</span>
             </div>
             <div>
-              <Badge variant="secondary" className="w-fit">📸 Fotoğraf eklendi</Badge>
+              <Badge variant="secondary" className="w-fit flex items-center gap-1">
+                <Camera className="w-3 h-3" />
+                Fotoğraf eklendi
+              </Badge>
             </div>
           </div>
         </div>
@@ -239,8 +242,9 @@ export default function PendingApprovals() {
               <span className="ml-2 font-medium">{approval.data.documentType}</span>
             </div>
             <div className="col-span-2">
-              <Badge variant="secondary" className="w-fit">
-                📄 {approval.data.fileName} ({approval.data.fileSize})
+              <Badge variant="secondary" className="w-fit flex items-center gap-1">
+                <File className="w-3 h-3" />
+                {approval.data.fileName} ({approval.data.fileSize})
               </Badge>
             </div>
           </div>
@@ -422,7 +426,10 @@ export default function PendingApprovals() {
                       </div>
                     </div>
                     <div className="p-3 bg-muted rounded flex items-center gap-2">
-                      <Badge variant="secondary">📸 Sayaç Fotoğrafı</Badge>
+                      <Badge variant="secondary" className="flex items-center gap-1">
+                        <Camera className="w-3 h-3" />
+                        Sayaç Fotoğrafı
+                      </Badge>
                       <span className="text-sm text-muted-foreground">{selectedApproval.data.photo}</span>
                     </div>
                   </div>
