@@ -326,14 +326,21 @@ export default function HousingDashboard() {
   const [wizardStep, setWizardStep] = useState(1);
   const [workerComboboxOpen, setWorkerComboboxOpen] = useState(false);
   const [wizardData, setWizardData] = useState({
+    // Step 1: Tarih & Filtreler
+    startDate: "",
+    endDate: "",
+    searchCity: "all",
+    searchCountry: "all",
+    searchType: "any" as "room" | "bed" | "any", // Oda mı, yatak mı arıyor
+    // Step 2: İşçi
     workerId: "",
     workerName: "",
+    // Step 3: Oda/Yatak
     houseId: "",
     houseName: "",
     roomId: "",
     bedId: "",
-    startDate: "",
-    endDate: "",
+    // Step 4: Fiyat
     monthlyRate: 600,
     depositAmount: 500,
     depositCollected: false,
@@ -342,15 +349,16 @@ export default function HousingDashboard() {
 
   // Workers state (for dynamic addition)
   const [workers, setWorkers] = useState([
-    { id: "w1", name: "Ahmet Yılmaz", dateOfBirth: "1990-05-15", gender: "male" as const },
-    { id: "w2", name: "Mehmet Demir", dateOfBirth: "1988-08-22", gender: "male" as const },
-    { id: "w3", name: "Ayşe Kaya", dateOfBirth: "1995-03-10", gender: "female" as const },
+    { id: "w1", firstName: "Ahmet", lastName: "Yılmaz", dateOfBirth: "1990-05-15", gender: "male" as const },
+    { id: "w2", firstName: "Mehmet", lastName: "Demir", dateOfBirth: "1988-08-22", gender: "male" as const },
+    { id: "w3", firstName: "Ayşe", lastName: "Kaya", dateOfBirth: "1995-03-10", gender: "female" as const },
   ]);
 
   // Quick worker registration state
   const [quickRegisterOpen, setQuickRegisterOpen] = useState(false);
   const [quickRegisterData, setQuickRegisterData] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     dateOfBirth: "",
     gender: "" as "male" | "female" | "",
   });
@@ -514,7 +522,7 @@ export default function HousingDashboard() {
 
   // Quick worker registration handler
   const handleQuickRegister = () => {
-    if (!quickRegisterData.name || !quickRegisterData.dateOfBirth || !quickRegisterData.gender) {
+    if (!quickRegisterData.firstName || !quickRegisterData.lastName || !quickRegisterData.dateOfBirth || !quickRegisterData.gender) {
       toast({
         title: "Eksik Bilgi",
         description: "Lütfen tüm alanları doldurun.",
@@ -525,30 +533,43 @@ export default function HousingDashboard() {
 
     const newWorker = {
       id: `w${Date.now()}`,
-      name: quickRegisterData.name,
+      firstName: quickRegisterData.firstName,
+      lastName: quickRegisterData.lastName,
       dateOfBirth: quickRegisterData.dateOfBirth,
       gender: quickRegisterData.gender,
     };
+
+    const fullName = `${newWorker.firstName} ${newWorker.lastName}`;
 
     setWorkers([...workers, newWorker]);
     setWizardData({
       ...wizardData,
       workerId: newWorker.id,
-      workerName: newWorker.name,
+      workerName: fullName,
     });
-    setQuickRegisterData({ name: "", dateOfBirth: "", gender: "" });
+    setQuickRegisterData({ firstName: "", lastName: "", dateOfBirth: "", gender: "" });
     setQuickRegisterOpen(false);
 
     toast({
       title: "İşçi Eklendi",
-      description: `${newWorker.name} başarıyla eklendi ve seçildi.`,
+      description: `${fullName} başarıyla eklendi ve seçildi.`,
     });
   };
 
   // Wizard handlers
   const handleWizardNext = () => {
-    // Validation gates
-    if (wizardStep === 1 && !wizardData.workerId) {
+    // Step 1: Tarih validation
+    if (wizardStep === 1 && !wizardData.startDate) {
+      toast({
+        title: "Başlangıç Tarihi Gerekli",
+        description: "Devam etmek için başlangıç tarihini seçmelisiniz.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Step 2: İşçi validation
+    if (wizardStep === 2 && !wizardData.workerId) {
       toast({
         title: "İşçi Seçimi Gerekli",
         description: "Devam etmek için bir işçi seçmelisiniz.",
@@ -557,7 +578,8 @@ export default function HousingDashboard() {
       return;
     }
     
-    if (wizardStep === 2 && !wizardData.bedId) {
+    // Step 3: Oda/Yatak validation
+    if (wizardStep === 3 && !wizardData.bedId) {
       toast({
         title: "Oda/Yatak Seçimi Gerekli",
         description: "Devam etmek için bir yatak seçmelisiniz.",
@@ -566,7 +588,7 @@ export default function HousingDashboard() {
       return;
     }
     
-    if (wizardStep < 3) setWizardStep(wizardStep + 1);
+    if (wizardStep < 4) setWizardStep(wizardStep + 1);
   };
 
   const handleWizardBack = () => {
@@ -593,14 +615,17 @@ export default function HousingDashboard() {
     setCheckInWizardOpen(false);
     setWizardStep(1);
     setWizardData({
+      startDate: "",
+      endDate: "",
+      searchCity: "all",
+      searchCountry: "all",
+      searchType: "any",
       workerId: "",
       workerName: "",
       houseId: "",
       houseName: "",
       roomId: "",
       bedId: "",
-      startDate: "",
-      endDate: "",
       monthlyRate: 600,
       depositAmount: 500,
       depositCollected: false,
@@ -1072,14 +1097,17 @@ export default function HousingDashboard() {
         if (!open) {
           setWizardStep(1);
           setWizardData({
+            startDate: "",
+            endDate: "",
+            searchCity: "all",
+            searchCountry: "all",
+            searchType: "any",
             workerId: "",
             workerName: "",
             houseId: "",
             houseName: "",
             roomId: "",
             bedId: "",
-            startDate: "",
-            endDate: "",
             monthlyRate: 600,
             depositAmount: 500,
             depositCollected: false,
@@ -1091,15 +1119,16 @@ export default function HousingDashboard() {
           <DialogHeader>
             <DialogTitle>Yeni Konaklama Girişi</DialogTitle>
             <DialogDescription>
-              {wizardStep === 1 && "İşçi seçin veya yeni işçi bilgilerini girin"}
-              {wizardStep === 2 && "Uygun oda ve yatak seçin"}
-              {wizardStep === 3 && "Fiyat ve depozito bilgilerini girin"}
+              {wizardStep === 1 && "Başlangıç tarihi ve arama filtrelerini belirleyin"}
+              {wizardStep === 2 && "İşçi seçin veya yeni işçi bilgilerini girin"}
+              {wizardStep === 3 && "Uygun oda ve yatak seçin"}
+              {wizardStep === 4 && "Fiyat ve depozito bilgilerini girin"}
             </DialogDescription>
           </DialogHeader>
 
-          {/* Horizontal Stepper */}
+          {/* Horizontal Stepper - 4 Steps */}
           <div className="flex items-center justify-center gap-2 py-6">
-            {/* Step 1 */}
+            {/* Step 1: Tarih & Filtreler */}
             <div className="flex flex-col items-center gap-2">
               <div className={cn(
                 "w-12 h-12 rounded-full flex items-center justify-center font-semibold transition-colors",
@@ -1107,16 +1136,16 @@ export default function HousingDashboard() {
               )}>
                 {wizardStep > 1 ? <Check className="w-6 h-6" /> : "1"}
               </div>
-              <span className="text-xs text-muted-foreground">İşçi</span>
+              <span className="text-xs text-muted-foreground text-center">Tarih &<br/>Filtreler</span>
             </div>
 
             {/* Connector 1-2 */}
             <div className={cn(
-              "w-24 h-1 rounded-full transition-colors",
+              "w-16 h-1 rounded-full transition-colors",
               wizardStep > 1 ? "bg-green-500" : "bg-muted"
             )} />
 
-            {/* Step 2 */}
+            {/* Step 2: İşçi */}
             <div className="flex flex-col items-center gap-2">
               <div className={cn(
                 "w-12 h-12 rounded-full flex items-center justify-center font-semibold transition-colors",
@@ -1124,30 +1153,126 @@ export default function HousingDashboard() {
               )}>
                 {wizardStep > 2 ? <Check className="w-6 h-6" /> : "2"}
               </div>
-              <span className="text-xs text-muted-foreground">Oda/Yatak</span>
+              <span className="text-xs text-muted-foreground">İşçi</span>
             </div>
 
             {/* Connector 2-3 */}
             <div className={cn(
-              "w-24 h-1 rounded-full transition-colors",
+              "w-16 h-1 rounded-full transition-colors",
               wizardStep > 2 ? "bg-green-500" : "bg-muted"
             )} />
 
-            {/* Step 3 */}
+            {/* Step 3: Oda/Yatak */}
             <div className="flex flex-col items-center gap-2">
               <div className={cn(
                 "w-12 h-12 rounded-full flex items-center justify-center font-semibold transition-colors",
-                wizardStep === 3 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                wizardStep > 3 ? "bg-green-500 text-white" : wizardStep === 3 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
               )}>
-                3
+                {wizardStep > 3 ? <Check className="w-6 h-6" /> : "3"}
+              </div>
+              <span className="text-xs text-muted-foreground text-center">Oda/<br/>Yatak</span>
+            </div>
+
+            {/* Connector 3-4 */}
+            <div className={cn(
+              "w-16 h-1 rounded-full transition-colors",
+              wizardStep > 3 ? "bg-green-500" : "bg-muted"
+            )} />
+
+            {/* Step 4: Fiyat */}
+            <div className="flex flex-col items-center gap-2">
+              <div className={cn(
+                "w-12 h-12 rounded-full flex items-center justify-center font-semibold transition-colors",
+                wizardStep === 4 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+              )}>
+                4
               </div>
               <span className="text-xs text-muted-foreground">Fiyat</span>
             </div>
           </div>
           
           <div className="space-y-4">
-            {/* Step 1: Worker Selection */}
+            {/* Step 1: Tarih & Filtreler */}
             {wizardStep === 1 && (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="wizard-start-date">Başlangıç Tarihi *</Label>
+                  <Input
+                    id="wizard-start-date"
+                    type="date"
+                    value={wizardData.startDate}
+                    onChange={(e) => setWizardData({ ...wizardData, startDate: e.target.value })}
+                    data-testid="input-wizard-start-date"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    İşçinin kalacağı ilk gün
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="wizard-city">Şehir</Label>
+                    <Select
+                      value={wizardData.searchCity}
+                      onValueChange={(value) => setWizardData({ ...wizardData, searchCity: value })}
+                    >
+                      <SelectTrigger id="wizard-city" data-testid="select-wizard-city">
+                        <SelectValue placeholder="Tüm şehirler" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Tüm Şehirler</SelectItem>
+                        {Array.from(new Set(houses.map(h => h.city))).map(city => (
+                          <SelectItem key={city} value={city.toLowerCase()}>{city}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="wizard-country">Ülke</Label>
+                    <Select
+                      value={wizardData.searchCountry}
+                      onValueChange={(value) => setWizardData({ ...wizardData, searchCountry: value })}
+                    >
+                      <SelectTrigger id="wizard-country" data-testid="select-wizard-country">
+                        <SelectValue placeholder="Tüm ülkeler" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Tüm Ülkeler</SelectItem>
+                        <SelectItem value="nl">Hollanda</SelectItem>
+                        <SelectItem value="de">Almanya</SelectItem>
+                        <SelectItem value="pl">Polonya</SelectItem>
+                        <SelectItem value="ro">Romanya</SelectItem>
+                        <SelectItem value="tr">Türkiye</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="wizard-search-type">Ne Arıyor?</Label>
+                  <Select
+                    value={wizardData.searchType}
+                    onValueChange={(value: "room" | "bed" | "any") => setWizardData({ ...wizardData, searchType: value })}
+                  >
+                    <SelectTrigger id="wizard-search-type" data-testid="select-wizard-search-type">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="any">Farketmez (Oda veya Yatak)</SelectItem>
+                      <SelectItem value="room">Tam Oda</SelectItem>
+                      <SelectItem value="bed">Tek Yatak</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-muted-foreground">
+                    Odanın tamamını mı yoksa sadece bir yatak mı arıyor?
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2: Worker Selection */}
+            {wizardStep === 2 && (
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="worker-select">Kayıtlı İşçi Seç</Label>
@@ -1163,7 +1288,7 @@ export default function HousingDashboard() {
                         {wizardData.workerId 
                           ? (() => {
                               const worker = workers.find(w => w.id === wizardData.workerId);
-                              return worker ? `${worker.name} (${worker.dateOfBirth})` : "İşçi seçin";
+                              return worker ? `${worker.firstName} ${worker.lastName} (${worker.dateOfBirth})` : "İşçi seçin";
                             })()
                           : "İşçi seçin"}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -1178,12 +1303,12 @@ export default function HousingDashboard() {
                             {workers.map(worker => (
                               <CommandItem
                                 key={worker.id}
-                                value={`${worker.name} ${worker.dateOfBirth}`}
+                                value={`${worker.firstName} ${worker.lastName} ${worker.dateOfBirth}`}
                                 onSelect={() => {
                                   setWizardData({
                                     ...wizardData,
                                     workerId: worker.id,
-                                    workerName: worker.name
+                                    workerName: `${worker.firstName} ${worker.lastName}`
                                   });
                                   setWorkerComboboxOpen(false);
                                 }}
@@ -1194,7 +1319,7 @@ export default function HousingDashboard() {
                                     wizardData.workerId === worker.id ? "opacity-100" : "opacity-0"
                                   )}
                                 />
-                                {worker.name} ({worker.dateOfBirth})
+                                {worker.firstName} {worker.lastName} ({worker.dateOfBirth})
                               </CommandItem>
                             ))}
                           </CommandGroup>
@@ -1223,15 +1348,28 @@ export default function HousingDashboard() {
                         Minimum bilgilerle hızlı işçi kaydı yapın
                       </p>
                       
-                      <div className="space-y-2">
-                        <Label htmlFor="quick-name">Ad Soyad *</Label>
-                        <Input
-                          id="quick-name"
-                          placeholder="Örn: Mehmet Yılmaz"
-                          value={quickRegisterData.name}
-                          onChange={(e) => setQuickRegisterData({ ...quickRegisterData, name: e.target.value })}
-                          data-testid="input-quick-name"
-                        />
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="quick-firstname">Ad *</Label>
+                          <Input
+                            id="quick-firstname"
+                            placeholder="Mehmet"
+                            value={quickRegisterData.firstName}
+                            onChange={(e) => setQuickRegisterData({ ...quickRegisterData, firstName: e.target.value })}
+                            data-testid="input-quick-firstname"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="quick-lastname">Soyad *</Label>
+                          <Input
+                            id="quick-lastname"
+                            placeholder="Yılmaz"
+                            value={quickRegisterData.lastName}
+                            onChange={(e) => setQuickRegisterData({ ...quickRegisterData, lastName: e.target.value })}
+                            data-testid="input-quick-lastname"
+                          />
+                        </div>
                       </div>
 
                       <div className="space-y-2">
@@ -1275,8 +1413,8 @@ export default function HousingDashboard() {
               </div>
             )}
 
-            {/* Step 2: Room/Bed Selection */}
-            {wizardStep === 2 && (
+            {/* Step 3: Room/Bed Selection */}
+            {wizardStep === 3 && (
               <div className="space-y-4">
                 <div className="space-y-3">
                   <Label>Müsait Oda ve Yatak Seçin</Label>
@@ -1327,32 +1465,9 @@ export default function HousingDashboard() {
               </div>
             )}
 
-            {/* Step 3: Pricing & Deposit */}
-            {wizardStep === 3 && (
+            {/* Step 4: Pricing & Deposit */}
+            {wizardStep === 4 && (
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="start-date">Başlangıç Tarihi *</Label>
-                    <Input
-                      id="start-date"
-                      type="date"
-                      value={wizardData.startDate}
-                      onChange={(e) => setWizardData({ ...wizardData, startDate: e.target.value })}
-                      data-testid="input-wizard-start-date"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="end-date">Bitiş Tarihi (Opsiyonel)</Label>
-                    <Input
-                      id="end-date"
-                      type="date"
-                      value={wizardData.endDate}
-                      onChange={(e) => setWizardData({ ...wizardData, endDate: e.target.value })}
-                      data-testid="input-wizard-end-date"
-                    />
-                  </div>
-                </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="monthly-rate">Aylık Ücret (€)</Label>
                   <Input
@@ -1361,6 +1476,17 @@ export default function HousingDashboard() {
                     value={wizardData.monthlyRate}
                     onChange={(e) => setWizardData({ ...wizardData, monthlyRate: Number(e.target.value) })}
                     data-testid="input-wizard-monthly-rate"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="end-date">Bitiş Tarihi (Opsiyonel)</Label>
+                  <Input
+                    id="end-date"
+                    type="date"
+                    value={wizardData.endDate}
+                    onChange={(e) => setWizardData({ ...wizardData, endDate: e.target.value })}
+                    data-testid="input-wizard-end-date"
                   />
                 </div>
 
@@ -1419,12 +1545,13 @@ export default function HousingDashboard() {
             </Button>
             
             <div className="flex gap-2">
-              {wizardStep < 3 ? (
+              {wizardStep < 4 ? (
                 <Button
                   onClick={handleWizardNext}
                   disabled={
-                    (wizardStep === 1 && !wizardData.workerId) ||
-                    (wizardStep === 2 && !wizardData.bedId)
+                    (wizardStep === 1 && !wizardData.startDate) ||
+                    (wizardStep === 2 && !wizardData.workerId) ||
+                    (wizardStep === 3 && !wizardData.bedId)
                   }
                   data-testid="button-wizard-next"
                 >
