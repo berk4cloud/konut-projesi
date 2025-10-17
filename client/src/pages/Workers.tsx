@@ -55,9 +55,9 @@ type Worker = {
   country: string;
   email?: string;
   phone?: string;
-  house: string;
-  room: string;
-  bed: string;
+  house?: string; // Optional: Worker can be registered without accommodation
+  room?: string; // Optional: Worker can be registered without accommodation
+  bed?: string; // Optional: Worker can be registered without accommodation
   status: WorkerStatus;
   // Check-in/Check-out dates
   checkInDate?: string; // Giriş tarihi
@@ -180,7 +180,7 @@ export default function Workers() {
     .filter((worker) =>
       `${worker.firstName} ${worker.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
       worker.country.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      worker.house.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (worker.house && worker.house.toLowerCase().includes(searchQuery.toLowerCase())) ||
       worker.birthDate.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (worker.email && worker.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (worker.phone && worker.phone.includes(searchQuery))
@@ -259,9 +259,9 @@ export default function Workers() {
       country: worker.country,
       email: worker.email || "",
       phone: worker.phone || "",
-      house: worker.house,
-      room: worker.room,
-      bed: worker.bed,
+      house: worker.house || "",
+      room: worker.room || "",
+      bed: worker.bed || "",
       status: worker.status,
       checkInDate: worker.checkInDate || "",
       checkOutDate: worker.checkOutDate || "",
@@ -293,10 +293,10 @@ export default function Workers() {
       plannedExitDate: formData.status === "notice_period" ? formData.plannedExitDate : undefined,
       leftDate: formData.status === "left_no_notice" ? formData.leftDate : undefined,
       checkOutDate: (formData.status === "checked_out" || formData.status === "left_no_notice") ? formData.checkOutDate : undefined,
-      // Workers with new_registration or checked_out status should not have bed assignments
-      house: (formData.status === "new_registration" || formData.status === "checked_out") ? "" : formData.house,
-      room: (formData.status === "new_registration" || formData.status === "checked_out") ? "" : formData.room,
-      bed: (formData.status === "new_registration" || formData.status === "checked_out") ? "" : formData.bed,
+      // Keep house/room/bed optional - user can assign accommodation regardless of status
+      house: formData.house || undefined,
+      room: formData.room || undefined,
+      bed: formData.bed || undefined,
     };
     
     if (selectedWorker) {
@@ -754,12 +754,11 @@ export default function Workers() {
             
             <div className="border-t pt-4">
               <div className="flex items-center justify-between mb-3">
-                <h4 className="font-medium">Konaklama</h4>
+                <h4 className="font-medium">Konaklama <span className="text-sm text-muted-foreground font-normal">(Opsiyonel)</span></h4>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  disabled={formData.status === "new_registration" || formData.status === "checked_out"}
                   onClick={() => {
                     if (!formData.firstName || !formData.lastName || !formData.gender) {
                       toast({
@@ -1028,7 +1027,7 @@ export default function Workers() {
             </div>
             
             <div className="border-t pt-4">
-              <h4 className="font-medium mb-3">Konaklama Bilgileri</h4>
+              <h4 className="font-medium mb-3">Konaklama Bilgileri <span className="text-sm text-muted-foreground font-normal">(Opsiyonel)</span></h4>
               
               {selectedWorker?.house ? (
                 <div className="bg-muted/50 p-4 rounded-lg">
