@@ -678,17 +678,23 @@ export default function HousingDashboard() {
     });
   };
 
-  // Get available rooms and beds
+  // Get available rooms and beds (filtered by Step 1 selections)
   const getAvailableRoomsAndBeds = () => {
     const availableOptions: any[] = [];
     
     houses.forEach(house => {
+      // Apply city filter from Step 1
+      if (wizardData.searchCity !== "all" && house.city.toLowerCase() !== wizardData.searchCity) {
+        return; // Skip this house if city doesn't match
+      }
+      
       house.rooms.forEach((room: any) => {
         room.beds.forEach((bed: any) => {
           if (bed.status === "available") {
             availableOptions.push({
               houseId: house.id,
               houseName: house.name,
+              houseCity: house.city,
               roomId: room.id,
               roomNumber: room.roomNumber,
               bedId: bed.id,
@@ -1471,7 +1477,12 @@ export default function HousingDashboard() {
                           >
                             <div className="flex items-center justify-between">
                               <div>
-                                <p className="font-medium">{option.houseName}</p>
+                                <div className="flex items-center gap-2">
+                                  <p className="font-medium">{option.houseName}</p>
+                                  <Badge variant="outline" className="text-xs">
+                                    {option.houseCity}
+                                  </Badge>
+                                </div>
                                 <p className="text-sm text-muted-foreground">
                                   Oda {option.roomNumber} • Yatak {option.bedNumber}
                                 </p>
