@@ -2,7 +2,7 @@ import { useState } from "react";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, User, Info } from "lucide-react";
+import { Plus, Search, User, Info, ArrowUpDown, ChevronUp, ChevronDown } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -56,6 +56,7 @@ const mockHouses = [
 export default function Workers() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null);
   const [workers, setWorkers] = useState<Worker[]>([
     { id: "1", name: "John Doe", birthDate: "1980-10-22", gender: "Erkek", country: "Hollanda", house: "Geldernstrasse 13", room: "45", bed: "1" },
     { id: "2", name: "Jane Smith", birthDate: "1992-05-15", gender: "Kadın", country: "Almanya", house: "Geldernstrasse 13", room: "45", bed: "3" },
@@ -80,12 +81,18 @@ export default function Workers() {
     bed: "",
   });
 
-  const filteredWorkers = workers.filter((worker) =>
-    worker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    worker.country.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    worker.house.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    worker.birthDate.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredWorkers = workers
+    .filter((worker) =>
+      worker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      worker.country.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      worker.house.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      worker.birthDate.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .sort((a, b) => {
+      if (!sortOrder) return 0;
+      const comparison = a.name.localeCompare(b.name, 'tr');
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
   
   const handleOpenAddDialog = () => {
     setFormData({
@@ -196,7 +203,24 @@ export default function Workers() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Çalışan</TableHead>
+                  <TableHead>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="hover-elevate -ml-3 h-8"
+                      onClick={() => {
+                        if (sortOrder === null) setSortOrder('asc');
+                        else if (sortOrder === 'asc') setSortOrder('desc');
+                        else setSortOrder(null);
+                      }}
+                      data-testid="button-sort-name"
+                    >
+                      Çalışan
+                      {sortOrder === 'asc' && <ChevronUp className="ml-1 w-4 h-4" />}
+                      {sortOrder === 'desc' && <ChevronDown className="ml-1 w-4 h-4" />}
+                      {sortOrder === null && <ArrowUpDown className="ml-1 w-3 h-3 opacity-50" />}
+                    </Button>
+                  </TableHead>
                   <TableHead>Cinsiyet</TableHead>
                   <TableHead>Ülke</TableHead>
                   <TableHead>Konaklama</TableHead>
