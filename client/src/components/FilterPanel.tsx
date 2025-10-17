@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Calendar as CalendarIcon, Building2, MapPin, Globe, Filter, Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -62,8 +62,23 @@ export default function FilterPanel({
   const [cityOpen, setCityOpen] = useState(false);
   const [countryOpen, setCountryOpen] = useState(false);
   const [dateOpen, setDateOpen] = useState(false);
+  const [calendarMonths, setCalendarMonths] = useState(2);
 
   const selectedDate = dateString ? new Date(dateString) : undefined;
+
+  // Responsive calendar months: 1 for mobile, 2 for desktop
+  useEffect(() => {
+    const updateCalendarMonths = () => {
+      setCalendarMonths(window.innerWidth < 768 ? 1 : 2);
+    };
+
+    // Set initial value
+    updateCalendarMonths();
+
+    // Listen for window resize
+    window.addEventListener('resize', updateCalendarMonths);
+    return () => window.removeEventListener('resize', updateCalendarMonths);
+  }, []);
 
   // Extract unique values from houses
   const houses = [
@@ -139,7 +154,7 @@ export default function FilterPanel({
                     setDateOpen(false);
                   }
                 }}
-                numberOfMonths={2}
+                numberOfMonths={calendarMonths}
                 locale={tr}
               />
             </PopoverContent>
