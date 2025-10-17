@@ -44,6 +44,15 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 
+// Pricing type definition
+type PricingInfo = {
+  useCustomPricing: boolean;
+  bedDailyPrice?: number;
+  bedMonthlyPrice?: number;
+  roomDailyPrice?: number;
+  roomMonthlyPrice?: number;
+};
+
 // Room type definition
 type RoomInfo = {
   roomNumber: string;
@@ -51,6 +60,7 @@ type RoomInfo = {
   canRentAsRoom: boolean;
   useFloor: boolean;
   floor?: number;
+  pricing?: PricingInfo;
 };
 
 // Meter reading type
@@ -90,6 +100,17 @@ type Reminder = {
   completedAt?: string;
 };
 
+// Global system settings for pricing
+export const systemSettings = {
+  dailyRentalEnabled: true, // Günlük Kiralama Modu ON
+  standardPricing: {
+    bedDailyPrice: 25, // €25/gün
+    bedMonthlyPrice: 600, // €600/ay
+    roomDailyPrice: 60, // €60/gün
+    roomMonthlyPrice: 1500, // €1500/ay
+  }
+};
+
 // Initial mock data
 const initialMockHouses = [
   {
@@ -101,14 +122,54 @@ const initialMockHouses = [
     city: "Geilenkirchen",
     country: "Almanya",
     rooms: [
-      { roomNumber: "45", beds: 3, canRentAsRoom: false, useFloor: true, floor: 2 },
-      { roomNumber: "46", beds: 2, canRentAsRoom: true, useFloor: true, floor: 2 },
-      { roomNumber: "47", beds: 2, canRentAsRoom: false, useFloor: true, floor: 2 },
+      { 
+        roomNumber: "45", 
+        beds: 3, 
+        canRentAsRoom: false, 
+        useFloor: true, 
+        floor: 2,
+        pricing: {
+          useCustomPricing: true,
+          bedDailyPrice: 30, // €30/gün (standart fiyattan daha pahalı)
+          bedMonthlyPrice: 700, // €700/ay
+        }
+      },
+      { 
+        roomNumber: "46", 
+        beds: 2, 
+        canRentAsRoom: true, 
+        useFloor: true, 
+        floor: 2,
+        pricing: {
+          useCustomPricing: true,
+          bedDailyPrice: 28,
+          bedMonthlyPrice: 650,
+          roomDailyPrice: 75, // Tüm oda için
+          roomMonthlyPrice: 1800,
+        }
+      },
+      { 
+        roomNumber: "47", 
+        beds: 2, 
+        canRentAsRoom: false, 
+        useFloor: true, 
+        floor: 2,
+        pricing: {
+          useCustomPricing: false, // Standart fiyat kullanılacak
+        }
+      },
     ],
     totalBeds: 7,
     occupiedBeds: 5,
     ownershipType: "Kiralık",
     archived: false,
+    pricing: {
+      useCustomPricing: true, // Bu konut için özel fiyat
+      bedDailyPrice: 28, // €28/gün
+      bedMonthlyPrice: 650, // €650/ay
+      roomDailyPrice: 70, // €70/gün
+      roomMonthlyPrice: 1700, // €1700/ay
+    },
     leaseContract: {
       startDate: "2023-01-15",
       endDate: "2025-01-14",
@@ -163,13 +224,34 @@ const initialMockHouses = [
     city: "Venlo",
     country: "Hollanda",
     rooms: [
-      { roomNumber: "101", beds: 4, canRentAsRoom: false, useFloor: true, floor: 1 },
-      { roomNumber: "102", beds: 2, canRentAsRoom: false, useFloor: true, floor: 1 },
+      { 
+        roomNumber: "101", 
+        beds: 4, 
+        canRentAsRoom: false, 
+        useFloor: true, 
+        floor: 1,
+        pricing: {
+          useCustomPricing: false, // Standart veya konut fiyatı kullan
+        }
+      },
+      { 
+        roomNumber: "102", 
+        beds: 2, 
+        canRentAsRoom: false, 
+        useFloor: true, 
+        floor: 1,
+        pricing: {
+          useCustomPricing: false,
+        }
+      },
     ],
     totalBeds: 6,
     occupiedBeds: 4,
     ownershipType: "Mülk",
     archived: false,
+    pricing: {
+      useCustomPricing: false, // Standart fiyatları kullan
+    },
     reminders: [
       {
         id: "r3",
@@ -212,13 +294,42 @@ const initialMockHouses = [
     city: "Roermond",
     country: "Hollanda",
     rooms: [
-      { roomNumber: "201", beds: 3, canRentAsRoom: true, useFloor: true, floor: 2 },
-      { roomNumber: "202", beds: 2, canRentAsRoom: false, useFloor: true, floor: 2 },
+      { 
+        roomNumber: "201", 
+        beds: 3, 
+        canRentAsRoom: true, 
+        useFloor: true, 
+        floor: 2,
+        pricing: {
+          useCustomPricing: true,
+          bedDailyPrice: 22,
+          bedMonthlyPrice: 550,
+          roomDailyPrice: 65, // Tüm oda için özel fiyat
+          roomMonthlyPrice: 1600,
+        }
+      },
+      { 
+        roomNumber: "202", 
+        beds: 2, 
+        canRentAsRoom: false, 
+        useFloor: true, 
+        floor: 2,
+        pricing: {
+          useCustomPricing: false, // Konut fiyatını kullan
+        }
+      },
     ],
     totalBeds: 5,
     occupiedBeds: 3,
     ownershipType: "3. Taraf",
     archived: false,
+    pricing: {
+      useCustomPricing: true, // Konut için özel fiyat
+      bedDailyPrice: 24, // €24/gün
+      bedMonthlyPrice: 580, // €580/ay
+      roomDailyPrice: 65, // €65/gün
+      roomMonthlyPrice: 1600, // €1600/ay
+    },
     leaseContract: {
       startDate: "2024-06-01",
       monthlyRent: 1800,
