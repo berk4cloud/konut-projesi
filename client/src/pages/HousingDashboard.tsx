@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
 import FilterPanel from "@/components/FilterPanel";
 import CapacityWidget from "@/components/CapacityWidget";
@@ -6,6 +7,8 @@ import HouseCard from "@/components/HouseCard";
 import WorkerAssignmentModal from "@/components/WorkerAssignmentModal";
 import GenderWarningModal from "@/components/GenderWarningModal";
 import LeaseContractDialog from "@/components/LeaseContractDialog";
+import { SearchCombobox } from "@/components/ui/search-combobox";
+import { ModernDatePicker } from "@/components/ui/modern-date-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -316,6 +319,7 @@ const initialMockHouses = [
 
 export default function HousingDashboard() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [houses, setHouses] = useState(initialMockHouses);
   const [assignmentModalOpen, setAssignmentModalOpen] = useState(false);
   const [warningModalOpen, setWarningModalOpen] = useState(false);
@@ -606,9 +610,52 @@ export default function HousingDashboard() {
       return;
     }
     
+    // Find selected worker
+    const selectedWorker = workers.find(w => w.id === wizardData.workerId);
+    if (!selectedWorker) {
+      toast({
+        title: "Hata",
+        description: "Seçili işçi bulunamadı.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Update houses state - assign worker to bed and update counters
+    setHouses(prevHouses => 
+      prevHouses.map(house => {
+        if (house.id !== wizardData.houseId) return house;
+        
+        return {
+          ...house,
+          occupiedBeds: house.occupiedBeds + 1, // Increment occupied count
+          rooms: house.rooms.map((room: any) => {
+            if (room.id !== wizardData.roomId) return room;
+            
+            return {
+              ...room,
+              beds: room.beds.map((bed: any) => {
+                if (bed.id !== wizardData.bedId) return bed;
+                
+                return {
+                  ...bed,
+                  status: "occupied" as const,
+                  worker: {
+                    id: selectedWorker.id,
+                    name: `${selectedWorker.firstName} ${selectedWorker.lastName}`,
+                    gender: selectedWorker.gender,
+                  }
+                };
+              })
+            };
+          })
+        };
+      })
+    );
+    
     toast({
       title: "Konaklama Girişi Başarılı",
-      description: `${wizardData.workerName} için konaklama kaydı oluşturuldu.`,
+      description: `${selectedWorker.firstName} ${selectedWorker.lastName} için ${wizardData.houseName} oteline konaklama kaydı oluşturuldu.`,
     });
     
     // Reset wizard
@@ -1197,12 +1244,15 @@ export default function HousingDashboard() {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="wizard-start-date">Başlangıç Tarihi *</Label>
-                  <Input
-                    id="wizard-start-date"
-                    type="date"
-                    value={wizardData.startDate}
-                    onChange={(e) => setWizardData({ ...wizardData, startDate: e.target.value })}
+                  <ModernDatePicker
+                    date={wizardData.startDate ? new Date(wizardData.startDate) : undefined}
+                    onDateChange={(date) => {
+                      const dateString = date ? date.toISOString().split('T')[0] : "";
+                      setWizardData({ ...wizardData, startDate: dateString });
+                    }}
+                    placeholder="Tarih seçin"
                     data-testid="input-wizard-start-date"
+                    className="w-full"
                   />
                   <p className="text-sm text-muted-foreground">
                     İşçinin kalacağı ilk gün
@@ -1211,59 +1261,63 @@ export default function HousingDashboard() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="wizard-city">Şehir</Label>
-                    <Select
+                    <Label>Şehir</Label>
+                    <SearchCombobox
+                      options={[
+                        { value: "all", label: "Tüm Şehirler" },
+                        ...Array.from(new Set(houses.map(h => h.city))).map(city => ({
+                          value: city.toLowerCase(),
+                          label: city
+                        }))
+                      ]}
                       value={wizardData.searchCity}
                       onValueChange={(value) => setWizardData({ ...wizardData, searchCity: value })}
-                    >
-                      <SelectTrigger id="wizard-city" data-testid="select-wizard-city">
-                        <SelectValue placeholder="Tüm şehirler" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Tüm Şehirler</SelectItem>
-                        {Array.from(new Set(houses.map(h => h.city))).map(city => (
-                          <SelectItem key={city} value={city.toLowerCase()}>{city}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      placeholder="Şehir seçin"
+                      searchPlaceholder="Şehir ara..."
+                      emptyText="Şehir bulunamadı"
+                      data-testid="select-wizard-city"
+                      className="w-full"
+                    />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="wizard-country">Ülke</Label>
-                    <Select
+                    <Label>Ülke</Label>
+                    <SearchCombobox
+                      options={[
+                        { value: "all", label: "Tüm Ülkeler" },
+                        { value: "nl", label: "Hollanda" },
+                        { value: "de", label: "Almanya" },
+                        { value: "pl", label: "Polonya" },
+                        { value: "ro", label: "Romanya" },
+                        { value: "tr", label: "Türkiye" }
+                      ]}
                       value={wizardData.searchCountry}
                       onValueChange={(value) => setWizardData({ ...wizardData, searchCountry: value })}
-                    >
-                      <SelectTrigger id="wizard-country" data-testid="select-wizard-country">
-                        <SelectValue placeholder="Tüm ülkeler" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Tüm Ülkeler</SelectItem>
-                        <SelectItem value="nl">Hollanda</SelectItem>
-                        <SelectItem value="de">Almanya</SelectItem>
-                        <SelectItem value="pl">Polonya</SelectItem>
-                        <SelectItem value="ro">Romanya</SelectItem>
-                        <SelectItem value="tr">Türkiye</SelectItem>
-                      </SelectContent>
-                    </Select>
+                      placeholder="Ülke seçin"
+                      searchPlaceholder="Ülke ara..."
+                      emptyText="Ülke bulunamadı"
+                      data-testid="select-wizard-country"
+                      className="w-full"
+                    />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="wizard-search-type">Ne Arıyor?</Label>
-                  <Select
+                  <Label>Ne Arıyor?</Label>
+                  <SearchCombobox
+                    options={[
+                      { value: "any", label: "Farketmez (Oda veya Yatak)" },
+                      { value: "room", label: "Tam Oda" },
+                      { value: "bed", label: "Tek Yatak" }
+                    ]}
                     value={wizardData.searchType}
-                    onValueChange={(value: "room" | "bed" | "any") => setWizardData({ ...wizardData, searchType: value })}
-                  >
-                    <SelectTrigger id="wizard-search-type" data-testid="select-wizard-search-type">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="any">Farketmez (Oda veya Yatak)</SelectItem>
-                      <SelectItem value="room">Tam Oda</SelectItem>
-                      <SelectItem value="bed">Tek Yatak</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    onValueChange={(value) => setWizardData({ ...wizardData, searchType: value as "room" | "bed" | "any" })}
+                    placeholder="Seçiniz"
+                    searchPlaceholder="Ara..."
+                    emptyText="Seçenek bulunamadı"
+                    data-testid="select-wizard-search-type"
+                    className="w-full"
+                  />
                   <p className="text-sm text-muted-foreground">
                     Odanın tamamını mı yoksa sadece bir yatak mı arıyor?
                   </p>
@@ -1481,12 +1535,16 @@ export default function HousingDashboard() {
 
                 <div className="space-y-2">
                   <Label htmlFor="end-date">Bitiş Tarihi (Opsiyonel)</Label>
-                  <Input
-                    id="end-date"
-                    type="date"
-                    value={wizardData.endDate}
-                    onChange={(e) => setWizardData({ ...wizardData, endDate: e.target.value })}
+                  <ModernDatePicker
+                    date={wizardData.endDate ? new Date(wizardData.endDate) : undefined}
+                    onDateChange={(date) => {
+                      const dateString = date ? date.toISOString().split('T')[0] : "";
+                      setWizardData({ ...wizardData, endDate: dateString });
+                    }}
+                    placeholder="Tarih seçin"
                     data-testid="input-wizard-end-date"
+                    className="w-full"
+                    minDate={wizardData.startDate ? new Date(wizardData.startDate) : undefined}
                   />
                 </div>
 
@@ -1521,11 +1579,14 @@ export default function HousingDashboard() {
                         <Label htmlFor="deposit-collector">Alan Kişi</Label>
                         <Input
                           id="deposit-collector"
-                          placeholder="Depozitoyu alan kişinin adı"
-                          value={wizardData.depositCollector}
-                          onChange={(e) => setWizardData({ ...wizardData, depositCollector: e.target.value })}
+                          value={user?.name || "Kullanıcı"}
+                          disabled
                           data-testid="input-wizard-deposit-collector"
+                          className="bg-muted"
                         />
+                        <p className="text-sm text-muted-foreground">
+                          Otomatik olarak sisteme giriş yapan kullanıcı atanır
+                        </p>
                       </div>
                     </>
                   )}
