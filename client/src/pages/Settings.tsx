@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Globe, Star, Save, DollarSign } from "lucide-react";
+import { Plus, Trash2, Globe, Star, Save, DollarSign, Languages } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -47,8 +48,24 @@ const currencyOptions: { value: CurrencyType; label: string; symbol: string }[] 
   { value: "UAH", label: "Ukrayna Hryvnyası (UAH)", symbol: "₴" },
 ];
 
+const languageOptions = [
+  { value: "tr", label: "Türkçe" },
+  { value: "en", label: "English" },
+  { value: "de", label: "Deutsch" },
+  { value: "nl", label: "Nederlands" },
+  { value: "fr", label: "Français" },
+  { value: "pl", label: "Polski" },
+  { value: "bg", label: "Български" },
+];
+
 export default function Settings() {
   const { toast } = useToast();
+  const { t, i18n } = useTranslation();
+  
+  // Language settings - use resolvedLanguage to normalize region codes (en-US -> en)
+  const currentLang = i18n.resolvedLanguage || i18n.language.split('-')[0] || 'tr';
+  const [language, setLanguage] = useState(currentLang);
+  const [hasLanguageChanges, setHasLanguageChanges] = useState(false);
   
   // Currency settings - initialize from systemSettings
   const [currency, setCurrency] = useState<CurrencyType>(systemSettings.currency);
@@ -85,6 +102,20 @@ export default function Settings() {
       ...c,
       isDefault: c.name === countryName
     })));
+  };
+  
+  const handleLanguageChange = (value: string) => {
+    setLanguage(value);
+    setHasLanguageChanges(true);
+  };
+  
+  const handleSaveLanguage = () => {
+    i18n.changeLanguage(language);
+    toast({
+      title: t("settings.changesSaved"),
+      description: `${languageOptions.find(l => l.value === language)?.label}`,
+    });
+    setHasLanguageChanges(false);
   };
   
   const handleCurrencyChange = (value: CurrencyType) => {
@@ -158,9 +189,67 @@ export default function Settings() {
       <main className="p-6">
         <div className="max-w-4xl mx-auto space-y-6">
           <div>
-            <h2 className="text-2xl font-bold mb-2">Ayarlar</h2>
-            <p className="text-muted-foreground">Sistem ayarlarını yönetin</p>
+            <h2 className="text-2xl font-bold mb-2">{t("settings.title")}</h2>
+            <p className="text-muted-foreground">{t("settings.subtitle")}</p>
           </div>
+
+          {/* Language Settings Card */}
+          <Card data-testid="card-language-settings">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Languages className="w-5 h-5" />
+                {t("settings.language")}
+              </CardTitle>
+              <CardDescription>
+                {t("settings.selectLanguage")}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="language-select">{t("settings.selectLanguage")}</Label>
+                <Select value={language} onValueChange={handleLanguageChange}>
+                  <SelectTrigger id="language-select" data-testid="select-language" className="w-full sm:w-[360px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {languageOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value} data-testid={`option-language-${option.value}`}>
+                        <div className="flex items-center gap-3">
+                          <Globe className="w-4 h-4" />
+                          <span className="font-medium">{option.label}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Current Selection Display */}
+              <div className="rounded-lg border bg-muted/50 p-4">
+                <div className="flex items-center gap-3">
+                  <Globe className="w-6 h-6 text-primary" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-muted-foreground">{t("languages." + language)}</p>
+                    <p className="text-2xl font-bold" data-testid="text-selected-language">
+                      {languageOptions.find(l => l.value === language)?.label}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Save Button */}
+              <div className="flex justify-end pt-2">
+                <Button
+                  onClick={handleSaveLanguage}
+                  disabled={!hasLanguageChanges}
+                  data-testid="button-save-language"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  {t("common.save")}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Currency Settings Card */}
           <Card data-testid="card-currency-settings">
