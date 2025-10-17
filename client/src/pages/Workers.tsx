@@ -202,6 +202,11 @@ export default function Workers() {
       house: "",
       room: "",
       bed: "",
+      status: "active",
+      vacationStartDate: "",
+      vacationEndDate: "",
+      plannedExitDate: "",
+      leftDate: "",
     });
     setIsAddDialogOpen(true);
   };
