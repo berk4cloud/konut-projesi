@@ -7,8 +7,18 @@ import WorkerAssignmentModal from "@/components/WorkerAssignmentModal";
 import GenderWarningModal from "@/components/GenderWarningModal";
 import LeaseContractDialog from "@/components/LeaseContractDialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { FileText, Bell, Calendar, AlertCircle, Plus, ChevronDown, ChevronUp, MapPin, Clock } from "lucide-react";
+import { FileText, Bell, Calendar, AlertCircle, Plus, ChevronDown, ChevronUp, MapPin, Clock, CheckCircle } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -298,6 +308,23 @@ export default function HousingDashboard() {
   const [warningModalOpen, setWarningModalOpen] = useState(false);
   const [selectedBed, setSelectedBed] = useState<any>(null);
   const [checkInWizardOpen, setCheckInWizardOpen] = useState(false);
+  
+  // Check-in wizard state
+  const [wizardStep, setWizardStep] = useState(1);
+  const [wizardData, setWizardData] = useState({
+    workerId: "",
+    workerName: "",
+    houseId: "",
+    houseName: "",
+    roomId: "",
+    bedId: "",
+    startDate: "",
+    endDate: "",
+    monthlyRate: 600,
+    depositAmount: 500,
+    depositCollected: false,
+    depositCollector: "",
+  });
 
   // Prepare upcoming reminders for notifications dialog
   const today = new Date();
@@ -454,6 +481,100 @@ export default function HousingDashboard() {
     if (bed.status === "available") {
       setAssignmentModalOpen(true);
     }
+  };
+
+  // Mock workers for wizard
+  const mockWorkers = [
+    { id: "w1", name: "Ahmet Yılmaz", dateOfBirth: "1990-05-15" },
+    { id: "w2", name: "Mehmet Demir", dateOfBirth: "1988-08-22" },
+    { id: "w3", name: "Ayşe Kaya", dateOfBirth: "1995-03-10" },
+  ];
+
+  // Wizard handlers
+  const handleWizardNext = () => {
+    // Validation gates
+    if (wizardStep === 1 && !wizardData.workerId) {
+      toast({
+        title: "İşçi Seçimi Gerekli",
+        description: "Devam etmek için bir işçi seçmelisiniz.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (wizardStep === 2 && !wizardData.bedId) {
+      toast({
+        title: "Oda/Yatak Seçimi Gerekli",
+        description: "Devam etmek için bir yatak seçmelisiniz.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (wizardStep < 3) setWizardStep(wizardStep + 1);
+  };
+
+  const handleWizardBack = () => {
+    if (wizardStep > 1) setWizardStep(wizardStep - 1);
+  };
+
+  const handleWizardComplete = () => {
+    // Final validation
+    if (!wizardData.workerId || !wizardData.bedId || !wizardData.startDate) {
+      toast({
+        title: "Eksik Bilgiler",
+        description: "İşçi, yatak ve başlangıç tarihi seçimi zorunludur.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    toast({
+      title: "Konaklama Girişi Başarılı",
+      description: `${wizardData.workerName} için konaklama kaydı oluşturuldu.`,
+    });
+    
+    // Reset wizard
+    setCheckInWizardOpen(false);
+    setWizardStep(1);
+    setWizardData({
+      workerId: "",
+      workerName: "",
+      houseId: "",
+      houseName: "",
+      roomId: "",
+      bedId: "",
+      startDate: "",
+      endDate: "",
+      monthlyRate: 600,
+      depositAmount: 500,
+      depositCollected: false,
+      depositCollector: "",
+    });
+  };
+
+  // Get available rooms and beds
+  const getAvailableRoomsAndBeds = () => {
+    const availableOptions: any[] = [];
+    
+    houses.forEach(house => {
+      house.rooms.forEach((room: any) => {
+        room.beds.forEach((bed: any) => {
+          if (bed.status === "available") {
+            availableOptions.push({
+              houseId: house.id,
+              houseName: house.name,
+              roomId: room.id,
+              roomNumber: room.roomNumber,
+              bedId: bed.id,
+              bedNumber: bed.bedNumber,
+            });
+          }
+        });
+      });
+    });
+    
+    return availableOptions;
   };
 
   return (
@@ -891,22 +1012,239 @@ export default function HousingDashboard() {
       </Dialog>
 
       {/* Check-in Wizard Dialog */}
-      <Dialog open={checkInWizardOpen} onOpenChange={setCheckInWizardOpen}>
-        <DialogContent className="max-w-3xl">
+      <Dialog open={checkInWizardOpen} onOpenChange={(open) => {
+        setCheckInWizardOpen(open);
+        if (!open) {
+          setWizardStep(1);
+          setWizardData({
+            workerId: "",
+            workerName: "",
+            houseId: "",
+            houseName: "",
+            roomId: "",
+            bedId: "",
+            startDate: "",
+            endDate: "",
+            monthlyRate: 600,
+            depositAmount: 500,
+            depositCollected: false,
+            depositCollector: "",
+          });
+        }
+      }}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Yeni Konaklama Girişi</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              Yeni Konaklama Girişi
+              <Badge variant="outline">Adım {wizardStep}/3</Badge>
+            </DialogTitle>
             <DialogDescription>
-              İşçi seçin veya oluşturun, uygun oda/yatak bulun ve konaklama bilgilerini kaydedin
+              {wizardStep === 1 && "İşçi seçin veya yeni işçi bilgilerini girin"}
+              {wizardStep === 2 && "Uygun oda ve yatak seçin"}
+              {wizardStep === 3 && "Fiyat ve depozito bilgilerini girin"}
             </DialogDescription>
           </DialogHeader>
           
-          <div className="py-6">
-            <p className="text-center text-muted-foreground">
-              🚧 Wizard geliştirme devam ediyor...
-            </p>
-            <p className="text-center text-sm text-muted-foreground mt-2">
-              Adımlar: İşçi Seçimi → Oda/Yatak Seçimi → Fiyat/Depozito → Kaydet
-            </p>
+          <div className="py-4 space-y-4">
+            {/* Step 1: Worker Selection */}
+            {wizardStep === 1 && (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="worker-select">Kayıtlı İşçi Seç</Label>
+                  <Select 
+                    value={wizardData.workerId} 
+                    onValueChange={(value) => {
+                      const worker = mockWorkers.find(w => w.id === value);
+                      setWizardData({ 
+                        ...wizardData, 
+                        workerId: value,
+                        workerName: worker?.name || ""
+                      });
+                    }}
+                  >
+                    <SelectTrigger id="worker-select" data-testid="select-wizard-worker">
+                      <SelectValue placeholder="İşçi seçin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {mockWorkers.map(worker => (
+                        <SelectItem key={worker.id} value={worker.id}>
+                          {worker.name} ({worker.dateOfBirth})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-muted-foreground">
+                    * Yeni işçi kaydı için İşçiler sayfasını kullanın
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2: Room/Bed Selection */}
+            {wizardStep === 2 && (
+              <div className="space-y-4">
+                <div className="space-y-3">
+                  <Label>Müsait Oda ve Yatak Seçin</Label>
+                  <div className="border rounded-lg max-h-[400px] overflow-y-auto">
+                    {getAvailableRoomsAndBeds().length > 0 ? (
+                      <div className="divide-y">
+                        {getAvailableRoomsAndBeds().map((option: any) => (
+                          <div
+                            key={`${option.houseId}-${option.roomId}-${option.bedId}`}
+                            onClick={() => {
+                              setWizardData({
+                                ...wizardData,
+                                houseId: option.houseId,
+                                houseName: option.houseName,
+                                roomId: option.roomId,
+                                bedId: option.bedId,
+                              });
+                            }}
+                            className={cn(
+                              "p-4 cursor-pointer transition-colors hover-elevate",
+                              wizardData.bedId === option.bedId
+                                ? "bg-primary/10 border-l-4 border-l-primary"
+                                : ""
+                            )}
+                            data-testid={`bed-option-${option.bedId}`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="font-medium">{option.houseName}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  Oda {option.roomNumber} • Yatak {option.bedNumber}
+                                </p>
+                              </div>
+                              {wizardData.bedId === option.bedId && (
+                                <CheckCircle className="w-5 h-5 text-primary" />
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-8 text-center text-muted-foreground">
+                        Şu anda müsait yatak bulunmamaktadır
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Pricing & Deposit */}
+            {wizardStep === 3 && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="start-date">Başlangıç Tarihi *</Label>
+                    <Input
+                      id="start-date"
+                      type="date"
+                      value={wizardData.startDate}
+                      onChange={(e) => setWizardData({ ...wizardData, startDate: e.target.value })}
+                      data-testid="input-wizard-start-date"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="end-date">Bitiş Tarihi (Opsiyonel)</Label>
+                    <Input
+                      id="end-date"
+                      type="date"
+                      value={wizardData.endDate}
+                      onChange={(e) => setWizardData({ ...wizardData, endDate: e.target.value })}
+                      data-testid="input-wizard-end-date"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="monthly-rate">Aylık Ücret (€)</Label>
+                  <Input
+                    id="monthly-rate"
+                    type="number"
+                    value={wizardData.monthlyRate}
+                    onChange={(e) => setWizardData({ ...wizardData, monthlyRate: Number(e.target.value) })}
+                    data-testid="input-wizard-monthly-rate"
+                  />
+                </div>
+
+                <div className="space-y-3 border-t pt-4">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="deposit-collected"
+                      checked={wizardData.depositCollected}
+                      onCheckedChange={(checked) =>
+                        setWizardData({ ...wizardData, depositCollected: checked as boolean })
+                      }
+                      data-testid="checkbox-wizard-deposit"
+                    />
+                    <Label htmlFor="deposit-collected" className="cursor-pointer">
+                      Depozito Alındı
+                    </Label>
+                  </div>
+
+                  {wizardData.depositCollected && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="deposit-amount">Depozito Miktarı (€)</Label>
+                        <Input
+                          id="deposit-amount"
+                          type="number"
+                          value={wizardData.depositAmount}
+                          onChange={(e) => setWizardData({ ...wizardData, depositAmount: Number(e.target.value) })}
+                          data-testid="input-wizard-deposit-amount"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="deposit-collector">Alan Kişi</Label>
+                        <Input
+                          id="deposit-collector"
+                          placeholder="Depozitoyu alan kişinin adı"
+                          value={wizardData.depositCollector}
+                          onChange={(e) => setWizardData({ ...wizardData, depositCollector: e.target.value })}
+                          data-testid="input-wizard-deposit-collector"
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center justify-between border-t pt-4">
+            <Button
+              variant="outline"
+              onClick={handleWizardBack}
+              disabled={wizardStep === 1}
+              data-testid="button-wizard-back"
+            >
+              Geri
+            </Button>
+            
+            <div className="flex gap-2">
+              {wizardStep < 3 ? (
+                <Button
+                  onClick={handleWizardNext}
+                  disabled={
+                    (wizardStep === 1 && !wizardData.workerId) ||
+                    (wizardStep === 2 && !wizardData.bedId)
+                  }
+                  data-testid="button-wizard-next"
+                >
+                  İleri
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleWizardComplete}
+                  disabled={!wizardData.startDate}
+                  data-testid="button-wizard-complete"
+                >
+                  Tamamla
+                </Button>
+              )}
+            </div>
           </div>
         </DialogContent>
       </Dialog>
