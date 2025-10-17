@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import {
   Tooltip,
   TooltipContent,
@@ -57,6 +65,8 @@ export default function Workers() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const [workers, setWorkers] = useState<Worker[]>([
     { id: "1", name: "John Doe", birthDate: "1980-10-22", gender: "Erkek", country: "Hollanda", house: "Geldernstrasse 13", room: "45", bed: "1" },
     { id: "2", name: "Jane Smith", birthDate: "1992-05-15", gender: "Kadın", country: "Almanya", house: "Geldernstrasse 13", room: "45", bed: "3" },
@@ -93,6 +103,30 @@ export default function Workers() {
       const comparison = a.name.localeCompare(b.name, 'tr');
       return sortOrder === 'asc' ? comparison : -comparison;
     });
+  
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredWorkers.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedWorkers = filteredWorkers.slice(startIndex, endIndex);
+  
+  // Reset to page 1 when search query changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+  
+  // Clamp currentPage when filtered results or page size changes
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [filteredWorkers.length, pageSize, totalPages, currentPage]);
+  
+  // Reset to page 1 when page size changes
+  const handlePageSizeChange = (newSize: number) => {
+    setPageSize(newSize);
+    setCurrentPage(1);
+  };
   
   const handleOpenAddDialog = () => {
     setFormData({
@@ -228,7 +262,7 @@ export default function Workers() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredWorkers.map((worker) => (
+                {paginatedWorkers.map((worker) => (
                   <TableRow key={worker.id} data-testid={`worker-row-${worker.id}`}>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-3">
@@ -281,6 +315,90 @@ export default function Workers() {
           {filteredWorkers.length === 0 && (
             <div className="text-center py-12">
               <p className="text-muted-foreground">Çalışan bulunamadı</p>
+            </div>
+          )}
+
+          {filteredWorkers.length > 0 && (
+            <div className="flex items-center justify-between px-2 py-4">
+              <div className="flex items-center gap-6">
+                <p className="text-sm text-muted-foreground">
+                  Toplam {filteredWorkers.length} çalışan
+                  {filteredWorkers.length > pageSize && (
+                    <span className="ml-2">
+                      (Sayfa {currentPage}/{totalPages})
+                    </span>
+                  )}
+                </p>
+                
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="page-size" className="text-sm text-muted-foreground whitespace-nowrap">
+                    Sayfa başına:
+                  </Label>
+                  <Select
+                    value={pageSize.toString()}
+                    onValueChange={(value) => handlePageSizeChange(Number(value))}
+                  >
+                    <SelectTrigger id="page-size" className="w-24" data-testid="select-page-size">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="20">20</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                      <SelectItem value="100">100</SelectItem>
+                      <SelectItem value="500">500</SelectItem>
+                      <SelectItem value="1000">1000</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {totalPages > 1 && (
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                        className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        data-testid="button-prev-page"
+                      />
+                    </PaginationItem>
+                    
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+                      
+                      return (
+                        <PaginationItem key={pageNum}>
+                          <PaginationLink
+                            onClick={() => setCurrentPage(pageNum)}
+                            isActive={currentPage === pageNum}
+                            className="cursor-pointer"
+                            data-testid={`button-page-${pageNum}`}
+                          >
+                            {pageNum}
+                          </PaginationLink>
+                        </PaginationItem>
+                      );
+                    })}
+                    
+                    <PaginationItem>
+                      <PaginationNext
+                        onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                        className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        data-testid="button-next-page"
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              )}
             </div>
           )}
         </div>
