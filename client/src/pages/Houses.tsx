@@ -100,8 +100,27 @@ type Reminder = {
   completedAt?: string;
 };
 
+// Helper to load system settings from localStorage
+const loadSystemSettings = () => {
+  const stored = localStorage.getItem("apdo_system_settings");
+  if (stored) {
+    try {
+      return JSON.parse(stored);
+    } catch {
+      return null;
+    }
+  }
+  return null;
+};
+
+// Helper to save system settings to localStorage
+export const saveSystemSettings = (settings: typeof systemSettings) => {
+  localStorage.setItem("apdo_system_settings", JSON.stringify(settings));
+};
+
 // Global system settings for pricing
-export const systemSettings = {
+const defaultSettings = {
+  currency: "EUR" as "EUR" | "USD" | "TRY",
   dailyRentalEnabled: true, // Günlük Kiralama Modu ON
   standardPricing: {
     bedDailyPrice: 25, // €25/gün
@@ -110,6 +129,8 @@ export const systemSettings = {
     roomMonthlyPrice: 1500, // €1500/ay
   }
 };
+
+export const systemSettings = loadSystemSettings() || defaultSettings;
 
 // Pricing calculation helper functions
 type HouseWithPricing = typeof initialMockHouses[0];

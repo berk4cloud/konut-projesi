@@ -15,7 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { systemSettings } from "./Houses";
+import { systemSettings, saveSystemSettings } from "./Houses";
 
 interface Country {
   name: string;
@@ -25,8 +25,8 @@ interface Country {
 export default function Settings() {
   const { toast } = useToast();
   
-  // Currency settings
-  const [currency, setCurrency] = useState<"EUR" | "USD" | "TRY">("EUR");
+  // Currency settings - initialize from systemSettings
+  const [currency, setCurrency] = useState<"EUR" | "USD" | "TRY">(systemSettings.currency);
   const [hasCurrencyChanges, setHasCurrencyChanges] = useState(false);
   
   const [countries, setCountries] = useState<Country[]>([
@@ -68,7 +68,10 @@ export default function Settings() {
   };
   
   const handleSaveCurrency = () => {
-    // TODO: API call to update tenant currency
+    // Update global settings and persist to localStorage
+    systemSettings.currency = currency;
+    saveSystemSettings(systemSettings);
+    
     toast({
       title: "Para Birimi Güncellendi",
       description: `Sistem para birimi ${currency} olarak ayarlandı.`,
@@ -107,7 +110,7 @@ export default function Settings() {
       return;
     }
 
-    // Update global settings (in real app, this would be API call)
+    // Update global settings and persist to localStorage
     systemSettings.dailyRentalEnabled = dailyRentalEnabled;
     if (dailyRentalEnabled) {
       systemSettings.standardPricing.bedDailyPrice = prices.bedDaily;
@@ -115,6 +118,7 @@ export default function Settings() {
     }
     systemSettings.standardPricing.bedMonthlyPrice = prices.bedMonthly;
     systemSettings.standardPricing.roomMonthlyPrice = prices.roomMonthly;
+    saveSystemSettings(systemSettings);
 
     toast({
       title: "Kaydedildi",
