@@ -22,6 +22,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Search, 
@@ -96,6 +97,14 @@ type Payment = {
   recordedAt?: string; // When was this payment recorded
   reference?: string;
   notes?: string;
+};
+
+type ConversationNote = {
+  id: string;
+  assignmentId: string;
+  date: string;
+  note: string;
+  createdBy: string;
 };
 
 // Mock Data
@@ -277,6 +286,44 @@ const mockPayments: Payment[] = [
   },
 ];
 
+const mockConversationNotes: ConversationNote[] = [
+  {
+    id: "n1",
+    assignmentId: "a1",
+    date: "2024-10-15T10:30:00",
+    note: "İşçi oda değişikliği talep etti. Komşusu çok gürültülü olduğunu söyledi. İnceleme yapılacak.",
+    createdBy: "Elif Yılmaz",
+  },
+  {
+    id: "n2",
+    assignmentId: "a1",
+    date: "2024-10-20T14:15:00",
+    note: "Oda değişikliği yapıldı. Yeni odaya taşındı. Memnun kaldı.",
+    createdBy: "Mehmet Arslan",
+  },
+  {
+    id: "n3",
+    assignmentId: "a2",
+    date: "2024-11-01T09:00:00",
+    note: "İlk ödemeyi yapmadı. Telefon etti, maaş gecikmesi var. Hafta sonu ödeyeceğini söyledi.",
+    createdBy: "Elif Yılmaz",
+  },
+  {
+    id: "n4",
+    assignmentId: "a2",
+    date: "2024-11-05T16:30:00",
+    note: "Ödeme yapıldı. €400 nakit olarak ödedi. Kalan €200'yi gelecek hafta ödeyecek.",
+    createdBy: "Elif Yılmaz",
+  },
+  {
+    id: "n5",
+    assignmentId: "a3",
+    date: "2024-11-10T11:00:00",
+    note: "Depozito iade talebi. Sözleşme bitişi yaklaşıyor. Kontrol yapılacak, hasar var mı bakılacak.",
+    createdBy: "Mehmet Arslan",
+  },
+];
+
 export default function Assignments() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
@@ -285,6 +332,7 @@ export default function Assignments() {
   const [assignments] = useState(mockAssignments);
   const [charges] = useState(mockCharges);
   const [payments] = useState(mockPayments);
+  const [conversationNotes, setConversationNotes] = useState(mockConversationNotes);
   
   // Payment Dialog State
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
@@ -296,6 +344,53 @@ export default function Assignments() {
     collectorName: "",
     notes: "",
   });
+
+  // Assignment Detail Dialog State
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
+  const [newNote, setNewNote] = useState({
+    note: "",
+    createdBy: "",
+  });
+
+  // Open assignment detail dialog
+  const handleOpenDetailDialog = (assignment: Assignment) => {
+    setSelectedAssignment(assignment);
+    setDetailDialogOpen(true);
+  };
+
+  // Save conversation note
+  const handleSaveNote = () => {
+    if (!selectedAssignment || !newNote.note.trim() || !newNote.createdBy.trim()) {
+      toast({
+        title: "Hata",
+        description: "Lütfen tüm alanları doldurun.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Create new note
+    const newConversationNote: ConversationNote = {
+      id: `n${Date.now()}`, // Generate unique ID
+      assignmentId: selectedAssignment.id,
+      date: new Date().toISOString(),
+      note: newNote.note.trim(),
+      createdBy: newNote.createdBy.trim(),
+    };
+
+    // Add to state
+    setConversationNotes([...conversationNotes, newConversationNote]);
+
+    // Show success message
+    toast({
+      title: "Başarılı",
+      description: "Not eklendi.",
+    });
+    
+    // Reset form but keep dialog open so user can see the new note
+    setNewNote({ note: "", createdBy: "" });
+  };
 
   // Open payment dialog for a specific charge
   const handleOpenPaymentDialog = (charge: Charge) => {
@@ -564,7 +659,12 @@ export default function Assignments() {
                   </div>
                 ) : (
                   filteredAssignments.map((assignment) => (
-                  <Card key={assignment.id} data-testid={`assignment-card-${assignment.id}`}>
+                  <Card 
+                    key={assignment.id} 
+                    data-testid={`assignment-card-${assignment.id}`}
+                    className="hover-elevate cursor-pointer"
+                    onClick={() => handleOpenDetailDialog(assignment)}
+                  >
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div className="space-y-1">
@@ -906,6 +1006,119 @@ export default function Assignments() {
               data-testid="button-save-payment"
             >
               Ödeme Kaydet
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Assignment Detail Dialog with Conversation Notes */}
+      <Dialog 
+        open={detailDialogOpen} 
+        onOpenChange={(open) => {
+          setDetailDialogOpen(open);
+          if (!open) {
+            setNewNote({ note: "", createdBy: "" });
+          }
+        }}
+      >
+        <DialogContent className="max-w-4xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>Tahsis Detayları ve Görüşme Notları</DialogTitle>
+            {selectedAssignment && (
+              <div className="space-y-2 mt-2">
+                <p className="font-medium text-foreground text-base">{selectedAssignment.workerName}</p>
+                <DialogDescription className="text-sm">
+                  {selectedAssignment.houseName} • Oda {selectedAssignment.roomNumber} • Yatak {selectedAssignment.bedNumber}
+                </DialogDescription>
+                <div className="flex gap-4 text-sm items-center">
+                  <span>Başlangıç: {new Date(selectedAssignment.startDate).toLocaleDateString('tr-TR')}</span>
+                  <span>Aylık: €{selectedAssignment.monthlyRate}</span>
+                  <Badge className={getStatusColor(selectedAssignment.status)}>
+                    {getStatusLabel(selectedAssignment.status)}
+                  </Badge>
+                </div>
+              </div>
+            )}
+          </DialogHeader>
+
+          {selectedAssignment && (
+            <div className="space-y-4">
+              {/* Conversation Notes List */}
+              <div className="space-y-2">
+                <Label>Görüşme Notları</Label>
+                <ScrollArea className="h-[300px] w-full rounded-md border p-4">
+                  {conversationNotes
+                    .filter(note => note.assignmentId === selectedAssignment.id)
+                    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                    .map((note) => (
+                      <div 
+                        key={note.id} 
+                        className="mb-4 pb-4 border-b last:border-0"
+                        data-testid={`conversation-note-${note.id}`}
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <span className="text-sm font-medium">{note.createdBy}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(note.date).toLocaleString('tr-TR')}
+                          </span>
+                        </div>
+                        <p className="text-sm">{note.note}</p>
+                      </div>
+                    ))}
+                  {conversationNotes.filter(note => note.assignmentId === selectedAssignment.id).length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-8">
+                      Henüz not eklenmemiş
+                    </p>
+                  )}
+                </ScrollArea>
+              </div>
+
+              {/* New Note Form */}
+              <div className="space-y-4 border-t pt-4">
+                <h3 className="font-medium">Yeni Not Ekle</h3>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="note-text">Not *</Label>
+                  <Textarea
+                    id="note-text"
+                    value={newNote.note}
+                    onChange={(e) => setNewNote({ ...newNote, note: e.target.value })}
+                    placeholder="Görüşme notunu buraya yazın..."
+                    rows={3}
+                    data-testid="textarea-conversation-note"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="note-creator">Görüşen Kişi *</Label>
+                  <Input
+                    id="note-creator"
+                    value={newNote.createdBy}
+                    onChange={(e) => setNewNote({ ...newNote, createdBy: e.target.value })}
+                    placeholder="İsim Soyisim"
+                    data-testid="input-note-creator"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setDetailDialogOpen(false);
+                setNewNote({ note: "", createdBy: "" });
+              }}
+              data-testid="button-cancel-note"
+            >
+              Kapat
+            </Button>
+            <Button 
+              onClick={handleSaveNote}
+              data-testid="button-save-note"
+            >
+              Not Kaydet
             </Button>
           </DialogFooter>
         </DialogContent>
