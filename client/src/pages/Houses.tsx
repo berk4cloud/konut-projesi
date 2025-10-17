@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Search, Building2, MapPin, Edit, Bed, Trash2, ChevronsUpDown, Check, Zap, Droplet, FileText, Bell, Calendar, AlertCircle, Camera, X, Eye } from "lucide-react";
+import { Plus, Search, Building2, MapPin, Edit, Bed, Trash2, ChevronsUpDown, Check, Zap, Droplet, Flame, FileText, Bell, Calendar, AlertCircle, Camera, X, Eye } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -271,8 +271,9 @@ export default function Houses() {
   const [isAddReadingOpen, setIsAddReadingOpen] = useState(false);
   const [showAllElectricity, setShowAllElectricity] = useState(false);
   const [showAllWater, setShowAllWater] = useState(false);
+  const [showAllGas, setShowAllGas] = useState(false);
   const [newReading, setNewReading] = useState({
-    meterType: "electricity" as "electricity" | "water",
+    meterType: "electricity" as "electricity" | "water" | "gas",
     date: new Date().toISOString().split("T")[0],
     value: "",
     note: "",
@@ -537,8 +538,10 @@ export default function Houses() {
         const updatedLogs = { ...h.meterLogs };
         if (newReading.meterType === "electricity") {
           updatedLogs.electricity = [newReadingData, ...(updatedLogs.electricity || [])];
-        } else {
+        } else if (newReading.meterType === "water") {
           updatedLogs.water = [newReadingData, ...(updatedLogs.water || [])];
+        } else {
+          updatedLogs.gas = [newReadingData, ...(updatedLogs.gas || [])];
         }
         return { ...h, meterLogs: updatedLogs };
       }
@@ -551,8 +554,10 @@ export default function Houses() {
       const updatedLogs = { ...updatedHouse.meterLogs };
       if (newReading.meterType === "electricity") {
         updatedLogs.electricity = [newReadingData, ...(updatedLogs.electricity || [])];
-      } else {
+      } else if (newReading.meterType === "water") {
         updatedLogs.water = [newReadingData, ...(updatedLogs.water || [])];
+      } else {
+        updatedLogs.gas = [newReadingData, ...(updatedLogs.gas || [])];
       }
       setSelectedHouseForMeters({ ...updatedHouse, meterLogs: updatedLogs });
     }
@@ -567,9 +572,10 @@ export default function Houses() {
     });
     setIsAddReadingOpen(false);
     
+    const meterTypeLabel = newReading.meterType === "electricity" ? "Elektrik" : newReading.meterType === "water" ? "Su" : "Gaz";
     toast({
       title: "Başarılı",
-      description: `${newReading.meterType === "electricity" ? "Elektrik" : "Su"} sayacı okuması eklendi`,
+      description: `${meterTypeLabel} sayacı okuması eklendi`,
     });
   };
 
@@ -1212,7 +1218,7 @@ export default function Houses() {
           <DialogHeader>
             <DialogTitle>Sayaç Bilgileri</DialogTitle>
             <DialogDescription>
-              {selectedHouseForMeters?.name} için elektrik ve su sayacı okumaları
+              {selectedHouseForMeters?.name} için elektrik, su ve gaz sayacı okumaları
             </DialogDescription>
           </DialogHeader>
 
@@ -1407,6 +1413,101 @@ export default function Houses() {
                   <p className="text-sm text-muted-foreground">Kayıt bulunamadı</p>
                 )}
               </div>
+
+              {/* Gas Meter */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
+                    <Flame className="w-4 h-4 text-orange-600" />
+                  </div>
+                  <h3 className="font-semibold">Gaz Sayacı</h3>
+                </div>
+                
+                {selectedHouseForMeters.meterLogs?.gas && selectedHouseForMeters.meterLogs.gas.length > 0 ? (
+                  <>
+                    <div className="space-y-2">
+                      {(showAllGas 
+                        ? selectedHouseForMeters.meterLogs.gas 
+                        : selectedHouseForMeters.meterLogs.gas.slice(0, 3)
+                      ).map((reading, index) => {
+                        const allReadings = selectedHouseForMeters.meterLogs.gas;
+                        const actualIndex = showAllGas ? index : index;
+                        const prevReading = allReadings[actualIndex + 1];
+                        const consumption = prevReading ? reading.value - prevReading.value : null;
+                        
+                        return (
+                          <div 
+                            key={reading.id} 
+                            className="p-3 border rounded-lg bg-card"
+                            data-testid={`gas-reading-${reading.id}`}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="space-y-1">
+                                <p className="text-sm font-medium" data-testid={`text-reading-date-${reading.id}`}>
+                                  {new Date(reading.date).toLocaleDateString("tr-TR", { 
+                                    day: "numeric", 
+                                    month: "long", 
+                                    year: "numeric" 
+                                  })}
+                                </p>
+                                {reading.note && (
+                                  <p className="text-xs text-muted-foreground" data-testid={`text-reading-note-${reading.id}`}>
+                                    {reading.note}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="text-right">
+                                <p className="text-lg font-bold" data-testid={`text-reading-value-${reading.id}`}>
+                                  {reading.value.toLocaleString("tr-TR")} m³
+                                </p>
+                                {consumption !== null && (
+                                  <p className="text-xs text-muted-foreground" data-testid={`text-consumption-${reading.id}`}>
+                                    +{consumption.toLocaleString("tr-TR")} m³
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                            {reading.photo && (
+                              <div className="mt-2 group relative">
+                                <img 
+                                  src={reading.photo} 
+                                  alt="Sayaç fotoğrafı" 
+                                  className="w-full h-32 object-cover rounded border cursor-pointer"
+                                  onClick={() => window.open(reading.photo, '_blank')}
+                                  data-testid={`img-reading-photo-${reading.id}`}
+                                />
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded flex items-center justify-center">
+                                  <Eye className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {!showAllGas && selectedHouseForMeters.meterLogs.gas.length > 3 && (
+                      <button
+                        onClick={() => setShowAllGas(true)}
+                        className="text-sm text-primary hover:underline"
+                        data-testid="button-show-more-gas"
+                      >
+                        Daha fazla göster ({selectedHouseForMeters.meterLogs.gas.length - 3} kayıt)
+                      </button>
+                    )}
+                    {showAllGas && selectedHouseForMeters.meterLogs.gas.length > 3 && (
+                      <button
+                        onClick={() => setShowAllGas(false)}
+                        className="text-sm text-primary hover:underline"
+                        data-testid="button-show-less-gas"
+                      >
+                        Daha az göster
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Kayıt bulunamadı</p>
+                )}
+              </div>
             </div>
           )}
 
@@ -1435,7 +1536,7 @@ export default function Houses() {
           <DialogHeader>
             <DialogTitle>Yeni Sayaç Okuması Ekle</DialogTitle>
             <DialogDescription>
-              Elektrik veya su sayacı için yeni okuma değeri girin
+              Elektrik, su veya gaz sayacı için yeni okuma değeri girin
             </DialogDescription>
           </DialogHeader>
 
@@ -1444,7 +1545,7 @@ export default function Houses() {
               <Label htmlFor="meter-type">Sayaç Türü *</Label>
               <Select
                 value={newReading.meterType}
-                onValueChange={(value: "electricity" | "water") => 
+                onValueChange={(value: "electricity" | "water" | "gas") => 
                   setNewReading({ ...newReading, meterType: value })
                 }
               >
@@ -1462,6 +1563,12 @@ export default function Houses() {
                     <div className="flex items-center gap-2">
                       <Droplet className="w-4 h-4 text-blue-600" />
                       Su
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="gas">
+                    <div className="flex items-center gap-2">
+                      <Flame className="w-4 h-4 text-orange-600" />
+                      Gaz
                     </div>
                   </SelectItem>
                 </SelectContent>
