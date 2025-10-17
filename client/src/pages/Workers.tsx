@@ -189,6 +189,11 @@ export default function Workers() {
       house: worker.house,
       room: worker.room,
       bed: worker.bed,
+      status: worker.status,
+      vacationStartDate: worker.vacationStartDate || "",
+      vacationEndDate: worker.vacationEndDate || "",
+      plannedExitDate: worker.plannedExitDate || "",
+      leftDate: worker.leftDate || "",
     });
     setIsEditDialogOpen(true);
   };
@@ -203,10 +208,19 @@ export default function Workers() {
       return;
     }
     
+    // Clean up status-specific dates based on status
+    const cleanedFormData = {
+      ...formData,
+      vacationStartDate: formData.status === "on_vacation" ? formData.vacationStartDate : undefined,
+      vacationEndDate: formData.status === "on_vacation" ? formData.vacationEndDate : undefined,
+      plannedExitDate: formData.status === "notice_period" ? formData.plannedExitDate : undefined,
+      leftDate: formData.status === "left_no_notice" ? formData.leftDate : undefined,
+    };
+    
     if (selectedWorker) {
       // Edit mode
       setWorkers(workers.map((w) => 
-        w.id === selectedWorker.id ? { ...w, ...formData } : w
+        w.id === selectedWorker.id ? { ...w, ...cleanedFormData } : w
       ));
       toast({
         title: "Başarılı",
@@ -217,7 +231,7 @@ export default function Workers() {
       // Add mode
       const newWorker: Worker = {
         id: Date.now().toString(),
-        ...formData,
+        ...cleanedFormData,
       };
       setWorkers([...workers, newWorker]);
       toast({
@@ -645,6 +659,85 @@ export default function Workers() {
                   onChange={(e) => setFormData({ ...formData, country: e.target.value })}
                   data-testid="input-edit-worker-country"
                 />
+              </div>
+            </div>
+
+            <div className="border-t pt-4">
+              <h4 className="font-medium mb-3">Durum Yönetimi</h4>
+              
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-status">Çalışan Durumu</Label>
+                  <Select
+                    value={formData.status}
+                    onValueChange={(value: WorkerStatus) => setFormData({ ...formData, status: value })}
+                  >
+                    <SelectTrigger id="edit-status" data-testid="select-worker-status">
+                      <SelectValue placeholder="Durum seçin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Aktif - Konaklamada</SelectItem>
+                      <SelectItem value="on_vacation">Tatilde</SelectItem>
+                      <SelectItem value="notice_period">Çıkış Bildirdi</SelectItem>
+                      <SelectItem value="left_no_notice">Haber Vermeden Gitti</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {formData.status === "on_vacation" && (
+                  <div className="grid grid-cols-2 gap-4 bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg">
+                    <div className="space-y-2">
+                      <Label htmlFor="vacation-start">Tatil Başlangıcı</Label>
+                      <Input
+                        id="vacation-start"
+                        type="date"
+                        value={formData.vacationStartDate}
+                        onChange={(e) => setFormData({ ...formData, vacationStartDate: e.target.value })}
+                        data-testid="input-vacation-start"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="vacation-end">Dönüş Tarihi</Label>
+                      <Input
+                        id="vacation-end"
+                        type="date"
+                        value={formData.vacationEndDate}
+                        onChange={(e) => setFormData({ ...formData, vacationEndDate: e.target.value })}
+                        data-testid="input-vacation-end"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {formData.status === "notice_period" && (
+                  <div className="bg-amber-50 dark:bg-amber-950/20 p-3 rounded-lg">
+                    <div className="space-y-2">
+                      <Label htmlFor="planned-exit">Planlanan Çıkış Tarihi</Label>
+                      <Input
+                        id="planned-exit"
+                        type="date"
+                        value={formData.plannedExitDate}
+                        onChange={(e) => setFormData({ ...formData, plannedExitDate: e.target.value })}
+                        data-testid="input-planned-exit"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {formData.status === "left_no_notice" && (
+                  <div className="bg-red-50 dark:bg-red-950/20 p-3 rounded-lg">
+                    <div className="space-y-2">
+                      <Label htmlFor="left-date">Ayrılış Tarihi</Label>
+                      <Input
+                        id="left-date"
+                        type="date"
+                        value={formData.leftDate}
+                        onChange={(e) => setFormData({ ...formData, leftDate: e.target.value })}
+                        data-testid="input-left-date"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
             
