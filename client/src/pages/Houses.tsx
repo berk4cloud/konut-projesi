@@ -618,6 +618,13 @@ export default function Houses() {
     country: "Hollanda", // Default from settings
     rooms: [] as RoomInfo[],
     ownershipType: "Kiralık",
+    pricing: {
+      useCustomPricing: false,
+      bedDailyPrice: undefined as number | undefined,
+      bedMonthlyPrice: undefined as number | undefined,
+      roomDailyPrice: undefined as number | undefined,
+      roomMonthlyPrice: undefined as number | undefined,
+    },
   });
 
   const filteredHouses = houses.filter(
@@ -667,6 +674,13 @@ export default function Houses() {
       country: house.country,
       rooms: [...house.rooms],
       ownershipType: house.ownershipType,
+      pricing: house.pricing || {
+        useCustomPricing: false,
+        bedDailyPrice: undefined,
+        bedMonthlyPrice: undefined,
+        roomDailyPrice: undefined,
+        roomMonthlyPrice: undefined,
+      },
     });
     setIsDialogOpen(true);
   };
@@ -853,6 +867,7 @@ export default function Houses() {
               rooms: formData.rooms,
               totalBeds,
               ownershipType: formData.ownershipType,
+              pricing: formData.pricing,
             }
           : h
       ));
@@ -871,6 +886,7 @@ export default function Houses() {
         occupiedBeds: 0, // Default to 0 for new houses
         ownershipType: formData.ownershipType,
         archived: false,
+        pricing: formData.pricing,
         meterLogs: {
           electricity: [],
           water: [],
@@ -1412,6 +1428,137 @@ export default function Houses() {
                   <span className="text-lg font-bold text-blue-900" data-testid="text-calculated-total-beds">
                     {calculateTotalBeds()}
                   </span>
+                </div>
+              )}
+            </div>
+
+            {/* House Pricing Section */}
+            <div className="space-y-4 pt-4 border-t">
+              <div>
+                <Label className="text-base font-semibold">Konut Fiyatlandırma</Label>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Bu konut için özel fiyat belirleyin (isteğe bağlı)
+                </p>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="use-custom-house-pricing"
+                  checked={formData.pricing.useCustomPricing}
+                  onCheckedChange={(checked) => 
+                    setFormData({ 
+                      ...formData, 
+                      pricing: { 
+                        ...formData.pricing, 
+                        useCustomPricing: checked as boolean 
+                      } 
+                    })
+                  }
+                  data-testid="checkbox-use-custom-house-pricing"
+                />
+                <Label 
+                  htmlFor="use-custom-house-pricing" 
+                  className="text-sm font-normal cursor-pointer"
+                >
+                  Özel fiyat kullan
+                </Label>
+              </div>
+
+              {formData.pricing.useCustomPricing && (
+                <div className="space-y-3 pl-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    {systemSettings.dailyRentalEnabled && (
+                      <div className="space-y-2">
+                        <Label htmlFor="house-bed-daily-price">Yatak Günlük (€)</Label>
+                        <Input
+                          id="house-bed-daily-price"
+                          data-testid="input-house-bed-daily-price"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          placeholder={`Standart: €${systemSettings.standardPricing.bedDailyPrice}`}
+                          value={formData.pricing.bedDailyPrice ?? ""}
+                          onChange={(e) => 
+                            setFormData({ 
+                              ...formData, 
+                              pricing: { 
+                                ...formData.pricing, 
+                                bedDailyPrice: e.target.value ? parseFloat(e.target.value) : undefined 
+                              } 
+                            })
+                          }
+                        />
+                      </div>
+                    )}
+                    <div className="space-y-2">
+                      <Label htmlFor="house-bed-monthly-price">Yatak Aylık (€)</Label>
+                      <Input
+                        id="house-bed-monthly-price"
+                        data-testid="input-house-bed-monthly-price"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder={`Standart: €${systemSettings.standardPricing.bedMonthlyPrice}`}
+                        value={formData.pricing.bedMonthlyPrice ?? ""}
+                        onChange={(e) => 
+                          setFormData({ 
+                            ...formData, 
+                            pricing: { 
+                              ...formData.pricing, 
+                              bedMonthlyPrice: e.target.value ? parseFloat(e.target.value) : undefined 
+                            } 
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    {systemSettings.dailyRentalEnabled && (
+                      <div className="space-y-2">
+                        <Label htmlFor="house-room-daily-price">Oda Günlük (€)</Label>
+                        <Input
+                          id="house-room-daily-price"
+                          data-testid="input-house-room-daily-price"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          placeholder={`Standart: €${systemSettings.standardPricing.roomDailyPrice}`}
+                          value={formData.pricing.roomDailyPrice ?? ""}
+                          onChange={(e) => 
+                            setFormData({ 
+                              ...formData, 
+                              pricing: { 
+                                ...formData.pricing, 
+                                roomDailyPrice: e.target.value ? parseFloat(e.target.value) : undefined 
+                              } 
+                            })
+                          }
+                        />
+                      </div>
+                    )}
+                    <div className="space-y-2">
+                      <Label htmlFor="house-room-monthly-price">Oda Aylık (€)</Label>
+                      <Input
+                        id="house-room-monthly-price"
+                        data-testid="input-house-room-monthly-price"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder={`Standart: €${systemSettings.standardPricing.roomMonthlyPrice}`}
+                        value={formData.pricing.roomMonthlyPrice ?? ""}
+                        onChange={(e) => 
+                          setFormData({ 
+                            ...formData, 
+                            pricing: { 
+                              ...formData.pricing, 
+                              roomMonthlyPrice: e.target.value ? parseFloat(e.target.value) : undefined 
+                            } 
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
