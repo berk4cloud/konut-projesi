@@ -17,8 +17,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { useToast } from "@/hooks/use-toast";
-import { FileText, Bell, Calendar, AlertCircle, Plus, ChevronDown, ChevronUp, MapPin, Clock, CheckCircle } from "lucide-react";
+import { FileText, Bell, Calendar, AlertCircle, Plus, ChevronDown, ChevronUp, MapPin, Clock, CheckCircle, Check, ChevronsUpDown } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -311,6 +324,7 @@ export default function HousingDashboard() {
   
   // Check-in wizard state
   const [wizardStep, setWizardStep] = useState(1);
+  const [workerComboboxOpen, setWorkerComboboxOpen] = useState(false);
   const [wizardData, setWizardData] = useState({
     workerId: "",
     workerName: "",
@@ -1051,28 +1065,54 @@ export default function HousingDashboard() {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="worker-select">Kayıtlı İşçi Seç</Label>
-                  <Select 
-                    value={wizardData.workerId} 
-                    onValueChange={(value) => {
-                      const worker = mockWorkers.find(w => w.id === value);
-                      setWizardData({ 
-                        ...wizardData, 
-                        workerId: value,
-                        workerName: worker?.name || ""
-                      });
-                    }}
-                  >
-                    <SelectTrigger id="worker-select" data-testid="select-wizard-worker">
-                      <SelectValue placeholder="İşçi seçin" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {mockWorkers.map(worker => (
-                        <SelectItem key={worker.id} value={worker.id}>
-                          {worker.name} ({worker.dateOfBirth})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Popover open={workerComboboxOpen} onOpenChange={setWorkerComboboxOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={workerComboboxOpen}
+                        className="w-full justify-between"
+                        data-testid="select-wizard-worker"
+                      >
+                        {wizardData.workerId 
+                          ? mockWorkers.find(w => w.id === wizardData.workerId)?.name 
+                          : "İşçi seçin"}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[400px] p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="İşçi ara..." />
+                        <CommandList>
+                          <CommandEmpty>İşçi bulunamadı</CommandEmpty>
+                          <CommandGroup>
+                            {mockWorkers.map(worker => (
+                              <CommandItem
+                                key={worker.id}
+                                value={`${worker.name} ${worker.dateOfBirth}`}
+                                onSelect={() => {
+                                  setWizardData({
+                                    ...wizardData,
+                                    workerId: worker.id,
+                                    workerName: worker.name
+                                  });
+                                  setWorkerComboboxOpen(false);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    wizardData.workerId === worker.id ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                {worker.name} ({worker.dateOfBirth})
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                   <p className="text-sm text-muted-foreground">
                     * Yeni işçi kaydı için İşçiler sayfasını kullanın
                   </p>
