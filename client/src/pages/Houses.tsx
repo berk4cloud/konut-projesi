@@ -262,6 +262,58 @@ export default function Houses() {
     note: "",
     photo: "",
   });
+
+  // WhatsApp-style photo compression
+  const compressPhoto = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          if (!ctx) {
+            reject(new Error('Canvas context not available'));
+            return;
+          }
+
+          // Max dimensions (WhatsApp-style)
+          const MAX_WIDTH = 1920;
+          const MAX_HEIGHT = 1920;
+          let width = img.width;
+          let height = img.height;
+
+          // Calculate new dimensions maintaining aspect ratio
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height = (height * MAX_WIDTH) / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width = (width * MAX_HEIGHT) / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          
+          // Draw and compress
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Convert to base64 with quality reduction (0.8 = 80% quality)
+          const compressed = canvas.toDataURL('image/jpeg', 0.8);
+          resolve(compressed);
+        };
+        img.onerror = () => reject(new Error('Image load failed'));
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = () => reject(new Error('File read failed'));
+      reader.readAsDataURL(file);
+    });
+  };
   
   // Lease contract state
   const [isLeaseDialogOpen, setIsLeaseDialogOpen] = useState(false);
@@ -1385,14 +1437,20 @@ export default function Houses() {
                     type="file"
                     accept="image/*"
                     className="hidden"
-                    onChange={(e) => {
+                    onChange={async (e) => {
                       const file = e.target.files?.[0];
                       if (file) {
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                          setNewReading({ ...newReading, photo: reader.result as string });
-                        };
-                        reader.readAsDataURL(file);
+                        try {
+                          // Compress photo WhatsApp-style
+                          const compressed = await compressPhoto(file);
+                          setNewReading({ ...newReading, photo: compressed });
+                        } catch (error) {
+                          toast({
+                            title: "Hata",
+                            description: "Fotoğraf yüklenemedi",
+                            variant: "destructive",
+                          });
+                        }
                       }
                     }}
                     data-testid="input-reading-photo"
