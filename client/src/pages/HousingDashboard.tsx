@@ -1075,7 +1075,10 @@ export default function HousingDashboard() {
                         data-testid="select-wizard-worker"
                       >
                         {wizardData.workerId 
-                          ? mockWorkers.find(w => w.id === wizardData.workerId)?.name 
+                          ? (() => {
+                              const worker = mockWorkers.find(w => w.id === wizardData.workerId);
+                              return worker ? `${worker.name} (${worker.dateOfBirth})` : "İşçi seçin";
+                            })()
                           : "İşçi seçin"}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>

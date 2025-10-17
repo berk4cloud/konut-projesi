@@ -43,11 +43,11 @@ TanStack Query is used for server state management (caching, refetching). React'
 
 ### Features
 
-- **Accommodation Billing & Assignment Management**: The "Konaklama" (Accommodation) module manages worker-bed assignments, automatically calculates monthly charges (prorated for partial months), tracks deposits, and monitors payment statuses. It includes a statistics dashboard and risk-based warnings.
+- **Accommodation Billing & Assignment Management**: The "Konaklama" (Accommodation) module manages worker-bed assignments, automatically calculates monthly charges (prorated for partial months), tracks deposits, and monitors payment statuses. Includes enhanced filtering with granular overdue categories (7-14 days, 14-30 days, 30-90 days, 90+ days), worker-grouped payment history with expandable records, and date range filtering for payment queries.
 - **Multi-Level Pricing System**: Supports a 3-level pricing hierarchy (Room-specific > House-specific > Standard system pricing) with a global daily rental mode toggle. Calculations adapt for daily or monthly rates based on duration.
 - **House Archiving System**: Implements soft-delete for houses with visual indicators (opacity, dashed border, "Arşiv" badge) and a toggle to show/hide archived houses.
 - **QR Code Task Delegation System**: Enables creation of unique public QR links for worker self-registration, meter readings, and document uploads. Features include configurable usage limits, expiry dates, status management, and a pending approvals queue with notifications.
-- **Check-in/Check-out System**: Manages worker statuses (e.g., `new_registration`, `checked_out`) and tracks check-in/out dates, key handover, and return dates.
+- **Check-in/Check-out System**: Manages worker statuses (e.g., `new_registration`, `checked_out`) and tracks check-in/out dates, key handover, and return dates. Uses searchable combobox (Command + Popover pattern) for worker selection with type-ahead filtering.
 
 ## External Dependencies
 
