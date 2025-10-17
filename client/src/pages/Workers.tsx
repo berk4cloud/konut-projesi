@@ -469,60 +469,29 @@ export default function Workers() {
             </div>
             
             <div className="border-t pt-4">
-              <h4 className="font-medium mb-3">Konaklama Bilgileri (İsteğe Bağlı)</h4>
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-medium">Konaklama</h4>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    toast({
+                      title: "Yakında",
+                      description: "Uygun konaklama bulma özelliği geliştirilme aşamasında",
+                    });
+                  }}
+                  data-testid="button-find-accommodation"
+                >
+                  <Search className="w-4 h-4 mr-2" />
+                  Uygun Konaklama Bul
+                </Button>
+              </div>
               
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="add-house">Ev</Label>
-                  <Select
-                    value={formData.house}
-                    onValueChange={(value) => {
-                      setFormData({ ...formData, house: value, room: "", bed: "" });
-                    }}
-                  >
-                    <SelectTrigger id="add-house" data-testid="select-worker-house">
-                      <SelectValue placeholder="Ev seçin" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {mockHouses.map((house) => (
-                        <SelectItem key={house.id} value={house.name}>
-                          {house.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="add-room">Oda</Label>
-                  <Select
-                    value={formData.room}
-                    onValueChange={(value) => setFormData({ ...formData, room: value })}
-                    disabled={!formData.house}
-                  >
-                    <SelectTrigger id="add-room" data-testid="select-worker-room">
-                      <SelectValue placeholder="Oda seçin" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableRooms.map((room) => (
-                        <SelectItem key={room} value={room}>
-                          Oda {room}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="add-bed">Yatak</Label>
-                  <Input
-                    id="add-bed"
-                    placeholder="1"
-                    value={formData.bed}
-                    onChange={(e) => setFormData({ ...formData, bed: e.target.value })}
-                    data-testid="input-worker-bed"
-                  />
-                </div>
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <p className="text-sm text-muted-foreground text-center">
+                  Çalışan kaydedildikten sonra "Uygun Konaklama Bul" butonunu kullanarak konaklama atayabilirsiniz
+                </p>
               </div>
             </div>
             
@@ -610,61 +579,32 @@ export default function Workers() {
             </div>
             
             <div className="border-t pt-4">
-              <h4 className="font-medium mb-3">Konaklama Bilgileri (İsteğe Bağlı)</h4>
+              <h4 className="font-medium mb-3">Konaklama Bilgileri</h4>
               
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-house">Ev</Label>
-                  <Select
-                    value={formData.house}
-                    onValueChange={(value) => {
-                      setFormData({ ...formData, house: value, room: "", bed: "" });
-                    }}
-                  >
-                    <SelectTrigger id="edit-house" data-testid="select-edit-worker-house">
-                      <SelectValue placeholder="Ev seçin" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {mockHouses.map((house) => (
-                        <SelectItem key={house.id} value={house.name}>
-                          {house.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              {selectedWorker?.house ? (
+                <div className="bg-muted/50 p-4 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <User className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">{selectedWorker.house}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Oda {selectedWorker.room} • Yatak {selectedWorker.bed}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Konaklama değişikliği için lütfen konut yönetim ekranını kullanın
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="edit-room">Oda</Label>
-                  <Select
-                    value={formData.room}
-                    onValueChange={(value) => setFormData({ ...formData, room: value })}
-                    disabled={!formData.house}
-                  >
-                    <SelectTrigger id="edit-room" data-testid="select-edit-worker-room">
-                      <SelectValue placeholder="Oda seçin" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableRooms.map((room) => (
-                        <SelectItem key={room} value={room}>
-                          Oda {room}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              ) : (
+                <div className="bg-muted/50 p-4 rounded-lg">
+                  <p className="text-sm text-muted-foreground text-center">
+                    Bu çalışana henüz konaklama atanmamış
+                  </p>
                 </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="edit-bed">Yatak</Label>
-                  <Input
-                    id="edit-bed"
-                    placeholder="1"
-                    value={formData.bed}
-                    onChange={(e) => setFormData({ ...formData, bed: e.target.value })}
-                    data-testid="input-edit-worker-bed"
-                  />
-                </div>
-              </div>
+              )}
             </div>
             
             <div className="flex justify-end gap-3 pt-4">
