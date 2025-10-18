@@ -960,7 +960,7 @@ export default function Assignments() {
                         <div className="space-y-1">
                           <CardTitle className="text-lg">{assignment.workerName}</CardTitle>
                           <CardDescription>
-                            {assignment.houseName} • Oda {assignment.roomNumber} • Yatak {assignment.bedNumber}
+                            {assignment.houseName} • {t('assignments.detailsDialog.room')} {assignment.roomNumber} • {t('assignments.detailsDialog.bed')} {assignment.bedNumber}
                           </CardDescription>
                         </div>
                         <Badge className={getStatusColor(assignment.status)}>
