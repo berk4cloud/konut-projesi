@@ -7,8 +7,128 @@ import {
   insertEmploymentPrivateDataSchema 
 } from "@shared/schema";
 import { z } from "zod";
+import { requireTenant } from "./middleware/tenant";
+import { verifyPassword, generateTenantUserToken, generatePlatformAdminToken } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // ============================================
+  // AUTHENTICATION ENDPOINTS
+  // ============================================
+
+  // POST /api/tenant/login - Tenant user login
+  app.post("/api/tenant/login", requireTenant, async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ error: "Email ve şifre gerekli" });
+      }
+      
+      const tenant = req.tenant!; // requireTenant ensures this exists
+      
+      // Find user by tenant + email
+      const user = await storage.getUserByTenantEmail(tenant.id, email);
+      
+      if (!user) {
+        return res.status(401).json({ error: "Geçersiz email veya şifre" });
+      }
+      
+      // Check if user is active
+      if (user.status !== "active") {
+        return res.status(403).json({ 
+          error: "Hesap aktif değil",
+          message: user.status === "invited" 
+            ? "Lütfen önce email davetinizi onaylayın" 
+            : "Hesabınız devre dışı"
+        });
+      }
+      
+      // Verify password
+      if (!user.password) {
+        return res.status(403).json({ 
+          error: "Şifre ayarlanmamış",
+          message: "Lütfen önce şifrenizi ayarlayın"
+        });
+      }
+      
+      const isValid = await verifyPassword(password, user.password);
+      if (!isValid) {
+        return res.status(401).json({ error: "Geçersiz email veya şifre" });
+      }
+      
+      // Generate JWT token
+      const token = generateTenantUserToken(user, tenant);
+      
+      // Return user info + token
+      res.json({
+        token,
+        user: {
+          id: user.id,
+          tenantId: user.tenantId,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role,
+          status: user.status,
+        },
+        tenant: {
+          id: tenant.id,
+          name: tenant.name,
+          slug: tenant.slug,
+          type: tenant.type,
+          status: tenant.status,
+          plan: tenant.plan,
+          modules: tenant.modules,
+        }
+      });
+    } catch (error) {
+      console.error("Tenant login error:", error);
+      res.status(500).json({ error: "Giriş yapılırken hata oluştu" });
+    }
+  });
+
+  // POST /api/platform/login - Platform admin login
+  app.post("/api/platform/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ error: "Email and password required" });
+      }
+      
+      // Find platform admin by email
+      const admin = await storage.getPlatformAdminByEmail(email);
+      
+      if (!admin) {
+        return res.status(401).json({ error: "Invalid email or password" });
+      }
+      
+      // Verify password
+      const isValid = await verifyPassword(password, admin.password);
+      if (!isValid) {
+        return res.status(401).json({ error: "Invalid email or password" });
+      }
+      
+      // Generate JWT token
+      const token = generatePlatformAdminToken(admin);
+      
+      // Return admin info + token
+      res.json({
+        token,
+        admin: {
+          id: admin.id,
+          email: admin.email,
+          firstName: admin.firstName,
+          lastName: admin.lastName,
+          role: admin.role,
+        }
+      });
+    } catch (error) {
+      console.error("Platform login error:", error);
+      res.status(500).json({ error: "Login failed" });
+    }
+  });
+
   // ============================================
   // FEDERATED WORKER IDENTITY ENDPOINTS
   // ============================================

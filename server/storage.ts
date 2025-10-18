@@ -1,6 +1,10 @@
 import { 
   type User, 
   type InsertUser,
+  type Tenant,
+  type InsertTenant,
+  type PlatformAdmin,
+  type InsertPlatformAdmin,
   type WorkerProfile,
   type InsertWorkerProfile,
   type Employment,
@@ -15,11 +19,24 @@ import {
   mockEmploymentPrivateData 
 } from "../client/src/mocks/federated-data";
 
-// Storage interface with federated worker identity support
+// Storage interface with federated worker identity support + multi-tenant platform
 export interface IStorage {
-  // Users
+  // Platform Admins
+  getPlatformAdmin(id: string): Promise<PlatformAdmin | undefined>;
+  getPlatformAdminByEmail(email: string): Promise<PlatformAdmin | undefined>;
+  createPlatformAdmin(admin: InsertPlatformAdmin): Promise<PlatformAdmin>;
+  
+  // Tenants
+  getTenant(id: string): Promise<Tenant | undefined>;
+  getTenantBySlug(slug: string): Promise<Tenant | undefined>;
+  getAllTenants(): Promise<Tenant[]>;
+  createTenant(tenant: InsertTenant): Promise<Tenant>;
+  updateTenant(id: string, tenant: Partial<InsertTenant>): Promise<Tenant | undefined>;
+  
+  // Users (Tenant-level)
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByTenantEmail(tenantId: string, email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   
   // Worker Profiles (Global)
@@ -43,12 +60,16 @@ export interface IStorage {
 }
 
 export class MemStorage implements IStorage {
+  private platformAdmins: Map<string, PlatformAdmin>;
+  private tenants: Map<string, Tenant>;
   private users: Map<string, User>;
   private workerProfiles: Map<string, WorkerProfile>;
   private employments: Map<string, Employment>;
   private employmentPrivateData: Map<string, EmploymentPrivateData>;
 
   constructor() {
+    this.platformAdmins = new Map();
+    this.tenants = new Map();
     this.users = new Map();
     this.workerProfiles = new Map();
     this.employments = new Map();
@@ -78,7 +99,88 @@ export class MemStorage implements IStorage {
   }
 
   // ============================================
-  // Users
+  // Platform Admins
+  // ============================================
+
+  async getPlatformAdmin(id: string): Promise<PlatformAdmin | undefined> {
+    return this.platformAdmins.get(id);
+  }
+
+  async getPlatformAdminByEmail(email: string): Promise<PlatformAdmin | undefined> {
+    return Array.from(this.platformAdmins.values()).find(
+      (admin) => admin.email === email
+    );
+  }
+
+  async createPlatformAdmin(insertAdmin: InsertPlatformAdmin): Promise<PlatformAdmin> {
+    const id = randomUUID();
+    const admin: PlatformAdmin = {
+      ...insertAdmin,
+      role: insertAdmin.role ?? "admin",
+      id,
+      lastLoginAt: null,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.platformAdmins.set(id, admin);
+    return admin;
+  }
+
+  // ============================================
+  // Tenants
+  // ============================================
+
+  async getTenant(id: string): Promise<Tenant | undefined> {
+    return this.tenants.get(id);
+  }
+
+  async getTenantBySlug(slug: string): Promise<Tenant | undefined> {
+    return Array.from(this.tenants.values()).find(
+      (tenant) => tenant.slug === slug
+    );
+  }
+
+  async getAllTenants(): Promise<Tenant[]> {
+    return Array.from(this.tenants.values());
+  }
+
+  async createTenant(insertTenant: InsertTenant): Promise<Tenant> {
+    const id = randomUUID();
+    const tenant: Tenant = {
+      ...insertTenant,
+      type: insertTenant.type ?? "staffing_agency",
+      status: insertTenant.status ?? "trial",
+      plan: insertTenant.plan ?? "professional",
+      currency: insertTenant.currency ?? "EUR",
+      contactEmail: insertTenant.contactEmail ?? null,
+      contactPhone: insertTenant.contactPhone ?? null,
+      trialEndsAt: insertTenant.trialEndsAt ?? null,
+      subscriptionStartsAt: insertTenant.subscriptionStartsAt ?? null,
+      modules: insertTenant.modules ?? '{"workers":true,"planning":false,"accommodation":false,"transport":false,"finance":false}',
+      createdBy: insertTenant.createdBy ?? null,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.tenants.set(id, tenant);
+    return tenant;
+  }
+
+  async updateTenant(id: string, updates: Partial<InsertTenant>): Promise<Tenant | undefined> {
+    const existing = this.tenants.get(id);
+    if (!existing) return undefined;
+
+    const updated: Tenant = {
+      ...existing,
+      ...updates,
+      updatedAt: new Date()
+    };
+    this.tenants.set(id, updated);
+    return updated;
+  }
+
+  // ============================================
+  // Users (Tenant-level)
   // ============================================
 
   async getUser(id: string): Promise<User | undefined> {
@@ -91,11 +193,24 @@ export class MemStorage implements IStorage {
     );
   }
 
+  async getUserByTenantEmail(tenantId: string, email: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(
+      (user) => user.tenantId === tenantId && user.email === email
+    );
+  }
+
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
     const user: User = { 
       ...insertUser,
-      role: insertUser.role ?? "office_staff",
+      password: insertUser.password ?? null,
+      role: insertUser.role ?? "user",
+      status: insertUser.status ?? "invited",
+      invitedAt: insertUser.invitedAt ?? null,
+      invitedBy: insertUser.invitedBy ?? null,
+      activatedAt: insertUser.activatedAt ?? null,
+      invitationToken: insertUser.invitationToken ?? null,
+      lastLoginAt: null,
       id,
       createdAt: new Date(),
       updatedAt: new Date()
@@ -260,6 +375,8 @@ export class MemStorage implements IStorage {
 
 import { db } from "./db";
 import { 
+  platformAdmins as platformAdminsTable,
+  tenants as tenantsTable,
   users as usersTable,
   workerProfiles as workerProfilesTable,
   employments as employmentsTable,
@@ -306,7 +423,57 @@ export class DbStorage implements IStorage {
   }
 
   // ============================================
-  // Users
+  // Platform Admins
+  // ============================================
+
+  async getPlatformAdmin(id: string): Promise<PlatformAdmin | undefined> {
+    const result = await db.select().from(platformAdminsTable).where(eq(platformAdminsTable.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getPlatformAdminByEmail(email: string): Promise<PlatformAdmin | undefined> {
+    const result = await db.select().from(platformAdminsTable).where(eq(platformAdminsTable.email, email)).limit(1);
+    return result[0];
+  }
+
+  async createPlatformAdmin(insertAdmin: InsertPlatformAdmin): Promise<PlatformAdmin> {
+    const result = await db.insert(platformAdminsTable).values(insertAdmin).returning();
+    return result[0];
+  }
+
+  // ============================================
+  // Tenants
+  // ============================================
+
+  async getTenant(id: string): Promise<Tenant | undefined> {
+    const result = await db.select().from(tenantsTable).where(eq(tenantsTable.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getTenantBySlug(slug: string): Promise<Tenant | undefined> {
+    const result = await db.select().from(tenantsTable).where(eq(tenantsTable.slug, slug)).limit(1);
+    return result[0];
+  }
+
+  async getAllTenants(): Promise<Tenant[]> {
+    return await db.select().from(tenantsTable);
+  }
+
+  async createTenant(insertTenant: InsertTenant): Promise<Tenant> {
+    const result = await db.insert(tenantsTable).values(insertTenant).returning();
+    return result[0];
+  }
+
+  async updateTenant(id: string, updates: Partial<InsertTenant>): Promise<Tenant | undefined> {
+    const result = await db.update(tenantsTable)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(tenantsTable.id, id))
+      .returning();
+    return result[0];
+  }
+
+  // ============================================
+  // Users (Tenant-level)
   // ============================================
 
   async getUser(id: string): Promise<User | undefined> {
@@ -319,10 +486,21 @@ export class DbStorage implements IStorage {
     return result[0];
   }
 
+  async getUserByTenantEmail(tenantId: string, email: string): Promise<User | undefined> {
+    const result = await db.select().from(usersTable)
+      .where(and(
+        eq(usersTable.tenantId, tenantId),
+        eq(usersTable.email, email)
+      ))
+      .limit(1);
+    return result[0];
+  }
+
   async createUser(insertUser: InsertUser): Promise<User> {
     const result = await db.insert(usersTable).values({
       ...insertUser,
-      role: insertUser.role ?? "office_staff"
+      role: insertUser.role ?? "user",
+      status: insertUser.status ?? "invited"
     }).returning();
     return result[0];
   }
