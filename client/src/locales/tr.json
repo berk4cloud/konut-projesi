@@ -742,5 +742,140 @@
     "missingInfo": "Eksik Bilgi",
     "fillRequired": "Lütfen tüm zorunlu alanları doldurun",
     "reminderAdded": "Hatırlatıcı eklendi"
+  },
+  "assignments": {
+    "pageTitle": "Konaklama Yönetimi",
+    "pageSubtitle": "Aktif konaklamalar, ücretlendirme ve ödeme takibi",
+    "cards": {
+      "activeAssignments": "Aktif Konaklamalar",
+      "activeAssignmentsDesc": "Devam eden konaklamalar",
+      "pendingDeposits": "Bekleyen Depozito",
+      "pendingDepositsDesc": "Alınmamış depozitolar",
+      "overduePayments": "Gecikmiş Ödeme",
+      "overduePaymentsDesc": "Gecikmiş ödemeler",
+      "pendingAmount": "Bekleyen Tutar",
+      "pendingAmountDesc": "Tahsil edilecek"
+    },
+    "tabs": {
+      "assignments": "Konaklamalar",
+      "charges": "Ücretlendirme",
+      "payments": "Ödemeler"
+    },
+    "search": {
+      "placeholder": "İşçi veya konut ara...",
+      "statusFilter": "Durum filtrele",
+      "chargesFilter": "Ödeme durumu filtrele",
+      "startDate": "Başlangıç:",
+      "endDate": "Bitiş:",
+      "clearFilters": "Temizle"
+    },
+    "filters": {
+      "all": "Tümü",
+      "today": "Bugün Ödenmesi Gerekenler",
+      "next3Days": "Önümüzdeki 3 Gün",
+      "overdue": "Gecikmiş (Tümü)",
+      "overdue7to14": "Gecikmiş (7-14 gün)",
+      "overdue14to30": "Gecikmiş (14-30 gün)",
+      "overdue30to90": "Gecikmiş (30-90 gün)",
+      "overdue90plus": "Gecikmiş (90+ gün)"
+    },
+    "status": {
+      "active": "Aktif",
+      "endingSoon": "Yakında Bitiyor",
+      "ended": "Bitti",
+      "pending": "Beklemede"
+    },
+    "paymentStatus": {
+      "paid": "Ödendi",
+      "pending": "Bekliyor",
+      "overdue": "Gecikmiş",
+      "partial": "Kısmi"
+    },
+    "paymentMethods": {
+      "bankTransfer": "Banka Transferi",
+      "pos": "POS",
+      "cash": "Nakit",
+      "automatic": "Otomatik",
+      "other": "Diğer"
+    },
+    "assignmentCard": {
+      "startDate": "Başlangıç",
+      "monthlyRate": "Aylık Ücret",
+      "deposit": "Depozito",
+      "endDate": "Bitiş",
+      "ongoing": "Devam ediyor",
+      "viewDetails": "Detayları Gör"
+    },
+    "chargeCard": {
+      "dueDate": "Son Ödeme",
+      "days": "Gün",
+      "amount": "Tutar",
+      "remaining": "Kalan",
+      "recordPayment": "Ödeme Kaydet"
+    },
+    "paymentCard": {
+      "amount": "Tutar",
+      "paymentMethod": "Ödeme Yöntemi",
+      "reference": "Referans",
+      "showMore": "Daha Az Göster",
+      "showLess": "+{{count}} Daha Fazla Göster"
+    },
+    "paymentDialog": {
+      "title": "Yeni Ödeme Gir",
+      "description": "{{workerName}} için ödeme kaydı oluşturun",
+      "fullAmount": "Toplam Tutar:",
+      "remainingAmount": "Kalan Tutar:",
+      "amountLabel": "Ödeme Tutarı (€) *",
+      "amountPlaceholder": "0.00",
+      "methodLabel": "Ödeme Yöntemi *",
+      "methodPlaceholder": "Seçin",
+      "collectorLabel": "Ödemeyi Alan Kişi *",
+      "collectorPlaceholder": "İsim Soyisim",
+      "dateLabel": "Ödeme Tarihi *",
+      "notesLabel": "Not (Opsiyonel)",
+      "notesPlaceholder": "Ödeme ile ilgili notlar...",
+      "cancel": "İptal",
+      "save": "Ödemeyi Kaydet",
+      "errors": {
+        "missingFields": "Lütfen tüm zorunlu alanları doldurun",
+        "invalidAmount": "Ödeme tutarı 0'dan büyük olmalıdır",
+        "exceedsRemaining": "Ödeme tutarı kalan tutarı aşamaz (€{{remaining}})"
+      },
+      "success": "Ödeme Kaydedildi",
+      "successDesc": "Ödeme başarıyla kaydedildi"
+    },
+    "detailsDialog": {
+      "title": "Tahsis Detayları ve Görüşme Notları",
+      "assignmentInfo": "Tahsis Bilgileri",
+      "room": "Oda",
+      "bed": "Yatak",
+      "startDate": "Başlangıç",
+      "monthlyRate": "Aylık Ücret",
+      "depositInfo": "Depozito Bilgileri",
+      "depositCollected": "Depozito Durumu",
+      "depositYes": "Alındı",
+      "depositNo": "Alınmadı",
+      "depositAmount": "Tutar",
+      "depositDate": "Tarih",
+      "depositCollector": "Alan Kişi",
+      "conversationNotes": "Görüşme Notları",
+      "noNotes": "Henüz not eklenmedi",
+      "addNote": "Not Ekle",
+      "noteLabel": "Not *",
+      "notePlaceholder": "Görüşme notunu buraya yazın...",
+      "creatorLabel": "Görüşen Kişi *",
+      "creatorPlaceholder": "İsim Soyisim",
+      "cancel": "Kapat",
+      "saveNote": "Notu Kaydet"
+    },
+    "empty": {
+      "noAssignments": "Aktif konaklama bulunamadı",
+      "noCharges": "Ücretlendirme kaydı bulunamadı",
+      "noPayments": "Ödeme kaydı bulunamadı"
+    },
+    "toasts": {
+      "error": "Hata",
+      "success": "Başarılı"
+    }
   }
 }
