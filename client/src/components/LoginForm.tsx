@@ -4,13 +4,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useTranslation } from "react-i18next";
 
 export default function LoginForm() {
@@ -19,7 +12,7 @@ export default function LoginForm() {
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [tenant, setTenant] = useState("");
+  const [tenant] = useState("cova"); // Fixed tenant for ARPDO HABITAT
 
   const handleLogin = () => {
     console.log("Login triggered:", { email, password, tenant });
@@ -43,7 +36,6 @@ export default function LoginForm() {
   const handleDemoLogin = () => {
     setEmail("admin@cova.nl");
     setPassword("demo123");
-    setTenant("cova");
     console.log("Demo login triggered");
     
     // Mock demo user
@@ -70,20 +62,6 @@ export default function LoginForm() {
       </div>
 
       <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="tenant">{t('auth.company')}</Label>
-          <Select value={tenant} onValueChange={setTenant}>
-            <SelectTrigger id="tenant" data-testid="select-tenant">
-              <SelectValue placeholder={t('auth.selectTenantPlaceholder')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="cova">Cova B.V.</SelectItem>
-              <SelectItem value="oneflex">Oneflex B.V.</SelectItem>
-              <SelectItem value="covagmbh">Cova GmbH</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
         <div className="space-y-2">
           <Label htmlFor="email">{t('auth.email')}</Label>
           <Input

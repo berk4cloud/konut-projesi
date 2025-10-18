@@ -163,7 +163,7 @@ export default function Header({
               <SheetHeader>
                 <SheetTitle className="flex items-center gap-2">
                   <Building2 className="w-5 h-5 text-primary" />
-                  APDO HABITAT
+                  ARPDO HABITAT
                 </SheetTitle>
                 <SheetDescription>
                   {t('nav.navigationMenu')}
@@ -192,7 +192,7 @@ export default function Header({
 
           <div className="flex items-center gap-2">
             <Building2 className="w-6 h-6 text-primary" />
-            <h1 className="text-xl font-bold">APDO HABITAT</h1>
+            <h1 className="text-xl font-bold">ARPDO HABITAT</h1>
           </div>
           <div className="h-6 w-px bg-border" />
           <span className="text-sm text-muted-foreground" data-testid="text-tenant-name">

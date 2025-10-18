@@ -182,7 +182,7 @@ export default function QRPublicPage() {
           <div className="flex justify-center mb-4">
             <Building2 className="w-12 h-12 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold mb-2">APDO HABITAT</h1>
+          <h1 className="text-3xl font-bold mb-2">ARPDO HABITAT</h1>
           <p className="text-muted-foreground">{qrData.title}</p>
         </div>
 
