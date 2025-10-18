@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -19,7 +20,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { systemSettings, saveSystemSettings } from "./Houses";
 
 interface Country {
   isoCode: string;
@@ -39,6 +39,16 @@ interface Tenant {
   id: string;
   name: string;
   slug: string;
+  currency: CurrencyType;
+  pricingSettings: {
+    dailyRentalEnabled: boolean;
+    standardPricing: {
+      bedDailyPrice: number;
+      bedMonthlyPrice: number;
+      roomDailyPrice: number;
+      roomMonthlyPrice: number;
+    };
+  };
   favoriteCountries?: string[];
   defaultCountry?: string | null;
 }
@@ -81,71 +91,68 @@ const languageOptions = [
 export default function Settings() {
   const { toast } = useToast();
   const { t, i18n } = useTranslation();
+  const { user, isAuthenticated } = useAuth();
   
-  // Get tenant info from localStorage
-  const tenantData = JSON.parse(localStorage.getItem("tenant") || "{}");
-  const tenantId = tenantData.id || "";
+  // Auth guard
+  if (!isAuthenticated || !user) {
+    return null;
+  }
   
   // Language settings - use resolvedLanguage to normalize region codes (en-US -> en)
   const currentLang = i18n.resolvedLanguage || i18n.language.split('-')[0] || 'tr';
   const [language, setLanguage] = useState(currentLang);
   const [hasLanguageChanges, setHasLanguageChanges] = useState(false);
   
-  // Currency settings - initialize from systemSettings
-  const [currency, setCurrency] = useState<CurrencyType>(systemSettings.currency);
+  // State for settings
+  const [currency, setCurrency] = useState<CurrencyType>("EUR");
   const [hasCurrencyChanges, setHasCurrencyChanges] = useState(false);
   
-  // Country management state
-  const [favoriteCountries, setFavoriteCountries] = useState<string[]>(tenantData.favoriteCountries || []);
-  const [defaultCountry, setDefaultCountry] = useState<string | null>(tenantData.defaultCountry || null);
+  const [favoriteCountries, setFavoriteCountries] = useState<string[]>([]);
+  const [defaultCountry, setDefaultCountry] = useState<string | null>(null);
   const [hasCountryChanges, setHasCountryChanges] = useState(false);
   
-  // Pricing settings state
-  const [dailyRentalEnabled, setDailyRentalEnabled] = useState(systemSettings.dailyRentalEnabled);
-  const [bedDailyPrice, setBedDailyPrice] = useState(systemSettings.standardPricing.bedDailyPrice.toString());
-  const [bedMonthlyPrice, setBedMonthlyPrice] = useState(systemSettings.standardPricing.bedMonthlyPrice.toString());
-  const [roomDailyPrice, setRoomDailyPrice] = useState(systemSettings.standardPricing.roomDailyPrice.toString());
-  const [roomMonthlyPrice, setRoomMonthlyPrice] = useState(systemSettings.standardPricing.roomMonthlyPrice.toString());
+  const [dailyRentalEnabled, setDailyRentalEnabled] = useState(false);
+  const [bedDailyPrice, setBedDailyPrice] = useState("25");
+  const [bedMonthlyPrice, setBedMonthlyPrice] = useState("600");
+  const [roomDailyPrice, setRoomDailyPrice] = useState("70");
+  const [roomMonthlyPrice, setRoomMonthlyPrice] = useState("1700");
 
   // Fetch countries
   const { data: countries = [], isLoading: isLoadingCountries } = useQuery<Country[]>({
     queryKey: ["/api/countries"],
   });
 
-  // Fetch current tenant data on mount to ensure fresh data
-  const { data: freshTenantData } = useQuery<Tenant>({
-    queryKey: ["/api/tenants", tenantId],
-    enabled: !!tenantId,
+  // Fetch current tenant data
+  const { data: tenantData, isLoading: isLoadingTenant } = useQuery<Tenant>({
+    queryKey: [`/api/tenants/${user.tenantId}`],
+    enabled: !!user.tenantId,
   });
 
-  // Update state when fresh tenant data is fetched
+  // Update state when tenant data is fetched
   useEffect(() => {
-    if (freshTenantData) {
-      setFavoriteCountries(freshTenantData.favoriteCountries || []);
-      setDefaultCountry(freshTenantData.defaultCountry || null);
-      // Also update localStorage to keep it in sync
-      localStorage.setItem("tenant", JSON.stringify(freshTenantData));
+    if (tenantData) {
+      setCurrency(tenantData.currency);
+      setFavoriteCountries(tenantData.favoriteCountries || []);
+      setDefaultCountry(tenantData.defaultCountry || null);
+      setDailyRentalEnabled(tenantData.pricingSettings.dailyRentalEnabled);
+      setBedDailyPrice(tenantData.pricingSettings.standardPricing.bedDailyPrice.toString());
+      setBedMonthlyPrice(tenantData.pricingSettings.standardPricing.bedMonthlyPrice.toString());
+      setRoomDailyPrice(tenantData.pricingSettings.standardPricing.roomDailyPrice.toString());
+      setRoomMonthlyPrice(tenantData.pricingSettings.standardPricing.roomMonthlyPrice.toString());
     }
-  }, [freshTenantData]);
+  }, [tenantData]);
 
   // Update tenant mutation
-  const updateTenantMutation = useMutation<Tenant, Error, { favoriteCountries: string[]; defaultCountry: string | null }>({
-    mutationFn: async (updates) => {
-      return await apiRequest("PATCH", `/api/tenants/${tenantId}`, updates);
+  const updateTenantMutation = useMutation({
+    mutationFn: async (updates: Partial<Tenant>) => {
+      return await apiRequest("PATCH", `/api/tenants/${user.tenantId}`, updates);
     },
-    onSuccess: (updatedTenant) => {
-      // Update localStorage
-      localStorage.setItem("tenant", JSON.stringify(updatedTenant));
-      
-      // Update component state to reflect saved data
-      setFavoriteCountries(updatedTenant.favoriteCountries || []);
-      setDefaultCountry(updatedTenant.defaultCountry || null);
-      
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/tenants/${user.tenantId}`] });
       toast({
         title: t("settings.changesSaved"),
-        description: t("settings.countrySettingsSaved"),
+        description: t("settings.saved"),
       });
-      setHasCountryChanges(false);
     },
     onError: () => {
       toast({
@@ -194,6 +201,7 @@ export default function Settings() {
       favoriteCountries,
       defaultCountry,
     });
+    setHasCountryChanges(false);
   };
   
   const handleLanguageChange = (value: string) => {
@@ -216,14 +224,7 @@ export default function Settings() {
   };
   
   const handleSaveCurrency = () => {
-    // Update global settings and persist to localStorage
-    systemSettings.currency = currency;
-    saveSystemSettings(systemSettings);
-    
-    toast({
-      title: "Para Birimi Güncellendi",
-      description: `Sistem para birimi ${currency} olarak ayarlandı.`,
-    });
+    updateTenantMutation.mutate({ currency });
     setHasCurrencyChanges(false);
   };
   

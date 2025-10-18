@@ -110,6 +110,7 @@ export const tenants = pgTable("tenants", {
   
   // Settings
   currency: currencyEnum("currency").default("EUR").notNull(),
+  pricingSettings: jsonb("pricing_settings").default(sql`'{"dailyRentalEnabled":false,"standardPricing":{"bedDailyPrice":25,"bedMonthlyPrice":600,"roomDailyPrice":70,"roomMonthlyPrice":1700}}'::jsonb`).notNull(),
   
   // Country Management
   favoriteCountries: text("favorite_countries").array().default(sql`ARRAY[]::text[]`), // ISO codes array, e.g., ["DE", "NL", "PL"]
