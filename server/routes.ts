@@ -786,6 +786,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "tenantId and address required" });
       }
 
+      // Map Turkish ownership type to English enum
+      const mappedOwnershipType = 
+        ownershipType === "Kiralık" ? "rent" :
+        ownershipType === "Mülk" ? "owned" :
+        ownershipType || "rent";
+
       // Create house
       const house = await storage.createHouse({
         tenantId,
@@ -793,7 +799,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         address,
         city,
         country,
-        ownershipType: ownershipType || "rent",
+        ownershipType: mappedOwnershipType,
         status: "active",
       });
 
@@ -859,13 +865,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const { name, address, city, country, ownershipType, rooms } = req.body;
 
+      // Map Turkish ownership type to English enum
+      const mappedOwnershipType = 
+        ownershipType === "Kiralık" ? "rent" :
+        ownershipType === "Mülk" ? "owned" :
+        ownershipType;
+
       // Update house
       const house = await storage.updateHouse(id, {
         name,
         address,
         city,
         country,
-        ownershipType,
+        ownershipType: mappedOwnershipType,
       });
 
       if (!house) {
@@ -958,6 +970,134 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting house:", error);
       res.status(500).json({ error: "Failed to delete house" });
+    }
+  });
+
+  // ============================================
+  // RESERVATIONS / CHECK-IN/OUT ENDPOINTS
+  // ============================================
+
+  // POST /beds/:bedId/check-in - Check in worker to bed
+  apiRouter.post("/beds/:bedId/check-in", async (req, res) => {
+    try {
+      const { bedId } = req.params;
+      const { employmentId, startDate, endDate, checkInDate, tenantId } = req.body;
+
+      if (!employmentId || !startDate || !tenantId) {
+        return res.status(400).json({ error: "employmentId, startDate, and tenantId required" });
+      }
+
+      // Verify employment exists and belongs to tenant
+      const employment = await storage.getEmployment(employmentId);
+      if (!employment || employment.tenantId !== tenantId) {
+        return res.status(404).json({ error: "Employment not found or access denied" });
+      }
+
+      // Verify bed exists
+      const bed = await storage.getBed(bedId);
+      if (!bed) {
+        return res.status(404).json({ error: "Bed not found" });
+      }
+
+      // Verify bed belongs to tenant (check room → house)
+      const room = await storage.getRoom(bed.roomId);
+      if (!room) {
+        return res.status(404).json({ error: "Room not found" });
+      }
+      const house = await storage.getHouse(room.houseId);
+      if (!house || house.tenantId !== tenantId) {
+        return res.status(404).json({ error: "House not found or access denied" });
+      }
+
+      // Check if bed has active reservation
+      const activeReservation = await storage.getActiveReservationForBed(bedId);
+      if (activeReservation) {
+        return res.status(400).json({ error: "Bed already has an active reservation" });
+      }
+
+      // Create reservation
+      const reservation = await storage.createReservation({
+        employmentId,
+        bedId,
+        startDate: new Date(startDate),
+        endDate: endDate ? new Date(endDate) : null,
+        checkInDate: checkInDate ? new Date(checkInDate) : new Date(),
+        checkOutDate: null,
+        status: "active",
+      });
+
+      res.json(reservation);
+    } catch (error) {
+      console.error("Error checking in:", error);
+      res.status(500).json({ error: "Failed to check in" });
+    }
+  });
+
+  // PATCH /reservations/:id/check-out - Check out worker from bed
+  apiRouter.patch("/reservations/:id/check-out", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { checkOutDate, tenantId } = req.body;
+
+      if (!tenantId) {
+        return res.status(400).json({ error: "tenantId required" });
+      }
+
+      // Verify reservation exists
+      const reservation = await storage.getReservation(id);
+      if (!reservation) {
+        return res.status(404).json({ error: "Reservation not found" });
+      }
+
+      // Verify reservation belongs to tenant (check employment)
+      const employment = await storage.getEmployment(reservation.employmentId);
+      if (!employment || employment.tenantId !== tenantId) {
+        return res.status(404).json({ error: "Reservation not found or access denied" });
+      }
+
+      if (reservation.checkOutDate) {
+        return res.status(400).json({ error: "Reservation already checked out" });
+      }
+
+      // Complete reservation
+      const updated = await storage.completeReservation(
+        id,
+        checkOutDate ? new Date(checkOutDate) : new Date()
+      );
+
+      res.json(updated);
+    } catch (error) {
+      console.error("Error checking out:", error);
+      res.status(500).json({ error: "Failed to check out" });
+    }
+  });
+
+  // GET /reservations - Get reservations by filters
+  apiRouter.get("/reservations", async (req, res) => {
+    try {
+      const { tenantId, bedId, active } = req.query;
+
+      if (!tenantId) {
+        return res.status(400).json({ error: "tenantId required" });
+      }
+
+      let reservations;
+
+      if (bedId) {
+        // Get reservations for specific bed
+        reservations = await storage.getReservationsByBed(bedId as string);
+      } else if (active === "true") {
+        // Get active reservations for tenant
+        reservations = await storage.getActiveReservationsByTenant(tenantId as string);
+      } else {
+        // Get all reservations for tenant (not implemented yet)
+        return res.status(400).json({ error: "Must specify bedId or active=true" });
+      }
+
+      res.json(reservations);
+    } catch (error) {
+      console.error("Error fetching reservations:", error);
+      res.status(500).json({ error: "Failed to fetch reservations" });
     }
   });
 

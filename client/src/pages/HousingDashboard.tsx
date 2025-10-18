@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import Header from "@/components/Header";
 import FilterPanel from "@/components/FilterPanel";
 import CapacityWidget from "@/components/CapacityWidget";
@@ -87,284 +88,39 @@ type Reminder = {
   completedAt?: string;
 };
 
-// TODO: Remove mock data when implementing real API
-const initialMockHouses = [
-  {
-    id: "h1",
-    name: "Geldernstrasse 13",
-    city: "Geilenkirchen",
-    country: "de",
-    totalBeds: 18,
-    occupiedBeds: 12,
-    ownershipType: "Kiralık",
-    leaseContract: {
-      startDate: "2023-01-15",
-      endDate: "2025-01-14",
-      monthlyRent: 2500,
-      currency: "EUR",
-      paymentDay: 1,
-    },
-    reminders: [
-      {
-        id: "r1",
-        type: "lease_end" as const,
-        title: "Kira sözleşmesi bitiyor",
-        date: "2025-11-15",
-        alertDaysBefore: 30,
-        note: "Yenileme görüşmesi yapılmalı",
-        recurring: "none" as const,
-      },
-      {
-        id: "r2",
-        type: "maintenance" as const,
-        title: "Yıllık bakım",
-        date: "2025-10-20",
-        alertDaysBefore: 10,
-        note: "Kalorifer bakımı",
-        recurring: "yearly" as const,
-      },
-    ],
-    rooms: [
-      {
-        id: "r1",
-        roomNumber: "45",
-        floor: 2,
-        beds: [
-          {
-            id: "b1",
-            bedNumber: 1,
-            status: "occupied" as const,
-            worker: { employmentId: "emp-1", name: "Ahmet Yılmaz", gender: "male" as const },
-            expectedMoveOutDate: "2025-11-05", // 19 gün sonra
-          },
-          { id: "b2", bedNumber: 2, status: "available" as const },
-          {
-            id: "b3",
-            bedNumber: 3,
-            status: "occupied" as const,
-            worker: { employmentId: "emp-2", name: "Mehmet Demir", gender: "male" as const },
-          },
-        ],
-      },
-      {
-        id: "r2",
-        roomNumber: "46",
-        floor: 2,
-        beds: [
-          { id: "b4", bedNumber: 1, status: "available" as const },
-          { 
-            id: "b5", 
-            bedNumber: 2, 
-            status: "reserved" as const,
-            expectedMoveInDate: "2025-10-22", // 5 gün sonra
-            reservedForWorkerName: "Ahmet Yılmaz",
-          },
-        ],
-      },
-      {
-        id: "r3",
-        roomNumber: "47",
-        floor: 3,
-        beds: [
-          {
-            id: "b6",
-            bedNumber: 1,
-            status: "occupied" as const,
-            worker: { employmentId: "emp-3", name: "Ayşe Kaya", gender: "female" as const },
-          },
-          { id: "b7", bedNumber: 2, status: "oos" as const },
-        ],
-      },
-    ],
-  },
-  {
-    id: "h2",
-    name: "Hauptstrasse 45",
-    city: "Venlo",
-    country: "nl",
-    totalBeds: 24,
-    occupiedBeds: 18,
-    ownershipType: "Mülk",
-    reminders: [
-      {
-        id: "r3",
-        type: "inspection" as const,
-        title: "Yangın güvenlik kontrolü",
-        date: "2025-10-22",
-        alertDaysBefore: 7,
-        recurring: "yearly" as const,
-      },
-    ],
-    rooms: [
-      {
-        id: "r4",
-        roomNumber: "101",
-        floor: 1,
-        beds: [
-          {
-            id: "b8",
-            bedNumber: 1,
-            status: "occupied" as const,
-            worker: { employmentId: "emp-4", name: "Fatma Şahin", gender: "female" as const },
-            expectedMoveOutDate: "2025-11-15", // 15 gün sonra
-          },
-          {
-            id: "b9",
-            bedNumber: 2,
-            status: "occupied" as const,
-            worker: { employmentId: "emp-5", name: "Emma", gender: "female" as const },
-          },
-          { id: "b10", bedNumber: 3, status: "available" as const },
-          { id: "b11", bedNumber: 4, status: "available" as const },
-        ],
-      },
-      {
-        id: "r5",
-        roomNumber: "102",
-        floor: 1,
-        beds: [
-          {
-            id: "b12",
-            bedNumber: 1,
-            status: "occupied" as const,
-            worker: { employmentId: "emp-6", name: "Tom", gender: "male" as const },
-          },
-          { id: "b13", bedNumber: 2, status: "available" as const },
-        ],
-      },
-    ],
-  },
-  {
-    id: "h3",
-    name: "Marktplatz 7",
-    city: "Roermond",
-    country: "nl",
-    totalBeds: 12,
-    occupiedBeds: 8,
-    ownershipType: "3. Taraf",
-    leaseContract: {
-      startDate: "2024-06-01",
-      monthlyRent: 1800,
-      currency: "EUR",
-      paymentDay: 5,
-    },
-    reminders: [
-      {
-        id: "r4",
-        type: "other" as const,
-        title: "Bina toplantısı",
-        date: "2025-10-21",
-        alertDaysBefore: 5,
-        note: "Yönetim kurulu toplantısı",
-        recurring: "none" as const,
-      },
-    ],
-    rooms: [
-      {
-        id: "r6",
-        roomNumber: "201",
-        floor: 2,
-        beds: [
-          {
-            id: "b14",
-            bedNumber: 1,
-            status: "occupied" as const,
-            worker: { employmentId: "emp-7", name: "Lisa", gender: "female" as const },
-          },
-          { id: "b15", bedNumber: 2, status: "available" as const },
-          {
-            id: "b16",
-            bedNumber: 3,
-            status: "occupied" as const,
-            worker: { employmentId: "emp-8", name: "Paul", gender: "male" as const },
-          },
-        ],
-      },
-      {
-        id: "r7",
-        roomNumber: "202",
-        floor: 2,
-        beds: [
-          { id: "b17", bedNumber: 1, status: "available" as const },
-          { id: "b18", bedNumber: 2, status: "reserved" as const },
-        ],
-      },
-    ],
-  },
-  {
-    id: "h4",
-    name: "Bahnhofstrasse 22",
-    city: "Berlin",
-    country: "de",
-    totalBeds: 15,
-    occupiedBeds: 10,
-    rooms: [
-      {
-        id: "r8",
-        roomNumber: "301",
-        floor: 3,
-        beds: [
-          {
-            id: "b19",
-            bedNumber: 1,
-            status: "occupied" as const,
-            worker: { employmentId: "emp-9", name: "Anna", gender: "female" as const },
-          },
-          { id: "b20", bedNumber: 2, status: "available" as const },
-          {
-            id: "b21",
-            bedNumber: 3,
-            status: "occupied" as const,
-            worker: { employmentId: "emp-10", name: "Klaus", gender: "male" as const },
-          },
-        ],
-      },
-      {
-        id: "r9",
-        roomNumber: "302",
-        floor: 3,
-        beds: [
-          { id: "b22", bedNumber: 1, status: "available" as const },
-          { id: "b23", bedNumber: 2, status: "reserved" as const },
-        ],
-      },
-    ],
-  },
-  {
-    id: "h5",
-    name: "Çankaya Residences",
-    city: "Ankara",
-    country: "tr",
-    totalBeds: 12,
-    occupiedBeds: 6,
-    rooms: [
-      {
-        id: "r10",
-        roomNumber: "101",
-        floor: 1,
-        beds: [
-          { id: "b24", bedNumber: 1, status: "available" as const },
-          {
-            id: "b25",
-            bedNumber: 2,
-            status: "occupied" as const,
-            worker: { employmentId: "emp-11", name: "Mustafa", gender: "male" as const },
-          },
-          { id: "b26", bedNumber: 3, status: "available" as const },
-        ],
-      },
-      {
-        id: "r11",
-        roomNumber: "102",
-        floor: 1,
-        beds: [
-          { id: "b27", bedNumber: 1, status: "available" as const },
-          { id: "b28", bedNumber: 2, status: "reserved" as const },
-        ],
-      },
-    ],
-  },
-];
+// House type (from API)
+type House = {
+  id: string;
+  name: string;
+  address: string;
+  city: string;
+  country: string;
+  ownershipType: "rent" | "owned";
+  status: "active" | "inactive";
+  rooms: {
+    id: string;
+    roomNumber: string;
+    floor: number | null;
+    beds: {
+      id: string;
+      bedNumber: number;
+      status: "available" | "occupied" | "reserved" | "out_of_service";
+      worker?: {
+        employmentId: string;
+        name: string;
+        gender: "male" | "female";
+      };
+      expectedMoveOutDate?: string;
+      expectedMoveInDate?: string;
+    }[];
+  }[];
+  totalBeds: number;
+  occupiedBeds: number;
+  // Local-only fields (not from API yet)
+  reminders?: Reminder[];
+  leaseContract?: LeaseContract;
+};
+
 
 export default function HousingDashboard() {
   const { t } = useTranslation();
@@ -383,7 +139,26 @@ export default function HousingDashboard() {
   if (!isAuthenticated || !user) {
     return null;
   }
-  const [houses, setHouses] = useState(initialMockHouses);
+
+  // State for houses (synced from API)
+  const [houses, setHouses] = useState<House[]>([]);
+
+  // Fetch houses from API
+  const { data: apiHouses, isLoading: housesLoading } = useQuery<House[]>({
+    queryKey: [`/api/houses?tenantId=${user.tenantId}`],
+    enabled: !!user.tenantId,
+  });
+
+  // Sync houses from API and default empty reminders/leaseContract
+  useEffect(() => {
+    if (apiHouses) {
+      setHouses(apiHouses.map(house => ({
+        ...house,
+        reminders: house.reminders || [],
+        leaseContract: house.leaseContract || undefined,
+      })));
+    }
+  }, [apiHouses]);
   const [assignmentModalOpen, setAssignmentModalOpen] = useState(false);
   const [warningModalOpen, setWarningModalOpen] = useState(false);
   const [selectedBed, setSelectedBed] = useState<any>(null);
@@ -513,11 +288,11 @@ export default function HousingDashboard() {
   
   // Lease contract state
   const [isLeaseDialogOpen, setIsLeaseDialogOpen] = useState(false);
-  const [selectedHouseForLease, setSelectedHouseForLease] = useState<typeof initialMockHouses[0] | null>(null);
+  const [selectedHouseForLease, setSelectedHouseForLease] = useState<House | null>(null);
   
   // Reminders state
   const [isRemindersDialogOpen, setIsRemindersDialogOpen] = useState(false);
-  const [selectedHouseForReminders, setSelectedHouseForReminders] = useState<typeof initialMockHouses[0] | null>(null);
+  const [selectedHouseForReminders, setSelectedHouseForReminders] = useState<House | null>(null);
   
   // UI state for mobile
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
@@ -552,7 +327,7 @@ export default function HousingDashboard() {
   const emptyBeds = totalBeds - occupiedBeds;
 
   // Helper: Calculate upcoming check-outs (within 30 days)
-  const getUpcomingVacancies = (house: typeof initialMockHouses[0]) => {
+  const getUpcomingVacancies = (house: House) => {
     const vacancies: { bedNumber: number; roomNumber: string; daysUntil: number; workerName: string }[] = [];
     const today = new Date();
     const thirtyDaysLater = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
@@ -578,7 +353,7 @@ export default function HousingDashboard() {
   };
 
   // Helper: Calculate upcoming check-ins (within 30 days)
-  const getUpcomingCheckIns = (house: typeof initialMockHouses[0]) => {
+  const getUpcomingCheckIns = (house: House) => {
     const checkIns: { bedNumber: number; roomNumber: string; daysUntil: number; workerName: string }[] = [];
     const today = new Date();
     const thirtyDaysLater = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
@@ -797,6 +572,28 @@ export default function HousingDashboard() {
     
     return availableOptions;
   };
+
+  // Show loading skeleton while fetching houses
+  if (housesLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header 
+          tenantName={user.tenantName || "ARPDO"} 
+          userName={`${user.firstName} ${user.lastName}`} 
+          upcomingRemindersCount={0}
+          upcomingReminders={[]}
+          onCompleteReminder={() => {}}
+          onAddNote={() => {}}
+        />
+        <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
+          <div className="text-center space-y-2">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
+            <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
