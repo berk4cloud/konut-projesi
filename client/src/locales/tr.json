@@ -754,7 +754,19 @@
       "overduePayments": "Gecikmiş Ödeme",
       "overduePaymentsDesc": "Gecikmiş ödemeler",
       "pendingAmount": "Bekleyen Tutar",
-      "pendingAmountDesc": "Tahsil edilecek"
+      "pendingAmountDesc": "Tahsil edilecek",
+      "upcomingDueDates": "Yaklaşan Vadeler",
+      "dueToday": "Bugün",
+      "next3Days": "3 Gün İçinde",
+      "next7Days": "7 Gün İçinde",
+      "overdueBreakdown": "Gecikmiş Detay",
+      "overdue1to7": "1-7 gün",
+      "overdue8to14": "8-14 gün",
+      "overdue15to30": "15-30 gün",
+      "overdue30Plus": "30+ gün",
+      "depositsToRefund": "İade Edilecek Depozitolar",
+      "toBeRefunded": "iade edilecek",
+      "next7DaysCheckout": "7 gün içinde çıkış yapacaklar"
     },
     "tabs": {
       "assignments": "Konaklamalar",

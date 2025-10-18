@@ -744,7 +744,19 @@
       "overduePayments": "Achterstallige Betalingen",
       "overduePaymentsDesc": "Achterstallige betalingen",
       "pendingAmount": "Openstaand Bedrag",
-      "pendingAmountDesc": "Te innen"
+      "pendingAmountDesc": "Te innen",
+      "upcomingDueDates": "Aankomende Vervaldatums",
+      "dueToday": "Vandaag",
+      "next3Days": "Komende 3 Dagen",
+      "next7Days": "Komende 7 Dagen",
+      "overdueBreakdown": "Achterstallige Uitsplitsing",
+      "overdue1to7": "1-7 dagen",
+      "overdue8to14": "8-14 dagen",
+      "overdue15to30": "15-30 dagen",
+      "overdue30Plus": "30+ dagen",
+      "depositsToRefund": "Terug Te Betalen Borgsommen",
+      "toBeRefunded": "terug te betalen",
+      "next7DaysCheckout": "Vertrek binnen 7 dagen"
     },
     "tabs": {
       "assignments": "Accommodaties",

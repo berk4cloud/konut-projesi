@@ -744,7 +744,19 @@
       "overduePayments": "Zaległe Płatności",
       "overduePaymentsDesc": "Zaległe płatności",
       "pendingAmount": "Oczekująca Kwota",
-      "pendingAmountDesc": "Do pobrania"
+      "pendingAmountDesc": "Do pobrania",
+      "upcomingDueDates": "Nadchodzące Terminy",
+      "dueToday": "Dzisiaj",
+      "next3Days": "Najbliższe 3 Dni",
+      "next7Days": "Najbliższe 7 Dni",
+      "overdueBreakdown": "Szczegóły Zaległości",
+      "overdue1to7": "1-7 dni",
+      "overdue8to14": "8-14 dni",
+      "overdue15to30": "15-30 dni",
+      "overdue30Plus": "30+ dni",
+      "depositsToRefund": "Depozyty do Zwrotu",
+      "toBeRefunded": "do zwrotu",
+      "next7DaysCheckout": "Wymeldowanie w ciągu 7 dni"
     },
     "tabs": {
       "assignments": "Zakwaterowania",

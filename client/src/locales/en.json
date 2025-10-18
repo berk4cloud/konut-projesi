@@ -761,7 +761,19 @@
       "overduePayments": "Overdue Payments",
       "overduePaymentsDesc": "Overdue payments",
       "pendingAmount": "Pending Amount",
-      "pendingAmountDesc": "To be collected"
+      "pendingAmountDesc": "To be collected",
+      "upcomingDueDates": "Upcoming Due Dates",
+      "dueToday": "Today",
+      "next3Days": "Next 3 Days",
+      "next7Days": "Next 7 Days",
+      "overdueBreakdown": "Overdue Breakdown",
+      "overdue1to7": "1-7 days",
+      "overdue8to14": "8-14 days",
+      "overdue15to30": "15-30 days",
+      "overdue30Plus": "30+ days",
+      "depositsToRefund": "Deposits to Refund",
+      "toBeRefunded": "to be refunded",
+      "next7DaysCheckout": "Checking out within 7 days"
     },
     "tabs": {
       "assignments": "Accommodations",

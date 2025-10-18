@@ -744,7 +744,19 @@
       "overduePayments": "Просрочени Плащания",
       "overduePaymentsDesc": "Просрочени плащания",
       "pendingAmount": "Очаквана Сума",
-      "pendingAmountDesc": "За събиране"
+      "pendingAmountDesc": "За събиране",
+      "upcomingDueDates": "Предстоящи Крайни Срокове",
+      "dueToday": "Днес",
+      "next3Days": "Следващите 3 Дни",
+      "next7Days": "Следващите 7 Дни",
+      "overdueBreakdown": "Детайли на Просрочията",
+      "overdue1to7": "1-7 дни",
+      "overdue8to14": "8-14 дни",
+      "overdue15to30": "15-30 дни",
+      "overdue30Plus": "30+ дни",
+      "depositsToRefund": "Депозити за Възстановяване",
+      "toBeRefunded": "за възстановяване",
+      "next7DaysCheckout": "Напускане в рамките на 7 дни"
     },
     "tabs": {
       "assignments": "Настанявания",

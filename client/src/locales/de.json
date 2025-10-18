@@ -744,7 +744,19 @@
       "overduePayments": "Überfällige Zahlungen",
       "overduePaymentsDesc": "Überfällige Zahlungen",
       "pendingAmount": "Ausstehender Betrag",
-      "pendingAmountDesc": "Einzuziehen"
+      "pendingAmountDesc": "Einzuziehen",
+      "upcomingDueDates": "Bevorstehende Fälligkeiten",
+      "dueToday": "Heute",
+      "next3Days": "Nächste 3 Tage",
+      "next7Days": "Nächste 7 Tage",
+      "overdueBreakdown": "Überfällige Aufschlüsselung",
+      "overdue1to7": "1-7 Tage",
+      "overdue8to14": "8-14 Tage",
+      "overdue15to30": "15-30 Tage",
+      "overdue30Plus": "30+ Tage",
+      "depositsToRefund": "Zu Erstattende Kautionen",
+      "toBeRefunded": "zu erstatten",
+      "next7DaysCheckout": "Auszug innerhalb von 7 Tagen"
     },
     "tabs": {
       "assignments": "Unterkünfte",

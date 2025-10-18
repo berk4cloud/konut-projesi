@@ -744,7 +744,19 @@
       "overduePayments": "Paiements en Retard",
       "overduePaymentsDesc": "Paiements en retard",
       "pendingAmount": "Montant en Attente",
-      "pendingAmountDesc": "À percevoir"
+      "pendingAmountDesc": "À percevoir",
+      "upcomingDueDates": "Échéances à Venir",
+      "dueToday": "Aujourd'hui",
+      "next3Days": "3 Prochains Jours",
+      "next7Days": "7 Prochains Jours",
+      "overdueBreakdown": "Détail des Retards",
+      "overdue1to7": "1-7 jours",
+      "overdue8to14": "8-14 jours",
+      "overdue15to30": "15-30 jours",
+      "overdue30Plus": "30+ jours",
+      "depositsToRefund": "Dépôts à Rembourser",
+      "toBeRefunded": "à rembourser",
+      "next7DaysCheckout": "Départ dans 7 jours"
     },
     "tabs": {
       "assignments": "Hébergements",

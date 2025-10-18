@@ -836,9 +836,11 @@ export default function Assignments() {
   const dueNext7DaysCount = charges.filter(c => {
     const dueDate = new Date(c.dueDate);
     dueDate.setHours(0, 0, 0, 0);
+    const threeDaysFromNow = new Date(today);
+    threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
     const sevenDaysFromNow = new Date(today);
     sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
-    return dueDate > today && dueDate <= sevenDaysFromNow && c.status !== "paid";
+    return dueDate > threeDaysFromNow && dueDate <= sevenDaysFromNow && c.status !== "paid";
   }).length;
   
   // Detailed Overdue Levels (Gecikmiş Ödemeler Detaylı)
@@ -947,7 +949,7 @@ export default function Assignments() {
           </div>
 
           {/* Statistics Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{t('assignments.cards.activeAssignments')}</CardTitle>
@@ -989,6 +991,83 @@ export default function Assignments() {
               <CardContent>
                 <div className="text-2xl font-bold">€{totalPendingAmount.toLocaleString()}</div>
                 <p className="text-xs text-muted-foreground mt-1">{t('assignments.cards.pendingAmountDesc')}</p>
+              </CardContent>
+            </Card>
+
+            {/* New Enhanced Statistics Cards */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{t('assignments.cards.upcomingDueDates')}</CardTitle>
+                <Calendar className="h-4 w-4 text-blue-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">{t('assignments.cards.dueToday')}</span>
+                    <span className="font-bold text-lg">{dueTodayCount}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">{t('assignments.cards.next3Days')}</span>
+                    <span className="font-medium">{dueNext3DaysCount}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">{t('assignments.cards.next7Days')}</span>
+                    <span className="font-medium">{dueNext7DaysCount}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{t('assignments.cards.overdueBreakdown')}</CardTitle>
+                <AlertCircle className="h-4 w-4 text-red-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+                      {t('assignments.cards.overdue1to7')}
+                    </span>
+                    <span className="font-medium">{overdue1to7Days}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-orange-500"></span>
+                      {t('assignments.cards.overdue8to14')}
+                    </span>
+                    <span className="font-medium">{overdue8to14Days}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                      {t('assignments.cards.overdue15to30')}
+                    </span>
+                    <span className="font-medium">{overdue15to30Days}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-black dark:bg-white"></span>
+                      {t('assignments.cards.overdue30Plus')}
+                    </span>
+                    <span className="font-medium">{overdue30PlusDays}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{t('assignments.cards.depositsToRefund')}</CardTitle>
+                <Home className="h-4 w-4 text-green-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{depositsToRefundCount}</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  €{depositsToRefundAmount.toLocaleString()} {t('assignments.cards.toBeRefunded')}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">{t('assignments.cards.next7DaysCheckout')}</p>
               </CardContent>
             </Card>
           </div>
