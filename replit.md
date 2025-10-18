@@ -16,6 +16,7 @@ All UI text must be in Turkish language.
 **Frontend**: React 18 with TypeScript, Vite, TanStack Query, Wouter, Tailwind CSS with shadcn/ui, Inter font.
 **Backend**: Node.js with Express, TypeScript, JWT-based authentication, bcrypt for password hashing, connect-pg-simple for session management.
 **Database & ORM**: PostgreSQL, Neon Database serverless client, Drizzle ORM.
+**Storage Layer**: Hybrid storage architecture - MemStorage (development) for fast iteration, DbStorage (production) for persistent data. Environment-based switching via NODE_ENV.
 
 ### Design System
 

@@ -39,7 +39,7 @@ async function testDbStorage() {
       email: "test@example.com",
       gender: "male",
       nationality: "Turkey",
-      dateOfBirth: new Date("1990-01-01"),
+      dateOfBirth: "1990-01-01",
       phone: "+90 555 123 4567"
     });
     console.log(`✅ Created worker: ${newProfile.id}`);
