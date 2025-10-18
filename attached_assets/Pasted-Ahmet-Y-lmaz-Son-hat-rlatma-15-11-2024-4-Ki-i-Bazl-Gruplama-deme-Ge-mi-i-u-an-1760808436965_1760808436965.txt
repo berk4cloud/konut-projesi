@@ -1,0 +1,147 @@
+Ahmet Yılmaz
+Son hatırlatma: 15.11.2024 ✉️
+```
+
+### 4. **Kişi Bazlı Gruplama (Ödeme Geçmişi)**
+Şu an doğru yapmışlar aslında - her kişi için ayrı kart var:
+```
+Ahmet Yılmaz
+8 ödeme • Toplam: €3790.00
+Kalan Borç: €200 (kırmızı, kalın)
+Son Ödeme: 20 Kasım 2024 (€200 - POS)
+```
+
+Ama şunu ekleyelim:
+- "Tüm Ödemeleri Göster" butonu (timeline şeklinde açılsın)
+- Son durum özeti daha belirgin olsun
+
+### 5. **Çıkış Yapacaklar için Depozito Uyarısı**
+Foto 1'de görünen "Yakında Bitiyor" (Ayşe Kaya - 15.11.2024) durumu için:
+- Dashboard'a "İade Edilecek Depozitolar" kartı ekle
+- 7 gün içinde çıkış yapacaklar listesi
+- Her biri için: İsim, çıkış tarihi, depozito tutarı, kesinti var mı?
+
+### 6. **Arama Fonksiyonu - Her Sekmede**
+- **Konaklamalar**: İsim, oda, yatak
+- **Ücretlendirme**: İsim, tutar aralığı, durum
+- **Ödemeler**: İsim, referans, ödeme yöntemi
+
+---
+
+## ❌ ŞUAN GEREK YOK
+
+- ~~Toplam tahsilat oranı~~ → Patron için bilgi, ön muhasebe için gereksiz
+- ~~Aylık gelir trendi grafiği~~ → Yine üst yönetim için
+- ~~Depozito toplamı dashboard'da~~ → Çok kritik değil
+- ~~Hangi depozitolardan kesinti yapıldı~~ → Detay seviyesi fazla
+- ~~Excel/PDF export~~ → İleride olabilir
+- ~~Depozito kesinti takibi~~ → Şimdilik gerek yok
+
+---
+
+## 🎯 REPLİT İÇİN OPTİMİZE PROMPT
+```
+Mevcut konaklama yönetimi sistemindeki ödeme takip ekranını şu şekilde geliştir:
+
+## 1. DASHBOARD'A YENİ KARTLAR EKLE
+
+Mevcut kartlara ek olarak:
+
+**"Yaklaşan Vadeler" Kartı:**
+- İçinde 3 kategori göster:
+  • Bugün vadesi gelenler (sayı)
+  • 3 gün içinde (sayı)  
+  • 7 gün içinde (sayı)
+- Tıklanınca filtrelenmiş listeye gitsin
+
+**"İade Edilecek Depozitolar" Kartı:**
+- 7 gün içinde çıkış yapacak kişi sayısı
+- Toplam iade edilecek depozito tutarı
+- Tıklanınca listeye gitsin
+
+**"Gecikmiş Ödemeler" Kartını Geliştir:**
+- Gecikme seviyelerini renkli göster:
+  🟡 1-7 gün (X kişi)
+  🟠 8-14 gün (X kişi)
+  🔴 15-30 gün (X kişi)
+  ⚫ 30+ gün (X kişi)
+
+## 2. ÜCRETLENDIRME SEKMESI FİLTRELEME
+
+Mevcut "All" filtresini şu şekilde geliştir:
+- All
+- Due Today (Bugün vadesi gelenler)
+- Next 3 Days (3 gün içinde)
+- Next 7 Days (7 gün içinde)
+- Overdue (All) → Bu alt kategorilere ayrılsın:
+  - 1-7 days overdue
+  - 8-14 days overdue
+  - 15-30 days overdue
+  - 30-90 days overdue
+  - 90+ days overdue
+
+## 3. HER ÖDEME KARTINDA GÖSTERİLECEKLER
+
+Mevcut kart yapısını koru ama şunları ekle:
+
+**Ahmet Yılmaz kartının üstüne:**
+- Kalan Borç: €200 (büyük, kırmızı, kalın yazı)
+- Son Hatırlatma: 15.11.2024 ✉️ (mini badge)
+- Vadeye Kalan: 3 gün 🕐
+
+**Kart içine yeni buton:**
+"Tüm Ödemeleri Göster" butonu ekle
+- Tıklanınca timeline şeklinde tam liste açılsın
+- Timeline'da: tarih, tutar, yöntem, referans, işlemi yapan
+
+## 4. REMINDERS (HATIRLATMALAR) ENTEGRASYONU
+
+Sağ üstteki bildirim ikonuna (🔔) tıklanınca açılan "Notifications" penceresinde:
+
+**Reminders sekmesini geliştir:**
+Her hatırlatma için göster:
+- İşçi adı
+- Hatırlatma tipi (📅 Vade yaklaşıyor / ⚠️ Gecikmiş ödeme / 💶 Depozito eksik)
+- Gönderilme tarihi ve saati
+- Durum badge'i (✓ Gönderildi / ⏳ Bekliyor)
+- "Tekrar Gönder" butonu
+
+Ayrıca:
+- Otomatik hatırlatma ayarları (3 gün önceden, vade günü, gecikme durumunda)
+- Toplu hatırlatma gönder butonu (tüm vadesi geçenlere)
+
+## 5. ARAMA FONKSİYONU - HER SEKMEDE
+
+**Billing (Ücretlendirme) sekmesine ekle:**
+- Arama kutusu: İşçi adına göre arama
+- Filtre: Durum (Tümü/Bekliyor/Kısmi/Gecikmiş)
+
+**Payments (Ödemeler) sekmesine ekle:**
+- Arama kutusu: İşçi adı, referans numarası
+- Filtre: Ödeme yöntemi (Tümü/POS/Banka/Nakit)
+
+## 6. YAKINDA ÇIKIŞlar İÇİN ÖZEL GÖSTERIM
+
+Konaklamalar sekmesinde:
+- "Yakında Bitiyor" badge'i olan kişiler için (örn: Ayşe Kaya)
+- Depozito bilgisi altına "İade Edilecek" butonu ekle
+- Tıklanınca depozito iade formu açılsın
+
+## 7. TASARIM İYİLEŞTİRMELERİ
+
+- Kalan borç tutarları her zaman BÜYÜK ve KIRMIZI gösterilsin
+- Gecikme seviyeleri için renk kodları:
+  🟡 Sarı (1-7 gün)
+  🟠 Turuncu (8-14 gün)
+  🔴 Kırmızı (15-30 gün)
+  ⚫ Siyah (30+ gün)
+- Vadeye kalan gün sayısı belirgin gösterilsin
+- Son hatırlatma bilgisi mini icon ile gösterilsin ✉️
+
+## 8. TOPLU İŞLEMLER
+
+Ücretlendirme sekmesinde:
+- "Toplu Hatırlatma Gönder" butonu (sadece bekleyen/gecikmiş ödemelere)
+- Filtre uygulanmışsa, filtrelenmiş listeye gönder
+
+Lütfen bu özellikleri mevcut tasarıma entegre et. Özellikle gecikme takibi, hatırlatma sistemi ve yaklaşan vadeler çok önemli!
