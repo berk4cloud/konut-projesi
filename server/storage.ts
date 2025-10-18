@@ -254,4 +254,186 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// ============================================
+// DbStorage - PostgreSQL Implementation
+// ============================================
+
+import { db } from "./db";
+import { 
+  users as usersTable,
+  workerProfiles as workerProfilesTable,
+  employments as employmentsTable,
+  employmentPrivateData as employmentPrivateDataTable
+} from "@shared/schema";
+import { eq, and } from "drizzle-orm";
+
+export class DbStorage implements IStorage {
+  private seeded = false;
+
+  // Auto-seed on first access
+  private async ensureSeeded() {
+    if (!this.seeded) {
+      await this.seedMockData();
+      this.seeded = true;
+    }
+  }
+
+  private async seedMockData() {
+    try {
+      // Check if already seeded
+      const existingProfiles = await db.select().from(workerProfilesTable).limit(1);
+      if (existingProfiles.length > 0) {
+        console.log("📦 Database already has data, skipping seed");
+        return;
+      }
+
+      console.log("🌱 Seeding database with mock data...");
+
+      // Insert worker profiles
+      await db.insert(workerProfilesTable).values(mockWorkerProfiles);
+      
+      // Insert employments
+      await db.insert(employmentsTable).values(mockEmployments);
+      
+      // Insert employment private data
+      await db.insert(employmentPrivateDataTable).values(mockEmploymentPrivateData);
+
+      console.log(`✅ Database seeded: ${mockWorkerProfiles.length} profiles, ${mockEmployments.length} employments, ${mockEmploymentPrivateData.length} private data`);
+    } catch (error) {
+      console.error("❌ Error seeding database:", error);
+      throw error;
+    }
+  }
+
+  // ============================================
+  // Users
+  // ============================================
+
+  async getUser(id: string): Promise<User | undefined> {
+    const result = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const result = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
+    return result[0];
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const result = await db.insert(usersTable).values({
+      ...insertUser,
+      role: insertUser.role ?? "office_staff"
+    }).returning();
+    return result[0];
+  }
+
+  // ============================================
+  // Worker Profiles (Global)
+  // ============================================
+
+  async getWorkerProfile(id: string): Promise<WorkerProfile | undefined> {
+    await this.ensureSeeded();
+    const result = await db.select().from(workerProfilesTable).where(eq(workerProfilesTable.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getWorkerProfileByEmail(email: string): Promise<WorkerProfile | undefined> {
+    await this.ensureSeeded();
+    const result = await db.select().from(workerProfilesTable).where(eq(workerProfilesTable.email, email)).limit(1);
+    return result[0];
+  }
+
+  async createWorkerProfile(insertProfile: InsertWorkerProfile): Promise<WorkerProfile> {
+    const result = await db.insert(workerProfilesTable).values(insertProfile).returning();
+    return result[0];
+  }
+
+  async updateWorkerProfile(id: string, profile: Partial<InsertWorkerProfile>): Promise<WorkerProfile | undefined> {
+    const result = await db.update(workerProfilesTable)
+      .set({ ...profile, updatedAt: new Date() })
+      .where(eq(workerProfilesTable.id, id))
+      .returning();
+    return result[0];
+  }
+
+  // ============================================
+  // Employments (Tenant-specific)
+  // ============================================
+
+  async getEmployment(id: string): Promise<Employment | undefined> {
+    await this.ensureSeeded();
+    const result = await db.select().from(employmentsTable).where(eq(employmentsTable.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getEmploymentsByWorkerProfile(workerProfileId: string): Promise<Employment[]> {
+    await this.ensureSeeded();
+    return await db.select().from(employmentsTable)
+      .where(eq(employmentsTable.workerProfileId, workerProfileId));
+  }
+
+  async getEmploymentsByTenant(tenantId: string): Promise<Employment[]> {
+    await this.ensureSeeded();
+    return await db.select().from(employmentsTable)
+      .where(eq(employmentsTable.tenantId, tenantId));
+  }
+
+  async getActiveEmploymentsByTenant(tenantId: string): Promise<Employment[]> {
+    await this.ensureSeeded();
+    return await db.select().from(employmentsTable)
+      .where(and(
+        eq(employmentsTable.tenantId, tenantId),
+        eq(employmentsTable.status, "active")
+      ));
+  }
+
+  async createEmployment(insertEmployment: InsertEmployment): Promise<Employment> {
+    const result = await db.insert(employmentsTable).values(insertEmployment).returning();
+    return result[0];
+  }
+
+  async updateEmployment(id: string, employment: Partial<InsertEmployment>): Promise<Employment | undefined> {
+    const result = await db.update(employmentsTable)
+      .set({ ...employment, updatedAt: new Date() })
+      .where(eq(employmentsTable.id, id))
+      .returning();
+    return result[0];
+  }
+
+  // ============================================
+  // Employment Private Data (Sensitive)
+  // ============================================
+
+  async getEmploymentPrivateData(employmentId: string): Promise<EmploymentPrivateData | undefined> {
+    await this.ensureSeeded();
+    const result = await db.select().from(employmentPrivateDataTable)
+      .where(eq(employmentPrivateDataTable.employmentId, employmentId))
+      .limit(1);
+    return result[0];
+  }
+
+  async createEmploymentPrivateData(data: InsertEmploymentPrivateData): Promise<EmploymentPrivateData> {
+    const result = await db.insert(employmentPrivateDataTable).values(data).returning();
+    return result[0];
+  }
+
+  async updateEmploymentPrivateData(employmentId: string, data: Partial<InsertEmploymentPrivateData>): Promise<EmploymentPrivateData | undefined> {
+    const result = await db.update(employmentPrivateDataTable)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(employmentPrivateDataTable.employmentId, employmentId))
+      .returning();
+    return result[0];
+  }
+}
+
+// ============================================
+// Hybrid Storage Selection
+// ============================================
+
+// Use DbStorage in production, MemStorage in development
+export const storage = process.env.NODE_ENV === 'production'
+  ? new DbStorage()
+  : new MemStorage();
+
+console.log(`💾 Storage mode: ${process.env.NODE_ENV === 'production' ? 'PostgreSQL (DbStorage)' : 'In-Memory (MemStorage)'}`);
+
