@@ -353,10 +353,15 @@
     "female": "Female",
     "today": "Today",
     "tomorrow": "Tomorrow",
-    "daysLater": "days later",
+    "daysLater": "{{days}} days later",
     "edit": "Edit",
     "save": "Save",
-    "addNote": "Add note..."
+    "cancel": "Cancel",
+    "addNote": "Add Note",
+    "addNotePlaceholder": "Add note...",
+    "meterPhotoAlt": "Meter reading photo",
+    "documentPhotoAlt": "Document photo",
+    "completedAt": "completed"
   },
   "qr": {
     "title": "QR Management",

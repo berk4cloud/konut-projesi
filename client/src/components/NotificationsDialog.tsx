@@ -9,8 +9,9 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Bell, CheckCircle2, Calendar, Building2, AlertCircle, StickyNote, User, FileText, CheckCircle, XCircle, Image as ImageIcon, ChevronDown, Phone, Mail, Hash, Cake, Users, Zap, Droplet, Flame } from "lucide-react";
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { tr } from "date-fns/locale";
+import { tr, enUS, de, nl, fr, pl, bg, type Locale } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 type Reminder = {
   id: string;
@@ -75,9 +76,36 @@ export default function NotificationsDialog({
   onApproveSubmission,
   onRejectSubmission,
 }: NotificationsDialogProps) {
+  const { t, i18n } = useTranslation();
   const [editingNote, setEditingNote] = useState<string | null>(null);
   const [noteText, setNoteText] = useState("");
   const [expandedSubmissions, setExpandedSubmissions] = useState<Set<string>>(new Set());
+
+  const getDateFnsLocale = () => {
+    const localeMap: Record<string, Locale> = {
+      tr: tr,
+      en: enUS,
+      de: de,
+      nl: nl,
+      fr: fr,
+      pl: pl,
+      bg: bg,
+    };
+    return localeMap[i18n.language] || enUS;
+  };
+
+  const getLocaleDateFormat = () => {
+    const formatMap: Record<string, string> = {
+      tr: 'tr-TR',
+      en: 'en-US',
+      de: 'de-DE',
+      nl: 'nl-NL',
+      fr: 'fr-FR',
+      pl: 'pl-PL',
+      bg: 'bg-BG',
+    };
+    return formatMap[i18n.language] || 'en-US';
+  };
 
   const toggleSubmissionExpanded = (id: string) => {
     setExpandedSubmissions(prev => {
@@ -93,11 +121,11 @@ export default function NotificationsDialog({
 
   const getReminderTypeLabel = (type: Reminder["type"]) => {
     const labels = {
-      maintenance: "Bakım",
-      lease_end: "Sözleşme Sonu",
-      meter_reading: "Sayaç Okuma",
-      inspection: "Denetim",
-      other: "Diğer",
+      maintenance: t("notifications.maintenance"),
+      lease_end: t("notifications.leaseEnd"),
+      meter_reading: t("notifications.meterReading"),
+      inspection: t("notifications.inspection"),
+      other: t("notifications.other"),
     };
     return labels[type];
   };
@@ -137,14 +165,14 @@ export default function NotificationsDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Bell className="w-5 h-5" />
-            Bildirimler
+            {t("notifications.title")}
           </DialogTitle>
         </DialogHeader>
 
         <Tabs defaultValue="reminders" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="approvals" data-testid="tab-approvals">
-              QR Onaylar
+              {t("notifications.qrApprovals")}
               {pendingApprovalsCount > 0 && (
                 <Badge variant="destructive" className="ml-2">
                   {pendingApprovalsCount}
@@ -152,7 +180,7 @@ export default function NotificationsDialog({
               )}
             </TabsTrigger>
             <TabsTrigger value="reminders" data-testid="tab-reminders">
-              Hatırlatmalar
+              {t("notifications.reminders")}
               {activeReminders.length > 0 && (
                 <Badge variant="destructive" className="ml-2">
                   {activeReminders.length}
@@ -165,14 +193,14 @@ export default function NotificationsDialog({
             {pendingApprovals.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <CheckCircle2 className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p>Bekleyen QR onayı bulunmuyor</p>
+                <p>{t("notifications.noPending")}</p>
               </div>
             ) : (
               pendingApprovals.map((submission) => {
                 const getTaskTypeLabel = () => {
-                  if (submission.taskType === "worker_registration") return "Çalışan Kaydı";
-                  if (submission.taskType === "meter_reading") return "Sayaç Okuma";
-                  return "Belge Yükleme";
+                  if (submission.taskType === "worker_registration") return t("notifications.workerRegistration");
+                  if (submission.taskType === "meter_reading") return t("notifications.meterReading");
+                  return t("notifications.documentUpload");
                 };
                 
                 const getTaskTypeColor = () => {
@@ -184,7 +212,7 @@ export default function NotificationsDialog({
                 const isExpanded = expandedSubmissions.has(submission.id);
                 const displayName = submission.data.firstName && submission.data.lastName
                   ? `${submission.data.firstName} ${submission.data.lastName}`
-                  : submission.data.workerName || "İsimsiz";
+                  : submission.data.workerName || t("notifications.unnamed");
 
                 return (
                   <Card key={submission.id} data-testid={`qr-approval-${submission.id}`}>
@@ -197,7 +225,7 @@ export default function NotificationsDialog({
                               {getTaskTypeLabel()}
                             </Badge>
                             <span className="text-xs text-muted-foreground">
-                              {formatDistanceToNow(new Date(submission.submittedAt), { addSuffix: true, locale: tr })}
+                              {formatDistanceToNow(new Date(submission.submittedAt), { addSuffix: true, locale: getDateFnsLocale() })}
                             </span>
                           </div>
                           
@@ -218,9 +246,9 @@ export default function NotificationsDialog({
                                 {submission.data.meterType === "water" && <Droplet className="w-4 h-4 text-blue-600" />}
                                 {submission.data.meterType === "gas" && <Flame className="w-4 h-4 text-orange-600" />}
                                 <span>
-                                  {submission.data.meterType === "electricity" && "Elektrik"}
-                                  {submission.data.meterType === "water" && "Su"}
-                                  {submission.data.meterType === "gas" && "Gaz"}
+                                  {submission.data.meterType === "electricity" && t("notifications.electricity")}
+                                  {submission.data.meterType === "water" && t("notifications.water")}
+                                  {submission.data.meterType === "gas" && t("notifications.gas")}
                                   : <span className="font-medium">{submission.data.meterValue}</span>
                                 </span>
                               </div>
@@ -246,57 +274,57 @@ export default function NotificationsDialog({
                               {submission.data.firstName && (
                                 <div className="flex items-center gap-2">
                                   <User className="w-4 h-4 text-muted-foreground" />
-                                  <span className="text-muted-foreground">Ad:</span>
+                                  <span className="text-muted-foreground">{t("notifications.firstName")}:</span>
                                   <span className="font-medium">{submission.data.firstName}</span>
                                 </div>
                               )}
                               {submission.data.lastName && (
                                 <div className="flex items-center gap-2">
                                   <User className="w-4 h-4 text-muted-foreground" />
-                                  <span className="text-muted-foreground">Soyad:</span>
+                                  <span className="text-muted-foreground">{t("notifications.lastName")}:</span>
                                   <span className="font-medium">{submission.data.lastName}</span>
                                 </div>
                               )}
                               {submission.data.nationality && (
                                 <div className="flex items-center gap-2">
                                   <Users className="w-4 h-4 text-muted-foreground" />
-                                  <span className="text-muted-foreground">Uyruk:</span>
+                                  <span className="text-muted-foreground">{t("notifications.nationality")}:</span>
                                   <span className="font-medium">{submission.data.nationality}</span>
                                 </div>
                               )}
                               {submission.data.phone && (
                                 <div className="flex items-center gap-2">
                                   <Phone className="w-4 h-4 text-muted-foreground" />
-                                  <span className="text-muted-foreground">Telefon:</span>
+                                  <span className="text-muted-foreground">{t("notifications.phone")}:</span>
                                   <span className="font-medium">{submission.data.phone}</span>
                                 </div>
                               )}
                               {submission.data.email && (
                                 <div className="flex items-center gap-2">
                                   <Mail className="w-4 h-4 text-muted-foreground" />
-                                  <span className="text-muted-foreground">Email:</span>
+                                  <span className="text-muted-foreground">{t("notifications.email")}:</span>
                                   <span className="font-medium">{submission.data.email}</span>
                                 </div>
                               )}
                               {submission.data.idNumber && (
                                 <div className="flex items-center gap-2">
                                   <Hash className="w-4 h-4 text-muted-foreground" />
-                                  <span className="text-muted-foreground">Kimlik No:</span>
+                                  <span className="text-muted-foreground">{t("notifications.idNumber")}:</span>
                                   <span className="font-medium">{submission.data.idNumber}</span>
                                 </div>
                               )}
                               {submission.data.dateOfBirth && (
                                 <div className="flex items-center gap-2">
                                   <Cake className="w-4 h-4 text-muted-foreground" />
-                                  <span className="text-muted-foreground">Doğum Tarihi:</span>
-                                  <span className="font-medium">{new Date(submission.data.dateOfBirth).toLocaleDateString('tr-TR')}</span>
+                                  <span className="text-muted-foreground">{t("notifications.birthDate")}:</span>
+                                  <span className="font-medium">{new Date(submission.data.dateOfBirth).toLocaleDateString(getLocaleDateFormat())}</span>
                                 </div>
                               )}
                               {submission.data.gender && (
                                 <div className="flex items-center gap-2">
                                   <Users className="w-4 h-4 text-muted-foreground" />
-                                  <span className="text-muted-foreground">Cinsiyet:</span>
-                                  <span className="font-medium">{submission.data.gender === 'male' ? 'Erkek' : 'Kadın'}</span>
+                                  <span className="text-muted-foreground">{t("notifications.gender")}:</span>
+                                  <span className="font-medium">{submission.data.gender === 'male' ? t("notifications.male") : t("notifications.female")}</span>
                                 </div>
                               )}
                             </div>
@@ -308,14 +336,14 @@ export default function NotificationsDialog({
                                 {submission.data.houseName && (
                                   <div className="flex items-center gap-2">
                                     <Building2 className="w-4 h-4 text-muted-foreground" />
-                                    <span className="text-muted-foreground">Konut:</span>
+                                    <span className="text-muted-foreground">{t("notifications.housing")}:</span>
                                     <span className="font-medium">{submission.data.houseName}</span>
                                   </div>
                                 )}
                                 {submission.data.meterValue && (
                                   <div className="flex items-center gap-2">
                                     <FileText className="w-4 h-4 text-muted-foreground" />
-                                    <span className="text-muted-foreground">Değer:</span>
+                                    <span className="text-muted-foreground">{t("notifications.value")}:</span>
                                     <span className="font-medium">{submission.data.meterValue}</span>
                                   </div>
                                 )}
@@ -325,11 +353,11 @@ export default function NotificationsDialog({
                                 <div className="space-y-2">
                                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                     <ImageIcon className="w-4 h-4" />
-                                    <span>Sayaç Fotoğrafı</span>
+                                    <span>{t("notifications.meterPhoto")}</span>
                                   </div>
                                   <img 
                                     src={submission.data.photo} 
-                                    alt="Sayaç okuma fotoğrafı" 
+                                    alt={t("notifications.meterPhotoAlt")} 
                                     className="w-full h-48 object-cover rounded-lg border"
                                     data-testid={`photo-preview-${submission.id}`}
                                   />
@@ -342,11 +370,11 @@ export default function NotificationsDialog({
                             <div className="space-y-2">
                               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                 <ImageIcon className="w-4 h-4" />
-                                <span>{submission.data.documentType || "Belge"}</span>
+                                <span>{submission.data.documentType || t("notifications.document")}</span>
                               </div>
                               <img 
                                 src={submission.data.photo} 
-                                alt="Belge fotoğrafı" 
+                                alt={t("notifications.documentPhotoAlt")} 
                                 className="w-full h-48 object-cover rounded-lg border"
                                 data-testid={`document-preview-${submission.id}`}
                               />
@@ -364,7 +392,7 @@ export default function NotificationsDialog({
                           data-testid={`button-approve-${submission.id}`}
                         >
                           <CheckCircle className="w-4 h-4 mr-2" />
-                          Onayla
+                          {t("notifications.approve")}
                         </Button>
                         <Button
                           size="sm"
@@ -374,7 +402,7 @@ export default function NotificationsDialog({
                           data-testid={`button-reject-${submission.id}`}
                         >
                           <XCircle className="w-4 h-4 mr-2" />
-                          Reddet
+                          {t("notifications.reject")}
                         </Button>
                       </div>
                     </CardContent>
@@ -388,14 +416,14 @@ export default function NotificationsDialog({
             {activeReminders.length === 0 && completedReminders.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <AlertCircle className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p>Yaklaşan hatırlatma bulunmuyor</p>
+                <p>{t("notifications.noUpcoming")}</p>
               </div>
             ) : (
               <>
                 {/* Active Reminders */}
                 {activeReminders.length > 0 && (
                   <div className="space-y-3">
-                    <h3 className="font-medium text-sm text-muted-foreground">Yaklaşan Hatırlatmalar</h3>
+                    <h3 className="font-medium text-sm text-muted-foreground">{t("notifications.upcomingReminders")}</h3>
                     {activeReminders.map((reminder) => {
                       const daysUntil = getDaysUntil(reminder.date);
                       return (
@@ -423,10 +451,10 @@ export default function NotificationsDialog({
                                   )}
                                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
                                     <Calendar className="w-3 h-3" />
-                                    {new Date(reminder.date).toLocaleDateString("tr-TR")}
+                                    {new Date(reminder.date).toLocaleDateString(getLocaleDateFormat())}
                                     {daysUntil >= 0 && (
                                       <span className="text-amber-600 dark:text-amber-400 font-medium ml-1">
-                                        ({daysUntil === 0 ? "Bugün" : daysUntil === 1 ? "Yarın" : `${daysUntil} gün sonra`})
+                                        ({daysUntil === 0 ? t("notifications.today") : daysUntil === 1 ? t("notifications.tomorrow") : t("notifications.daysLater", { days: daysUntil })})
                                       </span>
                                     )}
                                   </div>
@@ -448,7 +476,7 @@ export default function NotificationsDialog({
                                     }}
                                     data-testid={`button-edit-note-${reminder.id}`}
                                   >
-                                    Düzenle
+                                    {t("notifications.edit")}
                                   </Button>
                                 </div>
                               </div>
@@ -460,7 +488,7 @@ export default function NotificationsDialog({
                                 <Textarea
                                   value={noteText}
                                   onChange={(e) => setNoteText(e.target.value)}
-                                  placeholder="Not ekle..."
+                                  placeholder={t("notifications.addNotePlaceholder")}
                                   className="resize-none"
                                   rows={3}
                                   data-testid={`textarea-note-${reminder.id}`}
@@ -471,7 +499,7 @@ export default function NotificationsDialog({
                                     onClick={() => handleSaveNote(reminder.id)}
                                     data-testid={`button-save-note-${reminder.id}`}
                                   >
-                                    Kaydet
+                                    {t("notifications.save")}
                                   </Button>
                                   <Button
                                     size="sm"
@@ -482,7 +510,7 @@ export default function NotificationsDialog({
                                     }}
                                     data-testid={`button-cancel-note-${reminder.id}`}
                                   >
-                                    İptal
+                                    {t("notifications.cancel")}
                                   </Button>
                                 </div>
                               </div>
@@ -501,7 +529,7 @@ export default function NotificationsDialog({
                                 data-testid={`button-add-note-${reminder.id}`}
                               >
                                 <StickyNote className="w-4 h-4 mr-2" />
-                                Not Ekle
+                                {t("notifications.addNote")}
                               </Button>
                             )}
                           </CardContent>
@@ -516,7 +544,7 @@ export default function NotificationsDialog({
                   <div className="space-y-3 pt-4 border-t">
                     <h3 className="font-medium text-sm text-muted-foreground flex items-center gap-2">
                       <CheckCircle2 className="w-4 h-4" />
-                      Tamamlananlar
+                      {t("notifications.completed")}
                     </h3>
                     {completedReminders.map((reminder) => (
                       <Card key={reminder.id} className="opacity-60" data-testid={`completed-reminder-${reminder.id}`}>
@@ -527,7 +555,7 @@ export default function NotificationsDialog({
                               <h4 className="font-medium line-through">{reminder.title}</h4>
                               {reminder.completedAt && (
                                 <p className="text-xs text-muted-foreground mt-1">
-                                  {formatDistanceToNow(new Date(reminder.completedAt), { addSuffix: true, locale: tr })} tamamlandı
+                                  {formatDistanceToNow(new Date(reminder.completedAt), { addSuffix: true, locale: getDateFnsLocale() })} {t("notifications.completedAt")}
                                 </p>
                               )}
                             </div>

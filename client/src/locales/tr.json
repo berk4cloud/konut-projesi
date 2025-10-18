@@ -364,10 +364,15 @@
     "female": "Kadın",
     "today": "Bugün",
     "tomorrow": "Yarın",
-    "daysLater": "gün sonra",
+    "daysLater": "{{days}} gün sonra",
     "edit": "Düzenle",
     "save": "Kaydet",
-    "addNote": "Not ekle..."
+    "cancel": "İptal",
+    "addNote": "Not Ekle",
+    "addNotePlaceholder": "Not ekle...",
+    "meterPhotoAlt": "Sayaç okuma fotoğrafı",
+    "documentPhotoAlt": "Belge fotoğrafı",
+    "completedAt": "tamamlandı"
   },
   "qr": {
     "title": "QR Yönetimi",
