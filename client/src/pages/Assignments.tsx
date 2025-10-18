@@ -45,7 +45,7 @@ type PaymentMethod = "bank_transfer" | "pos" | "cash" | "automatic" | "other";
 
 type Assignment = {
   id: string;
-  workerId: string;
+  employmentId: string;
   workerName: string;
   houseId: string;
   houseName: string;
@@ -111,7 +111,7 @@ type ConversationNote = {
 const mockAssignments: Assignment[] = [
   {
     id: "a1",
-    workerId: "w1",
+    employmentId: "w1",
     workerName: "Ahmet Yılmaz",
     houseId: "h1",
     houseName: "Geldernstrasse 13, 52511",
@@ -127,7 +127,7 @@ const mockAssignments: Assignment[] = [
   },
   {
     id: "a2",
-    workerId: "w2",
+    employmentId: "w2",
     workerName: "Mehmet Kaya",
     houseId: "h1",
     houseName: "Geldernstrasse 13, 52511",
@@ -143,7 +143,7 @@ const mockAssignments: Assignment[] = [
   },
   {
     id: "a3",
-    workerId: "w3",
+    employmentId: "w3",
     workerName: "Ali Demir",
     houseId: "h2",
     houseName: "Hauptstrasse 45, 5911",
@@ -160,7 +160,7 @@ const mockAssignments: Assignment[] = [
   },
   {
     id: "a4",
-    workerId: "w4",
+    employmentId: "w4",
     workerName: "Fatma Şahin",
     houseId: "h1",
     houseName: "Geldernstrasse 13, 52511",
