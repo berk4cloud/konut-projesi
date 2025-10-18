@@ -886,5 +886,127 @@
       "error": "Hata",
       "success": "Başarılı"
     }
+  },
+  "qrManagement": {
+    "pageTitle": "QR Yönetimi",
+    "pageSubtitle": "QR kodlarınızı oluşturun ve yönetin",
+    "createButton": "Yeni QR Oluştur",
+    "card": {
+      "title": "Aktif QR Kodlar",
+      "description": "Toplam {{total}} QR kod • {{active}} aktif"
+    },
+    "search": {
+      "placeholder": "QR kod veya başlık ara..."
+    },
+    "table": {
+      "type": "Tip",
+      "title": "Başlık",
+      "code": "Kod",
+      "usage": "Kullanım",
+      "validity": "Geçerlilik",
+      "status": "Durum",
+      "actions": "İşlemler",
+      "empty": "QR kod bulunamadı"
+    },
+    "types": {
+      "workerRegistration": "Çalışan Kaydı",
+      "meterReading": "Sayaç Okuma",
+      "documentUpload": "Döküman Upload"
+    },
+    "status": {
+      "active": "Aktif",
+      "disabled": "Pasif",
+      "expired": "Süresi Doldu"
+    },
+    "usage": {
+      "unlimited": "Sınırsız"
+    },
+    "createDialog": {
+      "step1": {
+        "title": "QR Kod Tipi Seçin",
+        "description": "QR kodunun hangi amaçla kullanılacağını seçin",
+        "workerType": {
+          "title": "Çalışan Kaydı",
+          "description": "Çalışanlar kendi bilgilerini girebilir, siz sadece onaylarsınız"
+        },
+        "meterType": {
+          "title": "Sayaç Okuma",
+          "description": "Sayaç değeri girme ve fotoğraf yükleme"
+        },
+        "documentType": {
+          "title": "Döküman Upload",
+          "description": "PDF, resim gibi dosya yükleme"
+        },
+        "cancel": "İptal",
+        "next": "İleri"
+      },
+      "step2": {
+        "title": "QR Ayarlarını Yapın",
+        "description": "Kullanım limiti ve geçerlilik süresini belirleyin",
+        "titleLabel": "Başlık (İsteğe Bağlı)",
+        "titlePlaceholder": "QR kod için açıklayıcı bir başlık girin",
+        "usageLimitLabel": "Kullanım Limiti",
+        "usageLimitOptions": {
+          "unlimited": "Sınırsız",
+          "1": "1 Kere",
+          "5": "5 Kere",
+          "10": "10 Kere",
+          "50": "50 Kere",
+          "100": "100 Kere",
+          "custom": "Özel Miktar"
+        },
+        "customPlaceholder": "Özel kullanım limiti",
+        "expiryLabel": "Geçerlilik Süresi",
+        "expiryOptions": {
+          "unlimited": "Sınırsız",
+          "1": "1 Gün",
+          "3": "3 Gün",
+          "7": "1 Hafta",
+          "30": "1 Ay",
+          "180": "6 Ay"
+        },
+        "back": "Geri",
+        "create": "Oluştur"
+      },
+      "step3": {
+        "title": "QR Kod Oluşturuldu!",
+        "description": "QR kodunuzu paylaşın veya indirin",
+        "success": "QR Kod Başarıyla Oluşturuldu!",
+        "successDescription": "QR kodunuzu aşağıdan paylaşabilir veya indirebilirsiniz",
+        "link": "Link",
+        "copyLink": "Linki Kopyala",
+        "downloadQR": "QR İndir",
+        "done": "Tamam"
+      }
+    },
+    "viewDialog": {
+      "title": "QR Kod Detayları",
+      "type": "Tip",
+      "status": "Durum",
+      "usage": "Kullanım",
+      "validity": "Geçerlilik",
+      "createdAt": "Oluşturulma Tarihi",
+      "link": "Link",
+      "copyLink": "Linki Kopyala",
+      "downloadQR": "QR İndir"
+    },
+    "toasts": {
+      "linkCopied": {
+        "title": "Link Kopyalandı",
+        "description": "QR kodu linki panoya kopyalandı"
+      },
+      "statusChanged": {
+        "title": "Durum Değiştirildi",
+        "description": "QR kod durumu güncellendi"
+      },
+      "deleted": {
+        "title": "Silindi",
+        "description": "QR kod başarıyla silindi"
+      },
+      "qrCreated": {
+        "title": "QR Kod Oluşturuldu",
+        "description": "Yeni QR kod başarıyla oluşturuldu"
+      }
+    }
   }
 }
