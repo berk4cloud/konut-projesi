@@ -545,8 +545,24 @@ const mockConversationNotes: ConversationNote[] = [
 ];
 
 export default function Assignments() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
+  
+  // Normalize i18n language code to browser locale format
+  const getLocale = () => {
+    const lang = i18n.language;
+    const localeMap: Record<string, string> = {
+      'en': 'en-US',
+      'tr': 'tr-TR',
+      'de': 'de-DE',
+      'nl': 'nl-NL',
+      'fr': 'fr-FR',
+      'pl': 'pl-PL',
+      'bg': 'bg-BG'
+    };
+    return localeMap[lang] || 'en-US';
+  };
+  
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [chargesFilter, setChargesFilter] = useState<string>("all"); // New filter for charges
@@ -974,7 +990,7 @@ export default function Assignments() {
                           <p className="text-muted-foreground mb-1">{t('assignments.assignmentCard.startDate')}</p>
                           <p className="font-medium flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
-                            {new Date(assignment.startDate).toLocaleDateString('tr-TR')}
+                            {new Date(assignment.startDate).toLocaleDateString(getLocale())}
                           </p>
                         </div>
                         <div>
@@ -999,7 +1015,7 @@ export default function Assignments() {
                           <p className="text-muted-foreground mb-1">{t('assignments.assignmentCard.endDate')}</p>
                           <p className="font-medium">
                             {assignment.endDate 
-                              ? new Date(assignment.endDate).toLocaleDateString('tr-TR')
+                              ? new Date(assignment.endDate).toLocaleDateString(getLocale())
                               : t('assignments.assignmentCard.ongoing')}
                           </p>
                         </div>
@@ -1045,7 +1061,7 @@ export default function Assignments() {
                         <div className="space-y-1">
                           <CardTitle className="text-lg">{charge.workerName}</CardTitle>
                           <CardDescription>
-                            {new Date(charge.month + "-01").toLocaleDateString('tr-TR', { year: 'numeric', month: 'long' })}
+                            {new Date(charge.month + "-01").toLocaleDateString(getLocale(), { year: 'numeric', month: 'long' })}
                           </CardDescription>
                         </div>
                         <Badge variant={getPaymentStatusColor(charge.status)}>
@@ -1073,7 +1089,7 @@ export default function Assignments() {
                         <div>
                           <p className="text-muted-foreground mb-1">{t('assignments.chargeCard.dueDate')}</p>
                           <p className="font-medium">
-                            {new Date(charge.dueDate).toLocaleDateString('tr-TR')}
+                            {new Date(charge.dueDate).toLocaleDateString(getLocale())}
                           </p>
                         </div>
                       </div>
@@ -1182,7 +1198,7 @@ export default function Assignments() {
                             >
                               <div className="flex items-start justify-between mb-2">
                                 <div className="text-sm text-muted-foreground">
-                                  {new Date(payment.paymentDate).toLocaleDateString('tr-TR', {
+                                  {new Date(payment.paymentDate).toLocaleDateString(getLocale(), {
                                     year: 'numeric',
                                     month: 'long',
                                     day: 'numeric'
@@ -1405,7 +1421,7 @@ export default function Assignments() {
                   {selectedAssignment.houseName} • {t('assignments.detailsDialog.room')} {selectedAssignment.roomNumber} • {t('assignments.detailsDialog.bed')} {selectedAssignment.bedNumber}
                 </DialogDescription>
                 <div className="flex gap-4 text-sm items-center">
-                  <span>{t('assignments.detailsDialog.startDate')}: {new Date(selectedAssignment.startDate).toLocaleDateString('tr-TR')}</span>
+                  <span>{t('assignments.detailsDialog.startDate')}: {new Date(selectedAssignment.startDate).toLocaleDateString(getLocale())}</span>
                   <span>{t('assignments.detailsDialog.monthlyRate')}: €{selectedAssignment.monthlyRate}</span>
                   <Badge className={getStatusColor(selectedAssignment.status)}>
                     {getStatusLabel(selectedAssignment.status)}
