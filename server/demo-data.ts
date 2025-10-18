@@ -105,7 +105,7 @@ export const demoTenants: Tenant[] = [
     subscriptionStartsAt: new Date("2024-01-15"),
     modules: '{"workers":true,"planning":true,"accommodation":true,"transport":false,"finance":false}',
     currency: "EUR",
-    favoriteCountries: ["DE", "NL", "TR", "PL", "FR", "BE"],
+    favoriteCountries: ["DE", "NL", "TR", "PL", "BE"],
     defaultCountry: "NL",
     createdAt: new Date("2024-01-15"),
     updatedAt: new Date("2024-01-15"),

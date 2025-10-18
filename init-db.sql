@@ -67,6 +67,7 @@ DROP TYPE IF EXISTS public.gender_restriction;
 DROP TYPE IF EXISTS public.employment_status;
 DROP TYPE IF EXISTS public.currency;
 DROP TYPE IF EXISTS public.bed_status;
+DROP EXTENSION IF EXISTS pgcrypto;
 -- *not* dropping schema, since initdb creates it
 DROP SCHEMA IF EXISTS drizzle;
 --
@@ -88,6 +89,20 @@ CREATE SCHEMA drizzle;
 --
 
 COMMENT ON SCHEMA public IS '';
+
+
+--
+-- Name: pgcrypto; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION pgcrypto; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
 
 
 --
@@ -600,7 +615,6 @@ ALTER TABLE ONLY drizzle.__drizzle_migrations ALTER COLUMN id SET DEFAULT nextva
 --
 
 COPY drizzle.__drizzle_migrations (id, hash, created_at) FROM stdin;
-1	7182b6d81cef7e87a45f8f596ddf252977a1f71653dae8f2f8488cdef1e88c65	1760814249834
 \.
 
 
@@ -617,36 +631,36 @@ COPY public.beds (id, room_id, bed_number, status, last_occupied_by, last_occupi
 --
 
 COPY public.countries (iso_code, name_tr, name_en, name_de, name_nl, name_fr, name_pl, name_bg, flag_emoji, phone_code, is_active, created_at, updated_at) FROM stdin;
-DE	Almanya	Germany	Deutschland	Duitsland	Allemagne	Niemcy	Германия	🇩🇪	+49	t	2025-10-18 19:06:45.503	2025-10-18 19:06:45.503
-NL	Hollanda	Netherlands	Niederlande	Nederland	Pays-Bas	Holandia	Холандия	🇳🇱	+31	t	2025-10-18 19:06:45.503	2025-10-18 19:06:45.503
-TR	Türkiye	Turkey	Türkei	Turkije	Turquie	Turcja	Турция	🇹🇷	+90	t	2025-10-18 19:06:45.503	2025-10-18 19:06:45.503
-PL	Polonya	Poland	Polen	Polen	Pologne	Polska	Полша	🇵🇱	+48	t	2025-10-18 19:06:45.503	2025-10-18 19:06:45.503
-FR	Fransa	France	Frankreich	Frankrijk	France	Francja	Франция	🇫🇷	+33	t	2025-10-18 19:06:45.503	2025-10-18 19:06:45.503
-BE	Belçika	Belgium	Belgien	België	Belgique	Belgia	Белгия	🇧🇪	+32	t	2025-10-18 19:06:45.503	2025-10-18 19:06:45.503
-AT	Avusturya	Austria	Österreich	Oostenrijk	Autriche	Austria	Австрия	🇦🇹	+43	t	2025-10-18 19:06:45.503	2025-10-18 19:06:45.503
-CH	İsviçre	Switzerland	Schweiz	Zwitserland	Suisse	Szwajcaria	Швейцария	🇨🇭	+41	t	2025-10-18 19:06:45.503	2025-10-18 19:06:45.503
-GB	Birleşik Krallık	United Kingdom	Vereinigtes Königreich	Verenigd Koninkrijk	Royaume-Uni	Wielka Brytania	Обединено кралство	🇬🇧	+44	t	2025-10-18 19:06:45.503	2025-10-18 19:06:45.503
-IE	İrlanda	Ireland	Irland	Ierland	Irlande	Irlandia	Ирландия	🇮🇪	+353	t	2025-10-18 19:06:45.503	2025-10-18 19:06:45.503
-ES	İspanya	Spain	Spanien	Spanje	Espagne	Hiszpania	Испания	🇪🇸	+34	t	2025-10-18 19:06:45.503	2025-10-18 19:06:45.503
-IT	İtalya	Italy	Italien	Italië	Italie	Włochy	Италия	🇮🇹	+39	t	2025-10-18 19:06:45.503	2025-10-18 19:06:45.503
-PT	Portekiz	Portugal	Portugal	Portugal	Portugal	Portugalia	Португалия	🇵🇹	+351	t	2025-10-18 19:06:45.503	2025-10-18 19:06:45.503
-RO	Romanya	Romania	Rumänien	Roemenië	Roumanie	Rumunia	Румъния	🇷🇴	+40	t	2025-10-18 19:06:45.503	2025-10-18 19:06:45.503
-BG	Bulgaristan	Bulgaria	Bulgarien	Bulgarije	Bulgarie	Bułgaria	България	🇧🇬	+359	t	2025-10-18 19:06:45.503	2025-10-18 19:06:45.503
-GR	Yunanistan	Greece	Griechenland	Griekenland	Grèce	Grecja	Гърция	🇬🇷	+30	t	2025-10-18 19:06:45.503	2025-10-18 19:06:45.503
-CZ	Çekya	Czech Republic	Tschechien	Tsjechië	République tchèque	Czechy	Чехия	🇨🇿	+420	t	2025-10-18 19:06:45.503	2025-10-18 19:06:45.503
-HU	Macaristan	Hungary	Ungarn	Hongarije	Hongrie	Węgry	Унгария	🇭🇺	+36	t	2025-10-18 19:06:45.503	2025-10-18 19:06:45.503
-SK	Slovakya	Slovakia	Slowakei	Slowakije	Slovaquie	Słowacja	Словакия	🇸🇰	+421	t	2025-10-18 19:06:45.503	2025-10-18 19:06:45.503
-SI	Slovenya	Slovenia	Slowenien	Slovenië	Slovénie	Słowenia	Словения	🇸🇮	+386	t	2025-10-18 19:06:45.503	2025-10-18 19:06:45.503
-HR	Hırvatistan	Croatia	Kroatien	Kroatië	Croatie	Chorwacja	Хърватия	🇭🇷	+385	t	2025-10-18 19:06:45.503	2025-10-18 19:06:45.503
-RS	Sırbistan	Serbia	Serbien	Servië	Serbie	Serbia	Сърбия	🇷🇸	+381	t	2025-10-18 19:06:45.503	2025-10-18 19:06:45.503
-DK	Danimarka	Denmark	Dänemark	Denemarken	Danemark	Dania	Дания	🇩🇰	+45	t	2025-10-18 19:06:45.503	2025-10-18 19:06:45.503
-SE	İsveç	Sweden	Schweden	Zweden	Suède	Szwecja	Швеция	🇸🇪	+46	t	2025-10-18 19:06:45.503	2025-10-18 19:06:45.503
-NO	Norveç	Norway	Norwegen	Noorwegen	Norvège	Norwegia	Норвегия	🇳🇴	+47	t	2025-10-18 19:06:45.503	2025-10-18 19:06:45.503
-FI	Finlandiya	Finland	Finnland	Finland	Finlande	Finlandia	Финландия	🇫🇮	+358	t	2025-10-18 19:06:45.503	2025-10-18 19:06:45.503
-UA	Ukrayna	Ukraine	Ukraine	Oekraïne	Ukraine	Ukraina	Украйна	🇺🇦	+380	t	2025-10-18 19:06:45.503	2025-10-18 19:06:45.503
-LT	Litvanya	Lithuania	Litauen	Litouwen	Lituanie	Litwa	Литва	🇱🇹	+370	t	2025-10-18 19:06:45.503	2025-10-18 19:06:45.503
-LV	Letonya	Latvia	Lettland	Letland	Lettonie	Łotwa	Латвия	🇱🇻	+371	t	2025-10-18 19:06:45.503	2025-10-18 19:06:45.503
-EE	Estonya	Estonia	Estland	Estland	Estonie	Estonia	Естония	🇪🇪	+372	t	2025-10-18 19:06:45.503	2025-10-18 19:06:45.503
+DE	Almanya	Germany	Deutschland	Duitsland	Allemagne	Niemcy	Германия	🇩🇪	+49	t	2025-10-18 19:22:11.415	2025-10-18 19:22:11.415
+NL	Hollanda	Netherlands	Niederlande	Nederland	Pays-Bas	Holandia	Холандия	🇳🇱	+31	t	2025-10-18 19:22:11.415	2025-10-18 19:22:11.415
+TR	Türkiye	Turkey	Türkei	Turkije	Turquie	Turcja	Турция	🇹🇷	+90	t	2025-10-18 19:22:11.415	2025-10-18 19:22:11.415
+PL	Polonya	Poland	Polen	Polen	Pologne	Polska	Полша	🇵🇱	+48	t	2025-10-18 19:22:11.415	2025-10-18 19:22:11.415
+FR	Fransa	France	Frankreich	Frankrijk	France	Francja	Франция	🇫🇷	+33	t	2025-10-18 19:22:11.415	2025-10-18 19:22:11.415
+BE	Belçika	Belgium	Belgien	België	Belgique	Belgia	Белгия	🇧🇪	+32	t	2025-10-18 19:22:11.415	2025-10-18 19:22:11.415
+AT	Avusturya	Austria	Österreich	Oostenrijk	Autriche	Austria	Австрия	🇦🇹	+43	t	2025-10-18 19:22:11.415	2025-10-18 19:22:11.415
+CH	İsviçre	Switzerland	Schweiz	Zwitserland	Suisse	Szwajcaria	Швейцария	🇨🇭	+41	t	2025-10-18 19:22:11.415	2025-10-18 19:22:11.415
+GB	Birleşik Krallık	United Kingdom	Vereinigtes Königreich	Verenigd Koninkrijk	Royaume-Uni	Wielka Brytania	Обединено кралство	🇬🇧	+44	t	2025-10-18 19:22:11.415	2025-10-18 19:22:11.415
+IE	İrlanda	Ireland	Irland	Ierland	Irlande	Irlandia	Ирландия	🇮🇪	+353	t	2025-10-18 19:22:11.415	2025-10-18 19:22:11.415
+ES	İspanya	Spain	Spanien	Spanje	Espagne	Hiszpania	Испания	🇪🇸	+34	t	2025-10-18 19:22:11.415	2025-10-18 19:22:11.415
+IT	İtalya	Italy	Italien	Italië	Italie	Włochy	Италия	🇮🇹	+39	t	2025-10-18 19:22:11.415	2025-10-18 19:22:11.415
+PT	Portekiz	Portugal	Portugal	Portugal	Portugal	Portugalia	Португалия	🇵🇹	+351	t	2025-10-18 19:22:11.415	2025-10-18 19:22:11.415
+RO	Romanya	Romania	Rumänien	Roemenië	Roumanie	Rumunia	Румъния	🇷🇴	+40	t	2025-10-18 19:22:11.415	2025-10-18 19:22:11.415
+BG	Bulgaristan	Bulgaria	Bulgarien	Bulgarije	Bulgarie	Bułgaria	България	🇧🇬	+359	t	2025-10-18 19:22:11.415	2025-10-18 19:22:11.415
+GR	Yunanistan	Greece	Griechenland	Griekenland	Grèce	Grecja	Гърция	🇬🇷	+30	t	2025-10-18 19:22:11.415	2025-10-18 19:22:11.415
+CZ	Çekya	Czech Republic	Tschechien	Tsjechië	République tchèque	Czechy	Чехия	🇨🇿	+420	t	2025-10-18 19:22:11.415	2025-10-18 19:22:11.415
+HU	Macaristan	Hungary	Ungarn	Hongarije	Hongrie	Węgry	Унгария	🇭🇺	+36	t	2025-10-18 19:22:11.415	2025-10-18 19:22:11.415
+SK	Slovakya	Slovakia	Slowakei	Slowakije	Slovaquie	Słowacja	Словакия	🇸🇰	+421	t	2025-10-18 19:22:11.415	2025-10-18 19:22:11.415
+SI	Slovenya	Slovenia	Slowenien	Slovenië	Slovénie	Słowenia	Словения	🇸🇮	+386	t	2025-10-18 19:22:11.415	2025-10-18 19:22:11.415
+HR	Hırvatistan	Croatia	Kroatien	Kroatië	Croatie	Chorwacja	Хърватия	🇭🇷	+385	t	2025-10-18 19:22:11.415	2025-10-18 19:22:11.415
+RS	Sırbistan	Serbia	Serbien	Servië	Serbie	Serbia	Сърбия	🇷🇸	+381	t	2025-10-18 19:22:11.415	2025-10-18 19:22:11.415
+DK	Danimarka	Denmark	Dänemark	Denemarken	Danemark	Dania	Дания	🇩🇰	+45	t	2025-10-18 19:22:11.415	2025-10-18 19:22:11.415
+SE	İsveç	Sweden	Schweden	Zweden	Suède	Szwecja	Швеция	🇸🇪	+46	t	2025-10-18 19:22:11.415	2025-10-18 19:22:11.415
+NO	Norveç	Norway	Norwegen	Noorwegen	Norvège	Norwegia	Норвегия	🇳🇴	+47	t	2025-10-18 19:22:11.415	2025-10-18 19:22:11.415
+FI	Finlandiya	Finland	Finnland	Finland	Finlande	Finlandia	Финландия	🇫🇮	+358	t	2025-10-18 19:22:11.415	2025-10-18 19:22:11.415
+UA	Ukrayna	Ukraine	Ukraine	Oekraïne	Ukraine	Ukraina	Украйна	🇺🇦	+380	t	2025-10-18 19:22:11.415	2025-10-18 19:22:11.415
+LT	Litvanya	Lithuania	Litauen	Litouwen	Lituanie	Litwa	Литва	🇱🇹	+370	t	2025-10-18 19:22:11.415	2025-10-18 19:22:11.415
+LV	Letonya	Latvia	Lettland	Letland	Lettonie	Łotwa	Латвия	🇱🇻	+371	t	2025-10-18 19:22:11.415	2025-10-18 19:22:11.415
+EE	Estonya	Estonia	Estland	Estland	Estonie	Estonia	Естония	🇪🇪	+372	t	2025-10-18 19:22:11.415	2025-10-18 19:22:11.415
 \.
 
 
@@ -729,9 +743,9 @@ COPY public.rooms (id, house_id, room_number, floor, room_type, bed_count, gende
 --
 
 COPY public.tenants (id, name, slug, type, status, contact_email, contact_phone, plan, trial_ends_at, subscription_starts_at, modules, currency, favorite_countries, default_country, created_at, updated_at, created_by) FROM stdin;
-tenant-cova	Cova B.V.	cova-bv	staffing_agency	active	info@cova.nl	+31 40 1234567	professional	\N	2024-01-15 00:00:00	"{\\"workers\\":true,\\"planning\\":true,\\"accommodation\\":true,\\"transport\\":false,\\"finance\\":false}"	EUR	{DE,NL,TR,PL,FR,BE}	NL	2024-01-15 00:00:00	2024-01-15 00:00:00	platform-admin-1
-tenant-apple	Apple Netherlands	apple-nl	direct_employer	trial	hr@apple.nl	+31 20 1234567	enterprise	2025-11-01 19:06:45.504	\N	"{\\"workers\\":true,\\"planning\\":true,\\"accommodation\\":false,\\"transport\\":true,\\"finance\\":true}"	EUR	{NL,GB,US}	NL	2024-10-01 00:00:00	2024-10-01 00:00:00	platform-admin-1
+tenant-apple	Apple Netherlands	apple-nl	direct_employer	trial	hr@apple.nl	+31 20 1234567	enterprise	2025-11-01 19:22:11.416	\N	"{\\"workers\\":true,\\"planning\\":true,\\"accommodation\\":false,\\"transport\\":true,\\"finance\\":true}"	EUR	{NL,GB,US}	NL	2024-10-01 00:00:00	2024-10-01 00:00:00	platform-admin-1
 tenant-oneflex	OneFlex B.V.	oneflex	staffing_agency	active	contact@oneflex.nl	+31 20 9876543	professional	\N	2024-06-01 00:00:00	"{\\"workers\\":true,\\"planning\\":true,\\"accommodation\\":true,\\"transport\\":true,\\"finance\\":false}"	EUR	{NL,DE,BE}	NL	2024-06-01 00:00:00	2024-06-01 00:00:00	platform-admin-1
+tenant-cova	Cova B.V.	cova-bv	staffing_agency	active	info@cova.nl	+31 40 1234567	professional	\N	2024-01-15 00:00:00	"{\\"workers\\":true,\\"planning\\":true,\\"accommodation\\":true,\\"transport\\":false,\\"finance\\":false}"	EUR	{DE,NL,TR,PL,BE}	NL	2024-01-15 00:00:00	2025-10-18 19:24:39.398881	platform-admin-1
 \.
 
 
