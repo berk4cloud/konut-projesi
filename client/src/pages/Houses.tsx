@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { useQuery } from "@tanstack/react-query";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,6 +45,18 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
+
+// Country type from API
+type Country = {
+  isoCode: string;
+  nameTr: string;
+  nameEn: string;
+  nameDe: string;
+  nameNl: string;
+  nameFr: string;
+  namePl: string;
+  nameBg: string;
+};
 
 // Pricing type definition
 type PricingInfo = {
@@ -460,14 +473,6 @@ const initialMockHouses = [
   },
 ];
 
-const countries = [
-  { value: "Türkiye", label: "Türkiye" },
-  { value: "Hollanda", label: "Hollanda" },
-  { value: "Almanya", label: "Almanya" },
-  { value: "Polonya", label: "Polonya" },
-  { value: "Romanya", label: "Romanya" },
-];
-
 export default function Houses() {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
@@ -477,6 +482,49 @@ export default function Houses() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingHouse, setEditingHouse] = useState<typeof initialMockHouses[0] | null>(null);
   const [countryOpen, setCountryOpen] = useState(false);
+
+  // Load tenant and countries
+  const tenant = JSON.parse(localStorage.getItem("tenant") || "{}");
+  const { data: countriesData = [], isLoading: isLoadingCountries } = useQuery<Country[]>({
+    queryKey: ["/api/countries"],
+  });
+
+  // Get localized country name with proper language normalization
+  const getCountryName = (country: Country, language: string) => {
+    // Normalize language code (handle en-US → en, etc.)
+    const normalizedLang = language.split('-')[0] as 'tr' | 'en' | 'de' | 'nl' | 'fr' | 'pl' | 'bg';
+    const nameKey = `name${normalizedLang.charAt(0).toUpperCase()}${normalizedLang.slice(1)}` as keyof Country;
+    return country[nameKey] as string;
+  };
+
+  // Build prioritized country list (default → favorites → alphabetical)
+  // useMemo for stability across re-renders
+  const countries = useMemo(() => {
+    if (!countriesData.length) return [];
+    
+    const currentLang = i18n.resolvedLanguage || i18n.language;
+    const favoriteIsoCodes = tenant.favoriteCountries || [];
+    const defaultIso = tenant.defaultCountry;
+    
+    // Separate into categories
+    const defaultCountry = defaultIso ? countriesData.find(c => c.isoCode === defaultIso) : null;
+    const favoriteCountries = countriesData.filter(c => favoriteIsoCodes.includes(c.isoCode) && c.isoCode !== defaultIso);
+    const otherCountries = countriesData.filter(c => !favoriteIsoCodes.includes(c.isoCode) && c.isoCode !== defaultIso);
+    
+    // Sort alphabetically by localized name
+    favoriteCountries.sort((a, b) => getCountryName(a, currentLang).localeCompare(getCountryName(b, currentLang)));
+    otherCountries.sort((a, b) => getCountryName(a, currentLang).localeCompare(getCountryName(b, currentLang)));
+    
+    // Combine: default → favorites → others
+    const result = [];
+    if (defaultCountry) result.push(defaultCountry);
+    result.push(...favoriteCountries, ...otherCountries);
+    
+    return result.map(c => ({
+      value: c.isoCode,
+      label: getCountryName(c, currentLang)
+    }));
+  }, [countriesData, tenant.favoriteCountries, tenant.defaultCountry, i18n.resolvedLanguage, i18n.language]);
   
   // Meter logs state
   const [isMeterDialogOpen, setIsMeterDialogOpen] = useState(false);
