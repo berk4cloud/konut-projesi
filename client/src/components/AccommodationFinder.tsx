@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Search, MapPin, Users, Bed, Euro, X, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -155,6 +156,7 @@ export default function AccommodationFinder({
   workerCity,
   onAssign,
 }: AccommodationFinderProps) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [selectedCity, setSelectedCity] = useState<string>("all");
   const [checkInDate, setCheckInDate] = useState("");
@@ -348,7 +350,7 @@ export default function AccommodationFinder({
                           <div className="flex items-center gap-1 text-muted-foreground">
                             <Users className="w-4 h-4" />
                             <span>
-                              {bed.occupiedBedsInRoom}/{bed.totalBedsInRoom} Dolu
+                              {bed.occupiedBedsInRoom}/{bed.totalBedsInRoom} {t('dashboard.occupiedBeds')}
                             </span>
                           </div>
                           <div className="flex items-center gap-1 text-muted-foreground">

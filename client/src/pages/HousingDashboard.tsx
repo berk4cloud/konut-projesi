@@ -931,7 +931,7 @@ export default function HousingDashboard() {
                                 <h3 className="font-semibold text-base md:text-lg flex items-center gap-2 flex-wrap">
                                   {house.name}
                                   <span className="text-sm font-normal text-muted-foreground">
-                                    - {house.occupiedBeds}/{house.totalBeds} Dolu
+                                    - {house.occupiedBeds}/{house.totalBeds} {t('dashboard.occupiedBeds')}
                                   </span>
                                   {upcomingVacancies.length > 0 && (
                                     <Badge variant="outline" className="text-amber-600 border-amber-600">
