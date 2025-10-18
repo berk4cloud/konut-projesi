@@ -1,6 +1,7 @@
 {
   "common": {
     "save": "Kaydet",
+    "saving": "Kaydediliyor...",
     "cancel": "İptal",
     "delete": "Sil",
     "edit": "Düzenle",
@@ -12,6 +13,7 @@
     "today": "Bugün",
     "loading": "Yükleniyor...",
     "add": "Ekle",
+    "error": "Hata",
     "update": "Güncelle",
     "view": "Görüntüle",
     "download": "İndir",
@@ -535,6 +537,10 @@
     "default": "(Varsayılan)",
     "makeDefault": "Varsayılan yap",
     "defaultCountryInfo": "Varsayılan ülke filtrelerde otomatik seçili gelir",
+    "favoriteCountries": "Favori Ülkeler",
+    "selectedFavorites": "Seçilen Favoriler",
+    "countrySettingsSaved": "Ülke ayarları başarıyla kaydedildi",
+    "saveFailed": "Kaydetme işlemi başarısız oldu",
     "standardPricing": "Standart Fiyatlandırma",
     "standardPricingDesc": "Tüm konutlar için varsayılan fiyatlar. Konut veya oda bazında özelleştirilebilir.",
     "dailyRentalMode": "Günlük Kiralama Modu",

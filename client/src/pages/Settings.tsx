@@ -1,13 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Globe, Star, Save, DollarSign, Languages } from "lucide-react";
+import { Plus, Trash2, Globe, Star, Save, DollarSign, Languages, Check } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -19,8 +22,17 @@ import { Badge } from "@/components/ui/badge";
 import { systemSettings, saveSystemSettings } from "./Houses";
 
 interface Country {
-  name: string;
-  isDefault: boolean;
+  isoCode: string;
+  nameTr: string;
+  nameEn: string;
+  nameDe: string;
+  nameNl: string;
+  nameFr: string;
+  namePl: string;
+  nameBg: string;
+  flagEmoji: string | null;
+  phoneCode: string | null;
+  isActive: boolean;
 }
 
 type CurrencyType = "EUR" | "USD" | "TRY" | "GBP" | "CHF" | "CAD" | "MXN" | "CNY" | "JPY" | "RUB" | "SEK" | "NOK" | "DKK" | "HUF" | "PLN" | "CZK" | "RON" | "BGN" | "RSD" | "UAH";
@@ -62,6 +74,10 @@ export default function Settings() {
   const { toast } = useToast();
   const { t, i18n } = useTranslation();
   
+  // Get tenant info from localStorage
+  const tenantData = JSON.parse(localStorage.getItem("tenant") || "{}");
+  const tenantId = tenantData.id || "";
+  
   // Language settings - use resolvedLanguage to normalize region codes (en-US -> en)
   const currentLang = i18n.resolvedLanguage || i18n.language.split('-')[0] || 'tr';
   const [language, setLanguage] = useState(currentLang);
@@ -71,13 +87,10 @@ export default function Settings() {
   const [currency, setCurrency] = useState<CurrencyType>(systemSettings.currency);
   const [hasCurrencyChanges, setHasCurrencyChanges] = useState(false);
   
-  const [countries, setCountries] = useState<Country[]>([
-    { name: "Hollanda", isDefault: true },
-    { name: "Almanya", isDefault: false },
-    { name: "Polonya", isDefault: false },
-    { name: "Romanya", isDefault: false },
-  ]);
-  const [newCountry, setNewCountry] = useState("");
+  // Country management state
+  const [favoriteCountries, setFavoriteCountries] = useState<string[]>(tenantData.favoriteCountries || []);
+  const [defaultCountry, setDefaultCountry] = useState<string | null>(tenantData.defaultCountry || null);
+  const [hasCountryChanges, setHasCountryChanges] = useState(false);
   
   // Pricing settings state
   const [dailyRentalEnabled, setDailyRentalEnabled] = useState(systemSettings.dailyRentalEnabled);
@@ -86,22 +99,72 @@ export default function Settings() {
   const [roomDailyPrice, setRoomDailyPrice] = useState(systemSettings.standardPricing.roomDailyPrice.toString());
   const [roomMonthlyPrice, setRoomMonthlyPrice] = useState(systemSettings.standardPricing.roomMonthlyPrice.toString());
 
-  const handleAddCountry = () => {
-    if (newCountry.trim() && !countries.some(c => c.name === newCountry.trim())) {
-      setCountries([...countries, { name: newCountry.trim(), isDefault: false }]);
-      setNewCountry("");
+  // Fetch countries
+  const { data: countries = [], isLoading: isLoadingCountries } = useQuery<Country[]>({
+    queryKey: ["/api/countries"],
+  });
+
+  // Update tenant mutation
+  const updateTenantMutation = useMutation({
+    mutationFn: async (updates: { favoriteCountries: string[]; defaultCountry: string | null }) => {
+      return await apiRequest("PATCH", `/api/tenants/${tenantId}`, updates);
+    },
+    onSuccess: (updatedTenant) => {
+      // Update localStorage
+      localStorage.setItem("tenant", JSON.stringify(updatedTenant));
+      toast({
+        title: t("settings.changesSaved"),
+        description: t("settings.countrySettingsSaved"),
+      });
+      setHasCountryChanges(false);
+    },
+    onError: () => {
+      toast({
+        title: t("common.error"),
+        description: t("settings.saveFailed"),
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Helper to get country name in current language
+  const getCountryName = (country: Country) => {
+    const langMap: Record<string, keyof Country> = {
+      tr: "nameTr",
+      en: "nameEn",
+      de: "nameDe",
+      nl: "nameNl",
+      fr: "nameFr",
+      pl: "namePl",
+      bg: "nameBg",
+    };
+    const nameKey = langMap[i18n.language] || "nameEn";
+    return country[nameKey] as string;
+  };
+
+  const handleToggleFavorite = (isoCode: string) => {
+    setFavoriteCountries(prev => 
+      prev.includes(isoCode) 
+        ? prev.filter(c => c !== isoCode)
+        : [...prev, isoCode]
+    );
+    setHasCountryChanges(true);
+  };
+
+  const handleSetDefaultCountry = (isoCode: string) => {
+    setDefaultCountry(isoCode);
+    // Also add to favorites if not already there
+    if (!favoriteCountries.includes(isoCode)) {
+      setFavoriteCountries(prev => [...prev, isoCode]);
     }
+    setHasCountryChanges(true);
   };
 
-  const handleRemoveCountry = (countryName: string) => {
-    setCountries(countries.filter((c) => c.name !== countryName));
-  };
-
-  const handleSetDefault = (countryName: string) => {
-    setCountries(countries.map(c => ({
-      ...c,
-      isDefault: c.name === countryName
-    })));
+  const handleSaveCountrySettings = () => {
+    updateTenantMutation.mutate({
+      favoriteCountries,
+      defaultCountry,
+    });
   };
   
   const handleLanguageChange = (value: string) => {
@@ -313,7 +376,7 @@ export default function Settings() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card data-testid="card-country-settings">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Globe className="w-5 h-5" />
@@ -324,72 +387,102 @@ export default function Settings() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="newCountry">{t("settings.addCountry")}</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="newCountry"
-                    placeholder={t("settings.countryPlaceholder")}
-                    value={newCountry}
-                    onChange={(e) => setNewCountry(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && handleAddCountry()}
-                    data-testid="input-new-country"
-                  />
-                  <Button onClick={handleAddCountry} data-testid="button-add-country">
-                    <Plus className="w-4 h-4 mr-2" />
-                    {t("common.add")}
-                  </Button>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>{t("settings.existingCountries")} ({countries.length})</Label>
-                <div className="flex flex-wrap gap-2">
-                  {countries.map((country) => (
-                    <Badge
-                      key={country.name}
-                      variant={country.isDefault ? "default" : "secondary"}
-                      className="px-3 py-2 text-sm flex items-center gap-2"
-                      data-testid={`country-badge-${country.name}`}
-                    >
-                      {country.isDefault ? (
-                        <Star className="w-3 h-3 fill-current" />
-                      ) : (
-                        <Globe className="w-3 h-3" />
-                      )}
-                      {country.name}
-                      {country.isDefault && (
-                        <span className="text-xs opacity-80">{t("settings.default")}</span>
-                      )}
-                      <div className="flex items-center gap-1 ml-1">
-                        {!country.isDefault && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-auto p-0 hover:bg-transparent"
-                            onClick={() => handleSetDefault(country.name)}
-                            data-testid={`button-set-default-${country.name}`}
-                            title={t("settings.makeDefault")}
+              {/* Favorite Countries */}
+              <div className="space-y-3">
+                <Label className="text-base font-semibold">
+                  {t("settings.favoriteCountries")} ({favoriteCountries.length})
+                </Label>
+                <div className="rounded-lg border bg-muted/30 p-4 max-h-[400px] overflow-y-auto space-y-2">
+                  {isLoadingCountries ? (
+                    <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
+                  ) : (
+                    countries.map((country) => (
+                      <div
+                        key={country.isoCode}
+                        className="flex items-center justify-between p-2 rounded hover-elevate"
+                        data-testid={`country-item-${country.isoCode}`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Checkbox
+                            id={`country-${country.isoCode}`}
+                            checked={favoriteCountries.includes(country.isoCode)}
+                            onCheckedChange={() => handleToggleFavorite(country.isoCode)}
+                            data-testid={`checkbox-country-${country.isoCode}`}
+                          />
+                          <label
+                            htmlFor={`country-${country.isoCode}`}
+                            className="flex items-center gap-2 cursor-pointer"
                           >
-                            <Star className="w-3 h-3 text-yellow-500" />
-                          </Button>
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-auto p-0 hover:bg-transparent"
-                          onClick={() => handleRemoveCountry(country.name)}
-                          data-testid={`button-remove-${country.name}`}
-                        >
-                          <Trash2 className="w-3 h-3 text-red-500" />
-                        </Button>
+                            {country.flagEmoji && (
+                              <span className="text-xl">{country.flagEmoji}</span>
+                            )}
+                            <span className="font-medium">{getCountryName(country)}</span>
+                            <span className="text-xs text-muted-foreground">({country.isoCode})</span>
+                          </label>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {defaultCountry === country.isoCode && (
+                            <Badge variant="default" className="gap-1">
+                              <Star className="w-3 h-3 fill-current" />
+                              {t("settings.default")}
+                            </Badge>
+                          )}
+                          {favoriteCountries.includes(country.isoCode) && defaultCountry !== country.isoCode && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleSetDefaultCountry(country.isoCode)}
+                              data-testid={`button-set-default-${country.isoCode}`}
+                              title={t("settings.makeDefault")}
+                            >
+                              <Star className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
                       </div>
-                    </Badge>
-                  ))}
+                    ))
+                  )}
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">
+                <p className="text-xs text-muted-foreground">
                   ⭐ {t('settings.defaultCountryInfo')}
                 </p>
+              </div>
+
+              {/* Current Favorites Display */}
+              {favoriteCountries.length > 0 && (
+                <div className="rounded-lg border bg-muted/50 p-4">
+                  <Label className="text-sm font-medium text-muted-foreground mb-2 block">
+                    {t("settings.selectedFavorites")}
+                  </Label>
+                  <div className="flex flex-wrap gap-2">
+                    {countries
+                      .filter(c => favoriteCountries.includes(c.isoCode))
+                      .map((country) => (
+                        <Badge
+                          key={country.isoCode}
+                          variant={defaultCountry === country.isoCode ? "default" : "secondary"}
+                          className="gap-1"
+                        >
+                          {country.flagEmoji} {getCountryName(country)}
+                          {defaultCountry === country.isoCode && (
+                            <Star className="w-3 h-3 fill-current" />
+                          )}
+                        </Badge>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Save Button */}
+              <div className="flex justify-end pt-2">
+                <Button
+                  onClick={handleSaveCountrySettings}
+                  disabled={!hasCountryChanges || updateTenantMutation.isPending}
+                  data-testid="button-save-countries"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  {updateTenantMutation.isPending ? t("common.saving") : t("common.save")}
+                </Button>
               </div>
             </CardContent>
           </Card>

@@ -200,6 +200,8 @@ export class MemStorage implements IStorage {
       status: insertTenant.status ?? "trial",
       plan: insertTenant.plan ?? "professional",
       currency: insertTenant.currency ?? "EUR",
+      favoriteCountries: insertTenant.favoriteCountries ?? null,
+      defaultCountry: insertTenant.defaultCountry ?? null,
       contactEmail: insertTenant.contactEmail ?? null,
       contactPhone: insertTenant.contactPhone ?? null,
       trialEndsAt: insertTenant.trialEndsAt ?? null,

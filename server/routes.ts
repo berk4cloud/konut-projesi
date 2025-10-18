@@ -613,6 +613,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============================================
+  // TENANT SETTINGS ENDPOINTS
+  // ============================================
+
+  // PATCH /tenants/:id - Update tenant settings (country management)
+  apiRouter.patch("/tenants/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      
+      const tenant = await storage.updateTenant(id, updates);
+      
+      if (!tenant) {
+        return res.status(404).json({ error: "Tenant not found" });
+      }
+
+      res.json(tenant);
+    } catch (error) {
+      console.error("Error updating tenant:", error);
+      res.status(500).json({ error: "Failed to update tenant" });
+    }
+  });
+
   // Register API router with /api prefix
   app.use("/api", apiRouter);
 
