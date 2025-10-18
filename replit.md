@@ -1,8 +1,8 @@
-# APDO HABITAT - Housing Management System
+# ARPDO HABITAT - Housing Management System
 
 ## Overview
 
-APDO HABITAT is a multi-tenant SaaS platform designed for the staffing agency industry to manage worker accommodation. Its primary purpose is to provide a professional, data-dense interface for real-time tracking of houses, rooms, and bed availability, managing worker assignments, and handling reservations efficiently. The system focuses on visualizing housing capacity, incorporating color-coded status indicators, and detecting potential gender conflicts within accommodations. It targets B2B staffing agencies managing multiple housing properties across various locations.
+ARPDO HABITAT is a multi-tenant SaaS platform designed for the staffing agency industry to manage worker accommodation. Its primary purpose is to provide a professional, data-dense interface for real-time tracking of houses, rooms, and bed availability, managing worker assignments, and handling reservations efficiently. The system focuses on visualizing housing capacity, incorporating color-coded status indicators, and detecting potential gender conflicts within accommodations. It targets B2B staffing agencies managing multiple housing properties across various locations.
 
 ## User Preferences
 
