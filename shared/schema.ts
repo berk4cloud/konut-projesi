@@ -446,18 +446,18 @@ export const assignments = pgTable("assignments", {
   bedId: varchar("bed_id").notNull(),
   startDate: date("start_date").notNull(),
   endDate: date("end_date"),
-  monthlyRate: numeric("monthly_rate").notNull(),
+  monthlyRate: numeric("monthly_rate", { mode: "number" }).notNull(),
   status: assignmentStatusEnum("status").notNull().default("active"),
   
   // Deposit tracking
   depositCollected: boolean("deposit_collected").default(false).notNull(),
-  depositAmount: numeric("deposit_amount").default("0"),
+  depositAmount: numeric("deposit_amount", { mode: "number" }).default("0"),
   depositDate: date("deposit_date"),
   depositCollector: varchar("deposit_collector"),
   depositStatus: depositStatusEnum("deposit_status").default("pending").notNull(),
   depositRefundDate: date("deposit_refund_date"),
-  depositRefundAmount: numeric("deposit_refund_amount"),
-  damageAmount: numeric("damage_amount"),
+  depositRefundAmount: numeric("deposit_refund_amount", { mode: "number" }),
+  damageAmount: numeric("damage_amount", { mode: "number" }),
   damageNote: text("damage_note"),
   
   // Agreement notes
@@ -482,9 +482,9 @@ export const charges = pgTable("charges", {
   tenantId: varchar("tenant_id").notNull(),
   assignmentId: varchar("assignment_id").notNull(),
   month: varchar("month", { length: 7 }).notNull(), // "2025-11" format
-  amount: numeric("amount").notNull(), // Total charge
-  expectedAmount: numeric("expected_amount").notNull(),
-  remainingAmount: numeric("remaining_amount").notNull(),
+  amount: numeric("amount", { mode: "number" }).notNull(), // Total charge
+  expectedAmount: numeric("expected_amount", { mode: "number" }).notNull(),
+  remainingAmount: numeric("remaining_amount", { mode: "number" }).notNull(),
   days: integer("days").notNull(), // Number of days in charge period
   calculationType: chargeCalculationTypeEnum("calculation_type").notNull(),
   dueDate: date("due_date").notNull(),
@@ -507,7 +507,7 @@ export const payments = pgTable("payments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   tenantId: varchar("tenant_id").notNull(),
   chargeId: varchar("charge_id").notNull(),
-  amount: numeric("amount").notNull(),
+  amount: numeric("amount", { mode: "number" }).notNull(),
   paymentDate: date("payment_date").notNull(),
   paymentMethod: paymentMethodEnum("payment_method").notNull(),
   collectorName: varchar("collector_name"),

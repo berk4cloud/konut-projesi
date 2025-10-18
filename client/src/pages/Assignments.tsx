@@ -1,5 +1,9 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useAuth } from "@/contexts/AuthContext";
+import type { Assignment, Charge, Payment } from "@shared/schema";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,67 +42,11 @@ import {
   Plus
 } from "lucide-react";
 
-// Types for Assignment Management System
-type AssignmentStatus = "active" | "ending_soon" | "ended" | "pending";
-type DepositStatus = "collected" | "pending" | "refunded" | "partial_refund";
-type PaymentStatus = "paid" | "pending" | "overdue" | "partial";
-type PaymentMethod = "bank_transfer" | "pos" | "cash" | "automatic" | "other";
-
-type Assignment = {
-  id: string;
-  employmentId: string;
-  workerName: string;
-  houseId: string;
-  houseName: string;
-  roomNumber: string;
-  bedNumber: number;
-  startDate: string;
-  endDate?: string; // Optional for ongoing assignments
-  monthlyRate: number;
-  status: AssignmentStatus;
-  
-  // Deposit tracking
-  depositCollected: boolean;
-  depositAmount: number;
-  depositDate?: string;
-  depositCollector?: string; // Who collected the deposit
-  depositStatus: DepositStatus;
-  depositRefundDate?: string;
-  depositRefundAmount?: number;
-  damageAmount?: number;
-  damageNote?: string;
-  
-  // Agreement notes
-  agreementNotes?: string; // Payment agreements and conversations
-};
-
-type Charge = {
-  id: string;
-  assignmentId: string;
-  workerName: string;
-  month: string; // "2025-11" format
-  amount: number; // Total charge amount
-  expectedAmount: number; // Expected payment amount (usually same as amount)
-  remainingAmount: number; // Remaining unpaid amount (for partial payments)
-  days: number; // Number of days in this charge period
-  calculationType: "full_month" | "partial" | "prorated";
-  dueDate: string;
-  status: PaymentStatus;
-  notes?: string;
-};
-
-type Payment = {
-  id: string;
-  chargeId: string;
-  workerName: string;
-  amount: number;
-  paymentDate: string;
-  paymentMethod: PaymentMethod;
-  collectorName?: string; // Who collected this payment
-  recordedAt?: string; // When was this payment recorded
-  reference?: string;
-  notes?: string;
-};
+// Local types for Assignment Management System
+type AssignmentStatus = "active" | "ending_soon" | "ended";
+type DepositStatus = "pending" | "collected" | "refunded" | "partially_refunded";
+type PaymentStatus = "pending" | "partial" | "paid" | "overdue";
+type PaymentMethod = "cash" | "bank_transfer" | "pos" | "other";
 
 type ConversationNote = {
   id: string;
@@ -547,6 +495,7 @@ const mockConversationNotes: ConversationNote[] = [
 export default function Assignments() {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
+  const { user } = useAuth();
   
   // Normalize i18n language code to browser locale format
   const getLocale = () => {
@@ -565,10 +514,50 @@ export default function Assignments() {
   
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [chargesFilter, setChargesFilter] = useState<string>("all"); // New filter for charges
-  const [assignments] = useState(mockAssignments);
-  const [charges] = useState(mockCharges);
-  const [payments] = useState(mockPayments);
+  const [chargesFilter, setChargesFilter] = useState<string>("all");
+  
+  // Fetch assignments, charges, and payments from API
+  const { data: assignments = [], isLoading: assignmentsLoading } = useQuery<Assignment[]>({
+    queryKey: ["/api/tenants", user?.tenantId, "assignments"],
+    enabled: !!user?.tenantId,
+  });
+  
+  const { data: charges = [], isLoading: chargesLoading } = useQuery<Charge[]>({
+    queryKey: ["/api/tenants", user?.tenantId, "charges"],
+    enabled: !!user?.tenantId,
+  });
+  
+  const { data: payments = [], isLoading: paymentsLoading } = useQuery<Payment[]>({
+    queryKey: ["/api/tenants", user?.tenantId, "payments"],
+    enabled: !!user?.tenantId,
+  });
+  
+  // Mutations
+  const createPaymentMutation = useMutation({
+    mutationFn: (payment: Omit<Payment, "id" | "createdAt">) =>
+      apiRequest("POST", `/api/tenants/${user?.tenantId}/payments`, payment),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tenants", user?.tenantId, "payments"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tenants", user?.tenantId, "charges"] });
+    },
+  });
+
+  const updateChargeMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Charge> }) =>
+      apiRequest("PATCH", `/api/charges/${id}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tenants", user?.tenantId, "charges"] });
+    },
+  });
+
+  const updateAssignmentMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Assignment> }) =>
+      apiRequest("PATCH", `/api/assignments/${id}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tenants", user?.tenantId, "assignments"] });
+    },
+  });
+  
   const [conversationNotes, setConversationNotes] = useState(mockConversationNotes);
   
   // Payment Filter State
@@ -651,7 +640,7 @@ export default function Assignments() {
 
   // Save payment
   const handleSavePayment = () => {
-    if (!selectedCharge) return;
+    if (!selectedCharge || !user?.tenantId) return;
     
     // Validation
     if (newPayment.amount <= 0) {
@@ -681,20 +670,60 @@ export default function Assignments() {
       return;
     }
 
-    toast({
-      title: t('assignments.paymentDialog.success'),
-      description: t('assignments.paymentDialog.successDesc'),
-    });
-    
-    // Close dialog and reset
-    setPaymentDialogOpen(false);
-    setSelectedCharge(null);
-    setNewPayment({
-      amount: 0,
-      paymentDate: new Date().toISOString().split('T')[0],
-      paymentMethod: "cash",
-      collectorName: "Admin",
-      notes: "",
+    // Create payment
+    createPaymentMutation.mutate({
+      tenantId: user.tenantId,
+      chargeId: selectedCharge.id,
+      amount: newPayment.amount,
+      paymentDate: newPayment.paymentDate,
+      paymentMethod: newPayment.paymentMethod,
+      collectorName: newPayment.collectorName,
+      notes: newPayment.notes || undefined,
+    }, {
+      onSuccess: () => {
+        // Calculate new remaining amount
+        const newRemainingAmount = selectedCharge.remainingAmount - newPayment.amount;
+        
+        // Determine new status
+        let newStatus: PaymentStatus = "pending";
+        if (newRemainingAmount === 0) {
+          newStatus = "paid";
+        } else if (newRemainingAmount < selectedCharge.amount) {
+          newStatus = "partial";
+        }
+        
+        // Update charge
+        updateChargeMutation.mutate({
+          id: selectedCharge.id,
+          data: {
+            remainingAmount: newRemainingAmount,
+            status: newStatus,
+          },
+        });
+
+        toast({
+          title: t('assignments.paymentDialog.success'),
+          description: t('assignments.paymentDialog.successDesc'),
+        });
+        
+        // Close dialog and reset
+        setPaymentDialogOpen(false);
+        setSelectedCharge(null);
+        setNewPayment({
+          amount: 0,
+          paymentDate: new Date().toISOString().split('T')[0],
+          paymentMethod: "cash",
+          collectorName: "Admin",
+          notes: "",
+        });
+      },
+      onError: () => {
+        toast({
+          title: t('assignments.toasts.error'),
+          description: "Failed to create payment",
+          variant: "destructive",
+        });
+      },
     });
   };
 
