@@ -813,6 +813,76 @@ export default function Assignments() {
   const totalPendingAmount = charges
     .filter(c => c.status === "pending" || c.status === "overdue")
     .reduce((sum, c) => sum + c.amount, 0);
+  
+  // New Enhanced Statistics
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  // Upcoming Due Dates (Yaklaşan Vadeler)
+  const dueTodayCount = charges.filter(c => {
+    const dueDate = new Date(c.dueDate);
+    dueDate.setHours(0, 0, 0, 0);
+    return dueDate.getTime() === today.getTime() && c.status !== "paid";
+  }).length;
+  
+  const dueNext3DaysCount = charges.filter(c => {
+    const dueDate = new Date(c.dueDate);
+    dueDate.setHours(0, 0, 0, 0);
+    const threeDaysFromNow = new Date(today);
+    threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
+    return dueDate > today && dueDate <= threeDaysFromNow && c.status !== "paid";
+  }).length;
+  
+  const dueNext7DaysCount = charges.filter(c => {
+    const dueDate = new Date(c.dueDate);
+    dueDate.setHours(0, 0, 0, 0);
+    const sevenDaysFromNow = new Date(today);
+    sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+    return dueDate > today && dueDate <= sevenDaysFromNow && c.status !== "paid";
+  }).length;
+  
+  // Detailed Overdue Levels (Gecikmiş Ödemeler Detaylı)
+  const overdue1to7Days = charges.filter(c => {
+    const dueDate = new Date(c.dueDate);
+    dueDate.setHours(0, 0, 0, 0);
+    const daysDiff = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
+    return daysDiff >= 1 && daysDiff <= 7 && c.status !== "paid";
+  }).length;
+  
+  const overdue8to14Days = charges.filter(c => {
+    const dueDate = new Date(c.dueDate);
+    dueDate.setHours(0, 0, 0, 0);
+    const daysDiff = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
+    return daysDiff >= 8 && daysDiff <= 14 && c.status !== "paid";
+  }).length;
+  
+  const overdue15to30Days = charges.filter(c => {
+    const dueDate = new Date(c.dueDate);
+    dueDate.setHours(0, 0, 0, 0);
+    const daysDiff = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
+    return daysDiff >= 15 && daysDiff <= 30 && c.status !== "paid";
+  }).length;
+  
+  const overdue30PlusDays = charges.filter(c => {
+    const dueDate = new Date(c.dueDate);
+    dueDate.setHours(0, 0, 0, 0);
+    const daysDiff = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
+    return daysDiff > 30 && c.status !== "paid";
+  }).length;
+  
+  // Deposits to Refund (İade Edilecek Depozitolar) - assignments ending in 7 days
+  const sevenDaysFromNow = new Date(today);
+  sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+  
+  const depositsToRefund = assignments.filter(a => {
+    if (!a.endDate || !a.depositCollected) return false;
+    const endDate = new Date(a.endDate);
+    endDate.setHours(0, 0, 0, 0);
+    return endDate <= sevenDaysFromNow && endDate >= today && a.depositStatus === "collected";
+  });
+  
+  const depositsToRefundCount = depositsToRefund.length;
+  const depositsToRefundAmount = depositsToRefund.reduce((sum, a) => sum + a.depositAmount, 0);
 
   // Helper functions
   const getStatusColor = (status: AssignmentStatus) => {
