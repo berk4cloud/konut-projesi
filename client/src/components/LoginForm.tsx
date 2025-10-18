@@ -261,7 +261,7 @@ export default function LoginForm() {
           disabled={isLoading}
           data-testid="button-demo-login"
         >
-          {t('auth.demoLogin')}
+          Demo Arpdo Konut Yönetimi
         </Button>
       </form>
 
