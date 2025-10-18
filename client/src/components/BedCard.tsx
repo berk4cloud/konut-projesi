@@ -9,7 +9,7 @@ import { User } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 interface Worker {
-  id: string;
+  employmentId: string; // Federated model - unique per employment
   name: string;
   gender: "male" | "female";
 }
