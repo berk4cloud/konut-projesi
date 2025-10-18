@@ -44,7 +44,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import AccommodationFinder from "@/components/AccommodationFinder";
 
 // Legacy status type for backward compatibility
 type WorkerStatus = "active" | "left_no_notice" | "notice_period" | "on_vacation" | "new_registration" | "checked_out";
@@ -99,11 +98,28 @@ export default function Workers() {
     queryKey: ['/api/workers'],
   });
 
+  // Helper: Convert empty strings to null for optional fields
+  const normalizeFormData = (data: typeof formData) => {
+    return {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      dateOfBirth: data.dateOfBirth || null,
+      gender: data.gender as "male" | "female",
+      nationality: data.nationality || null,
+      email: data.email,
+      phone: data.phone || null,
+      jobTitle: data.jobTitle || null,
+      department: data.department || null,
+      startDate: data.startDate,
+    };
+  };
+
   // Create worker mutation
   const createWorkerMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
+      const normalizedData = normalizeFormData(data);
       const res = await apiRequest('POST', '/api/workers', {
-        ...data,
+        ...normalizedData,
         tenantId: 'cova',
       });
       return res.json();
@@ -120,6 +136,30 @@ export default function Workers() {
       toast({
         title: "Hata",
         description: error.message || "Çalışan eklenemedi",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update employment mutation
+  const updateEmploymentMutation = useMutation({
+    mutationFn: async ({ employmentId, data }: { employmentId: number; data: Partial<typeof formData> }) => {
+      const normalizedData = normalizeFormData(data as typeof formData);
+      const res = await apiRequest('PATCH', `/api/employments/${employmentId}`, normalizedData);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/workers'] });
+      toast({
+        title: "Başarılı",
+        description: "Çalışan bilgileri güncellendi",
+      });
+      setIsEditDialogOpen(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Hata",
+        description: error.message || "Güncelleme başarısız oldu",
         variant: "destructive",
       });
     },
@@ -178,7 +218,6 @@ export default function Workers() {
   // Dialog states
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isAccommodationFinderOpen, setIsAccommodationFinderOpen] = useState(false);
   const [selectedWorker, setSelectedWorker] = useState<Worker | null>(null);
   
   // Form states (federated model)
@@ -234,14 +273,6 @@ export default function Workers() {
     setCurrentPage(1);
   };
   
-  const handleAccommodationAssign = (accommodation: { house: string; room: string; bed: string }) => {
-    setFormData({
-      ...formData,
-      house: accommodation.house,
-      room: accommodation.room,
-      bed: accommodation.bed,
-    });
-  };
   
   const handleOpenAddDialog = () => {
     setFormData({
@@ -277,58 +308,29 @@ export default function Workers() {
   };
   
   const handleSaveWorker = () => {
-    if (!formData.firstName || !formData.lastName || !formData.birthDate || !formData.gender || !formData.country) {
+    // Validation
+    if (!formData.firstName || !formData.lastName || !formData.gender || !formData.email) {
       toast({
         title: "Hata",
-        description: "Lütfen tüm zorunlu alanları doldurun",
+        description: "Lütfen zorunlu alanları doldurun (Ad, Soyad, Cinsiyet, E-posta)",
         variant: "destructive",
       });
       return;
     }
-    
-    // Clean up status-specific dates based on status
-    const cleanedFormData = {
-      ...formData,
-      vacationStartDate: formData.status === "on_vacation" ? formData.vacationStartDate : undefined,
-      vacationEndDate: formData.status === "on_vacation" ? formData.vacationEndDate : undefined,
-      plannedExitDate: formData.status === "notice_period" ? formData.plannedExitDate : undefined,
-      leftDate: formData.status === "left_no_notice" ? formData.leftDate : undefined,
-      checkOutDate: (formData.status === "checked_out" || formData.status === "left_no_notice") ? formData.checkOutDate : undefined,
-      // Keep house/room/bed optional - user can assign accommodation regardless of status
-      house: formData.house || undefined,
-      room: formData.room || undefined,
-      bed: formData.bed || undefined,
-    };
-    
+
     if (selectedWorker) {
-      // Edit mode
-      setWorkers(workers.map((w) => 
-        w.id === selectedWorker.id ? { ...w, ...cleanedFormData } : w
-      ));
-      toast({
-        title: "Başarılı",
-        description: "Çalışan bilgileri güncellendi",
+      // Edit mode - update employment
+      updateEmploymentMutation.mutate({ 
+        employmentId: selectedWorker.employmentId, 
+        data: formData 
       });
-      setIsEditDialogOpen(false);
     } else {
       // Add mode
-      const newWorker: Worker = {
-        id: Date.now().toString(),
-        ...cleanedFormData,
-      };
-      setWorkers([...workers, newWorker]);
-      toast({
-        title: "Başarılı",
-        description: "Yeni çalışan eklendi",
-      });
-      setIsAddDialogOpen(false);
+      createWorkerMutation.mutate(formData);
     }
-    
     setSelectedWorker(null);
   };
   
-  const selectedHouseData = mockHouses.find(h => h.name === formData.house);
-  const availableRooms = selectedHouseData?.rooms || [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -591,13 +593,13 @@ export default function Workers() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="add-birthdate">Doğum Tarihi *</Label>
+                <Label htmlFor="add-dateOfBirth">Doğum Tarihi</Label>
                 <Input
-                  id="add-birthdate"
+                  id="add-dateOfBirth"
                   type="date"
-                  value={formData.birthDate}
-                  onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
-                  data-testid="input-worker-birthdate"
+                  value={formData.dateOfBirth}
+                  onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
+                  data-testid="input-worker-dateOfBirth"
                 />
               </div>
 
@@ -605,14 +607,14 @@ export default function Workers() {
                 <Label htmlFor="add-gender">Cinsiyet *</Label>
                 <Select
                   value={formData.gender}
-                  onValueChange={(value) => setFormData({ ...formData, gender: value })}
+                  onValueChange={(value: "male" | "female") => setFormData({ ...formData, gender: value })}
                 >
                   <SelectTrigger id="add-gender" data-testid="select-worker-gender">
                     <SelectValue placeholder="Cinsiyet seçin" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Erkek">Erkek</SelectItem>
-                    <SelectItem value="Kadın">Kadın</SelectItem>
+                    <SelectItem value="male">Erkek</SelectItem>
+                    <SelectItem value="female">Kadın</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -620,18 +622,18 @@ export default function Workers() {
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="add-country">Ülke *</Label>
+                <Label htmlFor="add-nationality">Uyruk</Label>
                 <Input
-                  id="add-country"
-                  placeholder="Hollanda"
-                  value={formData.country}
-                  onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                  data-testid="input-worker-country"
+                  id="add-nationality"
+                  placeholder="Türkiye"
+                  value={formData.nationality}
+                  onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
+                  data-testid="input-worker-nationality"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="add-email">E-posta</Label>
+                <Label htmlFor="add-email">E-posta *</Label>
                 <Input
                   id="add-email"
                   type="email"
@@ -655,158 +657,41 @@ export default function Workers() {
                   data-testid="input-worker-phone"
                 />
               </div>
-            </div>
-
-            <div className="border-t pt-4">
-              <h4 className="font-medium mb-3">Durum Yönetimi</h4>
               
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="add-status">Konaklama Durumu</Label>
-                  <Select
-                    value={formData.status}
-                    onValueChange={(value: WorkerStatus) => setFormData({ ...formData, status: value })}
-                  >
-                    <SelectTrigger id="add-status" data-testid="select-worker-status">
-                      <SelectValue placeholder="Durum seçin" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Aktif - Konaklamada</SelectItem>
-                      <SelectItem value="new_registration">Yeni Kayıt</SelectItem>
-                      <SelectItem value="on_vacation">Tatilde</SelectItem>
-                      <SelectItem value="notice_period">Çıkış Bildirdi</SelectItem>
-                      <SelectItem value="left_no_notice">Haber Vermeden Gitti</SelectItem>
-                      <SelectItem value="checked_out">Çıkış Yaptı</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {formData.status === "on_vacation" && (
-                  <div className="grid grid-cols-2 gap-4 bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg">
-                    <div className="space-y-2">
-                      <Label htmlFor="add-vacation-start">Tatil Başlangıcı</Label>
-                      <Input
-                        id="add-vacation-start"
-                        type="date"
-                        value={formData.vacationStartDate}
-                        onChange={(e) => setFormData({ ...formData, vacationStartDate: e.target.value })}
-                        data-testid="input-vacation-start"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="add-vacation-end">Dönüş Tarihi</Label>
-                      <Input
-                        id="add-vacation-end"
-                        type="date"
-                        value={formData.vacationEndDate}
-                        onChange={(e) => setFormData({ ...formData, vacationEndDate: e.target.value })}
-                        data-testid="input-vacation-end"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {formData.status === "notice_period" && (
-                  <div className="bg-amber-50 dark:bg-amber-950/20 p-3 rounded-lg">
-                    <div className="space-y-2">
-                      <Label htmlFor="add-planned-exit">Planlanan Çıkış Tarihi</Label>
-                      <Input
-                        id="add-planned-exit"
-                        type="date"
-                        value={formData.plannedExitDate}
-                        onChange={(e) => setFormData({ ...formData, plannedExitDate: e.target.value })}
-                        data-testid="input-planned-exit"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {formData.status === "left_no_notice" && (
-                  <div className="bg-red-50 dark:bg-red-950/20 p-3 rounded-lg">
-                    <div className="space-y-2">
-                      <Label htmlFor="add-left-date">Ayrılış Tarihi</Label>
-                      <Input
-                        id="add-left-date"
-                        type="date"
-                        value={formData.leftDate}
-                        onChange={(e) => setFormData({ ...formData, leftDate: e.target.value })}
-                        data-testid="input-left-date"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {formData.status === "checked_out" && (
-                  <div className="bg-gray-50 dark:bg-gray-950/20 p-3 rounded-lg">
-                    <div className="space-y-2">
-                      <Label htmlFor="add-checkout-date">Çıkış Tarihi</Label>
-                      <Input
-                        id="add-checkout-date"
-                        type="date"
-                        value={formData.checkOutDate}
-                        onChange={(e) => setFormData({ ...formData, checkOutDate: e.target.value })}
-                        data-testid="input-checkout-date"
-                      />
-                    </div>
-                  </div>
-                )}
+              <div className="space-y-2">
+                <Label htmlFor="add-startDate">İşe Başlama Tarihi</Label>
+                <Input
+                  id="add-startDate"
+                  type="date"
+                  value={formData.startDate}
+                  onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                  data-testid="input-worker-startDate"
+                />
               </div>
             </div>
             
-            <div className="border-t pt-4">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="font-medium">Konaklama <span className="text-sm text-muted-foreground font-normal">(Opsiyonel)</span></h4>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    if (!formData.firstName || !formData.lastName || !formData.gender) {
-                      toast({
-                        title: "Eksik Bilgi",
-                        description: "Konaklama bulabilmek için önce isim, soyisim ve cinsiyet bilgilerini girin",
-                        variant: "destructive",
-                      });
-                      return;
-                    }
-                    setIsAccommodationFinderOpen(true);
-                  }}
-                  data-testid="button-find-accommodation"
-                >
-                  <Search className="w-4 h-4 mr-2" />
-                  Uygun Konaklama Bul
-                </Button>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="add-jobTitle">Pozisyon</Label>
+                <Input
+                  id="add-jobTitle"
+                  placeholder="Temizlik Görevlisi"
+                  value={formData.jobTitle}
+                  onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
+                  data-testid="input-worker-jobTitle"
+                />
               </div>
               
-              {formData.house ? (
-                <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Bed className="w-4 h-4 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-primary">{formData.house}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        Oda {formData.room} • Yatak {formData.bed}
-                      </p>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setFormData({ ...formData, house: "", room: "", bed: "" })}
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-muted/50 p-4 rounded-lg">
-                  <p className="text-sm text-muted-foreground text-center">
-                    "Uygun Konaklama Bul" butonunu kullanarak konaklama atayabilirsiniz
-                  </p>
-                </div>
-              )}
+              <div className="space-y-2">
+                <Label htmlFor="add-department">Departman</Label>
+                <Input
+                  id="add-department"
+                  placeholder="Operasyon"
+                  value={formData.department}
+                  onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                  data-testid="input-worker-department"
+                />
+              </div>
             </div>
             
             <div className="flex justify-end gap-3 pt-4">
@@ -865,13 +750,13 @@ export default function Workers() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-birthdate">Doğum Tarihi *</Label>
+                <Label htmlFor="edit-dateOfBirth">Doğum Tarihi</Label>
                 <Input
-                  id="edit-birthdate"
+                  id="edit-dateOfBirth"
                   type="date"
-                  value={formData.birthDate}
-                  onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
-                  data-testid="input-edit-worker-birthdate"
+                  value={formData.dateOfBirth}
+                  onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
+                  data-testid="input-edit-worker-dateOfBirth"
                 />
               </div>
 
@@ -879,14 +764,14 @@ export default function Workers() {
                 <Label htmlFor="edit-gender">Cinsiyet *</Label>
                 <Select
                   value={formData.gender}
-                  onValueChange={(value) => setFormData({ ...formData, gender: value })}
+                  onValueChange={(value: "male" | "female") => setFormData({ ...formData, gender: value })}
                 >
                   <SelectTrigger id="edit-gender" data-testid="select-edit-worker-gender">
                     <SelectValue placeholder="Cinsiyet seçin" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Erkek">Erkek</SelectItem>
-                    <SelectItem value="Kadın">Kadın</SelectItem>
+                    <SelectItem value="male">Erkek</SelectItem>
+                    <SelectItem value="female">Kadın</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -894,18 +779,18 @@ export default function Workers() {
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-country">Ülke *</Label>
+                <Label htmlFor="edit-nationality">Uyruk</Label>
                 <Input
-                  id="edit-country"
-                  placeholder="Hollanda"
-                  value={formData.country}
-                  onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                  data-testid="input-edit-worker-country"
+                  id="edit-nationality"
+                  placeholder="Türkiye"
+                  value={formData.nationality}
+                  onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
+                  data-testid="input-edit-worker-nationality"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="edit-email">E-posta</Label>
+                <Label htmlFor="edit-email">E-posta *</Label>
                 <Input
                   id="edit-email"
                   type="email"
@@ -929,131 +814,41 @@ export default function Workers() {
                   data-testid="input-edit-worker-phone"
                 />
               </div>
-            </div>
-
-            <div className="border-t pt-4">
-              <h4 className="font-medium mb-3">Durum Yönetimi</h4>
               
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-status">Konaklama Durumu</Label>
-                  <Select
-                    value={formData.status}
-                    onValueChange={(value: WorkerStatus) => setFormData({ ...formData, status: value })}
-                  >
-                    <SelectTrigger id="edit-status" data-testid="select-worker-status">
-                      <SelectValue placeholder="Durum seçin" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Aktif - Konaklamada</SelectItem>
-                      <SelectItem value="new_registration">Yeni Kayıt</SelectItem>
-                      <SelectItem value="on_vacation">Tatilde</SelectItem>
-                      <SelectItem value="notice_period">Çıkış Bildirdi</SelectItem>
-                      <SelectItem value="left_no_notice">Haber Vermeden Gitti</SelectItem>
-                      <SelectItem value="checked_out">Çıkış Yaptı</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {formData.status === "on_vacation" && (
-                  <div className="grid grid-cols-2 gap-4 bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg">
-                    <div className="space-y-2">
-                      <Label htmlFor="vacation-start">Tatil Başlangıcı</Label>
-                      <Input
-                        id="vacation-start"
-                        type="date"
-                        value={formData.vacationStartDate}
-                        onChange={(e) => setFormData({ ...formData, vacationStartDate: e.target.value })}
-                        data-testid="input-vacation-start"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="vacation-end">Dönüş Tarihi</Label>
-                      <Input
-                        id="vacation-end"
-                        type="date"
-                        value={formData.vacationEndDate}
-                        onChange={(e) => setFormData({ ...formData, vacationEndDate: e.target.value })}
-                        data-testid="input-vacation-end"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {formData.status === "notice_period" && (
-                  <div className="bg-amber-50 dark:bg-amber-950/20 p-3 rounded-lg">
-                    <div className="space-y-2">
-                      <Label htmlFor="planned-exit">Planlanan Çıkış Tarihi</Label>
-                      <Input
-                        id="planned-exit"
-                        type="date"
-                        value={formData.plannedExitDate}
-                        onChange={(e) => setFormData({ ...formData, plannedExitDate: e.target.value })}
-                        data-testid="input-planned-exit"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {formData.status === "left_no_notice" && (
-                  <div className="bg-red-50 dark:bg-red-950/20 p-3 rounded-lg">
-                    <div className="space-y-2">
-                      <Label htmlFor="left-date">Ayrılış Tarihi</Label>
-                      <Input
-                        id="left-date"
-                        type="date"
-                        value={formData.leftDate}
-                        onChange={(e) => setFormData({ ...formData, leftDate: e.target.value })}
-                        data-testid="input-left-date"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {formData.status === "checked_out" && (
-                  <div className="bg-gray-50 dark:bg-gray-950/20 p-3 rounded-lg">
-                    <div className="space-y-2">
-                      <Label htmlFor="edit-checkout-date">Çıkış Tarihi</Label>
-                      <Input
-                        id="edit-checkout-date"
-                        type="date"
-                        value={formData.checkOutDate}
-                        onChange={(e) => setFormData({ ...formData, checkOutDate: e.target.value })}
-                        data-testid="input-checkout-date"
-                      />
-                    </div>
-                  </div>
-                )}
+              <div className="space-y-2">
+                <Label htmlFor="edit-startDate">İşe Başlama Tarihi</Label>
+                <Input
+                  id="edit-startDate"
+                  type="date"
+                  value={formData.startDate}
+                  onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                  data-testid="input-edit-worker-startDate"
+                />
               </div>
             </div>
             
-            <div className="border-t pt-4">
-              <h4 className="font-medium mb-3">Konaklama Bilgileri <span className="text-sm text-muted-foreground font-normal">(Opsiyonel)</span></h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-jobTitle">Pozisyon</Label>
+                <Input
+                  id="edit-jobTitle"
+                  placeholder="Temizlik Görevlisi"
+                  value={formData.jobTitle}
+                  onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
+                  data-testid="input-edit-worker-jobTitle"
+                />
+              </div>
               
-              {selectedWorker?.house ? (
-                <div className="bg-muted/50 p-4 rounded-lg">
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <User className="w-4 h-4 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">{selectedWorker.house}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        Oda {selectedWorker.room} • Yatak {selectedWorker.bed}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Konaklama değişikliği için lütfen konut yönetim ekranını kullanın
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-muted/50 p-4 rounded-lg">
-                  <p className="text-sm text-muted-foreground text-center">
-                    Bu çalışana henüz konaklama atanmamış
-                  </p>
-                </div>
-              )}
+              <div className="space-y-2">
+                <Label htmlFor="edit-department">Departman</Label>
+                <Input
+                  id="edit-department"
+                  placeholder="Operasyon"
+                  value={formData.department}
+                  onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                  data-testid="input-edit-worker-department"
+                />
+              </div>
             </div>
             
             <div className="flex justify-end gap-3 pt-4">
@@ -1075,15 +870,6 @@ export default function Workers() {
         </DialogContent>
       </Dialog>
 
-      {/* Accommodation Finder Dialog */}
-      <AccommodationFinder
-        open={isAccommodationFinderOpen}
-        onOpenChange={setIsAccommodationFinderOpen}
-        workerGender={formData.gender as "Erkek" | "Kadın"}
-        workerName={`${formData.firstName} ${formData.lastName}`}
-        workerCity={formData.country}
-        onAssign={handleAccommodationAssign}
-      />
     </div>
   );
 }
