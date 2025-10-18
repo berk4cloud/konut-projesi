@@ -910,9 +910,9 @@ export default function Assignments() {
           {/* Tabs */}
           <Tabs defaultValue="assignments" className="w-full">
             <TabsList className="grid w-full max-w-md grid-cols-3">
-              <TabsTrigger value="assignments" data-testid="tab-assignments">Konaklamalar</TabsTrigger>
-              <TabsTrigger value="charges" data-testid="tab-charges">Ücretlendirme</TabsTrigger>
-              <TabsTrigger value="payments" data-testid="tab-payments">Ödemeler</TabsTrigger>
+              <TabsTrigger value="assignments" data-testid="tab-assignments">{t('assignments.tabs.assignments')}</TabsTrigger>
+              <TabsTrigger value="charges" data-testid="tab-charges">{t('assignments.tabs.charges')}</TabsTrigger>
+              <TabsTrigger value="payments" data-testid="tab-payments">{t('assignments.tabs.payments')}</TabsTrigger>
             </TabsList>
 
             {/* Assignments Tab */}
@@ -921,7 +921,7 @@ export default function Assignments() {
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
-                    placeholder="İşçi veya konut ara..."
+                    placeholder={t('assignments.search.placeholder')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10"
@@ -930,14 +930,14 @@ export default function Assignments() {
                 </div>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger className="w-[200px]" data-testid="select-status-filter">
-                    <SelectValue placeholder="Durum filtrele" />
+                    <SelectValue placeholder={t('assignments.search.statusFilter')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tümü</SelectItem>
-                    <SelectItem value="active">Aktif</SelectItem>
-                    <SelectItem value="ending_soon">Yakında Bitiyor</SelectItem>
-                    <SelectItem value="ended">Bitti</SelectItem>
-                    <SelectItem value="pending">Beklemede</SelectItem>
+                    <SelectItem value="all">{t('assignments.filters.all')}</SelectItem>
+                    <SelectItem value="active">{t('assignments.status.active')}</SelectItem>
+                    <SelectItem value="ending_soon">{t('assignments.status.endingSoon')}</SelectItem>
+                    <SelectItem value="ended">{t('assignments.status.ended')}</SelectItem>
+                    <SelectItem value="pending">{t('assignments.status.pending')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -945,7 +945,7 @@ export default function Assignments() {
               <div className="grid gap-4">
                 {filteredAssignments.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
-                    Kayıt bulunamadı
+                    {t('assignments.empty.noAssignments')}
                   </div>
                 ) : (
                   filteredAssignments.map((assignment) => (
@@ -971,18 +971,18 @@ export default function Assignments() {
                     <CardContent>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         <div>
-                          <p className="text-muted-foreground mb-1">Başlangıç</p>
+                          <p className="text-muted-foreground mb-1">{t('assignments.assignmentCard.startDate')}</p>
                           <p className="font-medium flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
                             {new Date(assignment.startDate).toLocaleDateString('tr-TR')}
                           </p>
                         </div>
                         <div>
-                          <p className="text-muted-foreground mb-1">Aylık Ücret</p>
+                          <p className="text-muted-foreground mb-1">{t('assignments.assignmentCard.monthlyRate')}</p>
                           <p className="font-medium">€{assignment.monthlyRate}</p>
                         </div>
                         <div>
-                          <p className="text-muted-foreground mb-1">Depozito</p>
+                          <p className="text-muted-foreground mb-1">{t('assignments.assignmentCard.deposit')}</p>
                           {assignment.depositCollected ? (
                             <p className="font-medium flex items-center gap-1 text-green-600">
                               <CheckCircle className="w-3 h-3" />
@@ -991,16 +991,16 @@ export default function Assignments() {
                           ) : (
                             <p className="font-medium flex items-center gap-1 text-amber-600">
                               <AlertCircle className="w-3 h-3" />
-                              Bekliyor
+                              {t('assignments.paymentStatus.pending')}
                             </p>
                           )}
                         </div>
                         <div>
-                          <p className="text-muted-foreground mb-1">Bitiş</p>
+                          <p className="text-muted-foreground mb-1">{t('assignments.assignmentCard.endDate')}</p>
                           <p className="font-medium">
                             {assignment.endDate 
                               ? new Date(assignment.endDate).toLocaleDateString('tr-TR')
-                              : "Devam ediyor"}
+                              : t('assignments.assignmentCard.ongoing')}
                           </p>
                         </div>
                       </div>
