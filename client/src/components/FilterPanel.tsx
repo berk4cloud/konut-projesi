@@ -20,7 +20,8 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { tr } from "date-fns/locale";
+import { tr, enUS, de, nl, fr, pl, bg } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
 
 const countryLabels: Record<string, string> = {
   nl: "Hollanda",
@@ -57,6 +58,7 @@ export default function FilterPanel({
   setShowEmptyOnly,
   houses: allHouses,
 }: FilterPanelProps) {
+  const { t, i18n } = useTranslation();
   
   const [houseOpen, setHouseOpen] = useState(false);
   const [cityOpen, setCityOpen] = useState(false);
@@ -65,6 +67,10 @@ export default function FilterPanel({
   const [calendarMonths, setCalendarMonths] = useState(2);
 
   const selectedDate = dateString ? new Date(dateString) : undefined;
+  
+  // Get date-fns locale based on current language
+  const dateLocales: Record<string, typeof tr> = { tr, en: enUS, de, nl, fr, pl, bg };
+  const currentLocale = dateLocales[i18n.resolvedLanguage || 'tr'] || tr;
 
   // Responsive calendar months: 1 for mobile, 2 for desktop
   useEffect(() => {
@@ -82,12 +88,12 @@ export default function FilterPanel({
 
   // Extract unique values from houses
   const houses = [
-    { value: "all", label: "Tüm Evler" },
+    { value: "all", label: t('filters.allHouses') },
     ...allHouses.map((h) => ({ value: h.id, label: h.name })),
   ];
 
   const cities = [
-    { value: "all", label: "Tüm Şehirler" },
+    { value: "all", label: t('filters.allCities') },
     ...Array.from(new Set(allHouses.map((h) => h.city.toLowerCase())))
       .map((city) => ({
         value: city,
@@ -96,7 +102,7 @@ export default function FilterPanel({
   ];
 
   const countries = [
-    { value: "all", label: "Tüm Ülkeler" },
+    { value: "all", label: t('filters.allCountries') },
     ...Array.from(new Set(allHouses.map((h) => h.country)))
       .map((country) => ({
         value: country,
@@ -107,7 +113,7 @@ export default function FilterPanel({
   return (
     <div className="bg-card rounded-lg p-6 space-y-6 border">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold">Filtreler</h3>
+        <h3 className="font-semibold">{t('filters.title')}</h3>
         <Filter className="w-4 h-4 text-muted-foreground" />
       </div>
 
@@ -115,7 +121,7 @@ export default function FilterPanel({
         <div className="space-y-2">
           <Label className="flex items-center gap-2">
             <CalendarIcon className="w-4 h-4" />
-            Tarih
+            {t('filters.date')}
           </Label>
           <Popover open={dateOpen} onOpenChange={setDateOpen}>
             <PopoverTrigger asChild>
@@ -128,7 +134,7 @@ export default function FilterPanel({
                 data-testid="button-filter-date"
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {selectedDate ? format(selectedDate, "PPP", { locale: tr }) : "Tarih seçin"}
+                {selectedDate ? format(selectedDate, "PPP", { locale: currentLocale }) : t('filters.selectDate')}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
@@ -142,7 +148,7 @@ export default function FilterPanel({
                   }}
                   data-testid="button-today"
                 >
-                  Bugün
+                  {t('common.today')}
                 </Button>
               </div>
               <Calendar
@@ -155,7 +161,7 @@ export default function FilterPanel({
                   }
                 }}
                 numberOfMonths={calendarMonths}
-                locale={tr}
+                locale={currentLocale}
               />
             </PopoverContent>
           </Popover>
@@ -164,7 +170,7 @@ export default function FilterPanel({
         <div className="space-y-2">
           <Label className="flex items-center gap-2">
             <Building2 className="w-4 h-4" />
-            Ev
+            {t('filters.house')}
           </Label>
           <Popover open={houseOpen} onOpenChange={setHouseOpen}>
             <PopoverTrigger asChild>
@@ -177,15 +183,15 @@ export default function FilterPanel({
               >
                 {selectedHouse
                   ? houses.find((house) => house.value === selectedHouse)?.label
-                  : "Ev seçin..."}
+                  : t('filters.selectHouse')}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-full p-0">
               <Command>
-                <CommandInput placeholder="Ev ara..." />
+                <CommandInput placeholder={t('filters.searchHouse')} />
                 <CommandList>
-                  <CommandEmpty>Ev bulunamadı.</CommandEmpty>
+                  <CommandEmpty>{t('filters.noHouseFound')}</CommandEmpty>
                   <CommandGroup>
                     {houses.map((house) => (
                       <CommandItem
@@ -215,7 +221,7 @@ export default function FilterPanel({
         <div className="space-y-2">
           <Label className="flex items-center gap-2">
             <MapPin className="w-4 h-4" />
-            Şehir
+            {t('filters.city')}
           </Label>
           <Popover open={cityOpen} onOpenChange={setCityOpen}>
             <PopoverTrigger asChild>
@@ -228,15 +234,15 @@ export default function FilterPanel({
               >
                 {selectedCity
                   ? cities.find((city) => city.value === selectedCity)?.label
-                  : "Şehir seçin..."}
+                  : t('filters.selectCity')}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-full p-0">
               <Command>
-                <CommandInput placeholder="Şehir ara..." />
+                <CommandInput placeholder={t('filters.searchCity')} />
                 <CommandList>
-                  <CommandEmpty>Şehir bulunamadı.</CommandEmpty>
+                  <CommandEmpty>{t('filters.noCityFound')}</CommandEmpty>
                   <CommandGroup>
                     {cities.map((city) => (
                       <CommandItem
@@ -266,7 +272,7 @@ export default function FilterPanel({
         <div className="space-y-2">
           <Label className="flex items-center gap-2">
             <Globe className="w-4 h-4" />
-            Ülke
+            {t('filters.country')}
           </Label>
           <Popover open={countryOpen} onOpenChange={setCountryOpen}>
             <PopoverTrigger asChild>
@@ -279,15 +285,15 @@ export default function FilterPanel({
               >
                 {selectedCountry
                   ? countries.find((country) => country.value === selectedCountry)?.label
-                  : "Ülke seçin..."}
+                  : t('filters.selectCountry')}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-full p-0">
               <Command>
-                <CommandInput placeholder="Ülke ara..." />
+                <CommandInput placeholder={t('filters.searchCountry')} />
                 <CommandList>
-                  <CommandEmpty>Ülke bulunamadı.</CommandEmpty>
+                  <CommandEmpty>{t('filters.noCountryFound')}</CommandEmpty>
                   <CommandGroup>
                     {countries.map((country) => (
                       <CommandItem
@@ -325,7 +331,7 @@ export default function FilterPanel({
             htmlFor="emptyOnly"
             className="text-sm font-medium cursor-pointer"
           >
-            Sadece boş yatakları göster
+            {t('filters.showEmptyOnly')}
           </Label>
         </div>
 
@@ -341,7 +347,7 @@ export default function FilterPanel({
           }}
           data-testid="button-clear-filters"
         >
-          Filtreleri Temizle
+          {t('filters.clearFilters')}
         </Button>
       </div>
     </div>

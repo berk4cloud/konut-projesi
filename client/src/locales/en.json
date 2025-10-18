@@ -115,6 +115,28 @@
     "rentableAsWholeRoom": "Rentable as whole room",
     "customPricing": "Custom pricing for room"
   },
+  "filters": {
+    "title": "Filters",
+    "date": "Date",
+    "selectDate": "Select date",
+    "house": "House",
+    "selectHouse": "Select house...",
+    "searchHouse": "Search house...",
+    "noHouseFound": "No house found.",
+    "allHouses": "All Houses",
+    "city": "City",
+    "selectCity": "Select city...",
+    "searchCity": "Search city...",
+    "noCityFound": "No city found.",
+    "allCities": "All Cities",
+    "country": "Country",
+    "selectCountry": "Select country...",
+    "searchCountry": "Search country...",
+    "noCountryFound": "No country found.",
+    "allCountries": "All Countries",
+    "showEmptyOnly": "Show empty beds only",
+    "clearFilters": "Clear Filters"
+  },
   "capacity": {
     "summary": "Capacity Summary",
     "totalBeds": "Total Beds",

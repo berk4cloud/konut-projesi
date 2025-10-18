@@ -1,4 +1,5 @@
 import RoomCard from "./RoomCard";
+import { useTranslation } from "react-i18next";
 
 interface Worker {
   id: string;
@@ -41,6 +42,7 @@ export default function HouseCard({
   onBedClick,
   onLeaseClick,
 }: HouseCardProps) {
+  const { t } = useTranslation();
   const emptyBeds = totalBeds - occupiedBeds;
 
   return (
@@ -60,10 +62,10 @@ export default function HouseCard({
       <div className="pt-3 border-t border-gray-200">
         <div className="flex items-center gap-4 text-sm">
           <span className="text-gray-600">
-            Boş: <span className="font-semibold text-status-empty">{emptyBeds}</span>
+            {t('housing.empty')}: <span className="font-semibold text-status-empty">{emptyBeds}</span>
           </span>
           <span className="text-gray-600">
-            Dolu: <span className="font-semibold text-status-occupied">{occupiedBeds}</span>
+            {t('housing.occupiedBeds')}: <span className="font-semibold text-status-occupied">{occupiedBeds}</span>
           </span>
         </div>
       </div>

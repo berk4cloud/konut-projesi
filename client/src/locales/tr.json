@@ -115,6 +115,28 @@
     "rentableAsWholeRoom": "Oda olarak kiraya verilebilir",
     "customPricing": "Oda için özel fiyat"
   },
+  "filters": {
+    "title": "Filtreler",
+    "date": "Tarih",
+    "selectDate": "Tarih seçin",
+    "house": "Ev",
+    "selectHouse": "Ev seçin...",
+    "searchHouse": "Ev ara...",
+    "noHouseFound": "Ev bulunamadı.",
+    "allHouses": "Tüm Evler",
+    "city": "Şehir",
+    "selectCity": "Şehir seçin...",
+    "searchCity": "Şehir ara...",
+    "noCityFound": "Şehir bulunamadı.",
+    "allCities": "Tüm Şehirler",
+    "country": "Ülke",
+    "selectCountry": "Ülke seçin...",
+    "searchCountry": "Ülke ara...",
+    "noCountryFound": "Ülke bulunamadı.",
+    "allCountries": "Tüm Ülkeler",
+    "showEmptyOnly": "Sadece boş yatakları göster",
+    "clearFilters": "Filtreleri Temizle"
+  },
   "capacity": {
     "summary": "Kapasite Özeti",
     "totalBeds": "Toplam Yatak",
