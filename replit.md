@@ -51,7 +51,7 @@ TanStack Query manages server state (caching, refetching). React's `useState` an
 
 -   **Workers Management (Federated Model)**: Displays workers with employment details, allowing creation, editing (of employment-specific fields), search, and filtering. Supports configurable pagination and status badges.
 -   **Currency Settings**: Tenant admins can configure system-wide currency from a list of 20 major currencies.
--   **Accommodation Billing & Assignment Management**: Manages worker-bed assignments, calculates prorated monthly charges, tracks deposits, and monitors payment statuses with advanced filtering for overdue categories.
+-   **Accommodation Billing & Assignment Management**: Manages worker-bed assignments, calculates prorated monthly charges, tracks deposits, and monitors payment statuses with advanced filtering for overdue categories. Features enhanced dashboard statistics with 3 new cards: Upcoming Due Dates (today/3-day/7-day breakdown with mutually exclusive date buckets), Overdue Breakdown (4 color-coded severity levels: 1-7, 8-14, 15-30, 30+ days), and Deposits to Refund (7-day checkout tracking). Full i18n support across 7 languages.
 -   **Multi-Level Pricing System**: Supports a 3-level pricing hierarchy (Room > House > System) with a global daily rental mode toggle.
 -   **House Archiving System**: Implements soft-delete for houses with visual indicators and a toggle to show/hide archived houses.
 -   **QR Code Task Delegation System**: Enables creation of unique QR links for worker self-registration, meter readings, and document uploads, with usage limits, expiry dates, and an approvals queue.
