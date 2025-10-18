@@ -998,5 +998,86 @@
         "description": "Nouveau code QR créé avec succès"
       }
     }
+  },
+  "workers": {
+    "pageTitle": "Travailleurs",
+    "pageSubtitle": "Afficher et gérer tous les travailleurs",
+    "addButton": "Ajouter un nouveau travailleur",
+    "search": {
+      "placeholder": "Rechercher un travailleur...",
+      "tooltip": "Vous pouvez rechercher par nom, maison, date de naissance ou pays"
+    },
+    "table": {
+      "worker": "Travailleur",
+      "gender": "Sexe",
+      "country": "Pays",
+      "accommodation": "Hébergement",
+      "actions": "Actions",
+      "noBirthDate": "Pas de date de naissance",
+      "unassigned": "Non attribué",
+      "room": "Chambre",
+      "bed": "Lit",
+      "empty": "Aucun travailleur trouvé",
+      "edit": "Modifier"
+    },
+    "gender": {
+      "male": "Homme",
+      "female": "Femme",
+      "selectPlaceholder": "Sélectionner le sexe"
+    },
+    "status": {
+      "active": "Actif",
+      "inactive": "Inactif",
+      "former": "Ancien employé",
+      "invited": "Invité"
+    },
+    "pagination": {
+      "total": "Total {{count}} travailleurs",
+      "page": "Page {{current}}/{{total}}",
+      "perPage": "Par page:"
+    },
+    "addDialog": {
+      "title": "Ajouter un nouveau travailleur",
+      "description": "Créer un nouveau dossier de travailleur",
+      "firstName": "Prénom *",
+      "lastName": "Nom *",
+      "birthDate": "Date de naissance",
+      "gender": "Sexe *",
+      "nationality": "Nationalité",
+      "email": "Email *",
+      "phone": "Téléphone",
+      "startDate": "Date de début",
+      "position": "Position",
+      "department": "Département",
+      "cancel": "Annuler",
+      "save": "Enregistrer"
+    },
+    "editDialog": {
+      "title": "Modifier le travailleur",
+      "description": "Mettre à jour les informations de {{name}}",
+      "update": "Mettre à jour"
+    },
+    "toasts": {
+      "workerAdded": {
+        "title": "Succès",
+        "description": "Travailleur ajouté avec succès"
+      },
+      "workerUpdated": {
+        "title": "Succès",
+        "description": "Informations du travailleur mises à jour"
+      },
+      "addError": {
+        "title": "Erreur",
+        "description": "Impossible d'ajouter le travailleur"
+      },
+      "updateError": {
+        "title": "Erreur",
+        "description": "La mise à jour a échoué"
+      },
+      "validationError": {
+        "title": "Erreur",
+        "description": "Veuillez remplir les champs obligatoires (Prénom, Nom, Sexe, Email)"
+      }
+    }
   }
 }

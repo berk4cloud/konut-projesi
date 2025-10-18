@@ -998,5 +998,86 @@
         "description": "Neuer QR-Code erfolgreich erstellt"
       }
     }
+  },
+  "workers": {
+    "pageTitle": "Mitarbeiter",
+    "pageSubtitle": "Alle Mitarbeiter anzeigen und verwalten",
+    "addButton": "Neuen Mitarbeiter hinzufügen",
+    "search": {
+      "placeholder": "Mitarbeiter suchen...",
+      "tooltip": "Sie können nach Name, Haus, Geburtsdatum oder Land suchen"
+    },
+    "table": {
+      "worker": "Mitarbeiter",
+      "gender": "Geschlecht",
+      "country": "Land",
+      "accommodation": "Unterkunft",
+      "actions": "Aktionen",
+      "noBirthDate": "Kein Geburtsdatum",
+      "unassigned": "Nicht zugewiesen",
+      "room": "Zimmer",
+      "bed": "Bett",
+      "empty": "Keine Mitarbeiter gefunden",
+      "edit": "Bearbeiten"
+    },
+    "gender": {
+      "male": "Männlich",
+      "female": "Weiblich",
+      "selectPlaceholder": "Geschlecht auswählen"
+    },
+    "status": {
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "former": "Ehemaliger Mitarbeiter",
+      "invited": "Eingeladen"
+    },
+    "pagination": {
+      "total": "Insgesamt {{count}} Mitarbeiter",
+      "page": "Seite {{current}}/{{total}}",
+      "perPage": "Pro Seite:"
+    },
+    "addDialog": {
+      "title": "Neuen Mitarbeiter hinzufügen",
+      "description": "Einen neuen Mitarbeiterdatensatz erstellen",
+      "firstName": "Vorname *",
+      "lastName": "Nachname *",
+      "birthDate": "Geburtsdatum",
+      "gender": "Geschlecht *",
+      "nationality": "Nationalität",
+      "email": "E-Mail *",
+      "phone": "Telefon",
+      "startDate": "Startdatum",
+      "position": "Position",
+      "department": "Abteilung",
+      "cancel": "Abbrechen",
+      "save": "Speichern"
+    },
+    "editDialog": {
+      "title": "Mitarbeiter bearbeiten",
+      "description": "Informationen von {{name}} aktualisieren",
+      "update": "Aktualisieren"
+    },
+    "toasts": {
+      "workerAdded": {
+        "title": "Erfolg",
+        "description": "Mitarbeiter erfolgreich hinzugefügt"
+      },
+      "workerUpdated": {
+        "title": "Erfolg",
+        "description": "Mitarbeiterinformationen aktualisiert"
+      },
+      "addError": {
+        "title": "Fehler",
+        "description": "Mitarbeiter konnte nicht hinzugefügt werden"
+      },
+      "updateError": {
+        "title": "Fehler",
+        "description": "Aktualisierung fehlgeschlagen"
+      },
+      "validationError": {
+        "title": "Fehler",
+        "description": "Bitte füllen Sie die erforderlichen Felder aus (Vorname, Nachname, Geschlecht, E-Mail)"
+      }
+    }
   }
 }

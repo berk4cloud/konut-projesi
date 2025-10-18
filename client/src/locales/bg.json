@@ -998,5 +998,86 @@
         "description": "Новият QR код е създаден успешно"
       }
     }
+  },
+  "workers": {
+    "pageTitle": "Работници",
+    "pageSubtitle": "Преглед и управление на всички работници",
+    "addButton": "Добави нов работник",
+    "search": {
+      "placeholder": "Търси работник...",
+      "tooltip": "Можете да търсите по име, къща, дата на раждане или държава"
+    },
+    "table": {
+      "worker": "Работник",
+      "gender": "Пол",
+      "country": "Държава",
+      "accommodation": "Настаняване",
+      "actions": "Действия",
+      "noBirthDate": "Няма дата на раждане",
+      "unassigned": "Неназначен",
+      "room": "Стая",
+      "bed": "Легло",
+      "empty": "Не са намерени работници",
+      "edit": "Редактирай"
+    },
+    "gender": {
+      "male": "Мъж",
+      "female": "Жена",
+      "selectPlaceholder": "Изберете пол"
+    },
+    "status": {
+      "active": "Активен",
+      "inactive": "Неактивен",
+      "former": "Бивш служител",
+      "invited": "Поканен"
+    },
+    "pagination": {
+      "total": "Общо {{count}} работници",
+      "page": "Страница {{current}}/{{total}}",
+      "perPage": "На страница:"
+    },
+    "addDialog": {
+      "title": "Добави нов работник",
+      "description": "Създайте нов запис за работник",
+      "firstName": "Име *",
+      "lastName": "Фамилия *",
+      "birthDate": "Дата на раждане",
+      "gender": "Пол *",
+      "nationality": "Националност",
+      "email": "Имейл *",
+      "phone": "Телефон",
+      "startDate": "Дата на започване",
+      "position": "Позиция",
+      "department": "Отдел",
+      "cancel": "Отказ",
+      "save": "Запази"
+    },
+    "editDialog": {
+      "title": "Редактирай работник",
+      "description": "Актуализирайте информацията за {{name}}",
+      "update": "Актуализирай"
+    },
+    "toasts": {
+      "workerAdded": {
+        "title": "Успех",
+        "description": "Работникът е добавен успешно"
+      },
+      "workerUpdated": {
+        "title": "Успех",
+        "description": "Информацията за работника е актуализирана"
+      },
+      "addError": {
+        "title": "Грешка",
+        "description": "Не може да се добави работник"
+      },
+      "updateError": {
+        "title": "Грешка",
+        "description": "Актуализацията се провали"
+      },
+      "validationError": {
+        "title": "Грешка",
+        "description": "Моля, попълнете задължителните полета (Име, Фамилия, Пол, Имейл)"
+      }
+    }
   }
 }

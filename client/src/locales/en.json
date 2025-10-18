@@ -1015,5 +1015,86 @@
         "description": "New QR code successfully created"
       }
     }
+  },
+  "workers": {
+    "pageTitle": "Workers",
+    "pageSubtitle": "View and manage all workers",
+    "addButton": "Add New Worker",
+    "search": {
+      "placeholder": "Search worker...",
+      "tooltip": "You can search by name, house, date of birth or country"
+    },
+    "table": {
+      "worker": "Worker",
+      "gender": "Gender",
+      "country": "Country",
+      "accommodation": "Accommodation",
+      "actions": "Actions",
+      "noBirthDate": "No date of birth",
+      "unassigned": "Unassigned",
+      "room": "Room",
+      "bed": "Bed",
+      "empty": "No workers found",
+      "edit": "Edit"
+    },
+    "gender": {
+      "male": "Male",
+      "female": "Female",
+      "selectPlaceholder": "Select gender"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "former": "Former Employee",
+      "invited": "Invited"
+    },
+    "pagination": {
+      "total": "Total {{count}} workers",
+      "page": "Page {{current}}/{{total}}",
+      "perPage": "Per page:"
+    },
+    "addDialog": {
+      "title": "Add New Worker",
+      "description": "Create a new worker record",
+      "firstName": "First Name *",
+      "lastName": "Last Name *",
+      "birthDate": "Date of Birth",
+      "gender": "Gender *",
+      "nationality": "Nationality",
+      "email": "Email *",
+      "phone": "Phone",
+      "startDate": "Start Date",
+      "position": "Position",
+      "department": "Department",
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "editDialog": {
+      "title": "Edit Worker",
+      "description": "Update {{name}}'s information",
+      "update": "Update"
+    },
+    "toasts": {
+      "workerAdded": {
+        "title": "Success",
+        "description": "Worker successfully added"
+      },
+      "workerUpdated": {
+        "title": "Success",
+        "description": "Worker information updated"
+      },
+      "addError": {
+        "title": "Error",
+        "description": "Could not add worker"
+      },
+      "updateError": {
+        "title": "Error",
+        "description": "Update failed"
+      },
+      "validationError": {
+        "title": "Error",
+        "description": "Please fill in required fields (First Name, Last Name, Gender, Email)"
+      }
+    }
   }
 }

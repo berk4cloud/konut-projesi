@@ -998,5 +998,86 @@
         "description": "Nowy kod QR pomyślnie utworzony"
       }
     }
+  },
+  "workers": {
+    "pageTitle": "Pracownicy",
+    "pageSubtitle": "Wyświetl i zarządzaj wszystkimi pracownikami",
+    "addButton": "Dodaj nowego pracownika",
+    "search": {
+      "placeholder": "Szukaj pracownika...",
+      "tooltip": "Możesz wyszukiwać po nazwisku, domu, dacie urodzenia lub kraju"
+    },
+    "table": {
+      "worker": "Pracownik",
+      "gender": "Płeć",
+      "country": "Kraj",
+      "accommodation": "Zakwaterowanie",
+      "actions": "Akcje",
+      "noBirthDate": "Brak daty urodzenia",
+      "unassigned": "Nieprzypisany",
+      "room": "Pokój",
+      "bed": "Łóżko",
+      "empty": "Nie znaleziono pracowników",
+      "edit": "Edytuj"
+    },
+    "gender": {
+      "male": "Mężczyzna",
+      "female": "Kobieta",
+      "selectPlaceholder": "Wybierz płeć"
+    },
+    "status": {
+      "active": "Aktywny",
+      "inactive": "Nieaktywny",
+      "former": "Były pracownik",
+      "invited": "Zaproszony"
+    },
+    "pagination": {
+      "total": "Łącznie {{count}} pracowników",
+      "page": "Strona {{current}}/{{total}}",
+      "perPage": "Na stronę:"
+    },
+    "addDialog": {
+      "title": "Dodaj nowego pracownika",
+      "description": "Utwórz nowy rekord pracownika",
+      "firstName": "Imię *",
+      "lastName": "Nazwisko *",
+      "birthDate": "Data urodzenia",
+      "gender": "Płeć *",
+      "nationality": "Narodowość",
+      "email": "Email *",
+      "phone": "Telefon",
+      "startDate": "Data rozpoczęcia",
+      "position": "Stanowisko",
+      "department": "Dział",
+      "cancel": "Anuluj",
+      "save": "Zapisz"
+    },
+    "editDialog": {
+      "title": "Edytuj pracownika",
+      "description": "Zaktualizuj informacje {{name}}",
+      "update": "Aktualizuj"
+    },
+    "toasts": {
+      "workerAdded": {
+        "title": "Sukces",
+        "description": "Pracownik pomyślnie dodany"
+      },
+      "workerUpdated": {
+        "title": "Sukces",
+        "description": "Informacje o pracowniku zaktualizowane"
+      },
+      "addError": {
+        "title": "Błąd",
+        "description": "Nie można dodać pracownika"
+      },
+      "updateError": {
+        "title": "Błąd",
+        "description": "Aktualizacja nie powiodła się"
+      },
+      "validationError": {
+        "title": "Błąd",
+        "description": "Wypełnij wymagane pola (Imię, Nazwisko, Płeć, Email)"
+      }
+    }
   }
 }

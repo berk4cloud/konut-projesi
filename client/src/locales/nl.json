@@ -998,5 +998,86 @@
         "description": "Nieuwe QR-code succesvol aangemaakt"
       }
     }
+  },
+  "workers": {
+    "pageTitle": "Medewerkers",
+    "pageSubtitle": "Bekijk en beheer alle medewerkers",
+    "addButton": "Nieuwe medewerker toevoegen",
+    "search": {
+      "placeholder": "Zoek medewerker...",
+      "tooltip": "U kunt zoeken op naam, huis, geboortedatum of land"
+    },
+    "table": {
+      "worker": "Medewerker",
+      "gender": "Geslacht",
+      "country": "Land",
+      "accommodation": "Accommodatie",
+      "actions": "Acties",
+      "noBirthDate": "Geen geboortedatum",
+      "unassigned": "Niet toegewezen",
+      "room": "Kamer",
+      "bed": "Bed",
+      "empty": "Geen medewerkers gevonden",
+      "edit": "Bewerken"
+    },
+    "gender": {
+      "male": "Man",
+      "female": "Vrouw",
+      "selectPlaceholder": "Selecteer geslacht"
+    },
+    "status": {
+      "active": "Actief",
+      "inactive": "Inactief",
+      "former": "Voormalig medewerker",
+      "invited": "Uitgenodigd"
+    },
+    "pagination": {
+      "total": "Totaal {{count}} medewerkers",
+      "page": "Pagina {{current}}/{{total}}",
+      "perPage": "Per pagina:"
+    },
+    "addDialog": {
+      "title": "Nieuwe medewerker toevoegen",
+      "description": "Maak een nieuw medewerkersrecord aan",
+      "firstName": "Voornaam *",
+      "lastName": "Achternaam *",
+      "birthDate": "Geboortedatum",
+      "gender": "Geslacht *",
+      "nationality": "Nationaliteit",
+      "email": "E-mail *",
+      "phone": "Telefoon",
+      "startDate": "Startdatum",
+      "position": "Positie",
+      "department": "Afdeling",
+      "cancel": "Annuleren",
+      "save": "Opslaan"
+    },
+    "editDialog": {
+      "title": "Medewerker bewerken",
+      "description": "Werk {{name}}'s informatie bij",
+      "update": "Bijwerken"
+    },
+    "toasts": {
+      "workerAdded": {
+        "title": "Succes",
+        "description": "Medewerker succesvol toegevoegd"
+      },
+      "workerUpdated": {
+        "title": "Succes",
+        "description": "Medewerkersgegevens bijgewerkt"
+      },
+      "addError": {
+        "title": "Fout",
+        "description": "Kon medewerker niet toevoegen"
+      },
+      "updateError": {
+        "title": "Fout",
+        "description": "Bijwerken mislukt"
+      },
+      "validationError": {
+        "title": "Fout",
+        "description": "Vul de vereiste velden in (Voornaam, Achternaam, Geslacht, E-mail)"
+      }
+    }
   }
 }
