@@ -96,6 +96,9 @@ export default function LoginForm() {
           role: data.role,
         };
         
+        // Store tenant data in localStorage
+        localStorage.setItem("tenant", JSON.stringify(data.tenant));
+        
         login(userData, data.token);
         setLocation("/dashboard");
       } else if (data.type === "select_tenant") {
@@ -160,6 +163,9 @@ export default function LoginForm() {
           role: data.role,
         };
         
+        // Store tenant data in localStorage
+        localStorage.setItem("tenant", JSON.stringify(data.tenant));
+        
         login(userData, data.token);
         setLocation("/dashboard");
       }
@@ -204,6 +210,9 @@ export default function LoginForm() {
           tenantSlug: data.tenant.slug,
           role: data.role,
         };
+
+        // Store tenant data in localStorage
+        localStorage.setItem("tenant", JSON.stringify(data.tenant));
 
         login(userData, data.token);
         setShowTenantSelector(false);
@@ -254,6 +263,9 @@ export default function LoginForm() {
         tenantSlug: data.tenant.slug,
         role: data.role,
       };
+
+      // Store tenant data in localStorage
+      localStorage.setItem("tenant", JSON.stringify(data.tenant));
 
       login(userData, data.token);
       setShowRoleSelector(false);

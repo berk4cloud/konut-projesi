@@ -745,7 +745,7 @@ COPY public.rooms (id, house_id, room_number, floor, room_type, bed_count, gende
 COPY public.tenants (id, name, slug, type, status, contact_email, contact_phone, plan, trial_ends_at, subscription_starts_at, modules, currency, favorite_countries, default_country, created_at, updated_at, created_by) FROM stdin;
 tenant-apple	Apple Netherlands	apple-nl	direct_employer	trial	hr@apple.nl	+31 20 1234567	enterprise	2025-11-01 19:22:11.416	\N	"{\\"workers\\":true,\\"planning\\":true,\\"accommodation\\":false,\\"transport\\":true,\\"finance\\":true}"	EUR	{NL,GB,US}	NL	2024-10-01 00:00:00	2024-10-01 00:00:00	platform-admin-1
 tenant-oneflex	OneFlex B.V.	oneflex	staffing_agency	active	contact@oneflex.nl	+31 20 9876543	professional	\N	2024-06-01 00:00:00	"{\\"workers\\":true,\\"planning\\":true,\\"accommodation\\":true,\\"transport\\":true,\\"finance\\":false}"	EUR	{NL,DE,BE}	NL	2024-06-01 00:00:00	2024-06-01 00:00:00	platform-admin-1
-tenant-cova	Cova B.V.	cova-bv	staffing_agency	active	info@cova.nl	+31 40 1234567	professional	\N	2024-01-15 00:00:00	"{\\"workers\\":true,\\"planning\\":true,\\"accommodation\\":true,\\"transport\\":false,\\"finance\\":false}"	EUR	{DE,NL,TR,PL,BE}	NL	2024-01-15 00:00:00	2025-10-18 19:24:39.398881	platform-admin-1
+tenant-cova	Cova B.V.	cova-bv	staffing_agency	active	info@cova.nl	+31 40 1234567	professional	\N	2024-01-15 00:00:00	"{\\"workers\\":true,\\"planning\\":true,\\"accommodation\\":true,\\"transport\\":false,\\"finance\\":false}"	EUR	{DE,NL,TR,PL,BE}	NL	2024-01-15 00:00:00	2025-10-18 19:45:27.449	platform-admin-1
 \.
 
 

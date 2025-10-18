@@ -88,6 +88,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           status: tenant.status,
           plan: tenant.plan,
           modules: tenant.modules,
+          favoriteCountries: (tenant as any).favorite_countries || tenant.favoriteCountries || [],
+          defaultCountry: (tenant as any).default_country || tenant.defaultCountry || null,
         }
       });
     } catch (error) {
@@ -193,6 +195,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               id: ctx.tenant!.id,
               name: ctx.tenant!.name,
               slug: ctx.tenant!.slug,
+              favoriteCountries: (ctx.tenant as any).favorite_countries || ctx.tenant.favoriteCountries || [],
+              defaultCountry: (ctx.tenant as any).default_country || ctx.tenant.defaultCountry || null,
             },
             role: ctx.roles[0],
           });
@@ -205,6 +209,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             id: ctx.tenant!.id,
             name: ctx.tenant!.name,
             slug: ctx.tenant!.slug,
+            favoriteCountries: (ctx.tenant as any).favorite_countries || ctx.tenant.favoriteCountries || [],
+            defaultCountry: (ctx.tenant as any).default_country || ctx.tenant.defaultCountry || null,
           },
           roles: ctx.roles,
           user: {
@@ -325,6 +331,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           id: tenant.id,
           name: tenant.name,
           slug: tenant.slug,
+          favoriteCountries: (tenant as any).favorite_countries || tenant.favoriteCountries || [],
+          defaultCountry: (tenant as any).default_country || tenant.defaultCountry || null,
         },
         role,
       });
@@ -623,13 +631,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const updates = req.body;
       
+      console.log("PATCH /tenants/:id - Request body:", updates);
+      
       const tenant = await storage.updateTenant(id, updates);
       
       if (!tenant) {
         return res.status(404).json({ error: "Tenant not found" });
       }
 
-      res.json(tenant);
+      console.log("PATCH /tenants/:id - Response tenant:", JSON.stringify(tenant, null, 2));
+
+      // Map snake_case to camelCase for frontend compatibility
+      const response = {
+        ...tenant,
+        favoriteCountries: (tenant as any).favorite_countries || tenant.favoriteCountries || [],
+        defaultCountry: (tenant as any).default_country || tenant.defaultCountry || null,
+      };
+
+      res.json(response);
     } catch (error) {
       console.error("Error updating tenant:", error);
       res.status(500).json({ error: "Failed to update tenant" });
