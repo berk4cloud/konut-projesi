@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,31 +46,37 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import AccommodationFinder from "@/components/AccommodationFinder";
 
+// Legacy status type for backward compatibility
 type WorkerStatus = "active" | "left_no_notice" | "notice_period" | "on_vacation" | "new_registration" | "checked_out";
 
+// Employment status from federated model
+type EmploymentStatus = "active" | "inactive" | "former" | "invited";
+
+// Worker type matches API response format (federated model via adapter)
 type Worker = {
-  id: string;
+  id: string; // This is employmentId
+  employmentId: string;
+  profileId: string;
+  tenantId: string;
+  email: string;
   firstName: string;
   lastName: string;
-  birthDate: string;
-  gender: string;
-  country: string;
-  email?: string;
-  phone?: string;
-  house?: string; // Optional: Worker can be registered without accommodation
-  room?: string; // Optional: Worker can be registered without accommodation
-  bed?: string; // Optional: Worker can be registered without accommodation
-  status: WorkerStatus;
-  // Check-in/Check-out dates
-  checkInDate?: string; // Giriş tarihi
-  checkOutDate?: string; // Çıkış tarihi
-  keyHandedOverDate?: string; // Anahtar teslim tarihi
-  keyReturnedDate?: string; // Anahtar iade tarihi
-  // Status-specific dates
-  vacationStartDate?: string; // For on_vacation
-  vacationEndDate?: string; // For on_vacation
-  plannedExitDate?: string; // For notice_period
-  leftDate?: string; // For left_no_notice
+  gender: "male" | "female";
+  phone?: string | null;
+  nationality?: string | null;
+  dateOfBirth?: string | null;
+  photo?: string | null;
+  status: EmploymentStatus;
+  jobTitle?: string | null;
+  department?: string | null;
+  startDate: string;
+  endDate?: string | null;
+  // Legacy fields for backward compatibility
+  birthDate?: string;
+  country?: string;
+  house?: string;
+  room?: string;
+  bed?: string;
 };
 
 // Mock houses for dropdowns
@@ -86,8 +94,40 @@ export default function Workers() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
 
+  // Fetch workers from API (federated model)
+  const { data: workers = [], isLoading } = useQuery<Worker[]>({
+    queryKey: ['/api/workers'],
+  });
+
+  // Create worker mutation
+  const createWorkerMutation = useMutation({
+    mutationFn: async (data: typeof formData) => {
+      const res = await apiRequest('POST', '/api/workers', {
+        ...data,
+        tenantId: 'cova',
+      });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/workers'] });
+      toast({
+        title: "Başarılı",
+        description: "Çalışan başarıyla eklendi",
+      });
+      setIsAddDialogOpen(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Hata",
+        description: error.message || "Çalışan eklenemedi",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Calculate age from birth date
-  const calculateAge = (birthDate: string) => {
+  const calculateAge = (birthDate: string | null | undefined) => {
+    if (!birthDate) return "?";
     const today = new Date();
     const birth = new Date(birthDate);
     let age = today.getFullYear() - birth.getFullYear();
@@ -98,54 +138,42 @@ export default function Workers() {
     return age;
   };
 
+  // Gender display helper
+  const getGenderDisplay = (gender: "male" | "female") => {
+    return gender === "male" ? "Erkek" : "Kadın";
+  };
+
+  // Employment status badge for federated model
   const getStatusBadge = (worker: Worker) => {
     switch (worker.status) {
       case "active":
-        return null; // Don't show badge for active status
-      case "on_vacation":
         return (
-          <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300" data-testid={`badge-status-${worker.id}`}>
-            Tatilde {worker.vacationEndDate && `(${new Date(worker.vacationEndDate).toLocaleDateString("tr-TR")} dönüş)`}
+          <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300" data-testid={`badge-status-${worker.id}`}>
+            Aktif
           </Badge>
         );
-      case "notice_period":
-        return (
-          <Badge variant="secondary" className="bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300" data-testid={`badge-status-${worker.id}`}>
-            Çıkış Bildirdi {worker.plannedExitDate && `(${new Date(worker.plannedExitDate).toLocaleDateString("tr-TR")})`}
-          </Badge>
-        );
-      case "left_no_notice":
-        return (
-          <Badge variant="secondary" className="bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300" data-testid={`badge-status-${worker.id}`}>
-            Haber Vermeden Gitti {worker.leftDate && `(${new Date(worker.leftDate).toLocaleDateString("tr-TR")})`}
-          </Badge>
-        );
-      case "new_registration":
-        return (
-          <Badge variant="secondary" className="bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300" data-testid={`badge-status-${worker.id}`}>
-            Yeni Kayıt (Giriş Bekliyor)
-          </Badge>
-        );
-      case "checked_out":
+      case "inactive":
         return (
           <Badge variant="secondary" className="bg-gray-100 text-gray-700 dark:bg-gray-950 dark:text-gray-300" data-testid={`badge-status-${worker.id}`}>
-            Çıkış Yaptı {worker.checkOutDate && `(${new Date(worker.checkOutDate).toLocaleDateString("tr-TR")})`}
+            Pasif
+          </Badge>
+        );
+      case "former":
+        return (
+          <Badge variant="secondary" className="bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300" data-testid={`badge-status-${worker.id}`}>
+            Eski Çalışan {worker.endDate && `(${new Date(worker.endDate).toLocaleDateString("tr-TR")})`}
+          </Badge>
+        );
+      case "invited":
+        return (
+          <Badge variant="secondary" className="bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300" data-testid={`badge-status-${worker.id}`}>
+            Davet Edildi
           </Badge>
         );
       default:
         return null;
     }
   };
-  const [workers, setWorkers] = useState<Worker[]>([
-    { id: "1", firstName: "John", lastName: "Doe", birthDate: "1980-10-22", gender: "Erkek", country: "Hollanda", email: "john.doe@example.com", phone: "+31612345678", house: "Geldernstrasse 13", room: "45", bed: "1", status: "active", checkInDate: "2025-01-15", keyHandedOverDate: "2025-01-15" },
-    { id: "2", firstName: "Jane", lastName: "Smith", birthDate: "1992-05-15", gender: "Kadın", country: "Almanya", email: "jane.smith@example.com", house: "Geldernstrasse 13", room: "45", bed: "3", status: "on_vacation", vacationStartDate: "2025-10-15", vacationEndDate: "2025-10-30", checkInDate: "2025-02-01", keyHandedOverDate: "2025-02-01" },
-    { id: "3", firstName: "Mike", lastName: "Johnson", birthDate: "1985-11-30", gender: "Erkek", country: "Polonya", phone: "+48123456789", house: "Geldernstrasse 13", room: "47", bed: "1", status: "active", checkInDate: "2025-03-10", keyHandedOverDate: "2025-03-10" },
-    { id: "4", firstName: "Sarah", lastName: "Williams", birthDate: "1988-03-08", gender: "Kadın", country: "Romanya", email: "sarah.w@example.com", phone: "+40123456789", house: "Hauptstrasse 45", room: "101", bed: "2", status: "notice_period", plannedExitDate: "2025-10-31", checkInDate: "2024-11-05", keyHandedOverDate: "2024-11-05" },
-    { id: "5", firstName: "Tom", lastName: "Brown", birthDate: "1995-07-12", gender: "Erkek", country: "Hollanda", house: "", room: "", bed: "", status: "left_no_notice", leftDate: "2025-10-16", checkOutDate: "2025-10-16", keyReturnedDate: "2025-10-16" },
-    { id: "6", firstName: "Ahmet", lastName: "Yılmaz", birthDate: "1990-08-20", gender: "Erkek", country: "Türkiye", email: "ahmet.yilmaz@example.com", phone: "+905551234567", house: "Atatürk Caddesi 42", room: "1", bed: "2", status: "active", checkInDate: "2025-05-20", keyHandedOverDate: "2025-05-20" },
-    { id: "7", firstName: "Maria", lastName: "Garcia", birthDate: "1993-04-12", gender: "Kadın", country: "İspanya", email: "maria.g@example.com", phone: "+34612345678", house: "", room: "", bed: "", status: "new_registration" },
-    { id: "8", firstName: "Pavel", lastName: "Novak", birthDate: "1989-09-25", gender: "Erkek", country: "Çek Cumhuriyeti", email: "pavel.n@example.com", phone: "+420123456789", house: "", room: "", bed: "", status: "checked_out", checkInDate: "2024-06-01", checkOutDate: "2025-10-10", keyHandedOverDate: "2024-06-01", keyReturnedDate: "2025-10-10" },
-  ]);
   
   // Dialog states
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -153,36 +181,27 @@ export default function Workers() {
   const [isAccommodationFinderOpen, setIsAccommodationFinderOpen] = useState(false);
   const [selectedWorker, setSelectedWorker] = useState<Worker | null>(null);
   
-  // Form states
+  // Form states (federated model)
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
-    birthDate: "",
-    gender: "",
-    country: "",
+    dateOfBirth: "",
+    gender: "" as "male" | "female" | "",
+    nationality: "",
     email: "",
     phone: "",
-    house: "",
-    room: "",
-    bed: "",
-    status: "active" as WorkerStatus,
-    checkInDate: "",
-    checkOutDate: "",
-    keyHandedOverDate: "",
-    keyReturnedDate: "",
-    vacationStartDate: "",
-    vacationEndDate: "",
-    plannedExitDate: "",
-    leftDate: "",
+    jobTitle: "",
+    department: "",
+    startDate: "",
   });
 
   const filteredWorkers = workers
     .filter((worker) =>
       `${worker.firstName} ${worker.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      worker.country.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (worker.house && worker.house.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      worker.birthDate.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (worker.email && worker.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (worker.nationality && worker.nationality.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (worker.jobTitle && worker.jobTitle.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (worker.department && worker.department.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      worker.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (worker.phone && worker.phone.includes(searchQuery))
     )
     .sort((a, b) => {
@@ -228,23 +247,14 @@ export default function Workers() {
     setFormData({
       firstName: "",
       lastName: "",
-      birthDate: "",
+      dateOfBirth: "",
       gender: "",
-      country: "",
+      nationality: "",
       email: "",
       phone: "",
-      house: "",
-      room: "",
-      bed: "",
-      status: "active",
-      checkInDate: "",
-      checkOutDate: "",
-      keyHandedOverDate: "",
-      keyReturnedDate: "",
-      vacationStartDate: "",
-      vacationEndDate: "",
-      plannedExitDate: "",
-      leftDate: "",
+      jobTitle: "",
+      department: "",
+      startDate: new Date().toISOString().split('T')[0],
     });
     setIsAddDialogOpen(true);
   };
@@ -254,23 +264,14 @@ export default function Workers() {
     setFormData({
       firstName: worker.firstName,
       lastName: worker.lastName,
-      birthDate: worker.birthDate,
+      dateOfBirth: worker.dateOfBirth || "",
       gender: worker.gender,
-      country: worker.country,
-      email: worker.email || "",
+      nationality: worker.nationality || "",
+      email: worker.email,
       phone: worker.phone || "",
-      house: worker.house || "",
-      room: worker.room || "",
-      bed: worker.bed || "",
-      status: worker.status,
-      checkInDate: worker.checkInDate || "",
-      checkOutDate: worker.checkOutDate || "",
-      keyHandedOverDate: worker.keyHandedOverDate || "",
-      keyReturnedDate: worker.keyReturnedDate || "",
-      vacationStartDate: worker.vacationStartDate || "",
-      vacationEndDate: worker.vacationEndDate || "",
-      plannedExitDate: worker.plannedExitDate || "",
-      leftDate: worker.leftDate || "",
+      jobTitle: worker.jobTitle || "",
+      department: worker.department || "",
+      startDate: worker.startDate,
     });
     setIsEditDialogOpen(true);
   };
@@ -406,17 +407,17 @@ export default function Workers() {
                         <div>
                           <div className="flex items-center gap-2" data-testid={`text-worker-name-${worker.id}`}>
                             <span>{worker.firstName} {worker.lastName}</span>
-                            <span className="text-sm text-muted-foreground" data-testid={`text-worker-age-${worker.id}`}>
-                              ({calculateAge(worker.birthDate)})
-                            </span>
-                          </div>
-                          <div className="text-xs text-muted-foreground mt-0.5">
-                            {worker.birthDate}
-                            {worker.email && (
-                              <span className="ml-2" data-testid={`text-worker-email-${worker.id}`}>
-                                • {worker.email}
+                            {worker.dateOfBirth && (
+                              <span className="text-sm text-muted-foreground" data-testid={`text-worker-age-${worker.id}`}>
+                                ({calculateAge(worker.dateOfBirth)})
                               </span>
                             )}
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-0.5">
+                            {worker.dateOfBirth || "Doğum tarihi yok"}
+                            <span className="ml-2" data-testid={`text-worker-email-${worker.id}`}>
+                              • {worker.email}
+                            </span>
                             {worker.phone && (
                               <span className="ml-2" data-testid={`text-worker-phone-${worker.id}`}>
                                 • {worker.phone}
@@ -431,8 +432,8 @@ export default function Workers() {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>{worker.gender}</TableCell>
-                    <TableCell>{worker.country}</TableCell>
+                    <TableCell>{getGenderDisplay(worker.gender)}</TableCell>
+                    <TableCell>{worker.nationality || "-"}</TableCell>
                     <TableCell className="text-sm">
                       {worker.house ? (
                         <div className="flex flex-col gap-0.5">

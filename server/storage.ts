@@ -67,7 +67,8 @@ export class MemStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
     const user: User = { 
-      ...insertUser, 
+      ...insertUser,
+      role: insertUser.role ?? "office_staff",
       id,
       createdAt: new Date(),
       updatedAt: new Date()
@@ -94,6 +95,13 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const profile: WorkerProfile = {
       ...insertProfile,
+      phone: insertProfile.phone ?? null,
+      nationality: insertProfile.nationality ?? null,
+      dateOfBirth: insertProfile.dateOfBirth ?? null,
+      password: insertProfile.password ?? null,
+      photo: insertProfile.photo ?? null,
+      bio: insertProfile.bio ?? null,
+      address: insertProfile.address ?? null,
       id,
       createdAt: new Date(),
       updatedAt: new Date()
@@ -145,6 +153,12 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const employment: Employment = {
       ...insertEmployment,
+      status: insertEmployment.status ?? null,
+      endDate: insertEmployment.endDate ?? null,
+      snapshotPhoto: insertEmployment.snapshotPhoto ?? null,
+      jobTitle: insertEmployment.jobTitle ?? null,
+      department: insertEmployment.department ?? null,
+      createdBy: insertEmployment.createdBy ?? null,
       id,
       createdAt: new Date(),
       updatedAt: new Date()
@@ -180,6 +194,15 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const data: EmploymentPrivateData = {
       ...insertData,
+      salary: insertData.salary ?? null,
+      salaryFrequency: insertData.salaryFrequency ?? null,
+      currency: insertData.currency ?? null,
+      contractType: insertData.contractType ?? null,
+      contractStartDate: insertData.contractStartDate ?? null,
+      contractEndDate: insertData.contractEndDate ?? null,
+      internalNotes: insertData.internalNotes ?? null,
+      performanceRating: insertData.performanceRating ?? null,
+      managerId: insertData.managerId ?? null,
       id,
       createdAt: new Date(),
       updatedAt: new Date()
