@@ -732,5 +732,149 @@
     "missingInfo": "Brakujące Informacje",
     "fillRequired": "Proszę wypełnić wszystkie wymagane pola",
     "reminderAdded": "Przypomnienie dodane"
+  },
+  "assignments": {
+    "pageTitle": "Zarządzanie Zakwaterowaniem",
+    "pageSubtitle": "Aktywne zakwaterowania, rozliczenia i śledzenie płatności",
+    "cards": {
+      "activeAssignments": "Aktywne Zakwaterowania",
+      "activeAssignmentsDesc": "Trwające zakwaterowania",
+      "pendingDeposits": "Oczekujące Depozyty",
+      "pendingDepositsDesc": "Niepodjęte depozyty",
+      "overduePayments": "Zaległe Płatności",
+      "overduePaymentsDesc": "Zaległe płatności",
+      "pendingAmount": "Oczekująca Kwota",
+      "pendingAmountDesc": "Do pobrania"
+    },
+    "tabs": {
+      "assignments": "Zakwaterowania",
+      "charges": "Rozliczenia",
+      "payments": "Płatności"
+    },
+    "search": {
+      "placeholder": "Szukaj pracownika lub zakwaterowania...",
+      "statusFilter": "Filtruj według statusu",
+      "chargesFilter": "Filtruj według statusu płatności",
+      "startDate": "Start:",
+      "endDate": "Koniec:",
+      "clearFilters": "Wyczyść"
+    },
+    "filters": {
+      "all": "Wszystkie",
+      "today": "Termin Dzisiaj",
+      "next3Days": "Najbliższe 3 Dni",
+      "overdue": "Zaległe (Wszystkie)",
+      "overdue7to14": "Zaległe (7-14 dni)",
+      "overdue14to30": "Zaległe (14-30 dni)",
+      "overdue30to90": "Zaległe (30-90 dni)",
+      "overdue90plus": "Zaległe (90+ dni)"
+    },
+    "status": {
+      "active": "Aktywny",
+      "endingSoon": "Kończy Się Wkrótce",
+      "ended": "Zakończony",
+      "pending": "Oczekujący"
+    },
+    "paymentStatus": {
+      "paid": "Opłacone",
+      "pending": "Oczekujące",
+      "overdue": "Zaległe",
+      "partial": "Częściowe"
+    },
+    "paymentMethods": {
+      "bankTransfer": "Przelew bankowy",
+      "pos": "Terminal",
+      "cash": "Gotówka",
+      "automatic": "Automatyczny",
+      "other": "Inne"
+    },
+    "assignmentCard": {
+      "startDate": "Start",
+      "monthlyRate": "Stawka Miesięczna",
+      "deposit": "Depozyt",
+      "endDate": "Koniec",
+      "ongoing": "W trakcie",
+      "viewDetails": "Zobacz Szczegóły"
+    },
+    "chargeCard": {
+      "dueDate": "Termin Płatności",
+      "days": "Dni",
+      "daysCount": "Liczba Dni",
+      "amount": "Kwota",
+      "remaining": "Pozostało",
+      "remainingDebt": "Pozostały Dług",
+      "calculation": "Kalkulacja",
+      "fullMonth": "Pełny miesiąc",
+      "partial": "Częściowy",
+      "prorated": "Proporcjonalny",
+      "recordPayment": "Zarejestruj Płatność",
+      "enterPayment": "Wprowadź Płatność"
+    },
+    "paymentCard": {
+      "amount": "Kwota",
+      "paymentMethod": "Metoda Płatności",
+      "reference": "Referencja",
+      "paymentsTotal": "{{count}} płatność • Suma: €{{total}}",
+      "paidBadge": "Opłacone",
+      "showLess": "Pokaż Mniej",
+      "showMore": "+{{count}} Pokaż Więcej"
+    },
+    "paymentDialog": {
+      "title": "Wprowadź Nową Płatność",
+      "description": "Utwórz zapis płatności dla {{workerName}}",
+      "fullAmount": "Całkowita Kwota:",
+      "remainingAmount": "Pozostała Kwota:",
+      "amountLabel": "Kwota Płatności (€) *",
+      "amountPlaceholder": "0.00",
+      "methodLabel": "Metoda Płatności *",
+      "methodPlaceholder": "Wybierz",
+      "collectorLabel": "Imię i Nazwisko Pobierającego *",
+      "collectorPlaceholder": "Imię i Nazwisko",
+      "dateLabel": "Data Płatności *",
+      "notesLabel": "Notatki (Opcjonalne)",
+      "notesPlaceholder": "Notatki dotyczące płatności...",
+      "cancel": "Anuluj",
+      "save": "Zapisz Płatność",
+      "errors": {
+        "missingFields": "Proszę wypełnić wszystkie wymagane pola",
+        "invalidAmount": "Kwota płatności musi być większa niż 0",
+        "exceedsRemaining": "Kwota płatności nie może przekroczyć pozostałej kwoty (€{{remaining}})"
+      },
+      "success": "Płatność Zarejestrowana",
+      "successDesc": "Płatność zarejestrowana pomyślnie"
+    },
+    "detailsDialog": {
+      "title": "Szczegóły Przydziału i Notatki z Rozmów",
+      "assignmentInfo": "Informacje o Przydziale",
+      "room": "Pokój",
+      "bed": "Łóżko",
+      "startDate": "Start",
+      "monthlyRate": "Stawka Miesięczna",
+      "depositInfo": "Informacje o Depozycie",
+      "depositCollected": "Status Depozytu",
+      "depositYes": "Pobrany",
+      "depositNo": "Nie Pobrany",
+      "depositAmount": "Kwota",
+      "depositDate": "Data",
+      "depositCollector": "Pobierający",
+      "conversationNotes": "Notatki z Rozmów",
+      "noNotes": "Nie dodano jeszcze notatek",
+      "addNote": "Dodaj Notatkę",
+      "noteLabel": "Notatka *",
+      "notePlaceholder": "Wprowadź notatkę z rozmowy tutaj...",
+      "creatorLabel": "Kontaktowana Osoba *",
+      "creatorPlaceholder": "Imię i Nazwisko",
+      "cancel": "Zamknij",
+      "saveNote": "Zapisz Notatkę"
+    },
+    "empty": {
+      "noAssignments": "Nie znaleziono aktywnych zakwaterowań",
+      "noCharges": "Nie znaleziono zapisów rozliczeń",
+      "noPayments": "Nie znaleziono zapisów płatności"
+    },
+    "toasts": {
+      "error": "Błąd",
+      "success": "Sukces"
+    }
   }
 }

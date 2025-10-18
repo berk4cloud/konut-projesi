@@ -732,5 +732,149 @@
     "missingInfo": "Ontbrekende Informatie",
     "fillRequired": "Vul alle verplichte velden in",
     "reminderAdded": "Herinnering toegevoegd"
+  },
+  "assignments": {
+    "pageTitle": "Accommodatiebeheer",
+    "pageSubtitle": "Actieve accommodaties, facturering en betalingstracking",
+    "cards": {
+      "activeAssignments": "Actieve Accommodaties",
+      "activeAssignmentsDesc": "Lopende accommodaties",
+      "pendingDeposits": "Openstaande Borgsommen",
+      "pendingDepositsDesc": "Niet geïnde borgsommen",
+      "overduePayments": "Achterstallige Betalingen",
+      "overduePaymentsDesc": "Achterstallige betalingen",
+      "pendingAmount": "Openstaand Bedrag",
+      "pendingAmountDesc": "Te innen"
+    },
+    "tabs": {
+      "assignments": "Accommodaties",
+      "charges": "Facturering",
+      "payments": "Betalingen"
+    },
+    "search": {
+      "placeholder": "Zoek werknemer of accommodatie...",
+      "statusFilter": "Filter op status",
+      "chargesFilter": "Filter op betalingsstatus",
+      "startDate": "Start:",
+      "endDate": "Einde:",
+      "clearFilters": "Wissen"
+    },
+    "filters": {
+      "all": "Alle",
+      "today": "Vandaag Verschuldigd",
+      "next3Days": "Komende 3 Dagen",
+      "overdue": "Achterstallig (Alle)",
+      "overdue7to14": "Achterstallig (7-14 dagen)",
+      "overdue14to30": "Achterstallig (14-30 dagen)",
+      "overdue30to90": "Achterstallig (30-90 dagen)",
+      "overdue90plus": "Achterstallig (90+ dagen)"
+    },
+    "status": {
+      "active": "Actief",
+      "endingSoon": "Eindigt Binnenkort",
+      "ended": "Beëindigd",
+      "pending": "In Afwachting"
+    },
+    "paymentStatus": {
+      "paid": "Betaald",
+      "pending": "In Afwachting",
+      "overdue": "Achterstallig",
+      "partial": "Gedeeltelijk"
+    },
+    "paymentMethods": {
+      "bankTransfer": "Bankoverschrijving",
+      "pos": "Pinautomaat",
+      "cash": "Contant",
+      "automatic": "Automatisch",
+      "other": "Anders"
+    },
+    "assignmentCard": {
+      "startDate": "Start",
+      "monthlyRate": "Maandtarief",
+      "deposit": "Borg",
+      "endDate": "Einde",
+      "ongoing": "Lopend",
+      "viewDetails": "Details Bekijken"
+    },
+    "chargeCard": {
+      "dueDate": "Vervaldatum",
+      "days": "Dagen",
+      "daysCount": "Aantal Dagen",
+      "amount": "Bedrag",
+      "remaining": "Resterend",
+      "remainingDebt": "Resterende Schuld",
+      "calculation": "Berekening",
+      "fullMonth": "Hele maand",
+      "partial": "Gedeeltelijk",
+      "prorated": "Pro rata",
+      "recordPayment": "Betaling Vastleggen",
+      "enterPayment": "Betaling Invoeren"
+    },
+    "paymentCard": {
+      "amount": "Bedrag",
+      "paymentMethod": "Betaalmethode",
+      "reference": "Referentie",
+      "paymentsTotal": "{{count}} betaling • Totaal: €{{total}}",
+      "paidBadge": "Betaald",
+      "showLess": "Minder Tonen",
+      "showMore": "+{{count}} Meer Tonen"
+    },
+    "paymentDialog": {
+      "title": "Nieuwe Betaling Invoeren",
+      "description": "Betalingsrecord aanmaken voor {{workerName}}",
+      "fullAmount": "Totaal Bedrag:",
+      "remainingAmount": "Resterend Bedrag:",
+      "amountLabel": "Betalingsbedrag (€) *",
+      "amountPlaceholder": "0.00",
+      "methodLabel": "Betaalmethode *",
+      "methodPlaceholder": "Selecteer",
+      "collectorLabel": "Naam Ontvanger *",
+      "collectorPlaceholder": "Volledige Naam",
+      "dateLabel": "Betalingsdatum *",
+      "notesLabel": "Notities (Optioneel)",
+      "notesPlaceholder": "Betalingsnotities...",
+      "cancel": "Annuleren",
+      "save": "Betaling Opslaan",
+      "errors": {
+        "missingFields": "Vul alle verplichte velden in",
+        "invalidAmount": "Betalingsbedrag moet groter zijn dan 0",
+        "exceedsRemaining": "Betalingsbedrag kan resterend bedrag niet overschrijden (€{{remaining}})"
+      },
+      "success": "Betaling Vastgelegd",
+      "successDesc": "Betaling succesvol vastgelegd"
+    },
+    "detailsDialog": {
+      "title": "Toewijzingsdetails en Gespreksnotities",
+      "assignmentInfo": "Toewijzingsinformatie",
+      "room": "Kamer",
+      "bed": "Bed",
+      "startDate": "Start",
+      "monthlyRate": "Maandtarief",
+      "depositInfo": "Borginformatie",
+      "depositCollected": "Borgstatus",
+      "depositYes": "Geïnd",
+      "depositNo": "Niet Geïnd",
+      "depositAmount": "Bedrag",
+      "depositDate": "Datum",
+      "depositCollector": "Ontvanger",
+      "conversationNotes": "Gespreksnotities",
+      "noNotes": "Nog geen notities toegevoegd",
+      "addNote": "Notitie Toevoegen",
+      "noteLabel": "Notitie *",
+      "notePlaceholder": "Voer gespreksnotitie hier in...",
+      "creatorLabel": "Gecontacteerde Persoon *",
+      "creatorPlaceholder": "Volledige Naam",
+      "cancel": "Sluiten",
+      "saveNote": "Notitie Opslaan"
+    },
+    "empty": {
+      "noAssignments": "Geen actieve accommodaties gevonden",
+      "noCharges": "Geen factureringsrecords gevonden",
+      "noPayments": "Geen betalingsrecords gevonden"
+    },
+    "toasts": {
+      "error": "Fout",
+      "success": "Succes"
+    }
   }
 }

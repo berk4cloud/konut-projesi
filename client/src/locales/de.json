@@ -732,5 +732,149 @@
     "missingInfo": "Fehlende Information",
     "fillRequired": "Bitte füllen Sie alle Pflichtfelder aus",
     "reminderAdded": "Erinnerung hinzugefügt"
+  },
+  "assignments": {
+    "pageTitle": "Unterkunftsverwaltung",
+    "pageSubtitle": "Aktive Unterkünfte, Abrechnung und Zahlungsverfolgung",
+    "cards": {
+      "activeAssignments": "Aktive Unterkünfte",
+      "activeAssignmentsDesc": "Laufende Unterkünfte",
+      "pendingDeposits": "Ausstehende Kautionen",
+      "pendingDepositsDesc": "Nicht eingezogene Kautionen",
+      "overduePayments": "Überfällige Zahlungen",
+      "overduePaymentsDesc": "Überfällige Zahlungen",
+      "pendingAmount": "Ausstehender Betrag",
+      "pendingAmountDesc": "Einzuziehen"
+    },
+    "tabs": {
+      "assignments": "Unterkünfte",
+      "charges": "Abrechnung",
+      "payments": "Zahlungen"
+    },
+    "search": {
+      "placeholder": "Mitarbeiter oder Unterkunft suchen...",
+      "statusFilter": "Nach Status filtern",
+      "chargesFilter": "Nach Zahlungsstatus filtern",
+      "startDate": "Start:",
+      "endDate": "Ende:",
+      "clearFilters": "Löschen"
+    },
+    "filters": {
+      "all": "Alle",
+      "today": "Heute fällig",
+      "next3Days": "Nächste 3 Tage",
+      "overdue": "Überfällig (Alle)",
+      "overdue7to14": "Überfällig (7-14 Tage)",
+      "overdue14to30": "Überfällig (14-30 Tage)",
+      "overdue30to90": "Überfällig (30-90 Tage)",
+      "overdue90plus": "Überfällig (90+ Tage)"
+    },
+    "status": {
+      "active": "Aktiv",
+      "endingSoon": "Endet bald",
+      "ended": "Beendet",
+      "pending": "Ausstehend"
+    },
+    "paymentStatus": {
+      "paid": "Bezahlt",
+      "pending": "Ausstehend",
+      "overdue": "Überfällig",
+      "partial": "Teilweise"
+    },
+    "paymentMethods": {
+      "bankTransfer": "Banküberweisung",
+      "pos": "POS",
+      "cash": "Bargeld",
+      "automatic": "Automatisch",
+      "other": "Sonstiges"
+    },
+    "assignmentCard": {
+      "startDate": "Start",
+      "monthlyRate": "Monatsrate",
+      "deposit": "Kaution",
+      "endDate": "Ende",
+      "ongoing": "Laufend",
+      "viewDetails": "Details anzeigen"
+    },
+    "chargeCard": {
+      "dueDate": "Fälligkeitsdatum",
+      "days": "Tage",
+      "daysCount": "Tage Anzahl",
+      "amount": "Betrag",
+      "remaining": "Verbleibend",
+      "remainingDebt": "Verbleibende Schuld",
+      "calculation": "Berechnung",
+      "fullMonth": "Ganzer Monat",
+      "partial": "Teilweise",
+      "prorated": "Anteilig",
+      "recordPayment": "Zahlung erfassen",
+      "enterPayment": "Zahlung eingeben"
+    },
+    "paymentCard": {
+      "amount": "Betrag",
+      "paymentMethod": "Zahlungsmethode",
+      "reference": "Referenz",
+      "paymentsTotal": "{{count}} Zahlung • Gesamt: €{{total}}",
+      "paidBadge": "Bezahlt",
+      "showLess": "Weniger anzeigen",
+      "showMore": "+{{count}} Mehr anzeigen"
+    },
+    "paymentDialog": {
+      "title": "Neue Zahlung eingeben",
+      "description": "Zahlungsaufzeichnung für {{workerName}} erstellen",
+      "fullAmount": "Gesamtbetrag:",
+      "remainingAmount": "Verbleibender Betrag:",
+      "amountLabel": "Zahlungsbetrag (€) *",
+      "amountPlaceholder": "0.00",
+      "methodLabel": "Zahlungsmethode *",
+      "methodPlaceholder": "Auswählen",
+      "collectorLabel": "Name des Kassierers *",
+      "collectorPlaceholder": "Vollständiger Name",
+      "dateLabel": "Zahlungsdatum *",
+      "notesLabel": "Notizen (Optional)",
+      "notesPlaceholder": "Zahlungsnotizen...",
+      "cancel": "Abbrechen",
+      "save": "Zahlung speichern",
+      "errors": {
+        "missingFields": "Bitte füllen Sie alle Pflichtfelder aus",
+        "invalidAmount": "Zahlungsbetrag muss größer als 0 sein",
+        "exceedsRemaining": "Zahlungsbetrag kann verbleibenden Betrag nicht überschreiten (€{{remaining}})"
+      },
+      "success": "Zahlung erfasst",
+      "successDesc": "Zahlung erfolgreich erfasst"
+    },
+    "detailsDialog": {
+      "title": "Zuteilungsdetails und Gesprächsnotizen",
+      "assignmentInfo": "Zuteilungsinformationen",
+      "room": "Zimmer",
+      "bed": "Bett",
+      "startDate": "Start",
+      "monthlyRate": "Monatsrate",
+      "depositInfo": "Kautionsinformationen",
+      "depositCollected": "Kautionsstatus",
+      "depositYes": "Eingezogen",
+      "depositNo": "Nicht eingezogen",
+      "depositAmount": "Betrag",
+      "depositDate": "Datum",
+      "depositCollector": "Kassierer",
+      "conversationNotes": "Gesprächsnotizen",
+      "noNotes": "Noch keine Notizen hinzugefügt",
+      "addNote": "Notiz hinzufügen",
+      "noteLabel": "Notiz *",
+      "notePlaceholder": "Gesprächsnotiz hier eingeben...",
+      "creatorLabel": "Kontaktierte Person *",
+      "creatorPlaceholder": "Vollständiger Name",
+      "cancel": "Schließen",
+      "saveNote": "Notiz speichern"
+    },
+    "empty": {
+      "noAssignments": "Keine aktiven Unterkünfte gefunden",
+      "noCharges": "Keine Abrechnungsaufzeichnungen gefunden",
+      "noPayments": "Keine Zahlungsaufzeichnungen gefunden"
+    },
+    "toasts": {
+      "error": "Fehler",
+      "success": "Erfolg"
+    }
   }
 }

@@ -749,5 +749,149 @@
     "missingInfo": "Missing Information",
     "fillRequired": "Please fill in all required fields",
     "reminderAdded": "Reminder added"
+  },
+  "assignments": {
+    "pageTitle": "Accommodation Management",
+    "pageSubtitle": "Active accommodations, billing and payment tracking",
+    "cards": {
+      "activeAssignments": "Active Accommodations",
+      "activeAssignmentsDesc": "Ongoing accommodations",
+      "pendingDeposits": "Pending Deposits",
+      "pendingDepositsDesc": "Uncollected deposits",
+      "overduePayments": "Overdue Payments",
+      "overduePaymentsDesc": "Overdue payments",
+      "pendingAmount": "Pending Amount",
+      "pendingAmountDesc": "To be collected"
+    },
+    "tabs": {
+      "assignments": "Accommodations",
+      "charges": "Billing",
+      "payments": "Payments"
+    },
+    "search": {
+      "placeholder": "Search worker or property...",
+      "statusFilter": "Filter by status",
+      "chargesFilter": "Filter by payment status",
+      "startDate": "Start:",
+      "endDate": "End:",
+      "clearFilters": "Clear"
+    },
+    "filters": {
+      "all": "All",
+      "today": "Due Today",
+      "next3Days": "Next 3 Days",
+      "overdue": "Overdue (All)",
+      "overdue7to14": "Overdue (7-14 days)",
+      "overdue14to30": "Overdue (14-30 days)",
+      "overdue30to90": "Overdue (30-90 days)",
+      "overdue90plus": "Overdue (90+ days)"
+    },
+    "status": {
+      "active": "Active",
+      "endingSoon": "Ending Soon",
+      "ended": "Ended",
+      "pending": "Pending"
+    },
+    "paymentStatus": {
+      "paid": "Paid",
+      "pending": "Pending",
+      "overdue": "Overdue",
+      "partial": "Partial"
+    },
+    "paymentMethods": {
+      "bankTransfer": "Bank Transfer",
+      "pos": "POS",
+      "cash": "Cash",
+      "automatic": "Automatic",
+      "other": "Other"
+    },
+    "assignmentCard": {
+      "startDate": "Start",
+      "monthlyRate": "Monthly Rate",
+      "deposit": "Deposit",
+      "endDate": "End",
+      "ongoing": "Ongoing",
+      "viewDetails": "View Details"
+    },
+    "chargeCard": {
+      "dueDate": "Due Date",
+      "days": "Days",
+      "daysCount": "Day Count",
+      "amount": "Amount",
+      "remaining": "Remaining",
+      "remainingDebt": "Remaining Debt",
+      "calculation": "Calculation",
+      "fullMonth": "Full month",
+      "partial": "Partial",
+      "prorated": "Prorated",
+      "recordPayment": "Record Payment",
+      "enterPayment": "Enter Payment"
+    },
+    "paymentCard": {
+      "amount": "Amount",
+      "paymentMethod": "Payment Method",
+      "reference": "Reference",
+      "paymentsTotal": "{{count}} payment • Total: €{{total}}",
+      "paidBadge": "Paid",
+      "showLess": "Show Less",
+      "showMore": "+{{count}} Show More"
+    },
+    "paymentDialog": {
+      "title": "Enter New Payment",
+      "description": "Create payment record for {{workerName}}",
+      "fullAmount": "Total Amount:",
+      "remainingAmount": "Remaining Amount:",
+      "amountLabel": "Payment Amount (€) *",
+      "amountPlaceholder": "0.00",
+      "methodLabel": "Payment Method *",
+      "methodPlaceholder": "Select",
+      "collectorLabel": "Collector Name *",
+      "collectorPlaceholder": "Full Name",
+      "dateLabel": "Payment Date *",
+      "notesLabel": "Notes (Optional)",
+      "notesPlaceholder": "Payment notes...",
+      "cancel": "Cancel",
+      "save": "Save Payment",
+      "errors": {
+        "missingFields": "Please fill in all required fields",
+        "invalidAmount": "Payment amount must be greater than 0",
+        "exceedsRemaining": "Payment amount cannot exceed remaining amount (€{{remaining}})"
+      },
+      "success": "Payment Recorded",
+      "successDesc": "Payment successfully recorded"
+    },
+    "detailsDialog": {
+      "title": "Assignment Details and Conversation Notes",
+      "assignmentInfo": "Assignment Information",
+      "room": "Room",
+      "bed": "Bed",
+      "startDate": "Start",
+      "monthlyRate": "Monthly Rate",
+      "depositInfo": "Deposit Information",
+      "depositCollected": "Deposit Status",
+      "depositYes": "Collected",
+      "depositNo": "Not Collected",
+      "depositAmount": "Amount",
+      "depositDate": "Date",
+      "depositCollector": "Collector",
+      "conversationNotes": "Conversation Notes",
+      "noNotes": "No notes added yet",
+      "addNote": "Add Note",
+      "noteLabel": "Note *",
+      "notePlaceholder": "Enter conversation note here...",
+      "creatorLabel": "Person Contacted *",
+      "creatorPlaceholder": "Full Name",
+      "cancel": "Close",
+      "saveNote": "Save Note"
+    },
+    "empty": {
+      "noAssignments": "No active accommodations found",
+      "noCharges": "No billing records found",
+      "noPayments": "No payment records found"
+    },
+    "toasts": {
+      "error": "Error",
+      "success": "Success"
+    }
   }
 }

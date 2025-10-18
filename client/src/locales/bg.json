@@ -732,5 +732,149 @@
     "missingInfo": "Липсваща Информация",
     "fillRequired": "Моля, попълнете всички задължителни полета",
     "reminderAdded": "Напомнянето е добавено"
+  },
+  "assignments": {
+    "pageTitle": "Управление на Настаняването",
+    "pageSubtitle": "Активни настанявания, фактуриране и проследяване на плащанията",
+    "cards": {
+      "activeAssignments": "Активни Настанявания",
+      "activeAssignmentsDesc": "Текущи настанявания",
+      "pendingDeposits": "Очаквани Депозити",
+      "pendingDepositsDesc": "Несъбрани депозити",
+      "overduePayments": "Просрочени Плащания",
+      "overduePaymentsDesc": "Просрочени плащания",
+      "pendingAmount": "Очаквана Сума",
+      "pendingAmountDesc": "За събиране"
+    },
+    "tabs": {
+      "assignments": "Настанявания",
+      "charges": "Фактуриране",
+      "payments": "Плащания"
+    },
+    "search": {
+      "placeholder": "Търсене на работник или жилище...",
+      "statusFilter": "Филтриране по статус",
+      "chargesFilter": "Филтриране по статус на плащане",
+      "startDate": "Начало:",
+      "endDate": "Край:",
+      "clearFilters": "Изчисти"
+    },
+    "filters": {
+      "all": "Всички",
+      "today": "Дължими Днес",
+      "next3Days": "Следващите 3 Дни",
+      "overdue": "Просрочени (Всички)",
+      "overdue7to14": "Просрочени (7-14 дни)",
+      "overdue14to30": "Просрочени (14-30 дни)",
+      "overdue30to90": "Просрочени (30-90 дни)",
+      "overdue90plus": "Просрочени (90+ дни)"
+    },
+    "status": {
+      "active": "Активен",
+      "endingSoon": "Завършва Скоро",
+      "ended": "Приключен",
+      "pending": "В Очакване"
+    },
+    "paymentStatus": {
+      "paid": "Платено",
+      "pending": "В Очакване",
+      "overdue": "Просрочено",
+      "partial": "Частично"
+    },
+    "paymentMethods": {
+      "bankTransfer": "Банков превод",
+      "pos": "ПОС терминал",
+      "cash": "В брой",
+      "automatic": "Автоматично",
+      "other": "Друго"
+    },
+    "assignmentCard": {
+      "startDate": "Начало",
+      "monthlyRate": "Месечна Такса",
+      "deposit": "Депозит",
+      "endDate": "Край",
+      "ongoing": "Текущ",
+      "viewDetails": "Виж Детайли"
+    },
+    "chargeCard": {
+      "dueDate": "Краен Срок",
+      "days": "Дни",
+      "daysCount": "Брой Дни",
+      "amount": "Сума",
+      "remaining": "Остатък",
+      "remainingDebt": "Остатъчен Дълг",
+      "calculation": "Изчисление",
+      "fullMonth": "Цял месец",
+      "partial": "Частичен",
+      "prorated": "Пропорционален",
+      "recordPayment": "Запис на Плащане",
+      "enterPayment": "Въведи Плащане"
+    },
+    "paymentCard": {
+      "amount": "Сума",
+      "paymentMethod": "Метод на Плащане",
+      "reference": "Референция",
+      "paymentsTotal": "{{count}} плащане • Общо: €{{total}}",
+      "paidBadge": "Платено",
+      "showLess": "Покажи По-Малко",
+      "showMore": "+{{count}} Покажи Повече"
+    },
+    "paymentDialog": {
+      "title": "Въведи Ново Плащане",
+      "description": "Създай запис на плащане за {{workerName}}",
+      "fullAmount": "Обща Сума:",
+      "remainingAmount": "Остатъчна Сума:",
+      "amountLabel": "Сума на Плащане (€) *",
+      "amountPlaceholder": "0.00",
+      "methodLabel": "Метод на Плащане *",
+      "methodPlaceholder": "Избери",
+      "collectorLabel": "Име на Събирач *",
+      "collectorPlaceholder": "Пълно Име",
+      "dateLabel": "Дата на Плащане *",
+      "notesLabel": "Бележки (По избор)",
+      "notesPlaceholder": "Бележки за плащането...",
+      "cancel": "Отказ",
+      "save": "Запази Плащане",
+      "errors": {
+        "missingFields": "Моля, попълнете всички задължителни полета",
+        "invalidAmount": "Сумата на плащането трябва да бъде по-голяма от 0",
+        "exceedsRemaining": "Сумата на плащането не може да надвишава остатъчната сума (€{{remaining}})"
+      },
+      "success": "Плащането е Записано",
+      "successDesc": "Плащането е записано успешно"
+    },
+    "detailsDialog": {
+      "title": "Детайли на Назначаването и Бележки от Разговори",
+      "assignmentInfo": "Информация за Назначаването",
+      "room": "Стая",
+      "bed": "Легло",
+      "startDate": "Начало",
+      "monthlyRate": "Месечна Такса",
+      "depositInfo": "Информация за Депозита",
+      "depositCollected": "Статус на Депозита",
+      "depositYes": "Събран",
+      "depositNo": "Несъбран",
+      "depositAmount": "Сума",
+      "depositDate": "Дата",
+      "depositCollector": "Събирач",
+      "conversationNotes": "Бележки от Разговори",
+      "noNotes": "Все още няма добавени бележки",
+      "addNote": "Добави Бележка",
+      "noteLabel": "Бележка *",
+      "notePlaceholder": "Въведете бележка от разговор тук...",
+      "creatorLabel": "Контактувано Лице *",
+      "creatorPlaceholder": "Пълно Име",
+      "cancel": "Затвори",
+      "saveNote": "Запази Бележка"
+    },
+    "empty": {
+      "noAssignments": "Не са намерени активни настанявания",
+      "noCharges": "Не са намерени записи за фактуриране",
+      "noPayments": "Не са намерени записи за плащания"
+    },
+    "toasts": {
+      "error": "Грешка",
+      "success": "Успех"
+    }
   }
 }

@@ -732,5 +732,149 @@
     "missingInfo": "Informations Manquantes",
     "fillRequired": "Veuillez remplir tous les champs obligatoires",
     "reminderAdded": "Rappel ajouté"
+  },
+  "assignments": {
+    "pageTitle": "Gestion de l'Hébergement",
+    "pageSubtitle": "Hébergements actifs, facturation et suivi des paiements",
+    "cards": {
+      "activeAssignments": "Hébergements Actifs",
+      "activeAssignmentsDesc": "Hébergements en cours",
+      "pendingDeposits": "Dépôts en Attente",
+      "pendingDepositsDesc": "Dépôts non perçus",
+      "overduePayments": "Paiements en Retard",
+      "overduePaymentsDesc": "Paiements en retard",
+      "pendingAmount": "Montant en Attente",
+      "pendingAmountDesc": "À percevoir"
+    },
+    "tabs": {
+      "assignments": "Hébergements",
+      "charges": "Facturation",
+      "payments": "Paiements"
+    },
+    "search": {
+      "placeholder": "Rechercher un travailleur ou un logement...",
+      "statusFilter": "Filtrer par statut",
+      "chargesFilter": "Filtrer par statut de paiement",
+      "startDate": "Début:",
+      "endDate": "Fin:",
+      "clearFilters": "Effacer"
+    },
+    "filters": {
+      "all": "Tous",
+      "today": "Échu Aujourd'hui",
+      "next3Days": "3 Prochains Jours",
+      "overdue": "En retard (Tous)",
+      "overdue7to14": "En retard (7-14 jours)",
+      "overdue14to30": "En retard (14-30 jours)",
+      "overdue30to90": "En retard (30-90 jours)",
+      "overdue90plus": "En retard (90+ jours)"
+    },
+    "status": {
+      "active": "Actif",
+      "endingSoon": "Se termine bientôt",
+      "ended": "Terminé",
+      "pending": "En attente"
+    },
+    "paymentStatus": {
+      "paid": "Payé",
+      "pending": "En attente",
+      "overdue": "En retard",
+      "partial": "Partiel"
+    },
+    "paymentMethods": {
+      "bankTransfer": "Virement bancaire",
+      "pos": "TPE",
+      "cash": "Espèces",
+      "automatic": "Automatique",
+      "other": "Autre"
+    },
+    "assignmentCard": {
+      "startDate": "Début",
+      "monthlyRate": "Tarif Mensuel",
+      "deposit": "Dépôt",
+      "endDate": "Fin",
+      "ongoing": "En cours",
+      "viewDetails": "Voir les Détails"
+    },
+    "chargeCard": {
+      "dueDate": "Date d'Échéance",
+      "days": "Jours",
+      "daysCount": "Nombre de Jours",
+      "amount": "Montant",
+      "remaining": "Restant",
+      "remainingDebt": "Dette Restante",
+      "calculation": "Calcul",
+      "fullMonth": "Mois complet",
+      "partial": "Partiel",
+      "prorated": "Au prorata",
+      "recordPayment": "Enregistrer le Paiement",
+      "enterPayment": "Saisir le Paiement"
+    },
+    "paymentCard": {
+      "amount": "Montant",
+      "paymentMethod": "Mode de Paiement",
+      "reference": "Référence",
+      "paymentsTotal": "{{count}} paiement • Total: €{{total}}",
+      "paidBadge": "Payé",
+      "showLess": "Afficher Moins",
+      "showMore": "+{{count}} Afficher Plus"
+    },
+    "paymentDialog": {
+      "title": "Saisir un Nouveau Paiement",
+      "description": "Créer un enregistrement de paiement pour {{workerName}}",
+      "fullAmount": "Montant Total:",
+      "remainingAmount": "Montant Restant:",
+      "amountLabel": "Montant du Paiement (€) *",
+      "amountPlaceholder": "0.00",
+      "methodLabel": "Mode de Paiement *",
+      "methodPlaceholder": "Sélectionner",
+      "collectorLabel": "Nom du Collecteur *",
+      "collectorPlaceholder": "Nom Complet",
+      "dateLabel": "Date de Paiement *",
+      "notesLabel": "Notes (Facultatif)",
+      "notesPlaceholder": "Notes de paiement...",
+      "cancel": "Annuler",
+      "save": "Enregistrer le Paiement",
+      "errors": {
+        "missingFields": "Veuillez remplir tous les champs obligatoires",
+        "invalidAmount": "Le montant du paiement doit être supérieur à 0",
+        "exceedsRemaining": "Le montant du paiement ne peut pas dépasser le montant restant (€{{remaining}})"
+      },
+      "success": "Paiement Enregistré",
+      "successDesc": "Paiement enregistré avec succès"
+    },
+    "detailsDialog": {
+      "title": "Détails de l'Affectation et Notes de Conversation",
+      "assignmentInfo": "Informations sur l'Affectation",
+      "room": "Chambre",
+      "bed": "Lit",
+      "startDate": "Début",
+      "monthlyRate": "Tarif Mensuel",
+      "depositInfo": "Informations sur le Dépôt",
+      "depositCollected": "Statut du Dépôt",
+      "depositYes": "Perçu",
+      "depositNo": "Non Perçu",
+      "depositAmount": "Montant",
+      "depositDate": "Date",
+      "depositCollector": "Collecteur",
+      "conversationNotes": "Notes de Conversation",
+      "noNotes": "Aucune note ajoutée pour le moment",
+      "addNote": "Ajouter une Note",
+      "noteLabel": "Note *",
+      "notePlaceholder": "Saisissez la note de conversation ici...",
+      "creatorLabel": "Personne Contactée *",
+      "creatorPlaceholder": "Nom Complet",
+      "cancel": "Fermer",
+      "saveNote": "Enregistrer la Note"
+    },
+    "empty": {
+      "noAssignments": "Aucun hébergement actif trouvé",
+      "noCharges": "Aucun enregistrement de facturation trouvé",
+      "noPayments": "Aucun enregistrement de paiement trouvé"
+    },
+    "toasts": {
+      "error": "Erreur",
+      "success": "Succès"
+    }
   }
 }
