@@ -1,0 +1,349 @@
+Mükemmel soru! İşte Replit'e vermen gereken net talimat:
+
+---
+
+## 🎯 Replit'e Talimat
+
+**"Şu an Phase 1 MVP'yi tamamlayalım. İşte yapılacaklar:"**
+
+---
+
+## 📋 Phase 1: MVP - Yapılacaklar Listesi
+
+### 1. **Federated Worker Identity - Data Layer** ✅ Öncelik
+
+```
+✅ worker_profiles (global, portable)
+✅ employments (tenant-specific relationship)
+✅ employment_private_data (sensitive info)
+✅ Tenant isolation (her tenant kendi verisini görür)
+✅ Worker data ownership (worker ayrılınca ne görür?)
+```
+
+**Replit yapmalı:**
+- [ ] Bu 3 tablo ilişkisini test et
+- [ ] Worker'ın birden fazla tenant'ta çalışma senaryosu
+- [ ] Worker ayrılınca data access kontrolü
+- [ ] Migration scripts
+
+---
+
+### 2. **Basic RBAC - 3 Role İçin Login Flow** 🔐 Öncelik
+
+```
+Mevcut roller:
+- admin (Tenant Owner gibi - her şeyi görebilir)
+- office_staff (HR Manager / Planner gibi)
+- field_staff (Worker gibi)
+```
+
+**Replit yapmalı:**
+- [ ] Login flow implementation (email/password)
+- [ ] Session management (JWT)
+- [ ] Role-based middleware
+```javascript
+// Örnek
+function requireRole(role) {
+  return (req, res, next) => {
+    if (req.user.role !== role) {
+      return res.status(403).json({error: 'Forbidden'});
+    }
+    next();
+  };
+}
+```
+- [ ] Basic permission check
+```javascript
+const permissions = {
+  admin: ['*'],
+  office_staff: ['workers.view', 'workers.edit', 'planning.*'],
+  field_staff: ['profile.own', 'schedule.own']
+};
+```
+
+---
+
+### 3. **Single Tenant Model** 🏢 Şimdilik
+
+```
+Şu an: 1 tenant = 1 müşteri
+Gelecek: Multi-tenant platform
+```
+
+**Replit yapmalı:**
+- [ ] Tenant context middleware
+```javascript
+// Her request'te tenant_id kontrolü
+req.tenant = await getTenant(req.user.tenant_id);
+```
+- [ ] Database queries'e tenant filter ekleme
+```javascript
+// ❌ Yanlış
+const workers = await db.workers.find({status: 'active'});
+
+// ✅ Doğru
+const workers = await db.workers.find({
+  tenant_id: req.tenant.id,
+  status: 'active'
+});
+```
+- [ ] Tenant data isolation test
+
+---
+
+### 4. **Worker Profile & Employment** 👷 Core Feature
+
+**Replit yapmalı:**
+
+**A) Worker Profile (Global)**
+```javascript
+// worker_profiles table
+{
+  id: uuid,
+  first_name: string,
+  last_name: string,
+  email: string,
+  phone: string,
+  documents: jsonb,  // CV, sertifikalar
+  skills: jsonb,
+  created_at: timestamp
+}
+```
+
+**B) Employment (Tenant-specific)**
+```javascript
+// employments table
+{
+  id: uuid,
+  worker_profile_id: uuid,
+  tenant_id: uuid,
+  status: enum('active', 'inactive', 'former', 'invited'),
+  start_date: date,
+  end_date: date,
+  job_title: string
+}
+```
+
+**C) Private Data (Sensitive)**
+```javascript
+// employment_private_data table
+{
+  employment_id: uuid,
+  salary: decimal,
+  bank_account: string,
+  contract_terms: jsonb,
+  performance_reviews: jsonb
+}
+```
+
+**İmplement edilecekler:**
+- [ ] Worker CRUD operations
+- [ ] Employment relationship management
+- [ ] Access control (worker own data vs tenant data)
+- [ ] Worker status transitions (active → inactive → former)
+
+---
+
+### 5. **API Endpoints - MVP** 🔌
+
+**Replit yapmalı:**
+
+```javascript
+// Auth
+POST   /api/auth/login
+POST   /api/auth/logout
+GET    /api/auth/me
+
+// Workers (office_staff + admin)
+GET    /api/workers              // List all workers
+GET    /api/workers/:id          // Get worker detail
+POST   /api/workers              // Create worker
+PUT    /api/workers/:id          // Update worker
+DELETE /api/workers/:id          // Deactivate worker
+
+// Worker self-service (field_staff)
+GET    /api/profile              // Own profile
+PUT    /api/profile              // Update own profile
+GET    /api/schedule             // Own schedule
+GET    /api/documents            // Own documents
+
+// Admin only
+GET    /api/users                // User management
+POST   /api/users                // Create user
+PUT    /api/users/:id/role       // Change role
+```
+
+---
+
+### 6. **Frontend - Basic UI** 🎨
+
+**Replit yapmalı:**
+
+**A) Login Page**
+```
+- Email/Password form
+- Remember me checkbox
+- Forgot password link
+- Error handling
+```
+
+**B) Dashboard (Role-based)**
+```
+Admin:
+- Worker list
+- User management
+- Reports
+
+Office Staff:
+- Worker list (read/edit)
+- Planning view
+- Limited settings
+
+Field Staff:
+- Own profile
+- Own schedule
+- Messages
+```
+
+**C) Worker Management**
+```
+- Worker list table (sortable, filterable)
+- Add new worker form
+- Edit worker modal
+- Worker detail view
+- Status change (active/inactive)
+```
+
+---
+
+### 7. **Testing** 🧪
+
+**Replit yapmalı:**
+
+```javascript
+// Unit tests
+- Authentication tests
+- Permission tests
+- Data isolation tests
+
+// Integration tests
+- Login flow
+- Worker CRUD with different roles
+- Tenant data isolation
+
+// Scenarios to test
+1. Admin creates worker → Success
+2. Office staff creates worker → Success
+3. Field staff creates worker → Forbidden
+4. Worker A tries to see Worker B's private data → Forbidden
+5. Worker leaves tenant → Data access changes
+```
+
+---
+
+### 8. **Database Migrations** 🗄️
+
+**Replit yapmalı:**
+
+```sql
+-- Migration: Create federated worker tables
+CREATE TABLE worker_profiles (...);
+CREATE TABLE employments (...);
+CREATE TABLE employment_private_data (...);
+
+-- Migration: Add role-based permissions
+ALTER TABLE users ADD COLUMN role VARCHAR;
+CREATE TABLE permissions (...);
+
+-- Migration: Add tenant context
+ALTER TABLE users ADD COLUMN tenant_id UUID;
+CREATE INDEX ON employments(tenant_id);
+```
+
+---
+
+### 9. **Documentation** 📝
+
+**Replit yapmalı:**
+
+```
+- [ ] API documentation (Swagger/OpenAPI)
+- [ ] Database schema diagram
+- [ ] Authentication flow diagram
+- [ ] Role permission matrix
+- [ ] Setup/deployment guide
+```
+
+---
+
+## 🚫 Phase 1'de YAPMAYACAĞIZ
+
+```
+❌ Multi-tenant platform (tek tenant yeterli)
+❌ Platform admin roles (henüz platform yok)
+❌ Employer management (single model)
+❌ 8 farklı tenant role (3 role yeterli)
+❌ Worker granular permissions (basic yeterli)
+❌ Driver module
+❌ Accommodation module
+❌ Transport module
+❌ Advanced RBAC (25 role)
+❌ SSO / 2FA (gelecekte)
+```
+
+---
+
+## ✅ Phase 1 Definition of Done
+
+```
+✅ User can login with email/password
+✅ 3 roles work correctly (admin, office_staff, field_staff)
+✅ Admin can create/manage workers
+✅ Office staff can view/edit workers
+✅ Field staff can only see own data
+✅ Worker profile is portable (federated model)
+✅ Worker employment is tenant-specific
+✅ Worker can be active/inactive/former
+✅ Tenant data isolation works
+✅ Basic API endpoints work
+✅ Basic UI works
+✅ Tests pass
+```
+
+---
+
+## 📅 Timeline
+
+**Önerim:**
+
+```
+Week 1-2: Federated data model + migrations
+Week 3: Auth & RBAC implementation
+Week 4: API endpoints
+Week 5-6: Frontend UI
+Week 7: Testing & bug fixes
+Week 8: Documentation & deployment
+
+Total: 8 hafta MVP
+```
+
+---
+
+## 💬 Replit'e Söylemen Gereken
+
+> **"Phase 1 MVP'ye odaklanalım:**
+> 
+> **1. Federated Worker Identity'yi tamamla** (worker_profiles + employments + private_data)  
+> **2. Basic 3 role için login/auth/permission sistemi**  
+> **3. Single tenant model**  
+> **4. Worker CRUD operations**  
+> **5. Basic UI (login + dashboard + worker management)**  
+> **6. Testing & documentation**
+> 
+> **25 role sistemi Phase 2-5'te gelecek. Şimdi MVP'yi solid yapalım, sonra genişletiriz.**
+> 
+> **Öncelik sırası ne olmalı?"**
+
+---
+
+Bu net ve actionable bir plan. Replit'in kafası karışmaz ve neye odaklanacağını bilir. Senin için uygun mu?
