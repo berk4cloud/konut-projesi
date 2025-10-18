@@ -188,25 +188,25 @@ export default function Workers() {
     switch (worker.status) {
       case "active":
         return (
-          <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300" data-testid={`badge-status-${worker.id}`}>
+          <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300" data-testid={`badge-status-${worker.employmentId}`}>
             Aktif
           </Badge>
         );
       case "inactive":
         return (
-          <Badge variant="secondary" className="bg-gray-100 text-gray-700 dark:bg-gray-950 dark:text-gray-300" data-testid={`badge-status-${worker.id}`}>
+          <Badge variant="secondary" className="bg-gray-100 text-gray-700 dark:bg-gray-950 dark:text-gray-300" data-testid={`badge-status-${worker.employmentId}`}>
             Pasif
           </Badge>
         );
       case "former":
         return (
-          <Badge variant="secondary" className="bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300" data-testid={`badge-status-${worker.id}`}>
+          <Badge variant="secondary" className="bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300" data-testid={`badge-status-${worker.employmentId}`}>
             Eski Çalışan {worker.endDate && `(${new Date(worker.endDate).toLocaleDateString("tr-TR")})`}
           </Badge>
         );
       case "invited":
         return (
-          <Badge variant="secondary" className="bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300" data-testid={`badge-status-${worker.id}`}>
+          <Badge variant="secondary" className="bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300" data-testid={`badge-status-${worker.employmentId}`}>
             Davet Edildi
           </Badge>
         );
@@ -400,28 +400,28 @@ export default function Workers() {
               </TableHeader>
               <TableBody>
                 {paginatedWorkers.map((worker) => (
-                  <TableRow key={worker.id} data-testid={`worker-row-${worker.id}`}>
+                  <TableRow key={worker.employmentId} data-testid={`worker-row-${worker.employmentId}`}>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                           <User className="w-4 h-4 text-primary" />
                         </div>
                         <div>
-                          <div className="flex items-center gap-2" data-testid={`text-worker-name-${worker.id}`}>
+                          <div className="flex items-center gap-2" data-testid={`text-worker-name-${worker.employmentId}`}>
                             <span>{worker.firstName} {worker.lastName}</span>
                             {worker.dateOfBirth && (
-                              <span className="text-sm text-muted-foreground" data-testid={`text-worker-age-${worker.id}`}>
+                              <span className="text-sm text-muted-foreground" data-testid={`text-worker-age-${worker.employmentId}`}>
                                 ({calculateAge(worker.dateOfBirth)})
                               </span>
                             )}
                           </div>
                           <div className="text-xs text-muted-foreground mt-0.5">
                             {worker.dateOfBirth || "Doğum tarihi yok"}
-                            <span className="ml-2" data-testid={`text-worker-email-${worker.id}`}>
+                            <span className="ml-2" data-testid={`text-worker-email-${worker.employmentId}`}>
                               • {worker.email}
                             </span>
                             {worker.phone && (
-                              <span className="ml-2" data-testid={`text-worker-phone-${worker.id}`}>
+                              <span className="ml-2" data-testid={`text-worker-phone-${worker.employmentId}`}>
                                 • {worker.phone}
                               </span>
                             )}
@@ -453,7 +453,7 @@ export default function Workers() {
                         variant="ghost" 
                         size="sm" 
                         onClick={() => handleOpenEditDialog(worker)}
-                        data-testid={`button-edit-${worker.id}`}
+                        data-testid={`button-edit-${worker.employmentId}`}
                       >
                         Düzenle
                       </Button>
