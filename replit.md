@@ -84,3 +84,69 @@ TanStack Query is used for server state management (caching, refetching). React'
 
 - **Replit-Specific**: `@replit/vite-plugin-runtime-error-modal`, `@replit/vite-plugin-cartographer`, `@replit/vite-plugin-dev-banner`.
 - **Build Tools**: Vite (frontend), esbuild (backend), tsx (development TypeScript execution), drizzle-kit (database migrations).
+
+---
+
+## 🎯 VISION DOCUMENT - Future Roadmap
+
+### Current State: Phase 1 (Implemented ✅)
+
+**Federated Worker Identity Model** - Data Architecture Layer
+- ✅ 3-table architecture: worker_profiles, employments, employment_private_data
+- ✅ Workers can work for multiple tenants simultaneously
+- ✅ Data ownership separation (worker owns profile, tenant owns employment)
+- ✅ Backend API: POST /api/workers, GET /api/workers, PATCH /api/employments/:id
+- ✅ Mock data: 12 complete federated worker records
+- ✅ Basic user roles: admin, office_staff, field_staff
+
+**Important Distinction:**
+- **Federated Worker Identity Model** = Data architecture for portable worker identity
+- **RBAC (Role-Based Access Control)** = Authorization system (future implementation)
+- These are **separate but complementary** systems
+
+### Future Phases: Enterprise RBAC System
+
+**Phase 2: Tenant-Level Roles** (8 types)
+- Tenant Owner
+- Tenant Admin
+- HR Manager
+- Planner / Scheduler
+- Accommodation Manager
+- Transport Manager
+- Finance / Accounting
+- Viewer (Read-only)
+
+**Phase 3: Worker-Level Permissions** (4 types)
+- Active Worker
+- Inactive Worker
+- Former Worker
+- Invited Worker
+
+**Phase 4: Platform & Employer Levels** (8 + 3 types)
+
+*Platform Level (5 types):*
+- Platform Super Admin
+- Platform Admin
+- Platform Support Staff
+- Platform Analyst
+- Platform Developer
+
+*Employer Level (3 types - for Staffing Agency model):*
+- Employer Admin
+- Employer Manager
+- Employer Viewer
+
+**Phase 5: Specialized Roles** (3 + 2 types)
+
+*Special Access (3 types):*
+- External Auditor
+- API User
+- Emergency Contact
+
+*Driver Module (2 types - when transport module is active):*
+- Active Driver
+- Driver App User
+
+### Total Planned Role Types: 25
+
+This granular RBAC system will be implemented modularly as the platform grows. Each phase builds upon the previous, ensuring stable incremental development while maintaining the foundational Federated Worker Identity Model as the data layer.
