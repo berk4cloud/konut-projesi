@@ -479,6 +479,7 @@
     "existingCountries": "Vorhandene Länder",
     "default": "(Standard)",
     "makeDefault": "Als Standard festlegen",
+    "defaultCountryInfo": "Standardland wird automatisch in Filtern ausgewählt",
     "standardPricing": "Standardpreise",
     "standardPricingDesc": "Standardpreise für alle Objekte. Kann pro Objekt oder Zimmer angepasst werden.",
     "dailyRentalMode": "Tagesvermietungsmodus",

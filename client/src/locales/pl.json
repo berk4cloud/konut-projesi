@@ -479,6 +479,7 @@
     "existingCountries": "Istniejące kraje",
     "default": "(Domyślny)",
     "makeDefault": "Ustaw jako domyślny",
+    "defaultCountryInfo": "Domyślny kraj jest automatycznie wybierany w filtrach",
     "standardPricing": "Ceny standardowe",
     "standardPricingDesc": "Domyślne ceny dla wszystkich obiektów. Można dostosować według obiektu lub pokoju.",
     "dailyRentalMode": "Tryb wynajmu dziennego",

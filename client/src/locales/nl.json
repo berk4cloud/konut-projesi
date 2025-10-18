@@ -479,6 +479,7 @@
     "existingCountries": "Bestaande Landen",
     "default": "(Standaard)",
     "makeDefault": "Als Standaard Instellen",
+    "defaultCountryInfo": "Standaardland wordt automatisch geselecteerd in filters",
     "standardPricing": "Standaardprijzen",
     "standardPricingDesc": "Standaardprijzen voor alle panden. Kan per pand of kamer worden aangepast.",
     "dailyRentalMode": "Dagverhuurmodus",

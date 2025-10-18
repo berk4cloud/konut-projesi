@@ -479,6 +479,7 @@
     "existingCountries": "Pays existants",
     "default": "(Par défaut)",
     "makeDefault": "Définir comme défaut",
+    "defaultCountryInfo": "Le pays par défaut est automatiquement sélectionné dans les filtres",
     "standardPricing": "Tarification standard",
     "standardPricingDesc": "Tarifs par défaut pour toutes les propriétés. Peut être personnalisé par propriété ou chambre.",
     "dailyRentalMode": "Mode de location journalière",
