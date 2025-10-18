@@ -35,6 +35,14 @@ interface Country {
   isActive: boolean;
 }
 
+interface Tenant {
+  id: string;
+  name: string;
+  slug: string;
+  favoriteCountries?: string[];
+  defaultCountry?: string | null;
+}
+
 type CurrencyType = "EUR" | "USD" | "TRY" | "GBP" | "CHF" | "CAD" | "MXN" | "CNY" | "JPY" | "RUB" | "SEK" | "NOK" | "DKK" | "HUF" | "PLN" | "CZK" | "RON" | "BGN" | "RSD" | "UAH";
 
 const currencyOptions: { value: CurrencyType; label: string; symbol: string }[] = [
@@ -104,14 +112,35 @@ export default function Settings() {
     queryKey: ["/api/countries"],
   });
 
+  // Fetch current tenant data on mount to ensure fresh data
+  const { data: freshTenantData } = useQuery<Tenant>({
+    queryKey: ["/api/tenants", tenantId],
+    enabled: !!tenantId,
+  });
+
+  // Update state when fresh tenant data is fetched
+  useEffect(() => {
+    if (freshTenantData) {
+      setFavoriteCountries(freshTenantData.favoriteCountries || []);
+      setDefaultCountry(freshTenantData.defaultCountry || null);
+      // Also update localStorage to keep it in sync
+      localStorage.setItem("tenant", JSON.stringify(freshTenantData));
+    }
+  }, [freshTenantData]);
+
   // Update tenant mutation
-  const updateTenantMutation = useMutation({
-    mutationFn: async (updates: { favoriteCountries: string[]; defaultCountry: string | null }) => {
+  const updateTenantMutation = useMutation<Tenant, Error, { favoriteCountries: string[]; defaultCountry: string | null }>({
+    mutationFn: async (updates) => {
       return await apiRequest("PATCH", `/api/tenants/${tenantId}`, updates);
     },
     onSuccess: (updatedTenant) => {
       // Update localStorage
       localStorage.setItem("tenant", JSON.stringify(updatedTenant));
+      
+      // Update component state to reflect saved data
+      setFavoriteCountries(updatedTenant.favoriteCountries || []);
+      setDefaultCountry(updatedTenant.defaultCountry || null);
+      
       toast({
         title: t("settings.changesSaved"),
         description: t("settings.countrySettingsSaved"),

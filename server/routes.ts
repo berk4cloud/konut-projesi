@@ -625,6 +625,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // TENANT SETTINGS ENDPOINTS
   // ============================================
 
+  // GET /tenants/:id - Get tenant details
+  apiRouter.get("/tenants/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const tenant = await storage.getTenant(id);
+      
+      if (!tenant) {
+        return res.status(404).json({ error: "Tenant not found" });
+      }
+
+      // Map snake_case to camelCase for frontend compatibility
+      const response = {
+        id: tenant.id,
+        name: tenant.name,
+        slug: tenant.slug,
+        favoriteCountries: (tenant as any).favorite_countries || tenant.favoriteCountries || [],
+        defaultCountry: (tenant as any).default_country || tenant.defaultCountry || null,
+      };
+
+      res.json(response);
+    } catch (error) {
+      console.error("Error fetching tenant:", error);
+      res.status(500).json({ error: "Failed to fetch tenant" });
+    }
+  });
+
   // PATCH /tenants/:id - Update tenant settings (country management)
   apiRouter.patch("/tenants/:id", async (req, res) => {
     try {
