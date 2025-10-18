@@ -14,9 +14,48 @@ import type {
   Tenant,
   InsertTenant,
   User,
-  InsertUser
+  InsertUser,
+  Country,
+  InsertCountry
 } from "@shared/schema";
 import { randomUUID } from "crypto";
+
+// ============================================
+// COUNTRIES (Global Reference Data)
+// ============================================
+
+export const demoCountries: Country[] = [
+  { isoCode: "DE", nameTr: "Almanya", nameEn: "Germany", nameDe: "Deutschland", nameNl: "Duitsland", nameFr: "Allemagne", namePl: "Niemcy", nameBg: "Германия", flagEmoji: "🇩🇪", phoneCode: "+49", isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { isoCode: "NL", nameTr: "Hollanda", nameEn: "Netherlands", nameDe: "Niederlande", nameNl: "Nederland", nameFr: "Pays-Bas", namePl: "Holandia", nameBg: "Холандия", flagEmoji: "🇳🇱", phoneCode: "+31", isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { isoCode: "TR", nameTr: "Türkiye", nameEn: "Turkey", nameDe: "Türkei", nameNl: "Turkije", nameFr: "Turquie", namePl: "Turcja", nameBg: "Турция", flagEmoji: "🇹🇷", phoneCode: "+90", isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { isoCode: "PL", nameTr: "Polonya", nameEn: "Poland", nameDe: "Polen", nameNl: "Polen", nameFr: "Pologne", namePl: "Polska", nameBg: "Полша", flagEmoji: "🇵🇱", phoneCode: "+48", isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { isoCode: "FR", nameTr: "Fransa", nameEn: "France", nameDe: "Frankreich", nameNl: "Frankrijk", nameFr: "France", namePl: "Francja", nameBg: "Франция", flagEmoji: "🇫🇷", phoneCode: "+33", isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { isoCode: "BE", nameTr: "Belçika", nameEn: "Belgium", nameDe: "Belgien", nameNl: "België", nameFr: "Belgique", namePl: "Belgia", nameBg: "Белгия", flagEmoji: "🇧🇪", phoneCode: "+32", isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { isoCode: "AT", nameTr: "Avusturya", nameEn: "Austria", nameDe: "Österreich", nameNl: "Oostenrijk", nameFr: "Autriche", namePl: "Austria", nameBg: "Австрия", flagEmoji: "🇦🇹", phoneCode: "+43", isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { isoCode: "CH", nameTr: "İsviçre", nameEn: "Switzerland", nameDe: "Schweiz", nameNl: "Zwitserland", nameFr: "Suisse", namePl: "Szwajcaria", nameBg: "Швейцария", flagEmoji: "🇨🇭", phoneCode: "+41", isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { isoCode: "GB", nameTr: "Birleşik Krallık", nameEn: "United Kingdom", nameDe: "Vereinigtes Königreich", nameNl: "Verenigd Koninkrijk", nameFr: "Royaume-Uni", namePl: "Wielka Brytania", nameBg: "Обединено кралство", flagEmoji: "🇬🇧", phoneCode: "+44", isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { isoCode: "IE", nameTr: "İrlanda", nameEn: "Ireland", nameDe: "Irland", nameNl: "Ierland", nameFr: "Irlande", namePl: "Irlandia", nameBg: "Ирландия", flagEmoji: "🇮🇪", phoneCode: "+353", isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { isoCode: "ES", nameTr: "İspanya", nameEn: "Spain", nameDe: "Spanien", nameNl: "Spanje", nameFr: "Espagne", namePl: "Hiszpania", nameBg: "Испания", flagEmoji: "🇪🇸", phoneCode: "+34", isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { isoCode: "IT", nameTr: "İtalya", nameEn: "Italy", nameDe: "Italien", nameNl: "Italië", nameFr: "Italie", namePl: "Włochy", nameBg: "Италия", flagEmoji: "🇮🇹", phoneCode: "+39", isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { isoCode: "PT", nameTr: "Portekiz", nameEn: "Portugal", nameDe: "Portugal", nameNl: "Portugal", nameFr: "Portugal", namePl: "Portugalia", nameBg: "Португалия", flagEmoji: "🇵🇹", phoneCode: "+351", isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { isoCode: "RO", nameTr: "Romanya", nameEn: "Romania", nameDe: "Rumänien", nameNl: "Roemenië", nameFr: "Roumanie", namePl: "Rumunia", nameBg: "Румъния", flagEmoji: "🇷🇴", phoneCode: "+40", isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { isoCode: "BG", nameTr: "Bulgaristan", nameEn: "Bulgaria", nameDe: "Bulgarien", nameNl: "Bulgarije", nameFr: "Bulgarie", namePl: "Bułgaria", nameBg: "България", flagEmoji: "🇧🇬", phoneCode: "+359", isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { isoCode: "GR", nameTr: "Yunanistan", nameEn: "Greece", nameDe: "Griechenland", nameNl: "Griekenland", nameFr: "Grèce", namePl: "Grecja", nameBg: "Гърция", flagEmoji: "🇬🇷", phoneCode: "+30", isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { isoCode: "CZ", nameTr: "Çekya", nameEn: "Czech Republic", nameDe: "Tschechien", nameNl: "Tsjechië", nameFr: "République tchèque", namePl: "Czechy", nameBg: "Чехия", flagEmoji: "🇨🇿", phoneCode: "+420", isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { isoCode: "HU", nameTr: "Macaristan", nameEn: "Hungary", nameDe: "Ungarn", nameNl: "Hongarije", nameFr: "Hongrie", namePl: "Węgry", nameBg: "Унгария", flagEmoji: "🇭🇺", phoneCode: "+36", isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { isoCode: "SK", nameTr: "Slovakya", nameEn: "Slovakia", nameDe: "Slowakei", nameNl: "Slowakije", nameFr: "Slovaquie", namePl: "Słowacja", nameBg: "Словакия", flagEmoji: "🇸🇰", phoneCode: "+421", isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { isoCode: "SI", nameTr: "Slovenya", nameEn: "Slovenia", nameDe: "Slowenien", nameNl: "Slovenië", nameFr: "Slovénie", namePl: "Słowenia", nameBg: "Словения", flagEmoji: "🇸🇮", phoneCode: "+386", isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { isoCode: "HR", nameTr: "Hırvatistan", nameEn: "Croatia", nameDe: "Kroatien", nameNl: "Kroatië", nameFr: "Croatie", namePl: "Chorwacja", nameBg: "Хърватия", flagEmoji: "🇭🇷", phoneCode: "+385", isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { isoCode: "RS", nameTr: "Sırbistan", nameEn: "Serbia", nameDe: "Serbien", nameNl: "Servië", nameFr: "Serbie", namePl: "Serbia", nameBg: "Сърбия", flagEmoji: "🇷🇸", phoneCode: "+381", isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { isoCode: "DK", nameTr: "Danimarka", nameEn: "Denmark", nameDe: "Dänemark", nameNl: "Denemarken", nameFr: "Danemark", namePl: "Dania", nameBg: "Дания", flagEmoji: "🇩🇰", phoneCode: "+45", isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { isoCode: "SE", nameTr: "İsveç", nameEn: "Sweden", nameDe: "Schweden", nameNl: "Zweden", nameFr: "Suède", namePl: "Szwecja", nameBg: "Швеция", flagEmoji: "🇸🇪", phoneCode: "+46", isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { isoCode: "NO", nameTr: "Norveç", nameEn: "Norway", nameDe: "Norwegen", nameNl: "Noorwegen", nameFr: "Norvège", namePl: "Norwegia", nameBg: "Норвегия", flagEmoji: "🇳🇴", phoneCode: "+47", isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { isoCode: "FI", nameTr: "Finlandiya", nameEn: "Finland", nameDe: "Finnland", nameNl: "Finland", nameFr: "Finlande", namePl: "Finlandia", nameBg: "Финландия", flagEmoji: "🇫🇮", phoneCode: "+358", isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { isoCode: "UA", nameTr: "Ukrayna", nameEn: "Ukraine", nameDe: "Ukraine", nameNl: "Oekraïne", nameFr: "Ukraine", namePl: "Ukraina", nameBg: "Украйна", flagEmoji: "🇺🇦", phoneCode: "+380", isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { isoCode: "LT", nameTr: "Litvanya", nameEn: "Lithuania", nameDe: "Litauen", nameNl: "Litouwen", nameFr: "Lituanie", namePl: "Litwa", nameBg: "Литва", flagEmoji: "🇱🇹", phoneCode: "+370", isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { isoCode: "LV", nameTr: "Letonya", nameEn: "Latvia", nameDe: "Lettland", nameNl: "Letland", nameFr: "Lettonie", namePl: "Łotwa", nameBg: "Латвия", flagEmoji: "🇱🇻", phoneCode: "+371", isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { isoCode: "EE", nameTr: "Estonya", nameEn: "Estonia", nameDe: "Estland", nameNl: "Estland", nameFr: "Estonie", namePl: "Estonia", nameBg: "Естония", flagEmoji: "🇪🇪", phoneCode: "+372", isActive: true, createdAt: new Date(), updatedAt: new Date() },
+];
 
 // ============================================
 // PLATFORM ADMINS (ARPDO Team)
@@ -66,6 +105,8 @@ export const demoTenants: Tenant[] = [
     subscriptionStartsAt: new Date("2024-01-15"),
     modules: '{"workers":true,"planning":true,"accommodation":true,"transport":false,"finance":false}',
     currency: "EUR",
+    favoriteCountries: ["DE", "NL", "PL", "RO", "BG"],
+    defaultCountry: "DE",
     createdAt: new Date("2024-01-15"),
     updatedAt: new Date("2024-01-15"),
     createdBy: "platform-admin-1",
@@ -85,6 +126,8 @@ export const demoTenants: Tenant[] = [
     subscriptionStartsAt: null,
     modules: '{"workers":true,"planning":true,"accommodation":false,"transport":true,"finance":true}',
     currency: "EUR",
+    favoriteCountries: ["NL", "GB", "US"],
+    defaultCountry: "NL",
     createdAt: new Date("2024-10-01"),
     updatedAt: new Date("2024-10-01"),
     createdBy: "platform-admin-1",
@@ -104,6 +147,8 @@ export const demoTenants: Tenant[] = [
     subscriptionStartsAt: new Date("2024-06-01"),
     modules: '{"workers":true,"planning":true,"accommodation":true,"transport":true,"finance":false}',
     currency: "EUR",
+    favoriteCountries: ["NL", "DE", "BE"],
+    defaultCountry: "NL",
     createdAt: new Date("2024-06-01"),
     updatedAt: new Date("2024-06-01"),
     createdBy: "platform-admin-1",

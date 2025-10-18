@@ -41,6 +41,31 @@ export const tenantRoleEnum = pgEnum("tenant_role", [
 // PLATFORM LEVEL (SAAS)
 // ============================================
 
+// Countries table (Global reference data - managed by platform)
+// Contains all countries with translations in 7 languages
+export const countries = pgTable("countries", {
+  isoCode: varchar("iso_code", { length: 2 }).primaryKey(), // ISO 3166-1 alpha-2 (e.g., "DE", "NL", "TR")
+  nameTr: text("name_tr").notNull(), // Turkish
+  nameEn: text("name_en").notNull(), // English
+  nameDe: text("name_de").notNull(), // German
+  nameNl: text("name_nl").notNull(), // Dutch
+  nameFr: text("name_fr").notNull(), // French
+  namePl: text("name_pl").notNull(), // Polish
+  nameBg: text("name_bg").notNull(), // Bulgarian
+  flagEmoji: text("flag_emoji"), // e.g., "🇩🇪", "🇳🇱"
+  phoneCode: text("phone_code"), // e.g., "+49", "+31"
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertCountrySchema = createInsertSchema(countries).omit({
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertCountry = z.infer<typeof insertCountrySchema>;
+export type Country = typeof countries.$inferSelect;
+
 // Platform Admins table (ARPDO team)
 export const platformAdmins = pgTable("platform_admins", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -85,6 +110,10 @@ export const tenants = pgTable("tenants", {
   
   // Settings
   currency: currencyEnum("currency").default("EUR").notNull(),
+  
+  // Country Management
+  favoriteCountries: text("favorite_countries").array().default(sql`ARRAY[]::text[]`), // ISO codes array, e.g., ["DE", "NL", "PL"]
+  defaultCountry: varchar("default_country", { length: 2 }), // ISO code, e.g., "DE"
   
   // Audit
   createdAt: timestamp("created_at").defaultNow(),
