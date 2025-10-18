@@ -133,7 +133,7 @@ const initialMockHouses = [
             id: "b1",
             bedNumber: 1,
             status: "occupied" as const,
-            worker: { employmentId: "w1", name: "Canny", gender: "male" as const },
+            worker: { employmentId: "emp-1", name: "Ahmet Yılmaz", gender: "male" as const },
             expectedMoveOutDate: "2025-11-05", // 19 gün sonra
           },
           { id: "b2", bedNumber: 2, status: "available" as const },
@@ -141,7 +141,7 @@ const initialMockHouses = [
             id: "b3",
             bedNumber: 3,
             status: "occupied" as const,
-            worker: { employmentId: "w2", name: "Sarah", gender: "female" as const },
+            worker: { employmentId: "emp-2", name: "Mehmet Demir", gender: "male" as const },
           },
         ],
       },
@@ -169,7 +169,7 @@ const initialMockHouses = [
             id: "b6",
             bedNumber: 1,
             status: "occupied" as const,
-            worker: { employmentId: "w3", name: "Mike", gender: "male" as const },
+            worker: { employmentId: "emp-3", name: "Ayşe Kaya", gender: "female" as const },
           },
           { id: "b7", bedNumber: 2, status: "oos" as const },
         ],
@@ -204,7 +204,7 @@ const initialMockHouses = [
             id: "b8",
             bedNumber: 1,
             status: "occupied" as const,
-            worker: { employmentId: "w4", name: "John", gender: "male" as const },
+            worker: { employmentId: "emp-4", name: "Fatma Şahin", gender: "female" as const },
             expectedMoveOutDate: "2025-11-15", // 15 gün sonra
           },
           {
