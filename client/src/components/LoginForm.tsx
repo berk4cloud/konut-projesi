@@ -6,6 +6,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+
+type TenantOption = {
+  tenant: {
+    id: string;
+    name: string;
+    slug: string;
+    type: string;
+  };
+  roles: string[];
+};
 
 export default function LoginForm() {
   const { t } = useTranslation();
@@ -15,6 +33,14 @@ export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Multi-tenant/role selection state
+  const [showTenantSelector, setShowTenantSelector] = useState(false);
+  const [showRoleSelector, setShowRoleSelector] = useState(false);
+  const [tenantOptions, setTenantOptions] = useState<TenantOption[]>([]);
+  const [roleOptions, setRoleOptions] = useState<string[]>([]);
+  const [selectedTenant, setSelectedTenant] = useState<TenantOption | null>(null);
+  const [userInfo, setUserInfo] = useState<any>(null);
 
   const handleLogin = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -60,17 +86,19 @@ export default function LoginForm() {
         login(userData, data.token);
         setLocation("/dashboard");
       } else if (data.type === "select_tenant") {
-        // Multi-tenant user - show tenant selector (TODO: implement)
-        toast({
-          title: "Çoklu Tenant",
-          description: "Tenant seçim ekranı yakında gelecek",
-        });
+        // Multi-tenant user - show tenant selector
+        setTenantOptions(data.tenants);
+        setUserInfo(data.user);
+        setShowTenantSelector(true);
       } else if (data.type === "select_role") {
-        // Multi-role user - show role selector (TODO: implement)
-        toast({
-          title: "Çoklu Rol",
-          description: "Rol seçim ekranı yakında gelecek",
+        // Multi-role user - show role selector
+        setRoleOptions(data.roles);
+        setSelectedTenant({
+          tenant: data.tenant,
+          roles: data.roles,
         });
+        setUserInfo(data.user);
+        setShowRoleSelector(true);
       }
     } catch (error) {
       toast({
@@ -87,6 +115,99 @@ export default function LoginForm() {
     setEmail("jan@cova.nl");
     setPassword("CovaPass123");
     setTimeout(() => handleLogin(), 100);
+  };
+
+  const handleTenantSelect = async (option: TenantOption) => {
+    // If single role, login directly
+    if (option.roles.length === 1) {
+      try {
+        const response = await fetch("/api/login/confirm", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: userInfo.email,
+            tenantId: option.tenant.id,
+            role: option.roles[0],
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Token oluşturulamadı");
+        }
+
+        const userData = {
+          id: data.user.id,
+          email: data.user.email,
+          firstName: data.user.firstName,
+          lastName: data.user.lastName,
+          tenantId: data.tenant.id,
+          tenantName: data.tenant.name,
+          tenantSlug: data.tenant.slug,
+          role: data.role,
+        };
+
+        login(userData, data.token);
+        setShowTenantSelector(false);
+        setLocation("/dashboard");
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Hata",
+          description: error instanceof Error ? error.message : "Token oluşturulamadı",
+        });
+      }
+    } else {
+      // Multiple roles - show role selector
+      setSelectedTenant(option);
+      setRoleOptions(option.roles);
+      setShowTenantSelector(false);
+      setShowRoleSelector(true);
+    }
+  };
+
+  const handleRoleSelect = async (role: string) => {
+    if (!selectedTenant || !userInfo) return;
+    
+    try {
+      const response = await fetch("/api/login/confirm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: userInfo.email,
+          tenantId: selectedTenant.tenant.id,
+          role,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Token oluşturulamadı");
+      }
+
+      const userData = {
+        id: data.user.id,
+        email: data.user.email,
+        firstName: data.user.firstName,
+        lastName: data.user.lastName,
+        tenantId: data.tenant.id,
+        tenantName: data.tenant.name,
+        tenantSlug: data.tenant.slug,
+        role: data.role,
+      };
+
+      login(userData, data.token);
+      setShowRoleSelector(false);
+      setLocation("/dashboard");
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Hata",
+        description: error instanceof Error ? error.message : "Token oluşturulamadı",
+      });
+    }
   };
 
   return (
@@ -143,6 +264,65 @@ export default function LoginForm() {
           {t('auth.demoLogin')}
         </Button>
       </form>
+
+      {/* Tenant Selector Dialog */}
+      <Dialog open={showTenantSelector} onOpenChange={setShowTenantSelector}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Tenant Seçin</DialogTitle>
+            <DialogDescription>
+              Birden fazla tenant'a erişiminiz var. Devam etmek için bir tenant seçin.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            {tenantOptions.map((option) => (
+              <Button
+                key={option.tenant.id}
+                variant="outline"
+                className="w-full justify-start text-left h-auto py-3"
+                onClick={() => handleTenantSelect(option)}
+                data-testid={`select-tenant-${option.tenant.slug}`}
+              >
+                <div className="flex-1">
+                  <div className="font-medium">{option.tenant.name}</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {option.roles.map((role) => (
+                      <Badge key={role} variant="secondary" className="mr-1">
+                        {role}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </Button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Role Selector Dialog */}
+      <Dialog open={showRoleSelector} onOpenChange={setShowRoleSelector}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Rol Seçin</DialogTitle>
+            <DialogDescription>
+              {selectedTenant?.tenant.name} için bir rol seçin.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            {roleOptions.map((role) => (
+              <Button
+                key={role}
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => handleRoleSelect(role)}
+                data-testid={`select-role-${role}`}
+              >
+                {role}
+              </Button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

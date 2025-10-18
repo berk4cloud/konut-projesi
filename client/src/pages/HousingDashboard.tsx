@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
+import { useLocation } from "wouter";
 import Header from "@/components/Header";
 import FilterPanel from "@/components/FilterPanel";
 import CapacityWidget from "@/components/CapacityWidget";
@@ -368,7 +369,20 @@ const initialMockHouses = [
 export default function HousingDashboard() {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const [, setLocation] = useLocation();
+
+  // Redirect to login if not authenticated (using useEffect to avoid hook call during render)
+  useEffect(() => {
+    if (!isAuthenticated || !user) {
+      setLocation("/");
+    }
+  }, [isAuthenticated, user, setLocation]);
+
+  // Show nothing while redirecting
+  if (!isAuthenticated || !user) {
+    return null;
+  }
   const [houses, setHouses] = useState(initialMockHouses);
   const [assignmentModalOpen, setAssignmentModalOpen] = useState(false);
   const [warningModalOpen, setWarningModalOpen] = useState(false);
@@ -787,8 +801,8 @@ export default function HousingDashboard() {
   return (
     <div className="min-h-screen bg-background">
       <Header 
-        tenantName="Cova B.V." 
-        userName="Admin" 
+        tenantName={user.tenantName || "ARPDO"} 
+        userName={`${user.firstName} ${user.lastName}`} 
         upcomingRemindersCount={upcomingRemindersCount}
         upcomingReminders={allRemindersForDialog as any}
         onCompleteReminder={handleCompleteReminder}

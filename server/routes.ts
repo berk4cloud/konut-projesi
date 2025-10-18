@@ -283,6 +283,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // POST /login/confirm - Confirm tenant/role selection and get token
+  apiRouter.post("/login/confirm", async (req, res) => {
+    try {
+      const { email, tenantId, role } = req.body;
+      
+      if (!email || !tenantId || !role) {
+        return res.status(400).json({ error: "Email, tenantId ve rol gerekli" });
+      }
+      
+      // Find user by tenant + email
+      const user = await storage.getUserByTenantEmail(tenantId, email);
+      
+      if (!user || user.status !== "active") {
+        return res.status(401).json({ error: "Kullanıcı bulunamadı veya aktif değil" });
+      }
+      
+      // Verify user has this role
+      if (!user.roles.includes(role)) {
+        return res.status(403).json({ error: "Bu role sahip değilsiniz" });
+      }
+      
+      // Get tenant
+      const tenant = await storage.getTenantById(tenantId);
+      if (!tenant) {
+        return res.status(404).json({ error: "Tenant bulunamadı" });
+      }
+      
+      // Generate token
+      const token = generateTenantUserToken(user, tenant, role);
+      
+      res.json({
+        token,
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+        },
+        tenant: {
+          id: tenant.id,
+          name: tenant.name,
+          slug: tenant.slug,
+        },
+        role,
+      });
+    } catch (error) {
+      console.error("Login confirm error:", error);
+      res.status(500).json({ error: "Token oluşturma hatası" });
+    }
+  });
+
   // POST /logout - Logout (JWT-based, client-side token removal)
   apiRouter.post("/logout", async (req, res) => {
     // Since we're using JWT tokens, logout is handled client-side by removing the token
