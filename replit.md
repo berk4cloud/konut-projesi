@@ -49,6 +49,13 @@ TanStack Query is used for server state management (caching, refetching). React'
 
 ### Features
 
+- **Workers Management (Federated Model)**: The Workers page displays all workers with their employment details using the federated model. Workers are fetched via GET `/api/workers` which joins worker_profiles, employments, and employment_private_data tables. Features include:
+  - **Add Worker**: Creates worker profile + employment + private data in one transaction via POST `/api/workers`. Form includes: firstName, lastName, dateOfBirth (optional), gender (male/female), nationality (optional), email, phone (optional), jobTitle, department, startDate. Empty strings are normalized to null before saving.
+  - **Edit Worker**: Updates employment via PATCH `/api/employments/:id`. Updates job title, department, and other employment-specific fields.
+  - **Search & Filter**: Real-time search across name, nationality, job title, department, email, and phone.
+  - **Employment Status Badges**: Color-coded badges for active (green), inactive (gray), former (red with end date), invited (purple).
+  - **Pagination**: Configurable page size (10/25/50/100 workers per page).
+  - **Field Mappings**: birthDate → dateOfBirth, country → nationality, gender: "Erkek"/"Kadın" (Turkish) → "male"/"female" (API).
 - **Currency Settings**: Tenant admins can configure system-wide currency from Settings page. Supports 20 major currencies: EUR, USD, GBP, CHF, CAD, MXN, CNY, JPY, TRY, RUB, SEK, NOK, DKK, HUF, PLN, CZK, RON, BGN, RSD, UAH. Currency persists in localStorage via systemSettings and applies to all pricing displays. Schema includes currency enum and field on tenants table with EUR as default.
 - **Accommodation Billing & Assignment Management**: The "Konaklama" (Accommodation) module manages worker-bed assignments, automatically calculates monthly charges (prorated for partial months), tracks deposits, and monitors payment statuses. Includes enhanced filtering with granular overdue categories (7-14 days, 14-30 days, 30-90 days, 90+ days), worker-grouped payment history with expandable records, and date range filtering for payment queries.
 - **Multi-Level Pricing System**: Supports a 3-level pricing hierarchy (Room-specific > House-specific > Standard system pricing) with a global daily rental mode toggle. Calculations adapt for daily or monthly rates based on duration.
