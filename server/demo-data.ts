@@ -157,8 +157,8 @@ export const demoTenantUsers: User[] = [
   {
     id: "user-cova-fatma",
     tenantId: "tenant-cova",
-    email: "fatma@cova.nl",
-    password: "$2b$10$MQ8.bBEqV4H8K9e/yO2M5.hY7i5sL6rT8uX1jW3nZ4pQ5vR7tA9uK", // FatmaPass123
+    email: "fatma.yilmaz@gmail.com", // Same email across tenants for multi-tenant login
+    password: "$2b$10$M8AKjnGHXV9u6d/gtoUgbOxtQnzbqDXSKlkvyRbcCD.SNCFajKoAy", // FatmaPass123
     firstName: "Fatma",
     lastName: "Yılmaz",
     roles: ["planner", "finance"],
@@ -195,8 +195,8 @@ export const demoTenantUsers: User[] = [
   {
     id: "user-apple-fatma",
     tenantId: "tenant-apple",
-    email: "fatma@apple.nl",
-    password: "$2b$10$MQ8.bBEqV4H8K9e/yO2M5.hY7i5sL6rT8uX1jW3nZ4pQ5vR7tA9uK", // FatmaPass123
+    email: "fatma.yilmaz@gmail.com", // Same email across tenants for multi-tenant login
+    password: "$2b$10$M8AKjnGHXV9u6d/gtoUgbOxtQnzbqDXSKlkvyRbcCD.SNCFajKoAy", // FatmaPass123
     firstName: "Fatma",
     lastName: "Yılmaz",
     roles: ["hr_manager"],
@@ -255,7 +255,7 @@ export const demoTenantUsers: User[] = [
 // Login Scenarios:
 // 1. Jan (jan@cova.nl) - Single tenant + Single role → Direct dashboard
 // 2. Lisa (lisa@cova.nl) - Single tenant + Single role → Direct dashboard
-// 3. Fatma (fatma@cova.nl OR fatma@apple.nl) - Multi tenant + Multi role → Tenant select → Role select
+// 3. Fatma (fatma.yilmaz@gmail.com) - Multi tenant + Multi role → Tenant select → Role select
 // 4. Tim (tim@apple.nl) - Single tenant + Single role → Direct dashboard
 // 5. Sophie (sophie@oneflex.nl) - Single tenant + Single role → Direct dashboard
 

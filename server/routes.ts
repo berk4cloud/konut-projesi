@@ -5,7 +5,9 @@ import { storage } from "./storage";
 import { 
   insertWorkerProfileSchema, 
   insertEmploymentSchema,
-  insertEmploymentPrivateDataSchema 
+  insertEmploymentPrivateDataSchema,
+  type User,
+  type Tenant
 } from "@shared/schema";
 import { z } from "zod";
 import { requireTenant } from "./middleware/tenant";
@@ -59,8 +61,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: "Geçersiz email veya şifre" });
       }
       
+      // For simple demo login, use first role
+      const selectedRole = user.roles[0];
+      
       // Generate JWT token
-      const token = generateTenantUserToken(user, tenant);
+      const token = generateTenantUserToken(user, tenant, selectedRole);
       
       // Return user info + token
       res.json({
@@ -71,7 +76,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
-          role: user.role,
+          roles: user.roles,
+          selectedRole, // Currently selected role
           status: user.status,
         },
         tenant: {
@@ -86,6 +92,151 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Tenant login error:", error);
+      res.status(500).json({ error: "Giriş yapılırken hata oluştu" });
+    }
+  });
+
+  // POST /login - Smart login endpoint with multi-tenant/multi-role support
+  apiRouter.post("/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ error: "Email ve şifre gerekli" });
+      }
+      
+      // 1. Check if platform admin
+      const admin = await storage.getPlatformAdminByEmail(email);
+      if (admin && admin.password) {
+        const isValid = await verifyPassword(password, admin.password);
+        if (isValid) {
+          const token = generatePlatformAdminToken(admin);
+          return res.json({
+            type: "platform_admin",
+            token,
+            admin: {
+              id: admin.id,
+              email: admin.email,
+              firstName: admin.firstName,
+              lastName: admin.lastName,
+              role: admin.role,
+            }
+          });
+        }
+      }
+      
+      // 2. Get all tenant-user records for this email
+      const userRecords = await storage.getUsersByEmail(email);
+      
+      if (userRecords.length === 0) {
+        return res.status(401).json({ error: "Geçersiz email veya şifre" });
+      }
+      
+      // 3. Verify password using first record (password is same across all tenants)
+      const firstUser = userRecords[0];
+      if (!firstUser.password) {
+        return res.status(403).json({ 
+          error: "Şifre ayarlanmamış",
+          message: "Lütfen önce şifrenizi ayarlayın"
+        });
+      }
+      
+      const isValid = await verifyPassword(password, firstUser.password);
+      if (!isValid) {
+        return res.status(401).json({ error: "Geçersiz email veya şifre" });
+      }
+      
+      // 4. Build tenant-role contexts
+      const contexts = await Promise.all(
+        userRecords.map(async (user: User) => {
+          const tenant = await storage.getTenant(user.tenantId);
+          return {
+            user,
+            tenant,
+            roles: user.roles,
+          };
+        })
+      );
+      
+      // Filter out inactive users or missing tenants
+      const activeContexts = contexts.filter(
+        (ctx: { user: User; tenant: Tenant | undefined; roles: string[] }) => 
+          ctx.user.status === "active" && ctx.tenant
+      );
+      
+      if (activeContexts.length === 0) {
+        return res.status(403).json({ 
+          error: "Hesap aktif değil",
+          message: "Tüm hesaplarınız devre dışı"
+        });
+      }
+      
+      // 5. Decision tree for smart routing
+      
+      // Case: Single tenant
+      if (activeContexts.length === 1) {
+        const ctx = activeContexts[0];
+        
+        // Case: Single tenant + Single role → Direct redirect
+        if (ctx.roles.length === 1) {
+          const token = generateTenantUserToken(ctx.user, ctx.tenant!, ctx.roles[0]);
+          return res.json({
+            type: "redirect",
+            token,
+            user: {
+              id: ctx.user.id,
+              email: ctx.user.email,
+              firstName: ctx.user.firstName,
+              lastName: ctx.user.lastName,
+            },
+            tenant: {
+              id: ctx.tenant!.id,
+              name: ctx.tenant!.name,
+              slug: ctx.tenant!.slug,
+            },
+            role: ctx.roles[0],
+          });
+        }
+        
+        // Case: Single tenant + Multi role → Show role selector
+        return res.json({
+          type: "select_role",
+          tenant: {
+            id: ctx.tenant!.id,
+            name: ctx.tenant!.name,
+            slug: ctx.tenant!.slug,
+          },
+          roles: ctx.roles,
+          user: {
+            id: ctx.user.id,
+            email: ctx.user.email,
+            firstName: ctx.user.firstName,
+            lastName: ctx.user.lastName,
+          },
+        });
+      }
+      
+      // Case: Multi tenant → Show tenant selector
+      return res.json({
+        type: "select_tenant",
+        tenants: activeContexts.map((ctx: { user: User; tenant: Tenant | undefined; roles: string[] }) => ({
+          tenant: {
+            id: ctx.tenant!.id,
+            name: ctx.tenant!.name,
+            slug: ctx.tenant!.slug,
+            type: ctx.tenant!.type,
+          },
+          roles: ctx.roles,
+        })),
+        user: {
+          email: firstUser.email,
+          firstName: firstUser.firstName,
+          lastName: firstUser.lastName,
+        },
+      });
+      
+    } catch (error) {
+      console.error("Smart login error:", error);
       res.status(500).json({ error: "Giriş yapılırken hata oluştu" });
     }
   });

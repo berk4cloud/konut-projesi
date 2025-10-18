@@ -58,13 +58,13 @@ export function generatePlatformAdminToken(admin: PlatformAdmin): string {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRY });
 }
 
-export function generateTenantUserToken(user: User, tenant: Tenant): string {
+export function generateTenantUserToken(user: User, tenant: Tenant, selectedRole: string): string {
   const payload: TenantUserJwtPayload = {
     type: "tenant_user",
     userId: user.id,
     tenantId: tenant.id,
     email: user.email,
-    role: user.role,
+    role: selectedRole, // User can have multiple roles, this is the currently selected one
   };
   
   return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRY });

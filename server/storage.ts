@@ -41,6 +41,7 @@ export interface IStorage {
   // Users (Tenant-level)
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  getUsersByEmail(email: string): Promise<User[]>; // Get all user records across all tenants for this email
   getUserByTenantEmail(tenantId: string, email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   
@@ -214,6 +215,12 @@ export class MemStorage implements IStorage {
     );
   }
 
+  async getUsersByEmail(email: string): Promise<User[]> {
+    return Array.from(this.users.values()).filter(
+      (user) => user.email === email
+    );
+  }
+
   async getUserByTenantEmail(tenantId: string, email: string): Promise<User | undefined> {
     return Array.from(this.users.values()).find(
       (user) => user.tenantId === tenantId && user.email === email
@@ -225,7 +232,7 @@ export class MemStorage implements IStorage {
     const user: User = { 
       ...insertUser,
       password: insertUser.password ?? null,
-      role: insertUser.role ?? "user",
+      roles: insertUser.roles ?? ["viewer"],
       status: insertUser.status ?? "invited",
       invitedAt: insertUser.invitedAt ?? null,
       invitedBy: insertUser.invitedBy ?? null,
@@ -530,6 +537,12 @@ export class DbStorage implements IStorage {
     return result[0];
   }
 
+  async getUsersByEmail(email: string): Promise<User[]> {
+    await this.seedPromise; // Ensure seeded before query
+    const result = await db.select().from(usersTable).where(eq(usersTable.email, email));
+    return result;
+  }
+
   async getUserByTenantEmail(tenantId: string, email: string): Promise<User | undefined> {
     await this.seedPromise; // Ensure seeded before query
     const result = await db.select().from(usersTable)
@@ -544,7 +557,7 @@ export class DbStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const result = await db.insert(usersTable).values({
       ...insertUser,
-      role: insertUser.role ?? "user",
+      roles: insertUser.roles ?? ["viewer"],
       status: insertUser.status ?? "invited"
     }).returning();
     return result[0];
