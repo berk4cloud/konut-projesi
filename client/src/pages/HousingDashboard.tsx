@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/command";
 import { useToast } from "@/hooks/use-toast";
 import { FileText, Bell, Calendar, AlertCircle, Plus, ChevronDown, ChevronUp, MapPin, Clock, CheckCircle, Check, ChevronsUpDown, UserPlus, Info } from "lucide-react";
+import { getActiveWorkersForTenant, createWorker } from "@/utils/employment-adapter";
 import {
   Accordion,
   AccordionContent,
@@ -399,12 +400,9 @@ export default function HousingDashboard() {
     depositCollector: "",
   });
 
-  // Workers state (for dynamic addition)
-  const [workers, setWorkers] = useState([
-    { id: "w1", firstName: "Ahmet", lastName: "Yılmaz", dateOfBirth: "1990-05-15", gender: "male" as const },
-    { id: "w2", firstName: "Mehmet", lastName: "Demir", dateOfBirth: "1988-08-22", gender: "male" as const },
-    { id: "w3", firstName: "Ayşe", lastName: "Kaya", dateOfBirth: "1995-03-10", gender: "female" as const },
-  ]);
+  // Workers state - using federated model adapter
+  // Note: worker.id is actually employmentId (not worker profile id)
+  const [workers, setWorkers] = useState(() => getActiveWorkersForTenant("cova"));
 
   // Quick worker registration state
   const [quickRegisterOpen, setQuickRegisterOpen] = useState(false);
@@ -609,20 +607,23 @@ export default function HousingDashboard() {
       return;
     }
 
-    const newWorker = {
-      id: `w${Date.now()}`,
+    // Use adapter to create worker (creates profile + employment)
+    const result = createWorker({
+      email: `${quickRegisterData.firstName.toLowerCase()}.${quickRegisterData.lastName.toLowerCase()}@worker.com`,
       firstName: quickRegisterData.firstName,
       lastName: quickRegisterData.lastName,
-      dateOfBirth: quickRegisterData.dateOfBirth,
       gender: quickRegisterData.gender,
-    };
+      dateOfBirth: quickRegisterData.dateOfBirth,
+      tenantId: "cova",
+      startDate: new Date().toISOString().split('T')[0], // Today
+    });
 
-    const fullName = `${newWorker.firstName} ${newWorker.lastName}`;
+    const fullName = `${result.legacyWorker.firstName} ${result.legacyWorker.lastName}`;
 
-    setWorkers([...workers, newWorker]);
+    setWorkers([...workers, result.legacyWorker]);
     setWizardData({
       ...wizardData,
-      workerId: newWorker.id,
+      workerId: result.employmentId, // This is the employment ID
       workerName: fullName,
     });
     setQuickRegisterData({ firstName: "", lastName: "", dateOfBirth: "", gender: "" });

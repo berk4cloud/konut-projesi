@@ -27,7 +27,13 @@ The system enforces tenant isolation where all data entities are scoped by `tena
 
 ### Database Schema Design
 
-The core hierarchy includes Tenants, Users, Houses, Rooms, Beds, Workers, and Reservations. Key entities are designed to manage physical properties, individual sleeping units, worker information, and time-bound bed assignments. Critical fields include ownership types, bed statuses, gender restrictions, and room types.
+**Federated Worker Identity Model**: The system uses a three-table worker architecture separating portable identity from employment data:
+
+- **worker_profiles** (Global, worker-owned): Email, name, gender, nationality, photo, bio. Portable across tenants, enables workers to work for multiple companies simultaneously.
+- **employments** (Tenant-specific, links worker to company): Status (active/inactive/former/invited), start/end dates, snapshot fields (gender/photo/name preserved when worker leaves), job title, department.
+- **employment_private_data** (Tenant-specific, sensitive): Salary, contract details, performance ratings, internal notes. Never shared across tenants, isolated per employment.
+
+The core physical hierarchy includes Tenants, Users, Houses, Rooms, Beds, and Reservations. Reservations reference `employmentId` (not workerId) to tie accommodations to specific tenant-worker relationships. Key entities include ownership types, bed statuses, gender restrictions, and room types.
 
 ### API Structure
 

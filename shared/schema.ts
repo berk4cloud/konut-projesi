@@ -12,6 +12,7 @@ export const roomTypeEnum = pgEnum("room_type", ["single", "double", "triple", "
 export const genderRestrictionEnum = pgEnum("gender_restriction", ["male", "female", "mixed", "none"]);
 export const workerGenderEnum = pgEnum("worker_gender", ["male", "female"]);
 export const workerStatusEnum = pgEnum("worker_status", ["active", "inactive", "new_registration", "checked_out"]);
+export const employmentStatusEnum = pgEnum("employment_status", ["active", "inactive", "former", "invited"]);
 export const currencyEnum = pgEnum("currency", [
   "EUR", "USD", "TRY", "GBP", "CHF", "CAD", "MXN", "CNY", "JPY",
   "RUB", "SEK", "NOK", "DKK", "HUF", "PLN", "CZK", "RON", "BGN", "RSD", "UAH"
@@ -55,29 +56,104 @@ export const insertUserSchema = createInsertSchema(users).omit({
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 
-// Workers table
-export const workers = pgTable("workers", {
+// ============================================
+// FEDERATED WORKER IDENTITY MODEL
+// ============================================
+
+// Worker Profiles table (Global - Worker owned)
+// This table contains the portable worker identity that moves across tenants
+export const workerProfiles = pgTable("worker_profiles", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  tenantId: varchar("tenant_id").notNull(),
+  email: text("email").notNull().unique(), // Used for login
+  password: text("password"), // For worker authentication
   firstName: text("first_name").notNull(),
   lastName: text("last_name").notNull(),
   gender: workerGenderEnum("gender").notNull(),
-  email: text("email"),
   phone: text("phone"),
-  address: text("address"),
   nationality: text("nationality"),
-  status: workerStatusEnum("status").default("active"),
+  dateOfBirth: date("date_of_birth"),
+  photo: text("photo"), // Profile photo URL
+  bio: text("bio"), // Worker's biography
+  address: text("address"), // Personal address
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-export const insertWorkerSchema = createInsertSchema(workers).omit({
+export const insertWorkerProfileSchema = createInsertSchema(workerProfiles).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
 });
-export type InsertWorker = z.infer<typeof insertWorkerSchema>;
-export type Worker = typeof workers.$inferSelect;
+export type InsertWorkerProfile = z.infer<typeof insertWorkerProfileSchema>;
+export type WorkerProfile = typeof workerProfiles.$inferSelect;
+
+// Employments table (Tenant-specific - Links worker to company)
+// This table represents the employment relationship between worker and tenant
+export const employments = pgTable("employments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  workerProfileId: varchar("worker_profile_id").notNull(),
+  tenantId: varchar("tenant_id").notNull(),
+  status: employmentStatusEnum("status").default("active"),
+  startDate: date("start_date").notNull(),
+  endDate: date("end_date"), // null if still employed
+  
+  // Snapshot fields (copied from profile at employment start)
+  // Preserved even if worker updates their profile later
+  snapshotGender: workerGenderEnum("snapshot_gender").notNull(),
+  snapshotPhoto: text("snapshot_photo"),
+  snapshotFirstName: text("snapshot_first_name").notNull(),
+  snapshotLastName: text("snapshot_last_name").notNull(),
+  
+  jobTitle: text("job_title"), // e.g., "Cleaner", "Warehouse Worker"
+  department: text("department"),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  createdBy: varchar("created_by"), // User who created this employment
+});
+
+export const insertEmploymentSchema = createInsertSchema(employments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertEmployment = z.infer<typeof insertEmploymentSchema>;
+export type Employment = typeof employments.$inferSelect;
+
+// Employment Private Data table (Tenant-specific - Sensitive data)
+// This table contains sensitive employment data that is NEVER shared across tenants
+export const employmentPrivateData = pgTable("employment_private_data", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  employmentId: varchar("employment_id").notNull().unique(),
+  
+  // Compensation
+  salary: numeric("salary"),
+  salaryFrequency: text("salary_frequency"), // "hourly", "monthly", "yearly"
+  currency: currencyEnum("currency").default("EUR"),
+  
+  // Contract
+  contractType: text("contract_type"), // "full_time", "part_time", "temporary", "seasonal"
+  contractStartDate: date("contract_start_date"),
+  contractEndDate: date("contract_end_date"),
+  
+  // Internal notes (never visible to worker)
+  internalNotes: text("internal_notes"),
+  performanceRating: numeric("performance_rating"), // 1-5 scale
+  
+  // Manager/supervisor
+  managerId: varchar("manager_id"), // Reference to users table
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertEmploymentPrivateDataSchema = createInsertSchema(employmentPrivateData).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertEmploymentPrivateData = z.infer<typeof insertEmploymentPrivateDataSchema>;
+export type EmploymentPrivateData = typeof employmentPrivateData.$inferSelect;
 
 // Houses table
 export const houses = pgTable("houses", {
@@ -136,13 +212,13 @@ export const insertRoomSchema = createInsertSchema(rooms).omit({
 export type InsertRoom = z.infer<typeof insertRoomSchema>;
 export type Room = typeof rooms.$inferSelect;
 
-// Beds table
+// Beds table (Updated for Federated Model)
 export const beds = pgTable("beds", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   roomId: varchar("room_id").notNull(),
   bedNumber: integer("bed_number").notNull(),
   status: bedStatusEnum("status").default("available"),
-  lastOccupiedBy: varchar("last_occupied_by"),
+  lastOccupiedBy: varchar("last_occupied_by"), // References employmentId
   lastOccupiedAt: timestamp("last_occupied_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -156,10 +232,11 @@ export const insertBedSchema = createInsertSchema(beds).omit({
 export type InsertBed = z.infer<typeof insertBedSchema>;
 export type Bed = typeof beds.$inferSelect;
 
-// Reservations table
+// Reservations table (Updated for Federated Model)
+// Now references employmentId instead of workerId
 export const reservations = pgTable("reservations", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  workerId: varchar("worker_id").notNull(),
+  employmentId: varchar("employment_id").notNull(), // Changed from workerId
   houseId: varchar("house_id").notNull(),
   roomId: varchar("room_id").notNull(),
   bedId: varchar("bed_id").notNull(),
