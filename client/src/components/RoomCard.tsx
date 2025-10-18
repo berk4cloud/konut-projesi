@@ -1,4 +1,5 @@
 import BedCard from "./BedCard";
+import { useTranslation } from "react-i18next";
 
 interface Worker {
   id: string;
@@ -21,14 +22,16 @@ interface RoomCardProps {
 }
 
 export default function RoomCard({ roomNumber, floor, beds, onBedClick }: RoomCardProps) {
+  const { t } = useTranslation();
+  
   return (
     <div className="bg-muted/50 rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between">
         <h4 className="font-semibold" data-testid={`room-${roomNumber}`}>
-          Oda {roomNumber}
+          {t('housing.room')} {roomNumber}
         </h4>
         {floor !== undefined && (
-          <span className="text-xs text-muted-foreground">Kat {floor}</span>
+          <span className="text-xs text-muted-foreground">{t('housing.floor')} {floor}</span>
         )}
       </div>
 
