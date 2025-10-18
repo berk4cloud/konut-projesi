@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -544,6 +545,7 @@ const mockConversationNotes: ConversationNote[] = [
 ];
 
 export default function Assignments() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -853,8 +855,8 @@ export default function Assignments() {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold mb-2">Konaklama Yönetimi</h2>
-              <p className="text-muted-foreground">Aktif konaklamalar, ücretlendirme ve ödeme takibi</p>
+              <h2 className="text-2xl font-bold mb-2">{t('assignments.pageTitle')}</h2>
+              <p className="text-muted-foreground">{t('assignments.pageSubtitle')}</p>
             </div>
           </div>
 
@@ -862,45 +864,45 @@ export default function Assignments() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Aktif Konaklamalar</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('assignments.cards.activeAssignments')}</CardTitle>
                 <UserCheck className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{activeAssignments}</div>
-                <p className="text-xs text-muted-foreground mt-1">Devam eden konaklamalar</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('assignments.cards.activeAssignmentsDesc')}</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Bekleyen Depozito</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('assignments.cards.pendingDeposits')}</CardTitle>
                 <AlertCircle className="h-4 w-4 text-amber-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{pendingDeposits}</div>
-                <p className="text-xs text-muted-foreground mt-1">Alınmamış depozitolar</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('assignments.cards.pendingDepositsDesc')}</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Gecikmiş Ödeme</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('assignments.cards.overduePayments')}</CardTitle>
                 <Clock className="h-4 w-4 text-red-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{overdueCharges}</div>
-                <p className="text-xs text-muted-foreground mt-1">Geçmiş ödemeler</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('assignments.cards.overduePaymentsDesc')}</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Bekleyen Tutar</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('assignments.cards.pendingAmount')}</CardTitle>
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">€{totalPendingAmount.toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground mt-1">Tahsil edilecek</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('assignments.cards.pendingAmountDesc')}</p>
               </CardContent>
             </Card>
           </div>
