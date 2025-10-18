@@ -525,3 +525,36 @@ export const insertPaymentSchema = createInsertSchema(payments).omit({
 });
 export type InsertPayment = z.infer<typeof insertPaymentSchema>;
 export type Payment = typeof payments.$inferSelect;
+
+// Extended types with computed fields for frontend display
+export type AssignmentWithDetails = Assignment & {
+  workerName: string;
+  houseName: string;
+  roomNumber: string;
+  bedNumber: number;
+};
+
+export type ChargeWithWorker = Charge & {
+  workerName: string;
+};
+
+export type PaymentWithWorker = Payment & {
+  workerName: string;
+};
+
+// Assignment Notes table - Conversation/activity notes for assignments
+export const assignmentNotes = pgTable("assignment_notes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id").notNull(),
+  assignmentId: varchar("assignment_id").notNull(),
+  note: text("note").notNull(),
+  createdBy: varchar("created_by").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertAssignmentNoteSchema = createInsertSchema(assignmentNotes).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertAssignmentNote = z.infer<typeof insertAssignmentNoteSchema>;
+export type AssignmentNote = typeof assignmentNotes.$inferSelect;

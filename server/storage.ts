@@ -28,7 +28,12 @@ import {
   type Charge,
   type InsertCharge,
   type Payment,
-  type InsertPayment
+  type InsertPayment,
+  type AssignmentWithDetails,
+  type ChargeWithWorker,
+  type PaymentWithWorker,
+  type AssignmentNote,
+  type InsertAssignmentNote
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { 
@@ -128,7 +133,7 @@ export interface IStorage {
   
   // Assignments (Accommodation management)
   getAssignment(id: string): Promise<Assignment | undefined>;
-  getAssignmentsByTenant(tenantId: string): Promise<Assignment[]>;
+  getAssignmentsByTenant(tenantId: string): Promise<AssignmentWithDetails[]>;
   getAssignmentsByEmployment(employmentId: string): Promise<Assignment[]>;
   createAssignment(assignment: InsertAssignment): Promise<Assignment>;
   updateAssignment(id: string, assignment: Partial<InsertAssignment>): Promise<Assignment | undefined>;
@@ -136,7 +141,7 @@ export interface IStorage {
   
   // Charges (Monthly accommodation charges)
   getCharge(id: string): Promise<Charge | undefined>;
-  getChargesByTenant(tenantId: string): Promise<Charge[]>;
+  getChargesByTenant(tenantId: string): Promise<ChargeWithWorker[]>;
   getChargesByAssignment(assignmentId: string): Promise<Charge[]>;
   createCharge(charge: InsertCharge): Promise<Charge>;
   updateCharge(id: string, charge: Partial<InsertCharge>): Promise<Charge | undefined>;
@@ -144,10 +149,14 @@ export interface IStorage {
   
   // Payments (Payment records)
   getPayment(id: string): Promise<Payment | undefined>;
-  getPaymentsByTenant(tenantId: string): Promise<Payment[]>;
+  getPaymentsByTenant(tenantId: string): Promise<PaymentWithWorker[]>;
   getPaymentsByCharge(chargeId: string): Promise<Payment[]>;
   createPayment(payment: InsertPayment): Promise<Payment>;
   deletePayment(id: string): Promise<boolean>;
+  
+  // Assignment Notes (Conversation/activity notes)
+  getAssignmentNotesByAssignment(assignmentId: string): Promise<AssignmentNote[]>;
+  createAssignmentNote(note: InsertAssignmentNote): Promise<AssignmentNote>;
 }
 
 export class MemStorage implements IStorage {
@@ -1054,13 +1063,43 @@ export class DbStorage implements IStorage {
     return result[0];
   }
 
-  async getAssignmentsByTenant(tenantId: string): Promise<Assignment[]> {
+  async getAssignmentsByTenant(tenantId: string): Promise<AssignmentWithDetails[]> {
     await this.ensureSeeded();
-    const { assignments: assignmentsTable } = await import("@shared/schema");
-    return db.select()
+    const { 
+      assignments: assignmentsTable,
+      employments: employmentsTable,
+      workerProfiles: workerProfilesTable,
+      houses: housesTable,
+      rooms: roomsTable,
+      beds: bedsTable
+    } = await import("@shared/schema");
+    
+    // Fetch assignments with JOINs for computed fields
+    const results = await db.select({
+      assignment: assignmentsTable,
+      employment: employmentsTable,
+      workerProfile: workerProfilesTable,
+      house: housesTable,
+      room: roomsTable,
+      bed: bedsTable,
+    })
       .from(assignmentsTable)
+      .leftJoin(employmentsTable, eq(assignmentsTable.employmentId, employmentsTable.id))
+      .leftJoin(workerProfilesTable, eq(employmentsTable.workerProfileId, workerProfilesTable.id))
+      .leftJoin(housesTable, eq(assignmentsTable.houseId, housesTable.id))
+      .leftJoin(roomsTable, eq(assignmentsTable.roomId, roomsTable.id))
+      .leftJoin(bedsTable, eq(assignmentsTable.bedId, bedsTable.id))
       .where(eq(assignmentsTable.tenantId, tenantId))
       .orderBy(desc(assignmentsTable.startDate));
+    
+    // Map to AssignmentWithDetails
+    return results.map(r => ({
+      ...r.assignment,
+      workerName: r.workerProfile ? `${r.workerProfile.firstName} ${r.workerProfile.lastName}` : 'Unknown',
+      houseName: r.house?.address || 'Unknown',
+      roomNumber: r.room?.roomNumber || 'Unknown',
+      bedNumber: r.bed?.bedNumber || 0,
+    }));
   }
 
   async getAssignmentsByEmployment(employmentId: string): Promise<Assignment[]> {
@@ -1109,13 +1148,34 @@ export class DbStorage implements IStorage {
     return result[0];
   }
 
-  async getChargesByTenant(tenantId: string): Promise<Charge[]> {
+  async getChargesByTenant(tenantId: string): Promise<ChargeWithWorker[]> {
     await this.ensureSeeded();
-    const { charges: chargesTable } = await import("@shared/schema");
-    return db.select()
+    const { 
+      charges: chargesTable,
+      assignments: assignmentsTable,
+      employments: employmentsTable,
+      workerProfiles: workerProfilesTable
+    } = await import("@shared/schema");
+    
+    // Fetch charges with JOINs to get worker name
+    const results = await db.select({
+      charge: chargesTable,
+      assignment: assignmentsTable,
+      employment: employmentsTable,
+      workerProfile: workerProfilesTable,
+    })
       .from(chargesTable)
+      .leftJoin(assignmentsTable, eq(chargesTable.assignmentId, assignmentsTable.id))
+      .leftJoin(employmentsTable, eq(assignmentsTable.employmentId, employmentsTable.id))
+      .leftJoin(workerProfilesTable, eq(employmentsTable.workerProfileId, workerProfilesTable.id))
       .where(eq(chargesTable.tenantId, tenantId))
       .orderBy(desc(chargesTable.dueDate));
+    
+    // Map to ChargeWithWorker
+    return results.map(r => ({
+      ...r.charge,
+      workerName: r.workerProfile ? `${r.workerProfile.firstName} ${r.workerProfile.lastName}` : 'Unknown',
+    }));
   }
 
   async getChargesByAssignment(assignmentId: string): Promise<Charge[]> {
@@ -1164,13 +1224,37 @@ export class DbStorage implements IStorage {
     return result[0];
   }
 
-  async getPaymentsByTenant(tenantId: string): Promise<Payment[]> {
+  async getPaymentsByTenant(tenantId: string): Promise<PaymentWithWorker[]> {
     await this.ensureSeeded();
-    const { payments: paymentsTable } = await import("@shared/schema");
-    return db.select()
+    const { 
+      payments: paymentsTable,
+      charges: chargesTable,
+      assignments: assignmentsTable,
+      employments: employmentsTable,
+      workerProfiles: workerProfilesTable
+    } = await import("@shared/schema");
+    
+    // Fetch payments with JOINs to get worker name
+    const results = await db.select({
+      payment: paymentsTable,
+      charge: chargesTable,
+      assignment: assignmentsTable,
+      employment: employmentsTable,
+      workerProfile: workerProfilesTable,
+    })
       .from(paymentsTable)
+      .leftJoin(chargesTable, eq(paymentsTable.chargeId, chargesTable.id))
+      .leftJoin(assignmentsTable, eq(chargesTable.assignmentId, assignmentsTable.id))
+      .leftJoin(employmentsTable, eq(assignmentsTable.employmentId, employmentsTable.id))
+      .leftJoin(workerProfilesTable, eq(employmentsTable.workerProfileId, workerProfilesTable.id))
       .where(eq(paymentsTable.tenantId, tenantId))
       .orderBy(desc(paymentsTable.paymentDate));
+    
+    // Map to PaymentWithWorker
+    return results.map(r => ({
+      ...r.payment,
+      workerName: r.workerProfile ? `${r.workerProfile.firstName} ${r.workerProfile.lastName}` : 'Unknown',
+    }));
   }
 
   async getPaymentsByCharge(chargeId: string): Promise<Payment[]> {
@@ -1194,6 +1278,25 @@ export class DbStorage implements IStorage {
       .where(eq(paymentsTable.id, id))
       .returning();
     return result.length > 0;
+  }
+
+  // ============================================
+  // Assignment Notes
+  // ============================================
+
+  async getAssignmentNotesByAssignment(assignmentId: string): Promise<AssignmentNote[]> {
+    await this.ensureSeeded();
+    const { assignmentNotes: assignmentNotesTable } = await import("@shared/schema");
+    return db.select()
+      .from(assignmentNotesTable)
+      .where(eq(assignmentNotesTable.assignmentId, assignmentId))
+      .orderBy(desc(assignmentNotesTable.createdAt));
+  }
+
+  async createAssignmentNote(note: InsertAssignmentNote): Promise<AssignmentNote> {
+    const { assignmentNotes: assignmentNotesTable } = await import("@shared/schema");
+    const result = await db.insert(assignmentNotesTable).values(note).returning();
+    return result[0];
   }
 }
 

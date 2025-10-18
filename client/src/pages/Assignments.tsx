@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/contexts/AuthContext";
-import type { Assignment, Charge, Payment } from "@shared/schema";
+import type { AssignmentWithDetails, ChargeWithWorker, PaymentWithWorker, AssignmentNote, InsertAssignmentNote } from "@shared/schema";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,450 +48,6 @@ type DepositStatus = "pending" | "collected" | "refunded" | "partially_refunded"
 type PaymentStatus = "pending" | "partial" | "paid" | "overdue";
 type PaymentMethod = "cash" | "bank_transfer" | "pos" | "other";
 
-type ConversationNote = {
-  id: string;
-  assignmentId: string;
-  date: string;
-  note: string;
-  createdBy: string;
-};
-
-// Mock Data
-const mockAssignments: Assignment[] = [
-  {
-    id: "a1",
-    employmentId: "emp-1",
-    workerName: "Ahmet Yılmaz",
-    houseId: "h1",
-    houseName: "Geldernstrasse 13, 52511",
-    roomNumber: "45",
-    bedNumber: 1,
-    startDate: "2024-10-15",
-    monthlyRate: 600,
-    status: "active",
-    depositCollected: true,
-    depositAmount: 500,
-    depositDate: "2024-10-14",
-    depositStatus: "collected",
-  },
-  {
-    id: "a2",
-    employmentId: "emp-2",
-    workerName: "Mehmet Demir",
-    houseId: "h1",
-    houseName: "Geldernstrasse 13, 52511",
-    roomNumber: "45",
-    bedNumber: 2,
-    startDate: "2024-11-01",
-    monthlyRate: 600,
-    status: "active",
-    depositCollected: true,
-    depositAmount: 500,
-    depositDate: "2024-10-30",
-    depositStatus: "collected",
-  },
-  {
-    id: "a3",
-    employmentId: "emp-3",
-    workerName: "Ayşe Kaya",
-    houseId: "h2",
-    houseName: "Hauptstrasse 45, 5911",
-    roomNumber: "101",
-    bedNumber: 1,
-    startDate: "2024-09-01",
-    endDate: "2024-11-15",
-    monthlyRate: 550,
-    status: "ending_soon",
-    depositCollected: true,
-    depositAmount: 500,
-    depositDate: "2024-08-30",
-    depositStatus: "collected",
-  },
-  {
-    id: "a4",
-    employmentId: "emp-4",
-    workerName: "Fatma Şahin",
-    houseId: "h1",
-    houseName: "Geldernstrasse 13, 52511",
-    roomNumber: "46",
-    bedNumber: 1,
-    startDate: "2024-11-10",
-    monthlyRate: 650,
-    status: "active",
-    depositCollected: false,
-    depositAmount: 0,
-    depositStatus: "pending",
-  },
-];
-
-const mockCharges: Charge[] = [
-  {
-    id: "c1",
-    assignmentId: "a1",
-    workerName: "Ahmet Yılmaz",
-    month: "2024-10",
-    amount: 340,
-    expectedAmount: 340,
-    remainingAmount: 0,
-    days: 17,
-    calculationType: "partial",
-    dueDate: "2024-11-01",
-    status: "paid",
-    notes: "15-31 Ekim arası (oransal hesaplama: 17/30 × €600)",
-  },
-  {
-    id: "c2",
-    assignmentId: "a1",
-    workerName: "Ahmet Yılmaz",
-    month: "2024-11",
-    amount: 600,
-    expectedAmount: 600,
-    remainingAmount: 200,
-    days: 30,
-    calculationType: "full_month",
-    dueDate: "2024-12-01",
-    status: "partial",
-    notes: "€400 ödendi, €200 kalan (kısmi ödeme)",
-  },
-  {
-    id: "c3",
-    assignmentId: "a2",
-    workerName: "Mehmet Demir",
-    month: "2024-11",
-    amount: 600,
-    expectedAmount: 600,
-    remainingAmount: 600,
-    days: 30,
-    calculationType: "full_month",
-    dueDate: "2024-12-01",
-    status: "pending",
-  },
-  {
-    id: "c4",
-    assignmentId: "a3",
-    workerName: "Ayşe Kaya",
-    month: "2024-11",
-    amount: 275,
-    expectedAmount: 275,
-    remainingAmount: 275,
-    days: 15,
-    calculationType: "partial",
-    dueDate: "2024-11-15",
-    status: "pending",
-    notes: "1-15 Kasım arası (son dönem)",
-  },
-  {
-    id: "c5",
-    assignmentId: "a4",
-    workerName: "Fatma Şahin",
-    month: "2024-11",
-    amount: 430,
-    expectedAmount: 430,
-    remainingAmount: 430,
-    days: 20,
-    calculationType: "prorated",
-    dueDate: "2024-12-01",
-    status: "overdue",
-    notes: "10-30 Kasım arası + depozito eksik",
-  },
-];
-
-const mockPayments: Payment[] = [
-  // Ahmet Yılmaz - Recent payments (2024)
-  {
-    id: "p1",
-    chargeId: "c1",
-    workerName: "Ahmet Yılmaz",
-    amount: 340,
-    paymentDate: "2024-10-30",
-    paymentMethod: "bank_transfer",
-    collectorName: "Elif Yılmaz",
-    recordedAt: "2024-10-30T14:30:00",
-    reference: "INV-2024-10-001",
-    notes: "Banka havalesi ile ödendi",
-  },
-  {
-    id: "p2",
-    chargeId: "c2",
-    workerName: "Ahmet Yılmaz",
-    amount: 400,
-    paymentDate: "2024-11-15",
-    paymentMethod: "cash",
-    collectorName: "Elif Yılmaz",
-    recordedAt: "2024-11-15T10:15:00",
-    reference: "CASH-001",
-    notes: "Nakit ödeme - ilk kısım (€400)",
-  },
-  {
-    id: "p3",
-    chargeId: "c2",
-    workerName: "Ahmet Yılmaz",
-    amount: 200,
-    paymentDate: "2024-11-20",
-    paymentMethod: "pos",
-    collectorName: "Mehmet Arslan",
-    recordedAt: "2024-11-20T16:45:00",
-    reference: "POS-2024-112",
-    notes: "POS ile ödeme - kalan kısım (€200)",
-  },
-  
-  // Ahmet Yılmaz - Older payments (2024 başı)
-  {
-    id: "p4",
-    chargeId: "c_old1",
-    workerName: "Ahmet Yılmaz",
-    amount: 600,
-    paymentDate: "2024-09-05",
-    paymentMethod: "bank_transfer",
-    collectorName: "Elif Yılmaz",
-    recordedAt: "2024-09-05T11:20:00",
-    reference: "INV-2024-09-001",
-    notes: "Eylül ayı ödemesi",
-  },
-  {
-    id: "p5",
-    chargeId: "c_old2",
-    workerName: "Ahmet Yılmaz",
-    amount: 600,
-    paymentDate: "2024-08-01",
-    paymentMethod: "cash",
-    collectorName: "Mehmet Arslan",
-    recordedAt: "2024-08-01T09:45:00",
-    reference: "CASH-AUG-001",
-    notes: "Ağustos ayı ödemesi - nakit",
-  },
-  {
-    id: "p6",
-    chargeId: "c_old3",
-    workerName: "Ahmet Yılmaz",
-    amount: 550,
-    paymentDate: "2024-01-15",
-    paymentMethod: "bank_transfer",
-    collectorName: "Elif Yılmaz",
-    recordedAt: "2024-01-15T14:00:00",
-    reference: "INV-2024-01-012",
-    notes: "Ocak ayı ödemesi",
-  },
-  
-  // Ahmet Yılmaz - 2023 ödemeleri
-  {
-    id: "p7",
-    chargeId: "c_2023_1",
-    workerName: "Ahmet Yılmaz",
-    amount: 550,
-    paymentDate: "2023-12-05",
-    paymentMethod: "bank_transfer",
-    collectorName: "Elif Yılmaz",
-    recordedAt: "2023-12-05T10:30:00",
-    reference: "INV-2023-12-045",
-    notes: "Aralık 2023 ödemesi",
-  },
-  {
-    id: "p8",
-    chargeId: "c_2023_2",
-    workerName: "Ahmet Yılmaz",
-    amount: 550,
-    paymentDate: "2023-06-10",
-    paymentMethod: "cash",
-    collectorName: "Mehmet Arslan",
-    recordedAt: "2023-06-10T15:20:00",
-    reference: "CASH-JUN-2023",
-    notes: "Haziran 2023 - nakit ödeme",
-  },
-  
-  // Mehmet Demir - 2024 ödemeleri
-  {
-    id: "p9",
-    chargeId: "c3",
-    workerName: "Mehmet Demir",
-    amount: 600,
-    paymentDate: "2024-10-25",
-    paymentMethod: "bank_transfer",
-    collectorName: "Elif Yılmaz",
-    recordedAt: "2024-10-25T12:00:00",
-    reference: "INV-2024-10-125",
-    notes: "Ekim ayı ödemesi",
-  },
-  {
-    id: "p10",
-    chargeId: "c_mk2",
-    workerName: "Mehmet Demir",
-    amount: 600,
-    paymentDate: "2024-09-20",
-    paymentMethod: "pos",
-    collectorName: "Mehmet Arslan",
-    recordedAt: "2024-09-20T14:30:00",
-    reference: "POS-2024-920",
-    notes: "Eylül ayı - POS ile ödeme",
-  },
-  {
-    id: "p11",
-    chargeId: "c_mk3",
-    workerName: "Mehmet Demir",
-    amount: 600,
-    paymentDate: "2024-08-15",
-    paymentMethod: "cash",
-    collectorName: "Elif Yılmaz",
-    recordedAt: "2024-08-15T10:15:00",
-    reference: "CASH-AUG-015",
-    notes: "Ağustos ayı - nakit",
-  },
-  
-  // Mehmet Demir - 2023 ödemeleri
-  {
-    id: "p12",
-    chargeId: "c_mk_2023_1",
-    workerName: "Mehmet Demir",
-    amount: 580,
-    paymentDate: "2023-11-10",
-    paymentMethod: "bank_transfer",
-    collectorName: "Elif Yılmaz",
-    recordedAt: "2023-11-10T11:45:00",
-    reference: "INV-2023-11-089",
-    notes: "Kasım 2023 ödemesi",
-  },
-  {
-    id: "p13",
-    chargeId: "c_mk_2023_2",
-    workerName: "Mehmet Demir",
-    amount: 580,
-    paymentDate: "2023-03-15",
-    paymentMethod: "cash",
-    collectorName: "Mehmet Arslan",
-    recordedAt: "2023-03-15T09:30:00",
-    reference: "CASH-MAR-2023",
-    notes: "Mart 2023 - nakit ödeme",
-  },
-  
-  // Ayşe Kaya - 2024 ödemeleri
-  {
-    id: "p14",
-    chargeId: "c_ad1",
-    workerName: "Ayşe Kaya",
-    amount: 550,
-    paymentDate: "2024-10-15",
-    paymentMethod: "bank_transfer",
-    collectorName: "Elif Yılmaz",
-    recordedAt: "2024-10-15T13:20:00",
-    reference: "INV-2024-10-078",
-    notes: "Ekim ayı ödemesi",
-  },
-  {
-    id: "p15",
-    chargeId: "c_ad2",
-    workerName: "Ayşe Kaya",
-    amount: 550,
-    paymentDate: "2024-09-10",
-    paymentMethod: "automatic",
-    collectorName: "Sistem",
-    recordedAt: "2024-09-10T00:05:00",
-    reference: "AUTO-SEP-2024",
-    notes: "Otomatik ödeme - banka otomasyonu",
-  },
-  
-  // Fatma Şahin - 2024 ödemeleri
-  {
-    id: "p16",
-    chargeId: "c_fs1",
-    workerName: "Fatma Şahin",
-    amount: 650,
-    paymentDate: "2024-10-05",
-    paymentMethod: "pos",
-    collectorName: "Mehmet Arslan",
-    recordedAt: "2024-10-05T16:00:00",
-    reference: "POS-2024-1005",
-    notes: "Ekim ayı - POS ile",
-  },
-  {
-    id: "p17",
-    chargeId: "c_fs2",
-    workerName: "Fatma Şahin",
-    amount: 650,
-    paymentDate: "2024-09-01",
-    paymentMethod: "bank_transfer",
-    collectorName: "Elif Yılmaz",
-    recordedAt: "2024-09-01T10:30:00",
-    reference: "INV-2024-09-005",
-    notes: "Eylül ayı ödemesi",
-  },
-  {
-    id: "p18",
-    chargeId: "c_fs3",
-    workerName: "Fatma Şahin",
-    amount: 620,
-    paymentDate: "2024-02-20",
-    paymentMethod: "cash",
-    collectorName: "Mehmet Arslan",
-    recordedAt: "2024-02-20T14:45:00",
-    reference: "CASH-FEB-020",
-    notes: "Şubat 2024 - nakit",
-  },
-  
-  // Ayşe Kaya - 2024 ödemeleri
-  {
-    id: "p19",
-    chargeId: "c_ak1",
-    workerName: "Ayşe Kaya",
-    amount: 600,
-    paymentDate: "2024-11-01",
-    paymentMethod: "bank_transfer",
-    collectorName: "Elif Yılmaz",
-    recordedAt: "2024-11-01T09:15:00",
-    reference: "INV-2024-11-001",
-    notes: "Kasım ayı ödemesi",
-  },
-  {
-    id: "p20",
-    chargeId: "c_ak2",
-    workerName: "Ayşe Kaya",
-    amount: 600,
-    paymentDate: "2024-05-10",
-    paymentMethod: "pos",
-    collectorName: "Mehmet Arslan",
-    recordedAt: "2024-05-10T11:30:00",
-    reference: "POS-2024-510",
-    notes: "Mayıs 2024 - POS",
-  },
-];
-
-const mockConversationNotes: ConversationNote[] = [
-  {
-    id: "n1",
-    assignmentId: "a1",
-    date: "2024-10-15T10:30:00",
-    note: "İşçi oda değişikliği talep etti. Komşusu çok gürültülü olduğunu söyledi. İnceleme yapılacak.",
-    createdBy: "Elif Yılmaz",
-  },
-  {
-    id: "n2",
-    assignmentId: "a1",
-    date: "2024-10-20T14:15:00",
-    note: "Oda değişikliği yapıldı. Yeni odaya taşındı. Memnun kaldı.",
-    createdBy: "Mehmet Arslan",
-  },
-  {
-    id: "n3",
-    assignmentId: "a2",
-    date: "2024-11-01T09:00:00",
-    note: "İlk ödemeyi yapmadı. Telefon etti, maaş gecikmesi var. Hafta sonu ödeyeceğini söyledi.",
-    createdBy: "Elif Yılmaz",
-  },
-  {
-    id: "n4",
-    assignmentId: "a2",
-    date: "2024-11-05T16:30:00",
-    note: "Ödeme yapıldı. €400 nakit olarak ödedi. Kalan €200'yi gelecek hafta ödeyecek.",
-    createdBy: "Elif Yılmaz",
-  },
-  {
-    id: "n5",
-    assignmentId: "a3",
-    date: "2024-11-10T11:00:00",
-    note: "Depozito iade talebi. Sözleşme bitişi yaklaşıyor. Kontrol yapılacak, hasar var mı bakılacak.",
-    createdBy: "Mehmet Arslan",
-  },
-];
-
 export default function Assignments() {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
@@ -517,24 +73,24 @@ export default function Assignments() {
   const [chargesFilter, setChargesFilter] = useState<string>("all");
   
   // Fetch assignments, charges, and payments from API
-  const { data: assignments = [], isLoading: assignmentsLoading } = useQuery<Assignment[]>({
+  const { data: assignments = [], isLoading: assignmentsLoading } = useQuery<AssignmentWithDetails[]>({
     queryKey: ["/api/tenants", user?.tenantId, "assignments"],
     enabled: !!user?.tenantId,
   });
   
-  const { data: charges = [], isLoading: chargesLoading } = useQuery<Charge[]>({
+  const { data: charges = [], isLoading: chargesLoading } = useQuery<ChargeWithWorker[]>({
     queryKey: ["/api/tenants", user?.tenantId, "charges"],
     enabled: !!user?.tenantId,
   });
   
-  const { data: payments = [], isLoading: paymentsLoading } = useQuery<Payment[]>({
+  const { data: payments = [], isLoading: paymentsLoading } = useQuery<PaymentWithWorker[]>({
     queryKey: ["/api/tenants", user?.tenantId, "payments"],
     enabled: !!user?.tenantId,
   });
   
   // Mutations
   const createPaymentMutation = useMutation({
-    mutationFn: (payment: Omit<Payment, "id" | "createdAt">) =>
+    mutationFn: (payment: any) =>
       apiRequest("POST", `/api/tenants/${user?.tenantId}/payments`, payment),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tenants", user?.tenantId, "payments"] });
@@ -543,7 +99,7 @@ export default function Assignments() {
   });
 
   const updateChargeMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Charge> }) =>
+    mutationFn: ({ id, data }: { id: string; data: any }) =>
       apiRequest("PATCH", `/api/charges/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tenants", user?.tenantId, "charges"] });
@@ -551,14 +107,34 @@ export default function Assignments() {
   });
 
   const updateAssignmentMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Assignment> }) =>
+    mutationFn: ({ id, data }: { id: string; data: any }) =>
       apiRequest("PATCH", `/api/assignments/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tenants", user?.tenantId, "assignments"] });
     },
   });
-  
-  const [conversationNotes, setConversationNotes] = useState(mockConversationNotes);
+
+  // Assignment Detail Dialog State
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [selectedAssignment, setSelectedAssignment] = useState<AssignmentWithDetails | null>(null);
+  const [newNote, setNewNote] = useState({
+    note: "",
+    createdBy: "",
+  });
+
+  // Fetch assignment notes for selected assignment
+  const { data: assignmentNotes = [] } = useQuery<AssignmentNote[]>({
+    queryKey: ["/api/tenants", user?.tenantId, "assignments", selectedAssignment?.id, "notes"],
+    enabled: !!selectedAssignment?.id && !!user?.tenantId,
+  });
+
+  const createNoteMutation = useMutation({
+    mutationFn: (note: InsertAssignmentNote) =>
+      apiRequest("POST", `/api/tenants/${user?.tenantId}/assignments/${selectedAssignment?.id}/notes`, note),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tenants", user?.tenantId, "assignments", selectedAssignment?.id, "notes"] });
+    },
+  });
   
   // Payment Filter State
   const [paymentDateFilter, setPaymentDateFilter] = useState({
@@ -569,7 +145,7 @@ export default function Assignments() {
   
   // Payment Dialog State
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-  const [selectedCharge, setSelectedCharge] = useState<Charge | null>(null);
+  const [selectedCharge, setSelectedCharge] = useState<ChargeWithWorker | null>(null);
   const [newPayment, setNewPayment] = useState({
     amount: 0,
     paymentDate: new Date().toISOString().split('T')[0],
@@ -578,23 +154,15 @@ export default function Assignments() {
     notes: "",
   });
 
-  // Assignment Detail Dialog State
-  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
-  const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
-  const [newNote, setNewNote] = useState({
-    note: "",
-    createdBy: "",
-  });
-
   // Open assignment detail dialog
-  const handleOpenDetailDialog = (assignment: Assignment) => {
+  const handleOpenDetailDialog = (assignment: AssignmentWithDetails) => {
     setSelectedAssignment(assignment);
     setDetailDialogOpen(true);
   };
 
   // Save conversation note
   const handleSaveNote = () => {
-    if (!selectedAssignment || !newNote.note.trim() || !newNote.createdBy.trim()) {
+    if (!selectedAssignment || !newNote.note.trim() || !newNote.createdBy.trim() || !user?.tenantId) {
       toast({
         title: t('assignments.toasts.error'),
         description: t('assignments.paymentDialog.errors.missingFields'),
@@ -603,30 +171,31 @@ export default function Assignments() {
       return;
     }
 
-    // Create new note
-    const newConversationNote: ConversationNote = {
-      id: `n${Date.now()}`, // Generate unique ID
+    createNoteMutation.mutate({
+      tenantId: user.tenantId,
       assignmentId: selectedAssignment.id,
-      date: new Date().toISOString(),
       note: newNote.note.trim(),
       createdBy: newNote.createdBy.trim(),
-    };
-
-    // Add to state
-    setConversationNotes([...conversationNotes, newConversationNote]);
-
-    // Show success message
-    toast({
-      title: t('assignments.toasts.success'),
-      description: t('assignments.paymentDialog.successDesc'),
+    }, {
+      onSuccess: () => {
+        toast({
+          title: t('assignments.toasts.success'),
+          description: t('assignments.paymentDialog.successDesc'),
+        });
+        setNewNote({ note: "", createdBy: "" });
+      },
+      onError: () => {
+        toast({
+          title: t('assignments.toasts.error'),
+          description: "Failed to create note",
+          variant: "destructive",
+        });
+      }
     });
-    
-    // Reset form but keep dialog open so user can see the new note
-    setNewNote({ note: "", createdBy: "" });
   };
 
   // Open payment dialog for a specific charge
-  const handleOpenPaymentDialog = (charge: Charge) => {
+  const handleOpenPaymentDialog = (charge: ChargeWithWorker) => {
     setSelectedCharge(charge);
     setNewPayment({
       amount: charge.remainingAmount, // Default to remaining amount
@@ -807,7 +376,7 @@ export default function Assignments() {
   });
   
   // Group payments by worker name and sort by date (newest first)
-  const groupedPayments: Record<string, Payment[]> = {};
+  const groupedPayments: Record<string, PaymentWithWorker[]> = {};
   filteredPayments.forEach(payment => {
     if (!groupedPayments[payment.workerName]) {
       groupedPayments[payment.workerName] = [];
@@ -913,7 +482,7 @@ export default function Assignments() {
   });
   
   const depositsToRefundCount = depositsToRefund.length;
-  const depositsToRefundAmount = depositsToRefund.reduce((sum, a) => sum + a.depositAmount, 0);
+  const depositsToRefundAmount = depositsToRefund.reduce((sum, a) => sum + (a.depositAmount || 0), 0);
 
   // Helper functions
   const getStatusColor = (status: AssignmentStatus) => {
@@ -921,7 +490,6 @@ export default function Assignments() {
       case "active": return "bg-green-500";
       case "ending_soon": return "bg-amber-500";
       case "ended": return "bg-gray-500";
-      case "pending": return "bg-blue-500";
       default: return "bg-gray-500";
     }
   };
@@ -931,7 +499,6 @@ export default function Assignments() {
       case "active": return t('assignments.status.active');
       case "ending_soon": return t('assignments.status.endingSoon');
       case "ended": return t('assignments.status.ended');
-      case "pending": return t('assignments.status.pending');
       default: return status;
     }
   };
@@ -1618,9 +1185,7 @@ export default function Assignments() {
               <div className="space-y-2">
                 <Label>{t('assignments.detailsDialog.conversationNotes')}</Label>
                 <ScrollArea className="h-[300px] w-full rounded-md border p-4">
-                  {conversationNotes
-                    .filter(note => note.assignmentId === selectedAssignment.id)
-                    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                  {assignmentNotes
                     .map((note) => (
                       <div 
                         key={note.id} 
@@ -1630,13 +1195,13 @@ export default function Assignments() {
                         <div className="flex justify-between items-start mb-2">
                           <span className="text-sm font-medium">{note.createdBy}</span>
                           <span className="text-xs text-muted-foreground">
-                            {new Date(note.date).toLocaleString('tr-TR')}
+                            {new Date(note.createdAt).toLocaleString('tr-TR')}
                           </span>
                         </div>
                         <p className="text-sm">{note.note}</p>
                       </div>
                     ))}
-                  {conversationNotes.filter(note => note.assignmentId === selectedAssignment.id).length === 0 && (
+                  {assignmentNotes.length === 0 && (
                     <p className="text-sm text-muted-foreground text-center py-8">
                       {t('assignments.detailsDialog.noNotes')}
                     </p>

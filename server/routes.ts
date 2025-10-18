@@ -1396,6 +1396,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============================================
+  // ASSIGNMENT NOTES ROUTES
+  // ============================================
+
+  // GET /tenants/:tenantId/assignments/:assignmentId/notes - Get notes for assignment
+  apiRouter.get("/tenants/:tenantId/assignments/:assignmentId/notes", async (req, res) => {
+    try {
+      const { assignmentId } = req.params;
+      const notes = await storage.getAssignmentNotesByAssignment(assignmentId);
+      res.json(notes);
+    } catch (error) {
+      console.error("Error fetching assignment notes:", error);
+      res.status(500).json({ error: "Failed to fetch assignment notes" });
+    }
+  });
+
+  // POST /tenants/:tenantId/assignments/:assignmentId/notes - Create note
+  apiRouter.post("/tenants/:tenantId/assignments/:assignmentId/notes", async (req, res) => {
+    try {
+      const { tenantId, assignmentId } = req.params;
+      const note = await storage.createAssignmentNote({ ...req.body, tenantId, assignmentId });
+      res.status(201).json(note);
+    } catch (error) {
+      console.error("Error creating assignment note:", error);
+      res.status(500).json({ error: "Failed to create assignment note" });
+    }
+  });
+
   // Register API router with /api prefix
   app.use("/api", apiRouter);
 
