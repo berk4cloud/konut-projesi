@@ -1560,7 +1560,7 @@ export default function Assignments() {
           }
         }}
       >
-        <DialogContent className="max-w-4xl max-h-[90vh]">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t('assignments.detailsDialog.title')}</DialogTitle>
             {selectedAssignment && (
@@ -1581,7 +1581,7 @@ export default function Assignments() {
           </DialogHeader>
 
           {selectedAssignment && (
-            <div className="space-y-4">
+            <div className="space-y-4 pb-4">
               {/* Conversation Notes List */}
               <div className="space-y-2">
                 <Label>{t('assignments.detailsDialog.conversationNotes')}</Label>
