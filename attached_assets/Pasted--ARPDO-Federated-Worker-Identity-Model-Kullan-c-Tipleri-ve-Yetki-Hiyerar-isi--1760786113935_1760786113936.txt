@@ -1,0 +1,892 @@
+# 🎯 ARPDO - Federated Worker Identity Model
+## Kullanıcı Tipleri ve Yetki Hiyerarşisi
+
+---
+
+## 📋 İçindekiler
+
+1. [Model Tanımı](#model-tanımı)
+2. [Platform Seviyesi Kullanıcılar](#platform-seviyesi-kullanıcılar)
+3. [Tenant Seviyesi Kullanıcılar](#tenant-seviyesi-kullanıcılar)
+4. [Employer Seviyesi Kullanıcılar](#employer-seviyesi-kullanıcılar)
+5. [Worker Seviyesi Kullanıcılar](#worker-seviyesi-kullanıcılar)
+6. [Driver Seviyesi Kullanıcılar](#driver-seviyesi-kullanıcılar)
+7. [Yetki Hiyerarşisi](#yetki-hiyerarşisi)
+8. [İki Firma Modeli Karşılaştırması](#iki-firma-modeli-karşılaştırması)
+9. [Detaylı Kullanıcı Tablosu](#detaylı-kullanıcı-tablosu)
+10. [Veri Sahipliği ve Erişim](#veri-sahipliği-ve-erişim)
+
+---
+
+## Model Tanımı
+
+**Federated Worker Identity Model**, ARPDO platformunun temel mimari yaklaşımıdır:
+
+- **Worker profile** merkezi ve taşınabilirdir (işçinin sahipliğinde)
+- **Employment data** izole ve özeldir (tenant'ın sahipliğinde)
+- İşçiler tenant'lar arasında özgürce hareket edebilir
+- Veri mahremiyeti tasarım gereği garantidir
+
+### Temel Prensipler
+
+```
+✅ İşçi Verisi = İşçinin
+   - Profil, sertifikalar, genel bilgiler
+   - Her zaman işçinin kontrolünde
+
+✅ Firma Verisi = Firmanın
+   - Maaş, çalışma saatleri, iç mesajlar
+   - İşçi ayrılınca erişemez
+
+✅ Özet Bilgi = Paylaşılabilir
+   - İş geçmişi özeti
+   - Firma izniyle paylaşılabilir
+```
+
+---
+
+## Platform Seviyesi Kullanıcılar
+
+### 🏢 ARPDO (Platform Sahibi)
+
+```
+├─ 👑 Platform Super Admin
+│  └─ Tüm sisteme erişim (Super Admin mode)
+│
+├─ 🛠️ Platform Admin
+│  └─ Tenant yönetimi, ayarlar, billing
+│
+├─ 👨‍💼 Platform Support Staff
+│  └─ Müşteri desteği, sorun çözme
+│
+├─ 📊 Platform Analyst
+│  └─ Analytics, raporlar, insights
+│
+└─ 💻 Platform Developer
+   └─ Teknik bakım, deployment, monitoring
+```
+
+### Platform Super Admin
+
+**Yetkiler:**
+- Tüm tenant'lara erişim
+- Sistem seviyesi ayarlar
+- Billing ve subscription yönetimi
+- Feature flag kontrolü
+- Emergency access
+
+**Sorumluluklar:**
+- Platform kararlılığı
+- Güvenlik politikaları
+- Stratejik kararlar
+
+### Platform Admin
+
+**Yetkiler:**
+- Tenant oluşturma/silme
+- Tenant ayarları
+- Global raporlar
+- Kullanıcı yönetimi (platform seviyesi)
+
+**Sorumluluklar:**
+- Tenant onboarding
+- Subscription yönetimi
+- İlk seviye destek
+
+### Platform Support Staff
+
+**Yetkiler:**
+- Read-only erişim (tüm tenant'lar)
+- Ticket sistemi
+- Log görüntüleme
+- Geçici troubleshooting erişimi
+
+**Sorumluluklar:**
+- Müşteri desteği
+- Bug raporlama
+- Dokümantasyon güncelleme
+
+### Platform Analyst
+
+**Yetkiler:**
+- Analytics dashboard
+- Aggregated data
+- Custom raporlar
+- Trend analizi
+
+**Sorumluluklar:**
+- İş zekası raporları
+- Kullanım metrikleri
+- Performans analizi
+
+### Platform Developer
+
+**Yetkiler:**
+- Code repository
+- Deployment pipeline
+- Monitoring tools
+- Database access (production read-only)
+
+**Sorumluluklar:**
+- Teknik bakım
+- Bug fixes
+- Feature development
+- System monitoring
+
+---
+
+## Tenant Seviyesi Kullanıcılar
+
+### 🏢 Firma (Örn: Cova B.V.)
+
+```
+├─ 👑 Tenant Owner
+│  └─ Firma sahibi, tüm yetkilere sahip
+│
+├─ 🛠️ Tenant Admin
+│  └─ Modül ayarları, kullanıcı yönetimi
+│
+├─ 👨‍💼 HR Manager
+│  └─ İşçi işe alım, sözleşme, devamsızlık
+│
+├─ 📅 Planner / Scheduler
+│  └─ İşçi planlama, vardiya atama
+│
+├─ 🏠 Accommodation Manager
+│  └─ Konaklama yönetimi
+│
+├─ 🚗 Transport Manager
+│  └─ Servis planlama, rota yönetimi
+│
+├─ 💰 Finance / Accounting
+│  └─ Bordro, fatura, ön muhasebe
+│
+└─ 👀 Viewer (Read-only)
+   └─ Sadece görüntüleme yetkisi
+```
+
+### Tenant Owner
+
+**Yetkiler:**
+- Tüm modüllere tam erişim
+- Billing ve subscription
+- Kullanıcı ekleme/çıkarma
+- Firma ayarları
+- API key yönetimi
+
+**Sorumluluklar:**
+- Firma stratejisi
+- Bütçe yönetimi
+- Üst düzey kararlar
+
+### Tenant Admin
+
+**Yetkiler:**
+- Kullanıcı yönetimi
+- Modül aktivasyonu
+- Ayarlar ve konfigürasyon
+- Role-based access control
+- Integration ayarları
+
+**Sorumluluklar:**
+- Sistem yönetimi
+- Kullanıcı eğitimi
+- Güvenlik politikaları
+
+### HR Manager
+
+**Modül Erişimi:**
+- ✅ Workers
+- ✅ Contracts
+- ✅ Documents
+- ✅ Onboarding
+- ✅ Absence Management
+- ❌ Planning (read-only)
+- ❌ Finance
+
+**Yetkiler:**
+- İşçi ekleme/çıkarma
+- Sözleşme yönetimi
+- Dokuman onayı
+- Devamsızlık yönetimi
+- Performance reviews
+
+**Sorumluluklar:**
+- İşe alım süreci
+- Sözleşme takibi
+- İşçi memnuniyeti
+
+### Planner / Scheduler
+
+**Modül Erişimi:**
+- ✅ Planning
+- ✅ Workers (read + limited write)
+- ✅ Shifts
+- ✅ Schedule
+- ✅ Accommodation (read-only)
+- ✅ Transport (read-only)
+- ❌ Contracts
+- ❌ Finance
+
+**Yetkiler:**
+- Vardiya oluşturma
+- İşçi atama
+- Shift değişiklikleri
+- Schedule onayı
+- Base plan yönetimi
+
+**Sorumluluklar:**
+- Haftalık planlama
+- İşçi-vardiya matching
+- Kapasite yönetimi
+- Change management
+
+### Accommodation Manager
+
+**Modül Erişimi:**
+- ✅ Accommodation
+- ✅ Housing
+- ✅ Workers (read-only)
+- ✅ Planning (read-only)
+- ❌ Finance
+- ❌ Contracts
+
+**Yetkiler:**
+- Ev/oda/yatak yönetimi
+- Rezervasyon oluşturma
+- Check-in/check-out
+- Maintenance scheduling
+- Occupancy tracking
+
+**Sorumluluklar:**
+- Konaklama kapasitesi
+- İşçi yerleşimi
+- Bakım takibi
+- Maliyet optimizasyonu
+
+### Transport Manager
+
+**Modül Erişimi:**
+- ✅ Transport
+- ✅ Routes
+- ✅ Drivers
+- ✅ Workers (read-only)
+- ✅ Planning (read-only)
+- ❌ Finance
+- ❌ Contracts
+
+**Yetkiler:**
+- Rota planlama
+- Sürücü atama
+- Araç yönetimi
+- Pick-up point belirleme
+- Transport schedule
+
+**Sorumluluklar:**
+- Servis optimizasyonu
+- Sürücü yönetimi
+- Maliyet kontrolü
+- Zaman yönetimi
+
+### Finance / Accounting
+
+**Modül Erişimi:**
+- ✅ Finance
+- ✅ Payroll
+- ✅ Invoicing
+- ✅ Reports
+- ✅ Workers (read-only - salary info)
+- ✅ Planning (read-only - hours)
+- ❌ Contracts (read-only)
+- ❌ Accommodation (cost only)
+
+**Yetkiler:**
+- Bordro hesaplama
+- Fatura oluşturma
+- Ödeme takibi
+- Mali raporlar
+- Export işlemleri
+
+**Sorumluluklar:**
+- Maaş ödemeleri
+- Fatura yönetimi
+- Mali raporlama
+- Uyum kontrolü
+
+### Viewer (Read-only)
+
+**Modül Erişimi:**
+- ✅ Tüm modüller (read-only)
+- ❌ Hiçbir write işlemi yapamaz
+
+**Yetkiler:**
+- Sadece görüntüleme
+- Rapor export
+- Dashboard görüntüleme
+
+**Kullanım Senaryoları:**
+- Yönetim üyeleri
+- Denetçiler (geçici)
+- Danışmanlar
+
+---
+
+## Employer Seviyesi Kullanıcılar
+
+**NOT:** Sadece **Staffing Agency** modelinde var!
+
+### 🏢 Employer (Örn: Apple - Cova'nın müşterisi)
+
+```
+├─ 👑 Employer Admin
+│  └─ Kendi işçilerini görür, onaylar
+│
+├─ 👨‍💼 Employer Manager
+│  └─ İşçi talep eder, planlamayı görür
+│
+└─ 👀 Employer Viewer
+   └─ Sadece raporları görür
+```
+
+### Employer Admin
+
+**Modül Erişimi:**
+- ✅ Workers (sadece kendisine atananlar)
+- ✅ Planning (sadece kendi vardiyaları)
+- ✅ Reports (sadece kendi verileri)
+- ✅ Requests (işçi talebi)
+- ❌ Accommodation
+- ❌ Transport
+- ❌ Finance
+
+**Yetkiler:**
+- İşçi onaylama/reddetme
+- İşçi talep etme
+- Kendi planlama görüntüleme
+- Devamsızlık bildirimi
+- Feedback verme
+
+**Sorumluluklar:**
+- İşçi ihtiyacı belirleme
+- İşçi değerlendirme
+- İletişim
+
+### Employer Manager
+
+**Modül Erişimi:**
+- ✅ Workers (read-only - sadece kendisine atananlar)
+- ✅ Planning (read-only)
+- ✅ Reports (limited)
+- ❌ Diğer tüm modüller
+
+**Yetkiler:**
+- İşçi listesini görüntüleme
+- Planlama görüntüleme
+- Talep oluşturma
+- Basit raporlar
+
+**Sorumluluklar:**
+- Günlük operasyon
+- İşçi takibi
+
+### Employer Viewer
+
+**Modül Erişimi:**
+- ✅ Reports (sadece özet)
+- ❌ Diğer tüm modüller
+
+**Yetkiler:**
+- Sadece raporları görüntüleme
+- Export yapma
+
+---
+
+## Worker Seviyesi Kullanıcılar
+
+### 👷 Worker (Örn: Mehmet)
+
+```
+├─ 📱 Active Worker
+│  └─ Şu anda çalışıyor, tüm özelliklere erişim
+│
+├─ 💤 Inactive Worker
+│  └─ Geçici olarak çalışmıyor (tatil, hastalık)
+│
+├─ 🔄 Former Worker
+│  └─ Firmadan ayrıldı, sadece kendi profiline erişim
+│
+└─ 🆕 Invited Worker
+   └─ Davet aldı, henüz kabul etmedi
+```
+
+### Active Worker
+
+**Modül Erişimi:**
+- ✅ Profile (tam kontrol)
+- ✅ My Schedule (görüntüleme)
+- ✅ My Accommodation (görüntüleme)
+- ✅ My Transport (görüntüleme)
+- ✅ Messages (okuma + yazma)
+- ✅ Documents (upload + download)
+- ✅ Payslips (görüntüleme)
+- ✅ Absence Request (talep oluşturma)
+
+**Yetkiler:**
+- Profil düzenleme
+- Dokuman yükleme
+- Vardiya görüntüleme
+- Mesaj gönderme/alma
+- Devamsızlık bildirimi
+- Konaklama bilgilerini görme
+- Servis saatlerini görme
+
+**Sorumluluklar:**
+- Profil güncelliğini sağlama
+- Mesajlara yanıt verme
+- Vardiyalara uyma
+
+### Inactive Worker
+
+**Modül Erişimi:**
+- ✅ Profile (sınırlı düzenleme)
+- ✅ My Schedule (read-only)
+- ✅ Messages (read-only)
+- ❌ My Accommodation
+- ❌ My Transport
+- ❌ Payslips (eski aylara read-only)
+
+**Durum:**
+- Geçici olarak çalışmıyor
+- Hastalık, tatil, vb.
+- Hesap aktif ama kısıtlı
+
+### Former Worker
+
+**Modül Erişimi:**
+- ✅ Profile (sadece görüntüleme)
+- ✅ Work History (özet)
+- ❌ Tüm diğer modüller
+
+**Veri Erişimi:**
+- ✅ Kendi profili
+- ✅ İş geçmişi özeti
+- ❌ Eski maaş bordroları
+- ❌ Eski mesajlar
+- ❌ Firma'nın iç verileri
+
+**Durum:**
+- Firmadan ayrıldı
+- Federated Identity korunur
+- Başka firmaya geçebilir
+
+### Invited Worker
+
+**Modül Erişimi:**
+- ✅ Invitation View
+- ✅ Profile (davet kabul ederse)
+- ❌ Diğer tüm modüller
+
+**Yetkiler:**
+- Daveti kabul/reddet
+- Temel profil oluşturma
+
+**Durum:**
+- Henüz hesap aktif değil
+- Davet bekliyor
+- Activation pending
+
+---
+
+## Driver Seviyesi Kullanıcılar
+
+**NOT:** Transport modülü aktifse!
+
+### 🚗 Driver
+
+```
+├─ 👨‍✈️ Active Driver
+│  └─ Rota atamaları, işçi pick-up listesi
+│
+└─ 📱 Driver App User
+   └─ Sadece mobil app kullanıcısı
+```
+
+### Active Driver
+
+**Modül Erişimi:**
+- ✅ Transport (sadece kendi rotaları)
+- ✅ Routes (görüntüleme + güncelleme)
+- ✅ Workers (sadece kendi rotasındakiler)
+- ✅ Pick-up Points
+- ❌ Planning
+- ❌ Accommodation
+- ❌ Finance
+
+**Yetkiler:**
+- Rota görüntüleme
+- Pick-up listesi görme
+- Check-in/check-out işçi
+- GPS konumu paylaşma
+- Gecikme bildirimi
+
+**Sorumluluklar:**
+- İşçileri zamanında alma/bırakma
+- Güvenli sürüş
+- Rota takibi
+- İletişim
+
+---
+
+## Yetki Hiyerarşisi
+
+### Platform Seviyesi
+
+```
+Platform Super Admin (God Mode)
+    ↓
+Platform Admin
+    ↓
+Platform Support
+    ↓
+Platform Analyst
+    ↓
+Platform Developer
+```
+
+### Tenant Seviyesi
+
+```
+Tenant Owner
+    ↓
+Tenant Admin
+    ↓
+Specialized Managers
+    ├─ HR Manager
+    ├─ Planner
+    ├─ Accommodation Manager
+    ├─ Transport Manager
+    └─ Finance Manager
+    ↓
+Viewers
+```
+
+### Employer Seviyesi
+
+```
+Employer Admin
+    ↓
+Employer Manager
+    ↓
+Employer Viewer
+```
+
+### Worker Seviyesi
+
+```
+Active Worker (Full access to own data)
+    ↓
+Inactive Worker (Limited access)
+    ↓
+Former Worker (Profile only)
+    ↓
+Invited Worker (Pending)
+```
+
+---
+
+## İki Firma Modeli Karşılaştırması
+
+### Model 1: Direct Employer (Apple gibi)
+
+```
+🏢 Apple (Tenant)
+│
+├─ 👑 Apple Admin
+├─ 👨‍💼 Apple HR Manager
+├─ 📅 Apple Planner
+├─ 🏠 Apple Accommodation Manager
+├─ 🚗 Apple Transport Manager
+├─ 💰 Apple Finance Manager
+│
+└─ 👷 İşçiler
+   ├─ Mehmet (Active)
+   ├─ Ali (Active)
+   └─ Fatma (Inactive)
+```
+
+**Özellikler:**
+- ❌ Employer seviyesi YOK
+- ✅ Direkt işveren modeli
+- ✅ Tüm işçiler firma'nın çalışanı
+- ✅ Basit hiyerarşi (2 seviye)
+
+---
+
+### Model 2: Staffing Agency (Cova gibi)
+
+```
+🏢 Cova B.V. (Tenant)
+│
+├─ 👑 Cova Admin
+├─ 👨‍💼 Cova HR Manager
+├─ 📅 Cova Planner
+├─ 🏠 Cova Accommodation Manager
+├─ 🚗 Cova Transport Manager
+├─ 💰 Cova Finance Manager
+│
+├─ 🏢 Employers (Müşteriler)
+│  │
+│  ├─ Apple (Employer)
+│  │  ├─ Apple Admin
+│  │  └─ Apple Manager
+│  │
+│  └─ Starbucks (Employer)
+│     ├─ Starbucks Admin
+│     └─ Starbucks Manager
+│
+└─ 👷 İşçiler
+   ├─ Mehmet → Apple'a atanmış
+   ├─ Ali → Starbucks'a atanmış
+   └─ Fatma → Henüz atanmamış
+```
+
+**Özellikler:**
+- ✅ Employer seviyesi VAR
+- ✅ İşçi tedarik modeli
+- ✅ Müşteri yönetimi
+- ✅ Kompleks hiyerarşi (3 seviye)
+- ✅ Komisyon modeli
+
+---
+
+## Detaylı Kullanıcı Tablosu
+
+| Seviye | Rol | Görevleri | Modül Erişimi |
+|--------|-----|-----------|---------------|
+| **PLATFORM** | Super Admin | Her şey | Tümü + System |
+| **PLATFORM** | Admin | Tenant yönetimi | Tenant Settings, Billing |
+| **PLATFORM** | Support | Destek | Read-only (all tenants) |
+| **PLATFORM** | Analyst | Analytics | Aggregated Data, Reports |
+| **PLATFORM** | Developer | Teknik | Code, Monitoring, Logs |
+| **TENANT** | Owner | Firma sahibi | Tümü |
+| **TENANT** | Admin | Ayarlar, kullanıcılar | Tümü |
+| **TENANT** | HR Manager | İşe alım, sözleşme | HR, Workers, Contracts |
+| **TENANT** | Planner | İşçi planlama | Planning, Workers, Shifts |
+| **TENANT** | Accommodation Mgr | Konaklama | Accommodation, Workers |
+| **TENANT** | Transport Mgr | Servis | Transport, Workers, Routes |
+| **TENANT** | Finance | Bordro, fatura | Finance, Payroll, Reports |
+| **TENANT** | Viewer | Sadece görüntüleme | Read-only (all) |
+| **EMPLOYER** | Admin | İşçi onaylama | Workers (own), Requests |
+| **EMPLOYER** | Manager | İşçi talep | Planning (read), Requests |
+| **EMPLOYER** | Viewer | Raporlar | Reports (summary) |
+| **WORKER** | Active | Çalışıyor | Profile, Schedule, Messages |
+| **WORKER** | Inactive | Geçici dinleniyor | Profile (limited) |
+| **WORKER** | Former | Ayrıldı | Profile only |
+| **WORKER** | Invited | Davet bekliyor | Invitation only |
+| **DRIVER** | Active | Sürüş yapıyor | Transport, Routes, Pick-up |
+
+---
+
+## Veri Sahipliği ve Erişim
+
+### Federated Identity Prensipleri
+
+#### Mehmet AKTİF iken (Firma A'da)
+
+```
+Mehmet görebilir:
+✅ Kendi profili
+✅ Firma A'daki planlaması
+✅ Firma A'daki maaş bordrosu
+✅ Firma A'nın gönderdiği mesajlar
+✅ Firma A'daki konaklama
+✅ Firma A'daki transport
+```
+
+#### Mehmet AYRILINCA (Firma A'dan)
+
+```
+Mehmet görebilir:
+✅ Kendi profili (hala)
+✅ Özet iş geçmişi: "Firma A - 6 ay"
+✅ Kendi dökümanları
+
+Mehmet GÖREMEZ:
+❌ Maaş bordroları
+❌ Detaylı çalışma saatleri
+❌ Eski mesajlar
+❌ Firma A'nın iç verileri
+```
+
+#### Firma A'nın Erişimi (Mehmet ayrıldıktan sonra)
+
+```
+Firma A görebilir:
+✅ Mehmet'in geçmiş kayıtları (arşivlendi)
+✅ Maaş geçmişi (7 yıl saklanır - yasal)
+✅ Çalışma saatleri (arşiv)
+✅ Performans değerlendirmeleri
+
+Firma A GÖREMEZ:
+❌ Mehmet'in şu anki durumu
+❌ Mehmet'in yeni işvereni
+```
+
+#### Firma B'nin Erişimi (Mehmet yeni işe başladı)
+
+```
+Firma B görebilir:
+✅ Mehmet'in profili
+✅ Mehmet'in sertifikaları
+✅ Mehmet'in özet iş geçmişi
+   "Firma A'da 6 ay Cleaner olarak çalıştı"
+✅ Mehmet'in global rating (4.8/5)
+
+Firma B GÖREMEZ:
+❌ Firma A'daki maaş
+❌ Firma A'daki çalışma detayları
+❌ Firma A'nın iç mesajları
+❌ Firma A'nın performans notları
+```
+
+### Çoklu Firma Çalışması
+
+#### Mehmet İki Firmada Birden
+
+```
+Mehmet:
+├─ Firma A (Sabah 08:00-12:00) - Aktif
+└─ Firma B (Öğleden sonra 13:00-17:00) - Aktif
+```
+
+#### Mehmet'in Dashboard'u
+
+```
+ARPDO Mobile App:
+
+┌──────────────────────────────┐
+│  Mehmet'in Dashboard'u       │
+├──────────────────────────────┤
+│                              │
+│  Aktif İşler:                │
+│                              │
+│  🏢 Firma A (Sabah)          │
+│  └─ Bugün: 08:00-12:00       │
+│  └─ Mesajlar: 2 yeni         │
+│  └─ [Firma A Panel]          │
+│                              │
+│  🏢 Firma B (Öğleden sonra)  │
+│  └─ Bugün: 13:00-17:00       │
+│  └─ Mesajlar: 1 yeni         │
+│  └─ [Firma B Panel]          │
+└──────────────────────────────┘
+```
+
+#### Firma Perspektifi
+
+**Firma A görür:**
+```
+✅ Mehmet aktif işçi
+⚠️ Mehmet başka firmada da çalışıyor
+❌ Firma adı: Gizli
+❌ Çalışma saati: Gizli
+✅ Planlama conflict uyarısı var
+```
+
+**Firma B görür:**
+```
+✅ Mehmet aktif işçi
+⚠️ Mehmet başka firmada da çalışıyor
+❌ Firma adı: Gizli
+❌ Çalışma saati: Gizli
+✅ Planlama conflict uyarısı var
+```
+
+### Veri Sahipliği Özet Tablosu
+
+| Veri Tipi | Sahibi | Mehmet Aktif | Mehmet Ayrıldı | Firma B Görür mü? |
+|-----------|--------|--------------|----------------|-------------------|
+| Ad, Soyad | Mehmet | ✅ | ✅ | ✅ |
+| Sertifikalar | Mehmet | ✅ | ✅ | ✅ |
+| Pasaport | Mehmet | ✅ | ✅ | ✅ (izinle) |
+| Maaş (Firma A) | Firma A | ✅ | ❌ | ❌ |
+| Çalışma Saatleri | Firma A | ✅ | ❌ | ❌ |
+| Mesajlar (Firma A) | Firma A | ✅ | ❌ | ❌ |
+| Performans | Firma A | ✅ | ❌* | ❌ |
+| İş Geçmişi Özeti | Mehmet | ✅ | ✅ | ✅ |
+
+*Firma A izin verirse rating gibi özet bilgi görülebilir
+
+---
+
+## Özel Kullanıcı Tipleri
+
+### External Auditor (Dış Denetçi)
+
+```
+🔍 Auditor
+└─ Read-only erişim
+└─ Sadece uyum raporları
+└─ Geçici erişim (audit süresince)
+```
+
+**Kullanım:**
+- ISO denetimi
+- GDPR compliance check
+- Finansal denetim
+
+### API User
+
+```
+🤖 API User
+└─ Otomatik sistemler için
+└─ Örn: Muhasebe yazılımı entegrasyonu
+└─ Sadece API erişimi
+```
+
+**Kullanım:**
+- External system integration
+- Automated workflows
+- Data sync
+
+### Emergency Contact
+
+```
+📞 Emergency Contact
+└─ İşçinin acil durumda ulaşılacak kişisi
+└─ Sadece bildirim alır
+└─ Sisteme giriş yapmaz
+```
+
+**Kullanım:**
+- Acil durum bildirimi
+- İşçi hastalığı/kazası
+- İletişim amaçlı
+
+---
+
+## Dokuman Bilgileri
+
+- **Version:** 1.0
+- **Tarih:** 18 Ekim 2025
+- **Model:** Federated Worker Identity
+- **Durum:** Draft
+
+---
+
+## Sonraki Adımlar
+
+1. ⏳ Permission matrix oluşturma
+2. ⏳ Database schema detaylandırma
+3. ⏳ API endpoint tasarımı
+4. ⏳ UI/UX mockup'ları
+5. ⏳ Implementation roadmap
+
+---
+
+**Tüm dokümanı Markdown formatında yazdım! 📄**
+
+**Ne yapalım şimdi?**
+- ✏️ Bir bölümü düzenleyelim mi?
+- ➕ Yeni bölüm ekleyelim mi?
+- 📊 Daha fazla örnek/diagram ekleyelim mi?
