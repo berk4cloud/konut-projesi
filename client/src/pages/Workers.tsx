@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -82,6 +83,7 @@ type Worker = {
 export default function Workers() {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -89,7 +91,8 @@ export default function Workers() {
 
   // Fetch workers from API (federated model)
   const { data: workers = [], isLoading } = useQuery<Worker[]>({
-    queryKey: ['/api/workers'],
+    queryKey: [`/api/workers?tenantId=${user?.tenantId}`],
+    enabled: !!user?.tenantId,
   });
 
   // Fetch houses for dropdown (replaces mockHouses)
@@ -99,7 +102,8 @@ export default function Workers() {
     rooms: Array<{ roomNumber: string }>;
   };
   const { data: houses = [] } = useQuery<HouseForDropdown[]>({
-    queryKey: ['/api/houses'],
+    queryKey: [`/api/houses?tenantId=${user?.tenantId}`],
+    enabled: !!user?.tenantId,
     select: (data: any[]) => data.map(house => ({
       id: house.id,
       name: house.name,

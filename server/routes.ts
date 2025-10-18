@@ -458,7 +458,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // GET /workers - Get all active workers for tenant
   apiRouter.get("/workers", async (req, res) => {
     try {
-      const tenantId = req.query.tenantId as string || "cova";
+      const tenantId = req.query.tenantId as string;
 
       // Get all employments for tenant
       const employments = await storage.getActiveEmploymentsByTenant(tenantId);
@@ -485,6 +485,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             gender: profile.gender,
             phone: profile.phone,
             nationality: profile.nationality,
+            dateOfBirth: profile.dateOfBirth,
+            photo: profile.photo,
             status: employment.status,
             jobTitle: employment.jobTitle,
             department: employment.department,
