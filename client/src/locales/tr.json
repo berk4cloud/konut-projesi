@@ -809,16 +809,25 @@
     "chargeCard": {
       "dueDate": "Son Ödeme",
       "days": "Gün",
+      "daysCount": "Gün Sayısı",
       "amount": "Tutar",
       "remaining": "Kalan",
-      "recordPayment": "Ödeme Kaydet"
+      "remainingDebt": "Kalan Borç",
+      "calculation": "Hesaplama",
+      "fullMonth": "Tam ay",
+      "partial": "Kısmi",
+      "prorated": "Oransal",
+      "recordPayment": "Ödeme Kaydet",
+      "enterPayment": "Ödeme Gir"
     },
     "paymentCard": {
       "amount": "Tutar",
       "paymentMethod": "Ödeme Yöntemi",
       "reference": "Referans",
-      "showMore": "Daha Az Göster",
-      "showLess": "+{{count}} Daha Fazla Göster"
+      "paymentsTotal": "{{count}} ödeme • Toplam: €{{total}}",
+      "paidBadge": "Ödendi",
+      "showLess": "Daha Az Göster",
+      "showMore": "+{{count}} Daha Fazla Göster"
     },
     "paymentDialog": {
       "title": "Yeni Ödeme Gir",

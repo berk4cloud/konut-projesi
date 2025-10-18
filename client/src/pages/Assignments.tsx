@@ -591,8 +591,8 @@ export default function Assignments() {
   const handleSaveNote = () => {
     if (!selectedAssignment || !newNote.note.trim() || !newNote.createdBy.trim()) {
       toast({
-        title: "Hata",
-        description: "Lütfen tüm alanları doldurun.",
+        title: t('assignments.toasts.error'),
+        description: t('assignments.paymentDialog.errors.missingFields'),
         variant: "destructive",
       });
       return;
@@ -612,8 +612,8 @@ export default function Assignments() {
 
     // Show success message
     toast({
-      title: "Başarılı",
-      description: "Not eklendi.",
+      title: t('assignments.toasts.success'),
+      description: t('assignments.paymentDialog.successDesc'),
     });
     
     // Reset form but keep dialog open so user can see the new note
@@ -640,8 +640,8 @@ export default function Assignments() {
     // Validation
     if (newPayment.amount <= 0) {
       toast({
-        title: "Hata",
-        description: "Ödeme tutarı 0'dan büyük olmalıdır.",
+        title: t('assignments.toasts.error'),
+        description: t('assignments.paymentDialog.errors.invalidAmount'),
         variant: "destructive",
       });
       return;
@@ -649,8 +649,8 @@ export default function Assignments() {
     
     if (newPayment.amount > selectedCharge.remainingAmount) {
       toast({
-        title: "Hata",
-        description: `Ödeme tutarı kalan borçtan (€${selectedCharge.remainingAmount}) fazla olamaz.`,
+        title: t('assignments.toasts.error'),
+        description: t('assignments.paymentDialog.errors.exceedsRemaining', { remaining: selectedCharge.remainingAmount }),
         variant: "destructive",
       });
       return;
@@ -658,16 +658,16 @@ export default function Assignments() {
     
     if (!newPayment.collectorName.trim()) {
       toast({
-        title: "Hata",
-        description: "Ödemeyi alan kişinin adı gereklidir.",
+        title: t('assignments.toasts.error'),
+        description: t('assignments.paymentDialog.errors.missingFields'),
         variant: "destructive",
       });
       return;
     }
 
     toast({
-      title: "Ödeme Kaydedildi",
-      description: `€${newPayment.amount} tutarında ödeme ${newPayment.collectorName} tarafından kaydedildi.`,
+      title: t('assignments.paymentDialog.success'),
+      description: t('assignments.paymentDialog.successDesc'),
     });
     
     // Close dialog and reset
@@ -811,10 +811,10 @@ export default function Assignments() {
 
   const getStatusLabel = (status: AssignmentStatus) => {
     switch (status) {
-      case "active": return "Aktif";
-      case "ending_soon": return "Yakında Bitiyor";
-      case "ended": return "Bitti";
-      case "pending": return "Beklemede";
+      case "active": return t('assignments.status.active');
+      case "ending_soon": return t('assignments.status.endingSoon');
+      case "ended": return t('assignments.status.ended');
+      case "pending": return t('assignments.status.pending');
       default: return status;
     }
   };
@@ -831,10 +831,10 @@ export default function Assignments() {
 
   const getPaymentStatusLabel = (status: PaymentStatus) => {
     switch (status) {
-      case "paid": return "Ödendi";
-      case "pending": return "Bekliyor";
-      case "overdue": return "Gecikmiş";
-      case "partial": return "Kısmi";
+      case "paid": return t('assignments.paymentStatus.paid');
+      case "pending": return t('assignments.paymentStatus.pending');
+      case "overdue": return t('assignments.paymentStatus.overdue');
+      case "partial": return t('assignments.paymentStatus.partial');
       default: return status;
     }
   };
@@ -1017,17 +1017,17 @@ export default function Assignments() {
               <div className="flex items-center gap-4">
                 <Select value={chargesFilter} onValueChange={setChargesFilter}>
                   <SelectTrigger className="w-[280px]" data-testid="select-charges-filter">
-                    <SelectValue placeholder="Ödeme durumu filtrele" />
+                    <SelectValue placeholder={t('assignments.search.chargesFilter')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tümü</SelectItem>
-                    <SelectItem value="today">Bugün Vadesi Gelenler</SelectItem>
-                    <SelectItem value="upcoming">3 Gün İçinde</SelectItem>
-                    <SelectItem value="overdue">Tüm Gecikmiş Ödemeler</SelectItem>
-                    <SelectItem value="overdue7">7-14 Gün Gecikmeli</SelectItem>
-                    <SelectItem value="overdue14">14-30 Gün Gecikmeli</SelectItem>
-                    <SelectItem value="overdue30">30-90 Gün Gecikmeli</SelectItem>
-                    <SelectItem value="overdue30plus">90+ Gün Gecikmeli</SelectItem>
+                    <SelectItem value="all">{t('assignments.filters.all')}</SelectItem>
+                    <SelectItem value="today">{t('assignments.filters.today')}</SelectItem>
+                    <SelectItem value="upcoming">{t('assignments.filters.next3Days')}</SelectItem>
+                    <SelectItem value="overdue">{t('assignments.filters.overdue')}</SelectItem>
+                    <SelectItem value="overdue7">{t('assignments.filters.overdue7to14')}</SelectItem>
+                    <SelectItem value="overdue14">{t('assignments.filters.overdue14to30')}</SelectItem>
+                    <SelectItem value="overdue30">{t('assignments.filters.overdue30to90')}</SelectItem>
+                    <SelectItem value="overdue30plus">{t('assignments.filters.overdue90plus')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1035,7 +1035,7 @@ export default function Assignments() {
               <div className="space-y-4">
                 {filteredCharges.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
-                    Kayıt bulunamadı
+                    {t('assignments.empty.noCharges')}
                   </div>
                 ) : (
                   filteredCharges.map((charge) => (
@@ -1056,22 +1056,22 @@ export default function Assignments() {
                     <CardContent>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         <div>
-                          <p className="text-muted-foreground mb-1">Tutar</p>
+                          <p className="text-muted-foreground mb-1">{t('assignments.chargeCard.amount')}</p>
                           <p className="font-bold text-lg">€{charge.amount}</p>
                         </div>
                         <div>
-                          <p className="text-muted-foreground mb-1">Gün Sayısı</p>
-                          <p className="font-medium">{charge.days} gün</p>
+                          <p className="text-muted-foreground mb-1">{t('assignments.chargeCard.daysCount')}</p>
+                          <p className="font-medium">{charge.days} {t('assignments.chargeCard.days')}</p>
                         </div>
                         <div>
-                          <p className="text-muted-foreground mb-1">Hesaplama</p>
+                          <p className="text-muted-foreground mb-1">{t('assignments.chargeCard.calculation')}</p>
                           <p className="font-medium">
-                            {charge.calculationType === "full_month" ? "Tam ay" : 
-                             charge.calculationType === "partial" ? "Kısmi" : "Oransal"}
+                            {charge.calculationType === "full_month" ? t('assignments.chargeCard.fullMonth') : 
+                             charge.calculationType === "partial" ? t('assignments.chargeCard.partial') : t('assignments.chargeCard.prorated')}
                           </p>
                         </div>
                         <div>
-                          <p className="text-muted-foreground mb-1">Ödeme Tarihi</p>
+                          <p className="text-muted-foreground mb-1">{t('assignments.chargeCard.dueDate')}</p>
                           <p className="font-medium">
                             {new Date(charge.dueDate).toLocaleDateString('tr-TR')}
                           </p>
@@ -1082,7 +1082,7 @@ export default function Assignments() {
                       {charge.status !== "paid" && (
                         <div className="flex items-center justify-between mt-4 pt-4 border-t">
                           <div>
-                            <p className="text-sm text-muted-foreground">Kalan Borç</p>
+                            <p className="text-sm text-muted-foreground">{t('assignments.chargeCard.remainingDebt')}</p>
                             <p className="font-bold text-lg text-red-600">€{charge.remainingAmount}</p>
                           </div>
                           <Button 
@@ -1091,7 +1091,7 @@ export default function Assignments() {
                             size="sm"
                           >
                             <Plus className="w-4 h-4 mr-2" />
-                            Ödeme Gir
+                            {t('assignments.chargeCard.enterPayment')}
                           </Button>
                         </div>
                       )}
@@ -1113,7 +1113,7 @@ export default function Assignments() {
               {/* Date Filter */}
               <div className="flex items-center gap-4 flex-wrap">
                 <div className="flex items-center gap-2">
-                  <Label htmlFor="payment-start-date" className="whitespace-nowrap">Başlangıç:</Label>
+                  <Label htmlFor="payment-start-date" className="whitespace-nowrap">{t('assignments.search.startDate')}</Label>
                   <Input
                     id="payment-start-date"
                     type="date"
@@ -1124,7 +1124,7 @@ export default function Assignments() {
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <Label htmlFor="payment-end-date" className="whitespace-nowrap">Bitiş:</Label>
+                  <Label htmlFor="payment-end-date" className="whitespace-nowrap">{t('assignments.search.endDate')}</Label>
                   <Input
                     id="payment-end-date"
                     type="date"
@@ -1141,7 +1141,7 @@ export default function Assignments() {
                     onClick={() => setPaymentDateFilter({ startDate: "", endDate: "" })}
                     data-testid="button-clear-payment-filter"
                   >
-                    Temizle
+                    {t('assignments.search.clearFilters')}
                   </Button>
                 )}
               </div>
@@ -1149,7 +1149,7 @@ export default function Assignments() {
               <div className="space-y-4">
                 {Object.keys(groupedPayments).length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
-                    Kayıt bulunamadı
+                    {t('assignments.empty.noPayments')}
                   </div>
                 ) : (
                   Object.entries(groupedPayments).map(([workerName, workerPayments]) => {
@@ -1165,11 +1165,11 @@ export default function Assignments() {
                             <div className="space-y-1">
                               <CardTitle className="text-lg">{workerName}</CardTitle>
                               <CardDescription>
-                                {workerPayments.length} ödeme • Toplam: €{totalAmount.toFixed(2)}
+                                {t('assignments.paymentCard.paymentsTotal', { count: workerPayments.length, total: totalAmount.toFixed(2) })}
                               </CardDescription>
                             </div>
                             <Badge variant="default" className="bg-green-500">
-                              Ödendi
+                              {t('assignments.paymentCard.paidBadge')}
                             </Badge>
                           </div>
                         </CardHeader>
@@ -1197,24 +1197,24 @@ export default function Assignments() {
                               </div>
                               <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
                                 <div>
-                                  <p className="text-muted-foreground mb-1">Tutar</p>
+                                  <p className="text-muted-foreground mb-1">{t('assignments.paymentCard.amount')}</p>
                                   <p className="font-bold text-base flex items-center gap-1">
                                     <CreditCard className="w-4 h-4" />
                                     €{payment.amount}
                                   </p>
                                 </div>
                                 <div>
-                                  <p className="text-muted-foreground mb-1">Ödeme Yöntemi</p>
+                                  <p className="text-muted-foreground mb-1">{t('assignments.paymentCard.paymentMethod')}</p>
                                   <p className="font-medium">
-                                    {payment.paymentMethod === "bank_transfer" ? "Banka Transferi" :
-                                     payment.paymentMethod === "pos" ? "POS" :
-                                     payment.paymentMethod === "cash" ? "Nakit" :
-                                     payment.paymentMethod === "automatic" ? "Otomatik" : "Diğer"}
+                                    {payment.paymentMethod === "bank_transfer" ? t('assignments.paymentMethods.bankTransfer') :
+                                     payment.paymentMethod === "pos" ? t('assignments.paymentMethods.pos') :
+                                     payment.paymentMethod === "cash" ? t('assignments.paymentMethods.cash') :
+                                     payment.paymentMethod === "automatic" ? t('assignments.paymentMethods.automatic') : t('assignments.paymentMethods.other')}
                                   </p>
                                 </div>
                                 {payment.reference && (
                                   <div>
-                                    <p className="text-muted-foreground mb-1">Referans</p>
+                                    <p className="text-muted-foreground mb-1">{t('assignments.paymentCard.reference')}</p>
                                     <p className="font-medium text-xs">{payment.reference}</p>
                                   </div>
                                 )}
@@ -1235,11 +1235,10 @@ export default function Assignments() {
                               className="w-full"
                               data-testid={`button-toggle-${workerName}`}
                             >
-                              {isExpanded ? (
-                                <>Daha Az Göster</>
-                              ) : (
-                                <>+{workerPayments.length - 1} Daha Fazla Göster</>
-                              )}
+                              {isExpanded ? 
+                                t('assignments.paymentCard.showLess') : 
+                                t('assignments.paymentCard.showMore', { count: workerPayments.length - 1 })
+                              }
                             </Button>
                           )}
                         </CardContent>
@@ -1273,13 +1272,9 @@ export default function Assignments() {
       >
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Yeni Ödeme Gir</DialogTitle>
+            <DialogTitle>{t('assignments.paymentDialog.title')}</DialogTitle>
             <DialogDescription>
-              {selectedCharge && (
-                <>
-                  <span className="font-medium">{selectedCharge.workerName}</span> için ödeme kaydı oluşturun
-                </>
-              )}
+              {selectedCharge && t('assignments.paymentDialog.description', { workerName: selectedCharge.workerName })}
             </DialogDescription>
           </DialogHeader>
 
@@ -1288,18 +1283,18 @@ export default function Assignments() {
               {/* Charge Info */}
               <div className="p-3 bg-muted/50 rounded-lg space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Toplam Tutar:</span>
+                  <span className="text-muted-foreground">{t('assignments.paymentDialog.fullAmount')}</span>
                   <span className="font-semibold">€{selectedCharge.amount}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Kalan Borç:</span>
+                  <span className="text-muted-foreground">{t('assignments.paymentDialog.remainingAmount')}</span>
                   <span className="font-bold text-red-600">€{selectedCharge.remainingAmount}</span>
                 </div>
               </div>
 
               {/* Amount */}
               <div className="space-y-2">
-                <Label htmlFor="payment-amount">Ödeme Tutarı (€) *</Label>
+                <Label htmlFor="payment-amount">{t('assignments.paymentDialog.amountLabel')}</Label>
                 <Input
                   id="payment-amount"
                   type="number"
@@ -1308,48 +1303,46 @@ export default function Assignments() {
                   max={selectedCharge.remainingAmount}
                   value={newPayment.amount}
                   onChange={(e) => setNewPayment({ ...newPayment, amount: parseFloat(e.target.value) || 0 })}
+                  placeholder={t('assignments.paymentDialog.amountPlaceholder')}
                   data-testid="input-payment-amount"
                 />
-                <p className="text-xs text-muted-foreground">
-                  Maksimum: €{selectedCharge.remainingAmount}
-                </p>
               </div>
 
               {/* Payment Method */}
               <div className="space-y-2">
-                <Label htmlFor="payment-method">Ödeme Yöntemi *</Label>
+                <Label htmlFor="payment-method">{t('assignments.paymentDialog.methodLabel')}</Label>
                 <Select 
                   value={newPayment.paymentMethod} 
                   onValueChange={(value) => setNewPayment({ ...newPayment, paymentMethod: value as PaymentMethod })}
                 >
                   <SelectTrigger id="payment-method" data-testid="select-payment-method">
-                    <SelectValue />
+                    <SelectValue placeholder={t('assignments.paymentDialog.methodPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="cash">Nakit</SelectItem>
-                    <SelectItem value="bank_transfer">Banka Transferi</SelectItem>
-                    <SelectItem value="pos">POS/Kart</SelectItem>
-                    <SelectItem value="automatic">Otomatik Ödeme</SelectItem>
-                    <SelectItem value="other">Diğer</SelectItem>
+                    <SelectItem value="cash">{t('assignments.paymentMethods.cash')}</SelectItem>
+                    <SelectItem value="bank_transfer">{t('assignments.paymentMethods.bankTransfer')}</SelectItem>
+                    <SelectItem value="pos">{t('assignments.paymentMethods.pos')}</SelectItem>
+                    <SelectItem value="automatic">{t('assignments.paymentMethods.automatic')}</SelectItem>
+                    <SelectItem value="other">{t('assignments.paymentMethods.other')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Collector Name */}
               <div className="space-y-2">
-                <Label htmlFor="collector-name">Ödemeyi Alan Kişi *</Label>
+                <Label htmlFor="collector-name">{t('assignments.paymentDialog.collectorLabel')}</Label>
                 <Input
                   id="collector-name"
                   value={newPayment.collectorName}
                   onChange={(e) => setNewPayment({ ...newPayment, collectorName: e.target.value })}
-                  placeholder="İsim Soyisim"
+                  placeholder={t('assignments.paymentDialog.collectorPlaceholder')}
                   data-testid="input-collector-name"
                 />
               </div>
 
               {/* Payment Date */}
               <div className="space-y-2">
-                <Label htmlFor="payment-date">Ödeme Tarihi *</Label>
+                <Label htmlFor="payment-date">{t('assignments.paymentDialog.dateLabel')}</Label>
                 <Input
                   id="payment-date"
                   type="date"
@@ -1361,12 +1354,12 @@ export default function Assignments() {
 
               {/* Notes */}
               <div className="space-y-2">
-                <Label htmlFor="payment-notes">Not (Opsiyonel)</Label>
+                <Label htmlFor="payment-notes">{t('assignments.paymentDialog.notesLabel')}</Label>
                 <Textarea
                   id="payment-notes"
                   value={newPayment.notes}
                   onChange={(e) => setNewPayment({ ...newPayment, notes: e.target.value })}
-                  placeholder="Ödeme ile ilgili notlar..."
+                  placeholder={t('assignments.paymentDialog.notesPlaceholder')}
                   rows={3}
                   data-testid="textarea-payment-notes"
                 />
@@ -1380,13 +1373,13 @@ export default function Assignments() {
               onClick={() => setPaymentDialogOpen(false)}
               data-testid="button-cancel-payment"
             >
-              İptal
+              {t('assignments.paymentDialog.cancel')}
             </Button>
             <Button 
               onClick={handleSavePayment}
               data-testid="button-save-payment"
             >
-              Ödeme Kaydet
+              {t('assignments.paymentDialog.save')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1404,16 +1397,16 @@ export default function Assignments() {
       >
         <DialogContent className="max-w-4xl max-h-[90vh]">
           <DialogHeader>
-            <DialogTitle>Tahsis Detayları ve Görüşme Notları</DialogTitle>
+            <DialogTitle>{t('assignments.detailsDialog.title')}</DialogTitle>
             {selectedAssignment && (
               <div className="space-y-2 mt-2">
                 <p className="font-medium text-foreground text-base">{selectedAssignment.workerName}</p>
                 <DialogDescription className="text-sm">
-                  {selectedAssignment.houseName} • Oda {selectedAssignment.roomNumber} • Yatak {selectedAssignment.bedNumber}
+                  {selectedAssignment.houseName} • {t('assignments.detailsDialog.room')} {selectedAssignment.roomNumber} • {t('assignments.detailsDialog.bed')} {selectedAssignment.bedNumber}
                 </DialogDescription>
                 <div className="flex gap-4 text-sm items-center">
-                  <span>Başlangıç: {new Date(selectedAssignment.startDate).toLocaleDateString('tr-TR')}</span>
-                  <span>Aylık: €{selectedAssignment.monthlyRate}</span>
+                  <span>{t('assignments.detailsDialog.startDate')}: {new Date(selectedAssignment.startDate).toLocaleDateString('tr-TR')}</span>
+                  <span>{t('assignments.detailsDialog.monthlyRate')}: €{selectedAssignment.monthlyRate}</span>
                   <Badge className={getStatusColor(selectedAssignment.status)}>
                     {getStatusLabel(selectedAssignment.status)}
                   </Badge>
@@ -1426,7 +1419,7 @@ export default function Assignments() {
             <div className="space-y-4">
               {/* Conversation Notes List */}
               <div className="space-y-2">
-                <Label>Görüşme Notları</Label>
+                <Label>{t('assignments.detailsDialog.conversationNotes')}</Label>
                 <ScrollArea className="h-[300px] w-full rounded-md border p-4">
                   {conversationNotes
                     .filter(note => note.assignmentId === selectedAssignment.id)
@@ -1448,7 +1441,7 @@ export default function Assignments() {
                     ))}
                   {conversationNotes.filter(note => note.assignmentId === selectedAssignment.id).length === 0 && (
                     <p className="text-sm text-muted-foreground text-center py-8">
-                      Henüz not eklenmemiş
+                      {t('assignments.detailsDialog.noNotes')}
                     </p>
                   )}
                 </ScrollArea>
@@ -1456,27 +1449,27 @@ export default function Assignments() {
 
               {/* New Note Form */}
               <div className="space-y-4 border-t pt-4">
-                <h3 className="font-medium">Yeni Not Ekle</h3>
+                <h3 className="font-medium">{t('assignments.detailsDialog.addNote')}</h3>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="note-text">Not *</Label>
+                  <Label htmlFor="note-text">{t('assignments.detailsDialog.noteLabel')}</Label>
                   <Textarea
                     id="note-text"
                     value={newNote.note}
                     onChange={(e) => setNewNote({ ...newNote, note: e.target.value })}
-                    placeholder="Görüşme notunu buraya yazın..."
+                    placeholder={t('assignments.detailsDialog.notePlaceholder')}
                     rows={3}
                     data-testid="textarea-conversation-note"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="note-creator">Görüşen Kişi *</Label>
+                  <Label htmlFor="note-creator">{t('assignments.detailsDialog.creatorLabel')}</Label>
                   <Input
                     id="note-creator"
                     value={newNote.createdBy}
                     onChange={(e) => setNewNote({ ...newNote, createdBy: e.target.value })}
-                    placeholder="İsim Soyisim"
+                    placeholder={t('assignments.detailsDialog.creatorPlaceholder')}
                     data-testid="input-note-creator"
                   />
                 </div>
@@ -1493,13 +1486,13 @@ export default function Assignments() {
               }}
               data-testid="button-cancel-note"
             >
-              Kapat
+              {t('assignments.detailsDialog.cancel')}
             </Button>
             <Button 
               onClick={handleSaveNote}
               data-testid="button-save-note"
             >
-              Not Kaydet
+              {t('assignments.detailsDialog.saveNote')}
             </Button>
           </DialogFooter>
         </DialogContent>
