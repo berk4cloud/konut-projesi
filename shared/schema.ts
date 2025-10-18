@@ -25,6 +25,18 @@ export const tenantStatusEnum = pgEnum("tenant_status", ["trial", "active", "sus
 export const tenantPlanEnum = pgEnum("tenant_plan", ["basic", "professional", "enterprise"]);
 export const tenantUserStatusEnum = pgEnum("tenant_user_status", ["invited", "active", "inactive"]);
 
+// Role enums for multi-role system
+export const tenantRoleEnum = pgEnum("tenant_role", [
+  "owner",
+  "admin", 
+  "hr_manager",
+  "planner",
+  "accommodation_manager",
+  "transport_manager",
+  "finance",
+  "viewer"
+]);
+
 // ============================================
 // PLATFORM LEVEL (SAAS)
 // ============================================
@@ -93,6 +105,8 @@ export type Tenant = typeof tenants.$inferSelect;
 // ============================================
 
 // Tenant Users table (Each tenant's users)
+// Note: A user can exist in multiple tenants (same email, different tenantId records)
+// Each tenant-user relationship can have multiple roles
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   tenantId: varchar("tenant_id").notNull(),
@@ -103,7 +117,9 @@ export const users = pgTable("users", {
   firstName: text("first_name").notNull(),
   lastName: text("last_name").notNull(),
   
-  role: text("role").notNull().default("user"), // owner, admin, user
+  // Multi-role support: User can have multiple roles in same tenant
+  roles: text("roles").array().notNull().default(sql`ARRAY['viewer']::text[]`),
+  
   status: tenantUserStatusEnum("status").default("invited").notNull(),
   
   // Invitation flow
@@ -129,6 +145,21 @@ export const insertUserSchema = createInsertSchema(users).omit({
 });
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+
+// User Preferences table (for login flow - remembering last selections)
+// Stores per-email preferences across all tenants
+export const userPreferences = pgTable("user_preferences", {
+  email: text("email").primaryKey(), // Email as primary key (global)
+  lastTenantId: varchar("last_tenant_id"), // Last selected tenant
+  lastSelections: jsonb("last_selections").default(sql`'{}'::jsonb`), // {"tenant-id": "role"}
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertUserPreferenceSchema = createInsertSchema(userPreferences).omit({
+  updatedAt: true,
+});
+export type InsertUserPreference = z.infer<typeof insertUserPreferenceSchema>;
+export type UserPreference = typeof userPreferences.$inferSelect;
 
 // ============================================
 // FEDERATED WORKER IDENTITY MODEL

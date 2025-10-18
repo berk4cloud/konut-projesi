@@ -115,7 +115,7 @@ export const demoTenants: Tenant[] = [
 // ============================================
 
 export const demoTenantUsers: User[] = [
-  // Cova B.V. - Owner
+  // Cova B.V. - Owner (Single role)
   {
     id: "user-cova-owner",
     tenantId: "tenant-cova",
@@ -123,7 +123,7 @@ export const demoTenantUsers: User[] = [
     password: "$2b$10$3JuG8fX.Huj3N0dRR7e/z.E0LazSCvINqehli.2Nckf0NtVA/Qxni", // CovaPass123
     firstName: "Jan",
     lastName: "de Vries",
-    role: "owner",
+    roles: ["owner"],
     status: "active",
     invitedAt: new Date("2024-01-15"),
     invitedBy: "platform-admin-1",
@@ -134,7 +134,7 @@ export const demoTenantUsers: User[] = [
     updatedAt: new Date("2024-10-18"),
   },
   
-  // Cova B.V. - Admin
+  // Cova B.V. - Admin (Single role)
   {
     id: "user-cova-admin",
     tenantId: "tenant-cova",
@@ -142,7 +142,7 @@ export const demoTenantUsers: User[] = [
     password: "$2b$10$y0Dx5e.0Hp7i.DiK9Ew6rOwMsI7kJ6YYQI9pJZNY1ceFd4GQzWqCG", // LisaPass123
     firstName: "Lisa",
     lastName: "Janssen",
-    role: "admin",
+    roles: ["admin"],
     status: "active",
     invitedAt: new Date("2024-02-01"),
     invitedBy: "user-cova-owner",
@@ -153,7 +153,26 @@ export const demoTenantUsers: User[] = [
     updatedAt: new Date("2024-10-17"),
   },
   
-  // Apple Netherlands - Owner
+  // Cova B.V. - Multi-role (Planner + Finance)
+  {
+    id: "user-cova-fatma",
+    tenantId: "tenant-cova",
+    email: "fatma@cova.nl",
+    password: "$2b$10$MQ8.bBEqV4H8K9e/yO2M5.hY7i5sL6rT8uX1jW3nZ4pQ5vR7tA9uK", // FatmaPass123
+    firstName: "Fatma",
+    lastName: "Yılmaz",
+    roles: ["planner", "finance"],
+    status: "active",
+    invitedAt: new Date("2024-03-01"),
+    invitedBy: "user-cova-owner",
+    activatedAt: new Date("2024-03-01"),
+    invitationToken: null,
+    lastLoginAt: new Date("2024-10-18"),
+    createdAt: new Date("2024-03-01"),
+    updatedAt: new Date("2024-10-18"),
+  },
+  
+  // Apple Netherlands - Owner (Single role)
   {
     id: "user-apple-owner",
     tenantId: "tenant-apple",
@@ -161,7 +180,7 @@ export const demoTenantUsers: User[] = [
     password: "$2b$10$4vd9MwrRn9AWgM7sWyDWKOEjmopbqizhluYTIJb1HeZBJ3FYJc.xe", // ApplePass123
     firstName: "Tim",
     lastName: "Cook",
-    role: "owner",
+    roles: ["owner"],
     status: "active",
     invitedAt: new Date("2024-10-01"),
     invitedBy: "platform-admin-1",
@@ -172,7 +191,26 @@ export const demoTenantUsers: User[] = [
     updatedAt: new Date("2024-10-18"),
   },
   
-  // OneFlex - Owner
+  // Apple Netherlands - HR Manager (Fatma works here too!)
+  {
+    id: "user-apple-fatma",
+    tenantId: "tenant-apple",
+    email: "fatma@apple.nl",
+    password: "$2b$10$MQ8.bBEqV4H8K9e/yO2M5.hY7i5sL6rT8uX1jW3nZ4pQ5vR7tA9uK", // FatmaPass123
+    firstName: "Fatma",
+    lastName: "Yılmaz",
+    roles: ["hr_manager"],
+    status: "active",
+    invitedAt: new Date("2024-10-05"),
+    invitedBy: "user-apple-owner",
+    activatedAt: new Date("2024-10-05"),
+    invitationToken: null,
+    lastLoginAt: new Date("2024-10-17"),
+    createdAt: new Date("2024-10-05"),
+    updatedAt: new Date("2024-10-17"),
+  },
+  
+  // OneFlex - Owner (Single role)
   {
     id: "user-oneflex-owner",
     tenantId: "tenant-oneflex",
@@ -180,7 +218,7 @@ export const demoTenantUsers: User[] = [
     password: "$2b$10$SX49cSlGk/7lsJmdraD4c.NvCcTPUEkPPoJaX0vfW62gO.wIWIBAu", // OneFlexPass123
     firstName: "Sophie",
     lastName: "van der Berg",
-    role: "owner",
+    roles: ["owner"],
     status: "active",
     invitedAt: new Date("2024-06-01"),
     invitedBy: "platform-admin-1",
@@ -191,7 +229,7 @@ export const demoTenantUsers: User[] = [
     updatedAt: new Date("2024-10-16"),
   },
   
-  // OneFlex - Invited User (Pending)
+  // OneFlex - Invited Viewer (Pending)
   {
     id: "user-oneflex-pending",
     tenantId: "tenant-oneflex",
@@ -199,7 +237,7 @@ export const demoTenantUsers: User[] = [
     password: null,
     firstName: "Mark",
     lastName: "Peters",
-    role: "user",
+    roles: ["viewer"],
     status: "invited",
     invitedAt: new Date("2024-10-10"),
     invitedBy: "user-oneflex-owner",
@@ -214,11 +252,20 @@ export const demoTenantUsers: User[] = [
 // ============================================
 // DEMO DATA SUMMARY
 // ============================================
+// Login Scenarios:
+// 1. Jan (jan@cova.nl) - Single tenant + Single role → Direct dashboard
+// 2. Lisa (lisa@cova.nl) - Single tenant + Single role → Direct dashboard
+// 3. Fatma (fatma@cova.nl OR fatma@apple.nl) - Multi tenant + Multi role → Tenant select → Role select
+// 4. Tim (tim@apple.nl) - Single tenant + Single role → Direct dashboard
+// 5. Sophie (sophie@oneflex.nl) - Single tenant + Single role → Direct dashboard
 
 export const demoDataSummary = {
   platformAdmins: demoPlatformAdmins.length,
   tenants: demoTenants.length,
   tenantUsers: demoTenantUsers.length,
+  uniqueUsers: new Set(demoTenantUsers.map(u => u.email)).size, // 6 unique emails (Fatma has 2 records)
+  multiRoleUsers: demoTenantUsers.filter(u => u.roles.length > 1).length, // 1 (Fatma @ Cova)
+  multiTenantUsers: 1, // 1 (Fatma works at both Cova and Apple)
   tenantsActive: demoTenants.filter(t => t.status === "active").length,
   tenantsTrial: demoTenants.filter(t => t.status === "trial").length,
 };

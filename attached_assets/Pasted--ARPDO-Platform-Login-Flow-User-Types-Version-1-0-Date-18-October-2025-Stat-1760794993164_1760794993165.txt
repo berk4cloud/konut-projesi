@@ -1,0 +1,855 @@
+# 🔐 ARPDO Platform - Login Flow & User Types
+
+**Version:** 1.0  
+**Date:** 18 October 2025  
+**Status:** Draft
+
+---
+
+## 📋 İçindekiler
+
+1. [Özet](#özet)
+2. [Kullanıcı Tipleri Özet](#kullanıcı-tipleri-özet)
+3. [Login Mantığı](#login-mantığı)
+4. [Login Senaryoları](#login-senaryoları)
+5. [UI/UX Flow](#uiux-flow)
+6. [Backend Logic](#backend-logic)
+7. [Session Management](#session-management)
+8. [Güvenlik](#güvenlik)
+9. [Tartışılacak Konular](#tartışılacak-konular)
+
+---
+
+## 📖 Özet
+
+ARPDO, **Federated Worker Identity Model** kullanan multi-tenant, multi-role bir SaaS platformudur. Bu dokümantasyon, platformun login akışını ve kullanıcı tiplerini detaylandırır.
+
+### Temel Prensipler
+
+- ✅ **Tek login sayfası** - Kullanıcı tipi otomatik belirlenir
+- ✅ **Önce Tenant, Sonra Role** - Mantıksal hiyerarşi
+- ✅ **Email-based authentication** - Unique identifier
+- ✅ **Akıllı yönlendirme** - Gereksiz ekranlar gösterilmez
+- ✅ **Session persistence** - Son seçim hatırlanır
+
+### Temel Akış
+
+```
+Login → Tenant Seçimi (gerekirse) → Role Seçimi (gerekirse) → Dashboard
+```
+
+---
+
+## 👥 Kullanıcı Tipleri Özet
+
+ARPDO platformunda **5 ana seviyede 24 farklı kullanıcı tipi** bulunmaktadır:
+
+| Seviye | Kullanıcı Tipi | Adet | Açıklama |
+|--------|----------------|------|----------|
+| **🌐 PLATFORM** | Super Admin, Admin, Support, Analyst, Developer | 5 | ARPDO platform yönetimi |
+| **🏢 TENANT** | Owner, Admin, HR Manager, Planner, Accommodation Manager, Transport Manager, Finance, Viewer | 8 | Firma seviyesi kullanıcılar |
+| **🏭 EMPLOYER** | Admin, Manager, Viewer | 3 | Staffing agency müşterileri (opsiyonel) |
+| **👷 WORKER** | Active, Inactive, Former, Invited | 4 | İşçiler |
+| **🚗 DRIVER** | Active Driver, Driver App User | 2 | Şoförler |
+| **🎯 ÖZEL** | External Auditor, API User, Emergency Contact | 3 | Özel durumlar |
+
+### Hiyerarşi
+
+```
+Platform (ARPDO)
+    ↓
+Tenant (Firma - örn: Cova B.V.)
+    ↓
+Employer (Müşteri - örn: Apple) [Sadece Staffing Agency modelinde]
+    ↓
+Worker / Driver (İşçi / Şoför)
+```
+
+### İki Farklı Model
+
+#### Model 1: Direct Employer (Örn: Apple)
+- ❌ Employer seviyesi YOK
+- ✅ Tüm işçiler doğrudan firma çalışanı
+- ✅ Basit hiyerarşi
+
+#### Model 2: Staffing Agency (Örn: Cova B.V.)
+- ✅ Employer seviyesi VAR
+- ✅ İşçi tedarik modeli
+- ✅ Müşteri yönetimi
+
+---
+
+## 🔐 Login Mantığı
+
+### Temel Kural: **"Kullanıcı ne ise o olarak giriş yapar"**
+
+Sistem, kullanıcının email adresinden otomatik olarak:
+- Hangi tenant'lara bağlı olduğunu
+- Her tenant'ta hangi role'lere sahip olduğunu
+- Tespit eder ve uygun akışı başlatır
+
+### Karar Ağacı
+
+```
+1. Kaç tenant'a bağlı?
+   ├─ 1 Tenant → 2'ye geç
+   └─ 2+ Tenant → Tenant seçim ekranı
+
+2. Seçilen tenant'ta kaç role var?
+   ├─ 1 Role → Dashboard'a yönlendir
+   └─ 2+ Role → Role seçim ekranı
+
+3. Dashboard
+```
+
+---
+
+## 📱 Login Senaryoları
+
+### Senaryo 1: Basit Kullanıcı (Single Tenant + Single Role)
+
+**Kullanıcı:** Mehmet (Worker @ Cova B.V.)
+
+```
+Mehmet login olur
+    ↓
+Backend tespit eder:
+  - 1 Tenant: Cova B.V.
+  - 1 Role: Worker
+    ↓
+✅ Direkt yönlendir → Worker Dashboard
+```
+
+**Kullanıcı Deneyimi:**
+- Login formu → Tek tık → Dashboard
+- **Hiçbir seçim ekranı görünmez**
+
+---
+
+### Senaryo 2: Single Tenant + Multi Role
+
+**Kullanıcı:** Ali (Worker + Driver @ Cova B.V.)
+
+```
+Ali login olur
+    ↓
+Backend tespit eder:
+  - 1 Tenant: Cova B.V.
+  - 2 Role: Worker, Driver
+    ↓
+🚨 Role seçim ekranı göster
+    ↓
+Ali seçer: "Driver"
+    ↓
+✅ Yönlendir → Driver Dashboard
+```
+
+**Kullanıcı Deneyimi:**
+- Login formu → Role seçim → Dashboard
+- Tenant seçimi atlanır (zaten tek)
+
+---
+
+### Senaryo 3: Multi Tenant + Single Role (Her Tenant'ta)
+
+**Kullanıcı:** Ahmet (Planner @ Cova B.V. + Planner @ Apple Inc.)
+
+```
+Ahmet login olur
+    ↓
+Backend tespit eder:
+  - 2 Tenant: Cova B.V., Apple Inc.
+  - Her birinde 1 Role: Planner
+    ↓
+🚨 Tenant seçim ekranı göster
+    ↓
+Ahmet seçer: "Cova B.V."
+    ↓
+Backend: Cova'da tek role var (Planner)
+    ↓
+✅ Yönlendir → Cova Planner Dashboard
+```
+
+**Kullanıcı Deneyimi:**
+- Login formu → Tenant seçim → Dashboard
+- Role seçimi atlanır (her tenant'ta tek role)
+
+---
+
+### Senaryo 4: Multi Tenant + Multi Role (Kompleks)
+
+**Kullanıcı:** Fatma
+- Cova B.V.: Planner + Finance
+- Apple Inc.: HR Manager
+
+```
+Fatma login olur
+    ↓
+Backend tespit eder:
+  - 2 Tenant
+  - Cova'da 2 Role, Apple'da 1 Role
+    ↓
+🚨 1. ADIM: Tenant seçim ekranı
+    ↓
+Fatma seçer: "Cova B.V."
+    ↓
+Backend: Cova'da 2 role var
+    ↓
+🚨 2. ADIM: Role seçim ekranı (Cova için)
+    ↓
+Fatma seçer: "Planner"
+    ↓
+✅ Yönlendir → Cova Planner Dashboard
+```
+
+**Kullanıcı Deneyimi:**
+- Login formu → Tenant seçim → Role seçim → Dashboard
+- İki aşamalı seçim süreci
+
+---
+
+### Senaryo 5: Platform Admin
+
+**Kullanıcı:** Platform Super Admin
+
+```
+Admin login olur
+    ↓
+Backend tespit eder:
+  - Platform level user
+  - Özel yetki seviyesi
+    ↓
+✅ Direkt yönlendir → Platform Admin Panel
+```
+
+**Kullanıcı Deneyimi:**
+- Login formu → Direkt admin panel
+- Tenant/Role seçimi yok
+
+---
+
+### Senaryo 6: Invited Worker (İlk Giriş)
+
+**Kullanıcı:** Yeni davet edilen işçi
+
+```
+Email'deki link'e tıklar
+    ↓
+Password belirleme ekranı
+    ↓
+Password belirler
+    ↓
+Otomatik login
+    ↓
+✅ Worker Onboarding Flow başlar
+```
+
+**Kullanıcı Deneyimi:**
+- Invitation link → Set password → Onboarding
+- İlk girişte özel akış
+
+---
+
+## 🎨 UI/UX Flow
+
+### Login Sayfası (Ana Giriş)
+
+```
+┌──────────────────────────────────────┐
+│         ARPDO                        │
+│         [Logo]                       │
+│                                      │
+│  ┌────────────────────────────────┐ │
+│  │ Email                          │ │
+│  └────────────────────────────────┘ │
+│                                      │
+│  ┌────────────────────────────────┐ │
+│  │ Password                       │ │
+│  └────────────────────────────────┘ │
+│                                      │
+│  [Sign In]                           │
+│                                      │
+│  Forgot password?                    │
+│  Don't have an account? Contact us   │
+└──────────────────────────────────────┘
+```
+
+**Özellikler:**
+- ✅ Minimalist tasarım
+- ✅ Tek form, kullanıcı tipi sorulmaz
+- ✅ Responsive (mobile-first)
+- ✅ Accessibility support
+
+---
+
+### Tenant Seçim Ekranı
+
+```
+┌──────────────────────────────────────┐
+│  Merhaba Fatma! 👋                   │
+│  Hangi firmada çalışmak istiyorsun?  │
+├──────────────────────────────────────┤
+│                                      │
+│  🏢 Cova B.V.                        │
+│     ├─ 📅 Planner                    │
+│     └─ 💰 Finance                    │
+│     [Seç →]                          │
+│                                      │
+│  🍎 Apple Inc.                       │
+│     └─ 👨‍💼 HR Manager                │
+│     [Seç →]                          │
+│                                      │
+│  💡 Son seçim: Cova B.V. | Planner   │
+└──────────────────────────────────────┘
+```
+
+**Özellikler:**
+- ✅ Tüm tenant'lar listelenir
+- ✅ Her tenant altında role'ler gösterilir
+- ✅ Son seçim hatırlatılır
+- ✅ Tek tıkla seçim
+
+---
+
+### Role Seçim Ekranı
+
+```
+┌──────────────────────────────────────┐
+│  Cova B.V.'de hangi rolle            │
+│  çalışmak istiyorsun?                │
+├──────────────────────────────────────┤
+│                                      │
+│  📅 Planner                          │
+│     Vardiya planlama, işçi atama    │
+│     [Giriş Yap →]                    │
+│                                      │
+│  💰 Finance                          │
+│     Bordro, fatura, raporlar         │
+│     [Giriş Yap →]                    │
+│                                      │
+│  ← Farklı firma seç                  │
+└──────────────────────────────────────┘
+```
+
+**Özellikler:**
+- ✅ Sadece seçilen tenant'ın role'leri
+- ✅ Her role için açıklama
+- ✅ Geri dönüş seçeneği
+
+---
+
+### Dashboard - Switch Özelliği
+
+```
+┌──────────────────────────────────────┐
+│  🏢 Cova B.V. | 📅 Planner ▼         │
+├──────────────────────────────────────┤
+│                                      │
+│  [Dashboard Content]                 │
+│                                      │
+└──────────────────────────────────────┘
+
+Dropdown'a tıklayınca:
+
+┌──────────────────────────────────────┐
+│  Firma ve Role Değiştir              │
+├──────────────────────────────────────┤
+│  ✓ 🏢 Cova B.V. | 📅 Planner         │
+│    🏢 Cova B.V. | 💰 Finance         │
+│    🍎 Apple Inc. | 👨‍💼 HR Manager     │
+│                                      │
+│  [Logout]                            │
+└──────────────────────────────────────┘
+```
+
+**Özellikler:**
+- ✅ Header'da her zaman görünür
+- ✅ Hızlı switch (sayfayı terk etmeden)
+- ✅ Mevcut seçim belirgin
+
+---
+
+## 💻 Backend Logic
+
+### Authentication Flow
+
+```javascript
+async function handleLogin(email, password) {
+  
+  // 1. Authenticate user
+  const user = await authenticate(email, password);
+  if (!user) {
+    throw new Error('Invalid credentials');
+  }
+  
+  // 2. Check if platform admin
+  if (user.isPlatformAdmin) {
+    return redirect('/platform/admin');
+  }
+  
+  // 3. Get user's tenants
+  const tenants = await getUserTenants(user.id);
+  
+  // 4. Check tenant count
+  if (tenants.length === 0) {
+    throw new Error('No access to any tenant');
+  }
+  
+  if (tenants.length === 1) {
+    // Single tenant - check roles
+    return await handleSingleTenant(user, tenants[0]);
+  }
+  
+  // Multiple tenants - show selector
+  // Check if we have last selected tenant
+  const lastTenant = await getLastSelectedTenant(user.id);
+  if (lastTenant && autoRedirect) {
+    return await handleSingleTenant(user, lastTenant);
+  }
+  
+  return showTenantSelector(user, tenants);
+}
+
+async function handleSingleTenant(user, tenant) {
+  // Get roles for this tenant
+  const roles = await getUserRolesInTenant(user.id, tenant.id);
+  
+  if (roles.length === 0) {
+    throw new Error('No roles in this tenant');
+  }
+  
+  if (roles.length === 1) {
+    // Single role - direct redirect
+    return redirect(getDashboardUrl(tenant, roles[0]));
+  }
+  
+  // Multiple roles - check last selected
+  const lastRole = await getLastSelectedRole(user.id, tenant.id);
+  if (lastRole && autoRedirect) {
+    return redirect(getDashboardUrl(tenant, lastRole));
+  }
+  
+  return showRoleSelector(user, tenant, roles);
+}
+
+async function handleTenantSelection(user, selectedTenantId) {
+  // Save selection
+  await saveLastSelectedTenant(user.id, selectedTenantId);
+  
+  // Get tenant
+  const tenant = await getTenant(selectedTenantId);
+  
+  // Continue with role check
+  return await handleSingleTenant(user, tenant);
+}
+
+async function handleRoleSelection(user, tenantId, roleId) {
+  // Save selection
+  await saveLastSelectedRole(user.id, tenantId, roleId);
+  
+  // Create session
+  const session = await createSession(user.id, tenantId, roleId);
+  
+  // Redirect to dashboard
+  const tenant = await getTenant(tenantId);
+  const role = await getRole(roleId);
+  
+  return redirect(getDashboardUrl(tenant, role));
+}
+```
+
+### Database Schema (Simplified)
+
+```sql
+-- Users table
+CREATE TABLE users (
+  id UUID PRIMARY KEY,
+  email VARCHAR UNIQUE NOT NULL,
+  password_hash VARCHAR NOT NULL,
+  is_platform_admin BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP
+);
+
+-- Tenants table
+CREATE TABLE tenants (
+  id UUID PRIMARY KEY,
+  name VARCHAR NOT NULL,
+  type ENUM('direct_employer', 'staffing_agency'),
+  created_at TIMESTAMP
+);
+
+-- Roles table
+CREATE TABLE roles (
+  id UUID PRIMARY KEY,
+  name VARCHAR NOT NULL,
+  level ENUM('platform', 'tenant', 'employer', 'worker', 'driver')
+);
+
+-- User-Tenant-Role relationship (many-to-many-to-many)
+CREATE TABLE user_tenant_roles (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  tenant_id UUID REFERENCES tenants(id),
+  role_id UUID REFERENCES roles(id),
+  created_at TIMESTAMP,
+  UNIQUE(user_id, tenant_id, role_id)
+);
+
+-- Last selections (for convenience)
+CREATE TABLE user_preferences (
+  user_id UUID REFERENCES users(id),
+  last_tenant_id UUID REFERENCES tenants(id),
+  last_selections JSONB, -- {tenant_id: role_id}
+  updated_at TIMESTAMP,
+  PRIMARY KEY(user_id)
+);
+```
+
+---
+
+## 🗄️ Session Management
+
+### Session Data Structure
+
+```javascript
+{
+  userId: "user-123",
+  email: "fatma@example.com",
+  
+  // Current context
+  currentTenant: {
+    id: "cova-bv",
+    name: "Cova B.V.",
+    type: "staffing_agency"
+  },
+  
+  currentRole: {
+    id: "planner",
+    name: "Planner",
+    level: "tenant",
+    permissions: ["planning.view", "planning.edit", "workers.view"]
+  },
+  
+  // Available contexts
+  availableContexts: [
+    {
+      tenant: {id: "cova-bv", name: "Cova B.V."},
+      roles: [
+        {id: "planner", name: "Planner"},
+        {id: "finance", name: "Finance"}
+      ]
+    },
+    {
+      tenant: {id: "apple-inc", name: "Apple Inc."},
+      roles: [
+        {id: "hr-manager", name: "HR Manager"}
+      ]
+    }
+  ],
+  
+  // Last selections (for next login)
+  lastSelections: {
+    "cova-bv": "planner",
+    "apple-inc": "hr-manager"
+  },
+  
+  // Session metadata
+  createdAt: "2025-10-18T10:00:00Z",
+  expiresAt: "2025-10-18T22:00:00Z",
+  lastActivity: "2025-10-18T15:30:00Z"
+}
+```
+
+### Session Storage
+
+```javascript
+// Redis example
+const session = {
+  key: `session:${sessionId}`,
+  ttl: 12 * 60 * 60, // 12 hours
+  data: sessionData
+};
+
+// On every API request
+function validateSession(req) {
+  const session = getSession(req.sessionId);
+  
+  // Check expiry
+  if (session.expiresAt < now) {
+    throw new Error('Session expired');
+  }
+  
+  // Update last activity
+  session.lastActivity = now;
+  saveSession(session);
+  
+  return session;
+}
+```
+
+---
+
+## 🔒 Güvenlik
+
+### Authentication
+
+- ✅ **Bcrypt** for password hashing
+- ✅ **JWT** for session tokens
+- ✅ **HTTPS** only (TLS 1.3)
+- ✅ **Rate limiting** on login attempts
+- ✅ **Account lockout** after N failed attempts
+
+### Authorization
+
+```javascript
+// Middleware example
+function requirePermission(permission) {
+  return async (req, res, next) => {
+    const session = req.session;
+    
+    // Check if user has permission in current context
+    if (!session.currentRole.permissions.includes(permission)) {
+      return res.status(403).json({error: 'Forbidden'});
+    }
+    
+    next();
+  };
+}
+
+// Usage
+app.get('/api/planning', 
+  requireAuth,
+  requirePermission('planning.view'),
+  getPlanningData
+);
+```
+
+### Tenant Isolation
+
+```javascript
+// Every query must include tenant filter
+function getTenantFilter(session) {
+  return {
+    tenant_id: session.currentTenant.id
+  };
+}
+
+// Example query
+const workers = await db.workers.find({
+  ...getTenantFilter(req.session),
+  status: 'active'
+});
+
+// ⚠️ NEVER allow cross-tenant queries without explicit permission
+```
+
+### Role-Based Access Control (RBAC)
+
+```javascript
+const permissions = {
+  'tenant-owner': ['*'], // All permissions
+  'tenant-admin': ['users.*', 'settings.*', 'modules.*'],
+  'hr-manager': ['workers.*', 'contracts.*', 'documents.*'],
+  'planner': ['planning.*', 'workers.view', 'shifts.*'],
+  'finance': ['finance.*', 'payroll.*', 'reports.*'],
+  'worker': ['profile.own', 'schedule.own', 'messages.own'],
+  'driver': ['transport.own', 'routes.own']
+};
+
+function hasPermission(role, permission) {
+  const rolePerms = permissions[role];
+  
+  // Check wildcard
+  if (rolePerms.includes('*')) return true;
+  
+  // Check exact match
+  if (rolePerms.includes(permission)) return true;
+  
+  // Check pattern match (e.g., 'workers.*')
+  const pattern = permission.split('.')[0] + '.*';
+  if (rolePerms.includes(pattern)) return true;
+  
+  return false;
+}
+```
+
+### 2FA (Two-Factor Authentication)
+
+```javascript
+// Optional for most users, mandatory for:
+const require2FA = {
+  'platform-admin': true,      // Always required
+  'platform-super-admin': true, // Always required
+  'tenant-owner': true,         // Always required
+  'finance': true,              // Recommended
+  'hr-manager': false,          // Optional
+  'worker': false               // Not needed
+};
+```
+
+---
+
+## 🤔 Tartışılacak Konular
+
+### 1. **Auto-redirect Behavior**
+- **Soru:** Kullanıcı her login'de son seçimini hatırlayalım mı?
+- **Seçenekler:**
+  - A) Her zaman auto-redirect (hızlı ama yanılabilir)
+  - B) Kullanıcı ayarı (preferences'ta toggle)
+  - C) Hiç auto-redirect yapma (her seferinde sor)
+- **Öneri:** B - Kullanıcı tercihine bırak (default: ON)
+
+---
+
+### 2. **Session Duration**
+- **Soru:** Session ne kadar süre aktif kalmalı?
+- **Seçenekler:**
+  - Platform Admin: 4 saat
+  - Tenant users: 12 saat
+  - Workers: 24 saat
+  - "Remember me" ile: 30 gün
+- **Öneri:** Yukarıdaki gibi, role-based timeout
+
+---
+
+### 3. **2FA Strategy**
+- **Soru:** 2FA nasıl implemente edilmeli?
+- **Seçenekler:**
+  - SMS (kolay ama güvensiz)
+  - Authenticator app (TOTP - önerilen)
+  - Email (backup method)
+- **Öneri:** TOTP + Email backup
+
+---
+
+### 4. **SSO (Single Sign-On)**
+- **Soru:** Google/Microsoft ile login olsun mu?
+- **Seçenekler:**
+  - A) SSO + klasik login (her ikisi)
+  - B) Sadece SSO
+  - C) Sadece klasik login
+- **Öneri:** A - Her ikisi de (esneklik)
+
+---
+
+### 5. **Mobile App Flow**
+- **Soru:** Mobil uygulama farklı mı olmalı?
+- **Düşünceler:**
+  - Worker app: Sadece worker role, tenant seçimi yok
+  - Driver app: Sadece driver role, tenant seçimi yok
+  - Admin mobile: Desktop ile aynı
+- **Öneri:** Worker/Driver için single-purpose apps
+
+---
+
+### 6. **Role Switch Frequency**
+- **Soru:** Kullanıcılar ne sıklıkla role değiştiriyor?
+- **Analiz gerekli:**
+  - Çok sık → Header'da kalmalı
+  - Nadiren → Settings'e taşınabilir
+- **Öneri:** Analytics toplayıp karar verelim
+
+---
+
+### 7. **Password Policy**
+- **Soru:** Password gereksinimleri neler?
+- **Öneriler:**
+  - Min 8 karakter
+  - En az 1 büyük harf
+  - En az 1 rakam
+  - En az 1 özel karakter
+  - Yaygın passwordler yasak (123456, password, vb.)
+- **Soru:** Çok mu sıkı, gevşetilsin mi?
+
+---
+
+### 8. **Account Lockout**
+- **Soru:** Kaç başarısız denemeden sonra hesap kilitlensin?
+- **Öneri:**
+  - 5 başarısız deneme → 15 dakika lock
+  - 10 başarısız deneme → 1 saat lock
+  - 15 başarısız deneme → Admin müdahalesi gerekli
+
+---
+
+### 9. **Invitation Expiry**
+- **Soru:** Davetiyeler ne kadar süre geçerli?
+- **Öneri:**
+  - Worker invitation: 7 gün
+  - Admin invitation: 3 gün
+  - Expired link → "Request new invitation"
+
+---
+
+### 10. **Logout Behavior**
+- **Soru:** Logout sonrası nereye?
+- **Seçenekler:**
+  - A) Login page
+  - B) Marketing website (arpdo.com)
+  - C) "You've been logged out" page
+- **Öneri:** A - Login page (simple)
+
+---
+
+## 📊 Karar Tablosu (Özet)
+
+| Durum | Tenant Sayısı | Role Sayısı | Aksiyon |
+|-------|---------------|-------------|---------|
+| Mehmet | 1 | 1 | ✅ Direkt dashboard |
+| Ali | 1 | 2+ | 🚨 Role seçim |
+| Ahmet | 2+ | 1 (her tenant'ta) | 🚨 Tenant seçim |
+| Fatma | 2+ | 2+ (bazı tenant'larda) | 🚨 Tenant seçim → 🚨 Role seçim |
+| Platform Admin | - | - | ✅ Platform panel |
+| Invited Worker | - | - | 🚨 Set password → Onboarding |
+
+---
+
+## 🚀 Sonraki Adımlar
+
+1. **Design Phase**
+   - [ ] UI mockups (Figma)
+   - [ ] User flow diagrams
+   - [ ] Component library
+
+2. **Backend Development**
+   - [ ] Authentication service
+   - [ ] Authorization middleware
+   - [ ] Session management
+   - [ ] Database schema
+
+3. **Frontend Development**
+   - [ ] Login page
+   - [ ] Tenant selector
+   - [ ] Role selector
+   - [ ] Dashboard switch component
+
+4. **Testing**
+   - [ ] Unit tests
+   - [ ] Integration tests
+   - [ ] User acceptance testing
+   - [ ] Security audit
+
+5. **Documentation**
+   - [ ] API documentation
+   - [ ] User guides
+   - [ ] Admin manual
+   - [ ] Security policies
+
+---
+
+## 📞 İletişim
+
+**Project Lead:** Tahir Alişan  
+**Document Version:** 1.0  
+**Last Updated:** 18 October 2025
+
+---
+
+## 📄 Lisans
+
+Bu doküman ARPDO projesi için hazırlanmıştır ve gizlilik kapsamındadır.
+
+---
+
+**🎯 Hedef:** Kullanıcıları doğru yere, doğru zamanda, en az sürtünmeyle ulaştırmak.
