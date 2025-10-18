@@ -206,8 +206,11 @@
     },
     "newWorker": {
       "title": "Nieuwe Werknemersregistratie",
-      "firstName": "Voornaam",
-      "lastName": "Achternaam",
+      "quickRegistration": "Snelle Werknemersregistratie",
+      "quickRegistrationDescription": "Registreer een nieuwe werknemer met minimale verplichte informatie",
+      "saveAndSelect": "Opslaan en Selecteren",
+      "firstName": "Voornaam *",
+      "lastName": "Achternaam *",
       "gender": "Geslacht",
       "phoneNumber": "Telefoon",
       "email": "E-mail (Optioneel)",

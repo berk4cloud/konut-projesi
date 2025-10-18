@@ -1428,17 +1428,17 @@ export default function HousingDashboard() {
                         {wizardData.workerId 
                           ? (() => {
                               const worker = workers.find(w => w.id === wizardData.workerId);
-                              return worker ? `${worker.firstName} ${worker.lastName} (${worker.dateOfBirth})` : "İşçi seçin";
+                              return worker ? `${worker.firstName} ${worker.lastName} (${worker.dateOfBirth})` : t('checkIn.wizard.selectWorkerPrompt');
                             })()
-                          : "İşçi seçin"}
+                          : t('checkIn.wizard.selectWorkerPrompt')}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-[400px] p-0" align="start">
                       <Command>
-                        <CommandInput placeholder="İşçi ara..." />
+                        <CommandInput placeholder={t('checkIn.wizard.searchWorker')} />
                         <CommandList>
-                          <CommandEmpty>İşçi bulunamadı</CommandEmpty>
+                          <CommandEmpty>{t('checkIn.wizard.noWorkerFound')}</CommandEmpty>
                           <CommandGroup>
                             {workers.map(worker => (
                               <CommandItem
@@ -1478,19 +1478,19 @@ export default function HousingDashboard() {
                       data-testid="button-quick-register-toggle"
                     >
                       <UserPlus className="w-4 h-4 mr-2" />
-                      Hızlı İşçi Kaydı
+                      {t('checkIn.newWorker.quickRegistration')}
                       {quickRegisterOpen ? <ChevronUp className="w-4 h-4 ml-auto" /> : <ChevronDown className="w-4 h-4 ml-auto" />}
                     </Button>
                   </CollapsibleTrigger>
                   <CollapsibleContent className="space-y-4 pt-4">
                     <div className="border rounded-lg p-4 space-y-4 bg-muted/30">
                       <p className="text-sm text-muted-foreground">
-                        Minimum bilgilerle hızlı işçi kaydı yapın
+                        {t('checkIn.newWorker.quickRegistrationDescription')}
                       </p>
                       
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="quick-firstname">Ad *</Label>
+                          <Label htmlFor="quick-firstname">{t('checkIn.newWorker.firstName')}</Label>
                           <Input
                             id="quick-firstname"
                             placeholder="Mehmet"
@@ -1501,7 +1501,7 @@ export default function HousingDashboard() {
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="quick-lastname">Soyad *</Label>
+                          <Label htmlFor="quick-lastname">{t('checkIn.newWorker.lastName')}</Label>
                           <Input
                             id="quick-lastname"
                             placeholder="Yılmaz"
@@ -1513,7 +1513,7 @@ export default function HousingDashboard() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Doğum Tarihi *</Label>
+                        <Label>{t('worker.birthDateRequired')}</Label>
                         <ModernDatePicker
                           date={quickRegisterData.dateOfBirth ? new Date(quickRegisterData.dateOfBirth) : undefined}
                           onDateChange={(date) => {
@@ -1522,24 +1522,24 @@ export default function HousingDashboard() {
                               dateOfBirth: date ? date.toISOString().split('T')[0] : ""
                             });
                           }}
-                          placeholder="Tarih seçin"
+                          placeholder={t('checkIn.wizard.selectDate')}
                           className="w-full"
                           data-testid="input-quick-dob"
                         />
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="quick-gender">Cinsiyet *</Label>
+                        <Label htmlFor="quick-gender">{t('worker.genderRequired')}</Label>
                         <Select
                           value={quickRegisterData.gender}
                           onValueChange={(value: "male" | "female") => setQuickRegisterData({ ...quickRegisterData, gender: value })}
                         >
                           <SelectTrigger id="quick-gender" data-testid="select-quick-gender">
-                            <SelectValue placeholder="Cinsiyet seçin" />
+                            <SelectValue placeholder={t('worker.selectGender')} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="male">Erkek</SelectItem>
-                            <SelectItem value="female">Kadın</SelectItem>
+                            <SelectItem value="male">{t('gender.male')}</SelectItem>
+                            <SelectItem value="female">{t('gender.female')}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -1550,7 +1550,7 @@ export default function HousingDashboard() {
                         data-testid="button-quick-register-save"
                       >
                         <UserPlus className="w-4 h-4 mr-2" />
-                        Kaydet ve Seç
+                        {t('checkIn.newWorker.saveAndSelect')}
                       </Button>
                     </div>
                   </CollapsibleContent>
@@ -1619,7 +1619,7 @@ export default function HousingDashboard() {
             {wizardStep === 4 && (
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="monthly-rate">Aylık Ücret (€)</Label>
+                  <Label htmlFor="monthly-rate">{t('checkIn.wizard.monthlyFee')}</Label>
                   <Input
                     id="monthly-rate"
                     type="number"
@@ -1630,7 +1630,7 @@ export default function HousingDashboard() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="end-date">Bitiş Tarihi (Opsiyonel)</Label>
+                  <Label htmlFor="end-date">{t('checkIn.wizard.endDate')}</Label>
                   <ModernDatePicker
                     date={wizardData.endDate ? new Date(wizardData.endDate) : undefined}
                     onDateChange={(date) => {
@@ -1655,14 +1655,14 @@ export default function HousingDashboard() {
                       data-testid="checkbox-wizard-deposit"
                     />
                     <Label htmlFor="deposit-collected" className="cursor-pointer">
-                      Depozito Alındı
+                      {t('checkIn.wizard.depositReceived')}
                     </Label>
                   </div>
 
                   {wizardData.depositCollected && (
                     <>
                       <div className="space-y-2">
-                        <Label htmlFor="deposit-amount">Depozito Miktarı (€)</Label>
+                        <Label htmlFor="deposit-amount">{t('checkIn.wizard.depositAmount')}</Label>
                         <Input
                           id="deposit-amount"
                           type="number"
@@ -1672,7 +1672,7 @@ export default function HousingDashboard() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="deposit-collector">Alan Kişi</Label>
+                        <Label htmlFor="deposit-collector">{t('checkIn.wizard.depositCollector')}</Label>
                         <Input
                           id="deposit-collector"
                           value={user?.name || "Kullanıcı"}
@@ -1681,7 +1681,7 @@ export default function HousingDashboard() {
                           className="bg-muted"
                         />
                         <p className="text-sm text-muted-foreground">
-                          Otomatik olarak sisteme giriş yapan kullanıcı atanır
+                          {t('checkIn.wizard.depositCollectorAuto')}
                         </p>
                       </div>
                     </>

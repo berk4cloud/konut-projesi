@@ -210,8 +210,11 @@
     },
     "newWorker": {
       "title": "Yeni İşçi Kaydı",
-      "firstName": "Ad",
-      "lastName": "Soyad",
+      "quickRegistration": "Hızlı İşçi Kaydı",
+      "quickRegistrationDescription": "Minimum bilgilerle hızlı işçi kaydı yapın",
+      "saveAndSelect": "Kaydet ve Seç",
+      "firstName": "Ad *",
+      "lastName": "Soyad *",
       "gender": "Cinsiyet",
       "phoneNumber": "Telefon",
       "email": "E-posta (Opsiyonel)",

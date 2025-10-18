@@ -210,8 +210,11 @@
     },
     "newWorker": {
       "title": "New Worker Registration",
-      "firstName": "First Name",
-      "lastName": "Last Name",
+      "quickRegistration": "Quick Worker Registration",
+      "quickRegistrationDescription": "Register a new worker with minimum required information",
+      "saveAndSelect": "Save and Select",
+      "firstName": "First Name *",
+      "lastName": "Last Name *",
       "gender": "Gender",
       "phoneNumber": "Phone",
       "email": "Email (Optional)",

@@ -206,8 +206,11 @@
     },
     "newWorker": {
       "title": "Nouvel enregistrement de collaborateur",
-      "firstName": "Prénom",
-      "lastName": "Nom",
+      "quickRegistration": "Enregistrement Rapide de Collaborateur",
+      "quickRegistrationDescription": "Enregistrez un nouveau collaborateur avec un minimum d'informations requises",
+      "saveAndSelect": "Enregistrer et Sélectionner",
+      "firstName": "Prénom *",
+      "lastName": "Nom *",
       "gender": "Genre",
       "phoneNumber": "Téléphone",
       "email": "E-mail (Optionnel)",

@@ -206,8 +206,11 @@
     },
     "newWorker": {
       "title": "Нова регистрация на служител",
-      "firstName": "Име",
-      "lastName": "Фамилия",
+      "quickRegistration": "Бърза Регистрация на Служител",
+      "quickRegistrationDescription": "Регистрирайте нов служител с минимална задължителна информация",
+      "saveAndSelect": "Запази и Избери",
+      "firstName": "Име *",
+      "lastName": "Фамилия *",
       "gender": "Пол",
       "phoneNumber": "Телефон",
       "email": "Имейл (Опционално)",

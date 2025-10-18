@@ -206,8 +206,11 @@
     },
     "newWorker": {
       "title": "Neue Mitarbeiterregistrierung",
-      "firstName": "Vorname",
-      "lastName": "Nachname",
+      "quickRegistration": "Schnelle Mitarbeiterregistrierung",
+      "quickRegistrationDescription": "Registrieren Sie einen neuen Mitarbeiter mit minimalen Pflichtinformationen",
+      "saveAndSelect": "Speichern und Auswählen",
+      "firstName": "Vorname *",
+      "lastName": "Nachname *",
       "gender": "Geschlecht",
       "phoneNumber": "Telefon",
       "email": "E-Mail (Optional)",
