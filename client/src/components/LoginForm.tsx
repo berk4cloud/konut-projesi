@@ -11,8 +11,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useTranslation } from "react-i18next";
 
 export default function LoginForm() {
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const { login } = useAuth();
   const [email, setEmail] = useState("");
@@ -63,16 +65,16 @@ export default function LoginForm() {
   return (
     <div className="w-full max-w-md space-y-6">
       <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">APDO HABITAT</h1>
-        <p className="text-muted-foreground">Konaklama Yönetim Platformu</p>
+        <h1 className="text-3xl font-bold tracking-tight">{t('auth.appTitle')}</h1>
+        <p className="text-muted-foreground">{t('auth.appSubtitle')}</p>
       </div>
 
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="tenant">Firma</Label>
+          <Label htmlFor="tenant">{t('auth.company')}</Label>
           <Select value={tenant} onValueChange={setTenant}>
             <SelectTrigger id="tenant" data-testid="select-tenant">
-              <SelectValue placeholder="Firmanızı seçin" />
+              <SelectValue placeholder={t('auth.selectTenantPlaceholder')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="cova">Cova B.V.</SelectItem>
@@ -83,11 +85,11 @@ export default function LoginForm() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="email">E-posta</Label>
+          <Label htmlFor="email">{t('auth.email')}</Label>
           <Input
             id="email"
             type="email"
-            placeholder="admin@firma.com"
+            placeholder={t('auth.emailPlaceholder')}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             data-testid="input-email"
@@ -95,11 +97,11 @@ export default function LoginForm() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password">Şifre</Label>
+          <Label htmlFor="password">{t('auth.password')}</Label>
           <Input
             id="password"
             type="password"
-            placeholder="••••••••"
+            placeholder={t('auth.passwordPlaceholder')}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             data-testid="input-password"
@@ -111,7 +113,7 @@ export default function LoginForm() {
           onClick={handleLogin}
           data-testid="button-login"
         >
-          Giriş Yap
+          {t('auth.login')}
         </Button>
 
         <Button
@@ -120,7 +122,7 @@ export default function LoginForm() {
           onClick={handleDemoLogin}
           data-testid="button-demo-login"
         >
-          Demo Giriş (Cova B.V.)
+          {t('auth.demoLogin')}
         </Button>
       </div>
     </div>

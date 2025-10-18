@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 import Header from "@/components/Header";
 import FilterPanel from "@/components/FilterPanel";
 import CapacityWidget from "@/components/CapacityWidget";
@@ -364,6 +365,7 @@ const initialMockHouses = [
 ];
 
 export default function HousingDashboard() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const { user } = useAuth();
   const [houses, setHouses] = useState(initialMockHouses);
@@ -826,15 +828,15 @@ export default function HousingDashboard() {
               {/* Capacity Summary - Always Visible */}
               <div className="grid grid-cols-3 gap-2">
                 <div className="bg-card border rounded-lg p-3">
-                  <p className="text-xs text-muted-foreground">Toplam</p>
+                  <p className="text-xs text-muted-foreground">{t('housing.total')}</p>
                   <p className="text-2xl font-bold">{totalBeds}</p>
                 </div>
                 <div className="bg-card border rounded-lg p-3">
-                  <p className="text-xs text-muted-foreground">Dolu</p>
+                  <p className="text-xs text-muted-foreground">{t('housing.occupiedBeds')}</p>
                   <p className="text-2xl font-bold text-green-600">{occupiedBeds}</p>
                 </div>
                 <div className="bg-card border rounded-lg p-3">
-                  <p className="text-xs text-muted-foreground">Boş</p>
+                  <p className="text-xs text-muted-foreground">{t('housing.empty')}</p>
                   <p className="text-2xl font-bold text-red-600">{emptyBeds}</p>
                 </div>
               </div>
@@ -843,7 +845,7 @@ export default function HousingDashboard() {
               <Collapsible open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
                 <CollapsibleTrigger asChild>
                   <Button variant="outline" className="w-full justify-between" size="sm">
-                    <span>Filtreler</span>
+                    <span>{t('dashboard.filters')}</span>
                     {isFiltersOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   </Button>
                 </CollapsibleTrigger>
@@ -872,7 +874,7 @@ export default function HousingDashboard() {
               <div className="hidden lg:flex items-center justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <h2 className="text-2xl font-bold">Konaklama Genel Bakış</h2>
+                    <h2 className="text-2xl font-bold">{t('dashboard.title')}</h2>
                     <button 
                       onClick={() => setColorInfoDialogOpen(true)}
                       className="text-muted-foreground hover-elevate active-elevate-2 rounded-full p-1 transition-colors" 
@@ -882,7 +884,7 @@ export default function HousingDashboard() {
                     </button>
                   </div>
                   <p className="text-muted-foreground">
-                    Tüm mülklerdeki çalışan konaklamalarını yönetin
+                    {t('dashboard.subtitle')}
                   </p>
                 </div>
                 <Button 
@@ -891,7 +893,7 @@ export default function HousingDashboard() {
                   className="gap-2"
                 >
                   <Plus className="w-4 h-4" />
-                  Yeni Konaklama Girişi
+                  {t('dashboard.newCheckIn')}
                 </Button>
               </div>
 

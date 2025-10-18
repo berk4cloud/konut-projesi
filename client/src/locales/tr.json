@@ -14,10 +14,18 @@
   },
   "auth": {
     "login": "Giriş Yap",
-    "demoLogin": "Demo Giriş",
+    "demoLogin": "Demo Giriş (Cova B.V.)",
     "logout": "Çıkış Yap",
     "selectTenant": "Şirket Seçin",
-    "welcomeBack": "Tekrar Hoş Geldiniz"
+    "selectTenantPlaceholder": "Firmanızı seçin",
+    "welcomeBack": "Tekrar Hoş Geldiniz",
+    "appTitle": "APDO HABITAT",
+    "appSubtitle": "Konaklama Yönetim Platformu",
+    "company": "Firma",
+    "email": "E-posta",
+    "emailPlaceholder": "admin@firma.com",
+    "password": "Şifre",
+    "passwordPlaceholder": "••••••••"
   },
   "dashboard": {
     "title": "Konaklama Genel Bakış",
@@ -45,7 +53,9 @@
     "occupiedBeds": "Dolu",
     "empty": "Boş",
     "full": "Tam",
+    "total": "Toplam",
     "capacity": "Kapasite",
+    "capacitySummary": "Kapasite Özeti",
     "ownershipType": "Mülkiyet Türü",
     "owned": "Mülk",
     "rented": "Kiralık",

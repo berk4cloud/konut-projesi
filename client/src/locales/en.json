@@ -14,10 +14,18 @@
   },
   "auth": {
     "login": "Login",
-    "demoLogin": "Demo Login",
+    "demoLogin": "Demo Login (Cova B.V.)",
     "logout": "Logout",
     "selectTenant": "Select Company",
-    "welcomeBack": "Welcome Back"
+    "selectTenantPlaceholder": "Select your company",
+    "welcomeBack": "Welcome Back",
+    "appTitle": "APDO HABITAT",
+    "appSubtitle": "Accommodation Management Platform",
+    "company": "Company",
+    "email": "Email",
+    "emailPlaceholder": "admin@company.com",
+    "password": "Password",
+    "passwordPlaceholder": "••••••••"
   },
   "dashboard": {
     "title": "Accommodation Overview",
@@ -45,7 +53,9 @@
     "occupiedBeds": "Occupied",
     "empty": "Empty",
     "full": "Full",
+    "total": "Total",
     "capacity": "Capacity",
+    "capacitySummary": "Capacity Summary",
     "ownershipType": "Ownership Type",
     "owned": "Owned",
     "rented": "Rented",
