@@ -893,5 +893,127 @@
       "error": "Error",
       "success": "Success"
     }
+  },
+  "qrManagement": {
+    "pageTitle": "QR Management",
+    "pageSubtitle": "Create and manage your QR codes",
+    "createButton": "Create New QR",
+    "card": {
+      "title": "Active QR Codes",
+      "description": "Total {{total}} QR codes • {{active}} active"
+    },
+    "search": {
+      "placeholder": "Search QR code or title..."
+    },
+    "table": {
+      "type": "Type",
+      "title": "Title",
+      "code": "Code",
+      "usage": "Usage",
+      "validity": "Validity",
+      "status": "Status",
+      "actions": "Actions",
+      "empty": "No QR codes found"
+    },
+    "types": {
+      "workerRegistration": "Worker Registration",
+      "meterReading": "Meter Reading",
+      "documentUpload": "Document Upload"
+    },
+    "status": {
+      "active": "Active",
+      "disabled": "Disabled",
+      "expired": "Expired"
+    },
+    "usage": {
+      "unlimited": "Unlimited"
+    },
+    "createDialog": {
+      "step1": {
+        "title": "Select QR Code Type",
+        "description": "Choose the purpose of the QR code",
+        "workerType": {
+          "title": "Worker Registration",
+          "description": "Workers can enter their information, you only approve"
+        },
+        "meterType": {
+          "title": "Meter Reading",
+          "description": "Enter meter values and upload photos"
+        },
+        "documentType": {
+          "title": "Document Upload",
+          "description": "Upload files like PDF, images"
+        },
+        "cancel": "Cancel",
+        "next": "Next"
+      },
+      "step2": {
+        "title": "Configure QR Settings",
+        "description": "Set usage limit and validity period",
+        "titleLabel": "Title (Optional)",
+        "titlePlaceholder": "Enter a descriptive title for the QR code",
+        "usageLimitLabel": "Usage Limit",
+        "usageLimitOptions": {
+          "unlimited": "Unlimited",
+          "1": "1 Time",
+          "5": "5 Times",
+          "10": "10 Times",
+          "50": "50 Times",
+          "100": "100 Times",
+          "custom": "Custom Amount"
+        },
+        "customPlaceholder": "Custom usage limit",
+        "expiryLabel": "Validity Period",
+        "expiryOptions": {
+          "unlimited": "Unlimited",
+          "1": "1 Day",
+          "3": "3 Days",
+          "7": "1 Week",
+          "30": "1 Month",
+          "180": "6 Months"
+        },
+        "back": "Back",
+        "create": "Create"
+      },
+      "step3": {
+        "title": "QR Code Created!",
+        "description": "Share or download your QR code",
+        "success": "QR Code Successfully Created!",
+        "successDescription": "You can share or download your QR code below",
+        "link": "Link",
+        "copyLink": "Copy Link",
+        "downloadQR": "Download QR",
+        "done": "Done"
+      }
+    },
+    "viewDialog": {
+      "title": "QR Code Details",
+      "type": "Type",
+      "status": "Status",
+      "usage": "Usage",
+      "validity": "Validity",
+      "createdAt": "Created Date",
+      "link": "Link",
+      "copyLink": "Copy Link",
+      "downloadQR": "Download QR"
+    },
+    "toasts": {
+      "linkCopied": {
+        "title": "Link Copied",
+        "description": "QR code link copied to clipboard"
+      },
+      "statusChanged": {
+        "title": "Status Changed",
+        "description": "QR code status updated"
+      },
+      "deleted": {
+        "title": "Deleted",
+        "description": "QR code successfully deleted"
+      },
+      "qrCreated": {
+        "title": "QR Code Created",
+        "description": "New QR code successfully created"
+      }
+    }
   }
 }

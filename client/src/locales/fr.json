@@ -876,5 +876,127 @@
       "error": "Erreur",
       "success": "Succès"
     }
+  },
+  "qrManagement": {
+    "pageTitle": "Gestion QR",
+    "pageSubtitle": "Créez et gérez vos codes QR",
+    "createButton": "Créer un nouveau QR",
+    "card": {
+      "title": "Codes QR actifs",
+      "description": "Total {{total}} codes QR • {{active}} actifs"
+    },
+    "search": {
+      "placeholder": "Rechercher un code QR ou un titre..."
+    },
+    "table": {
+      "type": "Type",
+      "title": "Titre",
+      "code": "Code",
+      "usage": "Utilisation",
+      "validity": "Validité",
+      "status": "Statut",
+      "actions": "Actions",
+      "empty": "Aucun code QR trouvé"
+    },
+    "types": {
+      "workerRegistration": "Enregistrement du travailleur",
+      "meterReading": "Relevé de compteur",
+      "documentUpload": "Téléchargement de documents"
+    },
+    "status": {
+      "active": "Actif",
+      "disabled": "Désactivé",
+      "expired": "Expiré"
+    },
+    "usage": {
+      "unlimited": "Illimité"
+    },
+    "createDialog": {
+      "step1": {
+        "title": "Sélectionner le type de code QR",
+        "description": "Choisissez l'objectif du code QR",
+        "workerType": {
+          "title": "Enregistrement du travailleur",
+          "description": "Les travailleurs peuvent saisir leurs informations, vous approuvez uniquement"
+        },
+        "meterType": {
+          "title": "Relevé de compteur",
+          "description": "Saisir les valeurs du compteur et télécharger des photos"
+        },
+        "documentType": {
+          "title": "Téléchargement de documents",
+          "description": "Télécharger des fichiers comme PDF, images"
+        },
+        "cancel": "Annuler",
+        "next": "Suivant"
+      },
+      "step2": {
+        "title": "Configurer les paramètres QR",
+        "description": "Définir la limite d'utilisation et la période de validité",
+        "titleLabel": "Titre (Facultatif)",
+        "titlePlaceholder": "Entrez un titre descriptif pour le code QR",
+        "usageLimitLabel": "Limite d'utilisation",
+        "usageLimitOptions": {
+          "unlimited": "Illimité",
+          "1": "1 fois",
+          "5": "5 fois",
+          "10": "10 fois",
+          "50": "50 fois",
+          "100": "100 fois",
+          "custom": "Nombre personnalisé"
+        },
+        "customPlaceholder": "Limite d'utilisation personnalisée",
+        "expiryLabel": "Période de validité",
+        "expiryOptions": {
+          "unlimited": "Illimité",
+          "1": "1 jour",
+          "3": "3 jours",
+          "7": "1 semaine",
+          "30": "1 mois",
+          "180": "6 mois"
+        },
+        "back": "Retour",
+        "create": "Créer"
+      },
+      "step3": {
+        "title": "Code QR créé!",
+        "description": "Partagez ou téléchargez votre code QR",
+        "success": "Code QR créé avec succès!",
+        "successDescription": "Vous pouvez partager ou télécharger votre code QR ci-dessous",
+        "link": "Lien",
+        "copyLink": "Copier le lien",
+        "downloadQR": "Télécharger QR",
+        "done": "Terminé"
+      }
+    },
+    "viewDialog": {
+      "title": "Détails du code QR",
+      "type": "Type",
+      "status": "Statut",
+      "usage": "Utilisation",
+      "validity": "Validité",
+      "createdAt": "Date de création",
+      "link": "Lien",
+      "copyLink": "Copier le lien",
+      "downloadQR": "Télécharger QR"
+    },
+    "toasts": {
+      "linkCopied": {
+        "title": "Lien copié",
+        "description": "Lien du code QR copié dans le presse-papiers"
+      },
+      "statusChanged": {
+        "title": "Statut modifié",
+        "description": "Statut du code QR mis à jour"
+      },
+      "deleted": {
+        "title": "Supprimé",
+        "description": "Code QR supprimé avec succès"
+      },
+      "qrCreated": {
+        "title": "Code QR créé",
+        "description": "Nouveau code QR créé avec succès"
+      }
+    }
   }
 }

@@ -876,5 +876,127 @@
       "error": "Fehler",
       "success": "Erfolg"
     }
+  },
+  "qrManagement": {
+    "pageTitle": "QR-Verwaltung",
+    "pageSubtitle": "Erstellen und verwalten Sie Ihre QR-Codes",
+    "createButton": "Neuen QR erstellen",
+    "card": {
+      "title": "Aktive QR-Codes",
+      "description": "Insgesamt {{total}} QR-Codes • {{active}} aktiv"
+    },
+    "search": {
+      "placeholder": "QR-Code oder Titel suchen..."
+    },
+    "table": {
+      "type": "Typ",
+      "title": "Titel",
+      "code": "Code",
+      "usage": "Nutzung",
+      "validity": "Gültigkeit",
+      "status": "Status",
+      "actions": "Aktionen",
+      "empty": "Keine QR-Codes gefunden"
+    },
+    "types": {
+      "workerRegistration": "Mitarbeiterregistrierung",
+      "meterReading": "Zählerablesung",
+      "documentUpload": "Dokumenten-Upload"
+    },
+    "status": {
+      "active": "Aktiv",
+      "disabled": "Deaktiviert",
+      "expired": "Abgelaufen"
+    },
+    "usage": {
+      "unlimited": "Unbegrenzt"
+    },
+    "createDialog": {
+      "step1": {
+        "title": "QR-Code-Typ auswählen",
+        "description": "Wählen Sie den Zweck des QR-Codes",
+        "workerType": {
+          "title": "Mitarbeiterregistrierung",
+          "description": "Mitarbeiter können ihre Informationen eingeben, Sie bestätigen nur"
+        },
+        "meterType": {
+          "title": "Zählerablesung",
+          "description": "Zählerwerte eingeben und Fotos hochladen"
+        },
+        "documentType": {
+          "title": "Dokumenten-Upload",
+          "description": "Dateien wie PDF, Bilder hochladen"
+        },
+        "cancel": "Abbrechen",
+        "next": "Weiter"
+      },
+      "step2": {
+        "title": "QR-Einstellungen konfigurieren",
+        "description": "Nutzungslimit und Gültigkeitszeitraum festlegen",
+        "titleLabel": "Titel (Optional)",
+        "titlePlaceholder": "Geben Sie einen beschreibenden Titel für den QR-Code ein",
+        "usageLimitLabel": "Nutzungslimit",
+        "usageLimitOptions": {
+          "unlimited": "Unbegrenzt",
+          "1": "1 Mal",
+          "5": "5 Mal",
+          "10": "10 Mal",
+          "50": "50 Mal",
+          "100": "100 Mal",
+          "custom": "Benutzerdefinierte Anzahl"
+        },
+        "customPlaceholder": "Benutzerdefiniertes Nutzungslimit",
+        "expiryLabel": "Gültigkeitszeitraum",
+        "expiryOptions": {
+          "unlimited": "Unbegrenzt",
+          "1": "1 Tag",
+          "3": "3 Tage",
+          "7": "1 Woche",
+          "30": "1 Monat",
+          "180": "6 Monate"
+        },
+        "back": "Zurück",
+        "create": "Erstellen"
+      },
+      "step3": {
+        "title": "QR-Code erstellt!",
+        "description": "Teilen oder laden Sie Ihren QR-Code herunter",
+        "success": "QR-Code erfolgreich erstellt!",
+        "successDescription": "Sie können Ihren QR-Code unten teilen oder herunterladen",
+        "link": "Link",
+        "copyLink": "Link kopieren",
+        "downloadQR": "QR herunterladen",
+        "done": "Fertig"
+      }
+    },
+    "viewDialog": {
+      "title": "QR-Code-Details",
+      "type": "Typ",
+      "status": "Status",
+      "usage": "Nutzung",
+      "validity": "Gültigkeit",
+      "createdAt": "Erstellungsdatum",
+      "link": "Link",
+      "copyLink": "Link kopieren",
+      "downloadQR": "QR herunterladen"
+    },
+    "toasts": {
+      "linkCopied": {
+        "title": "Link kopiert",
+        "description": "QR-Code-Link in Zwischenablage kopiert"
+      },
+      "statusChanged": {
+        "title": "Status geändert",
+        "description": "QR-Code-Status aktualisiert"
+      },
+      "deleted": {
+        "title": "Gelöscht",
+        "description": "QR-Code erfolgreich gelöscht"
+      },
+      "qrCreated": {
+        "title": "QR-Code erstellt",
+        "description": "Neuer QR-Code erfolgreich erstellt"
+      }
+    }
   }
 }
