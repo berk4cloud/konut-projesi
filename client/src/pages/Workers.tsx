@@ -143,7 +143,7 @@ export default function Workers() {
 
   // Update employment mutation
   const updateEmploymentMutation = useMutation({
-    mutationFn: async ({ employmentId, data }: { employmentId: number; data: Partial<typeof formData> }) => {
+    mutationFn: async ({ employmentId, data }: { employmentId: string; data: Partial<typeof formData> }) => {
       const normalizedData = normalizeFormData(data as typeof formData);
       const res = await apiRequest('PATCH', `/api/employments/${employmentId}`, normalizedData);
       return res.json();
