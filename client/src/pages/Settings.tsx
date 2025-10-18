@@ -256,18 +256,18 @@ export default function Settings() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <DollarSign className="w-5 h-5" />
-                Para Birimi
+                {t("settings.currency")}
               </CardTitle>
               <CardDescription>
-                Sistemde kullanılacak para birimini belirleyin. Bu ayar tüm fiyatlandırma ve faturalandırma işlemlerinde kullanılacaktır.
+                {t("settings.currencyDesc")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="currency-select">Para Birimi Seçin</Label>
+                <Label htmlFor="currency-select">{t("settings.selectCurrency")}</Label>
                 <Select value={currency} onValueChange={handleCurrencyChange}>
                   <SelectTrigger id="currency-select" data-testid="select-currency" className="w-full sm:w-[360px]">
-                    <SelectValue placeholder="Para birimi seçin" />
+                    <SelectValue placeholder={t("settings.selectCurrencyPrompt")} />
                   </SelectTrigger>
                   <SelectContent className="max-h-[300px]">
                     {currencyOptions.map((option) => (
@@ -307,7 +307,7 @@ export default function Settings() {
                   data-testid="button-save-currency"
                 >
                   <Save className="w-4 h-4 mr-2" />
-                  Para Birimini Kaydet
+                  {t("common.save")}
                 </Button>
               </div>
             </CardContent>
@@ -317,19 +317,19 @@ export default function Settings() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Globe className="w-5 h-5" />
-                Ülke Yönetimi
+                {t("settings.countryManagement")}
               </CardTitle>
               <CardDescription>
-                Filtrelerde kullanılacak ülkeleri ekleyin veya kaldırın. ⭐ Varsayılan ülke, filtrelerde otomatik seçilir ve yeni veri girişlerinde (konut, çalışan) varsayılan değer olarak kullanılır.
+                {t("settings.countryManagementDesc")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="newCountry">Yeni Ülke Ekle</Label>
+                <Label htmlFor="newCountry">{t("settings.addCountry")}</Label>
                 <div className="flex gap-2">
                   <Input
                     id="newCountry"
-                    placeholder="Ülke adı..."
+                    placeholder={t("settings.countryPlaceholder")}
                     value={newCountry}
                     onChange={(e) => setNewCountry(e.target.value)}
                     onKeyPress={(e) => e.key === "Enter" && handleAddCountry()}
@@ -337,13 +337,13 @@ export default function Settings() {
                   />
                   <Button onClick={handleAddCountry} data-testid="button-add-country">
                     <Plus className="w-4 h-4 mr-2" />
-                    Ekle
+                    {t("common.add")}
                   </Button>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label>Mevcut Ülkeler ({countries.length})</Label>
+                <Label>{t("settings.existingCountries")} ({countries.length})</Label>
                 <div className="flex flex-wrap gap-2">
                   {countries.map((country) => (
                     <Badge
@@ -359,7 +359,7 @@ export default function Settings() {
                       )}
                       {country.name}
                       {country.isDefault && (
-                        <span className="text-xs opacity-80">(Varsayılan)</span>
+                        <span className="text-xs opacity-80">{t("settings.default")}</span>
                       )}
                       <div className="flex items-center gap-1 ml-1">
                         {!country.isDefault && (
@@ -369,7 +369,7 @@ export default function Settings() {
                             className="h-auto p-0 hover:bg-transparent"
                             onClick={() => handleSetDefault(country.name)}
                             data-testid={`button-set-default-${country.name}`}
-                            title="Varsayılan yap"
+                            title={t("settings.makeDefault")}
                           >
                             <Star className="w-3 h-3 text-yellow-500" />
                           </Button>
@@ -396,9 +396,9 @@ export default function Settings() {
 
           <Card data-testid="card-pricing-settings">
             <CardHeader>
-              <CardTitle>Standart Fiyatlandırma</CardTitle>
+              <CardTitle>{t("settings.standardPricing")}</CardTitle>
               <CardDescription>
-                Tüm konutlar için varsayılan fiyatlar. Konut veya oda bazında özelleştirilebilir.
+                {t("settings.standardPricingDesc")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -406,10 +406,10 @@ export default function Settings() {
               <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="space-y-0.5">
                   <Label htmlFor="daily-rental-mode" className="text-base font-semibold">
-                    Günlük Kiralama Modu
+                    {t("settings.dailyRentalMode")}
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    Açık olduğunda hem günlük hem aylık fiyatlar gösterilir
+                    {t("settings.dailyRentalModeDesc")}
                   </p>
                 </div>
                 <Switch
@@ -423,11 +423,11 @@ export default function Settings() {
               {/* Bed Pricing */}
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-lg font-semibold mb-3">Yatak Fiyatları</h3>
+                  <h3 className="text-lg font-semibold mb-3">{t("settings.bedPricing")}</h3>
                   <div className="grid gap-4 sm:grid-cols-2">
                     {dailyRentalEnabled && (
                       <div className="space-y-2">
-                        <Label htmlFor="bed-daily-price">Günlük Fiyat (€)</Label>
+                        <Label htmlFor="bed-daily-price">{t("settings.dailyPrice")}</Label>
                         <Input
                           id="bed-daily-price"
                           data-testid="input-bed-daily-price"
@@ -441,7 +441,7 @@ export default function Settings() {
                       </div>
                     )}
                     <div className="space-y-2">
-                      <Label htmlFor="bed-monthly-price">Aylık Fiyat (€)</Label>
+                      <Label htmlFor="bed-monthly-price">{t("settings.monthlyPrice")}</Label>
                       <Input
                         id="bed-monthly-price"
                         data-testid="input-bed-monthly-price"
@@ -460,11 +460,11 @@ export default function Settings() {
               {/* Room Pricing */}
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-lg font-semibold mb-3">Oda Fiyatları (Tüm Oda)</h3>
+                  <h3 className="text-lg font-semibold mb-3">{t("settings.roomPricing")}</h3>
                   <div className="grid gap-4 sm:grid-cols-2">
                     {dailyRentalEnabled && (
                       <div className="space-y-2">
-                        <Label htmlFor="room-daily-price">Günlük Fiyat (€)</Label>
+                        <Label htmlFor="room-daily-price">{t("settings.dailyPrice")}</Label>
                         <Input
                           id="room-daily-price"
                           data-testid="input-room-daily-price"
@@ -478,7 +478,7 @@ export default function Settings() {
                       </div>
                     )}
                     <div className="space-y-2">
-                      <Label htmlFor="room-monthly-price">Aylık Fiyat (€)</Label>
+                      <Label htmlFor="room-monthly-price">{t("settings.monthlyPrice")}</Label>
                       <Input
                         id="room-monthly-price"
                         data-testid="input-room-monthly-price"
@@ -502,7 +502,7 @@ export default function Settings() {
                   className="gap-2"
                 >
                   <Save className="h-4 w-4" />
-                  Fiyatları Kaydet
+                  {t("settings.savePricing")}
                 </Button>
               </div>
             </CardContent>
@@ -511,22 +511,22 @@ export default function Settings() {
           {/* Pricing Info Card */}
           <Card data-testid="card-pricing-info">
             <CardHeader>
-              <CardTitle>Fiyatlandırma Hiyerarşisi</CardTitle>
+              <CardTitle>{t("settings.pricingHierarchy")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="space-y-2 text-sm">
-                <p className="font-medium">Fiyatlar şu öncelik sırasına göre uygulanır:</p>
+                <p className="font-medium">{t("settings.pricingHierarchyDesc")}</p>
                 <ol className="list-decimal list-inside space-y-1 ml-2 text-muted-foreground">
-                  <li>Oda bazında özel fiyat (en yüksek öncelik)</li>
-                  <li>Konut bazında özel fiyat</li>
-                  <li>Standart sistem fiyatı (yukarıda)</li>
+                  <li>{t("settings.hierarchy1")}</li>
+                  <li>{t("settings.hierarchy2")}</li>
+                  <li>{t("settings.hierarchy3")}</li>
                 </ol>
               </div>
               <div className="space-y-2 text-sm pt-2 border-t">
-                <p className="font-medium">Hesaplama Mantığı:</p>
+                <p className="font-medium">{t("settings.calculationLogic")}</p>
                 <ul className="list-disc list-inside space-y-1 ml-2 text-muted-foreground">
-                  <li>30 günden az: Günlük fiyat × gün sayısı</li>
-                  <li>30 gün ve üzeri: (Tam aylar × aylık fiyat) + (kalan günler × günlük fiyat)</li>
+                  <li>{t("settings.calculation1")}</li>
+                  <li>{t("settings.calculation2")}</li>
                 </ul>
               </div>
             </CardContent>
