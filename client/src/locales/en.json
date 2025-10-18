@@ -646,6 +646,21 @@
     "archivedTitle": "Archived",
     "unarchivedTitle": "Unarchived",
     "archivedDesc": "Property has been archived",
-    "unarchivedDesc": "Property has been unarchived and set to active"
+    "unarchivedDesc": "Property has been unarchived and set to active",
+    "housePricing": "Property Pricing",
+    "housePricingDesc": "Set custom pricing for this property (optional)",
+    "useCustomPricing": "Use custom pricing",
+    "bedDaily": "Bed Daily (€)",
+    "bedMonthly": "Bed Monthly (€)",
+    "roomDaily": "Room Daily (€)",
+    "roomMonthly": "Room Monthly (€)",
+    "standard": "Standard",
+    "roomsSection": "Rooms",
+    "roomsSectionDesc": "Enter detailed information for each room",
+    "canRentAsRoom": "Can rent as room",
+    "includeFloor": "Include floor information",
+    "roomPricing": "Room-specific pricing",
+    "addRoom": "Add Room",
+    "totalBedCount": "Total Bed Count:"
   }
 }

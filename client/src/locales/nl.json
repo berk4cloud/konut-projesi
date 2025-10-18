@@ -642,6 +642,21 @@
     "archivedTitle": "Gearchiveerd",
     "unarchivedTitle": "Uit Archief Gehaald",
     "archivedDesc": "Pand is gearchiveerd",
-    "unarchivedDesc": "Pand is uit het archief gehaald en op actief gezet"
+    "unarchivedDesc": "Pand is uit het archief gehaald en op actief gezet",
+    "housePricing": "Pand Prijsstelling",
+    "housePricingDesc": "Aangepaste prijzen instellen voor dit pand (optioneel)",
+    "useCustomPricing": "Aangepaste prijzen gebruiken",
+    "bedDaily": "Bed Dagelijks (€)",
+    "bedMonthly": "Bed Maandelijks (€)",
+    "roomDaily": "Kamer Dagelijks (€)",
+    "roomMonthly": "Kamer Maandelijks (€)",
+    "standard": "Standaard",
+    "roomsSection": "Kamers",
+    "roomsSectionDesc": "Voer gedetailleerde informatie in voor elke kamer",
+    "canRentAsRoom": "Kan als kamer worden verhuurd",
+    "includeFloor": "Verdiepinginformatie opnemen",
+    "roomPricing": "Kamerspecifieke prijzen",
+    "addRoom": "Kamer Toevoegen",
+    "totalBedCount": "Totaal Aantal Bedden:"
   }
 }

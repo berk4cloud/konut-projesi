@@ -1455,9 +1455,9 @@ export default function Houses() {
             {/* House Pricing Section - Moved before Rooms */}
             <div className="space-y-4 pt-4 border-t p-4 rounded-lg bg-orange-50/40 dark:bg-orange-950/20">
               <div>
-                <Label className="text-base font-semibold">Konut Fiyatlandırma</Label>
+                <Label className="text-base font-semibold">{t("houses.housePricing")}</Label>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Bu konut için özel fiyat belirleyin (isteğe bağlı)
+                  {t("houses.housePricingDesc")}
                 </p>
               </div>
 
@@ -1480,7 +1480,7 @@ export default function Houses() {
                   htmlFor="use-custom-house-pricing" 
                   className="text-sm font-normal cursor-pointer"
                 >
-                  Özel fiyat kullan
+                  {t("houses.useCustomPricing")}
                 </Label>
               </div>
 
@@ -1489,14 +1489,14 @@ export default function Houses() {
                   <div className="grid grid-cols-2 gap-4">
                     {systemSettings.dailyRentalEnabled && (
                       <div className="space-y-2">
-                        <Label htmlFor="house-bed-daily-price">Yatak Günlük (€)</Label>
+                        <Label htmlFor="house-bed-daily-price">{t("houses.bedDaily")}</Label>
                         <Input
                           id="house-bed-daily-price"
                           data-testid="input-house-bed-daily-price"
                           type="number"
                           step="0.01"
                           min="0"
-                          placeholder={`Standart: €${systemSettings.standardPricing.bedDailyPrice}`}
+                          placeholder={`${t("houses.standard")}: €${systemSettings.standardPricing.bedDailyPrice}`}
                           value={formData.pricing.bedDailyPrice ?? ""}
                           onChange={(e) => 
                             setFormData({ 
@@ -1511,14 +1511,14 @@ export default function Houses() {
                       </div>
                     )}
                     <div className="space-y-2">
-                      <Label htmlFor="house-bed-monthly-price">Yatak Aylık (€)</Label>
+                      <Label htmlFor="house-bed-monthly-price">{t("houses.bedMonthly")}</Label>
                       <Input
                         id="house-bed-monthly-price"
                         data-testid="input-house-bed-monthly-price"
                         type="number"
                         step="0.01"
                         min="0"
-                        placeholder={`Standart: €${systemSettings.standardPricing.bedMonthlyPrice}`}
+                        placeholder={`${t("houses.standard")}: €${systemSettings.standardPricing.bedMonthlyPrice}`}
                         value={formData.pricing.bedMonthlyPrice ?? ""}
                         onChange={(e) => 
                           setFormData({ 
@@ -1536,14 +1536,14 @@ export default function Houses() {
                   <div className="grid grid-cols-2 gap-4">
                     {systemSettings.dailyRentalEnabled && (
                       <div className="space-y-2">
-                        <Label htmlFor="house-room-daily-price">Oda Günlük (€)</Label>
+                        <Label htmlFor="house-room-daily-price">{t("houses.roomDaily")}</Label>
                         <Input
                           id="house-room-daily-price"
                           data-testid="input-house-room-daily-price"
                           type="number"
                           step="0.01"
                           min="0"
-                          placeholder={`Standart: €${systemSettings.standardPricing.roomDailyPrice}`}
+                          placeholder={`${t("houses.standard")}: €${systemSettings.standardPricing.roomDailyPrice}`}
                           value={formData.pricing.roomDailyPrice ?? ""}
                           onChange={(e) => 
                             setFormData({ 
@@ -1558,14 +1558,14 @@ export default function Houses() {
                       </div>
                     )}
                     <div className="space-y-2">
-                      <Label htmlFor="house-room-monthly-price">Oda Aylık (€)</Label>
+                      <Label htmlFor="house-room-monthly-price">{t("houses.roomMonthly")}</Label>
                       <Input
                         id="house-room-monthly-price"
                         data-testid="input-house-room-monthly-price"
                         type="number"
                         step="0.01"
                         min="0"
-                        placeholder={`Standart: €${systemSettings.standardPricing.roomMonthlyPrice}`}
+                        placeholder={`${t("houses.standard")}: €${systemSettings.standardPricing.roomMonthlyPrice}`}
                         value={formData.pricing.roomMonthlyPrice ?? ""}
                         onChange={(e) => 
                           setFormData({ 
@@ -1586,9 +1586,9 @@ export default function Houses() {
             {/* Rooms Section */}
             <div className="space-y-4 pt-4 border-t">
               <div>
-                <Label className="text-base font-semibold">Odalar</Label>
+                <Label className="text-base font-semibold">{t("houses.roomsSection")}</Label>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Her oda için detaylı bilgi girin
+                  {t("houses.roomsSectionDesc")}
                 </p>
               </div>
 
@@ -1615,7 +1615,7 @@ export default function Houses() {
                     data-testid={`room-item-${index}`}
                   >
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-sm font-semibold">Oda {index + 1}</span>
+                      <span className="text-sm font-semibold">{t("houses.room")} {index + 1}</span>
                       <Button
                         type="button"
                         variant="ghost"
@@ -1629,10 +1629,10 @@ export default function Houses() {
 
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-2">
-                        <Label htmlFor={`room-number-${index}`}>Oda Numarası *</Label>
+                        <Label htmlFor={`room-number-${index}`}>{t("houses.roomNumber")} *</Label>
                         <Input
                           id={`room-number-${index}`}
-                          placeholder="örn: 45"
+                          placeholder={t("houses.roomNumberPlaceholder")}
                           value={room.roomNumber}
                           onChange={(e) => handleRoomChange(index, "roomNumber", e.target.value)}
                           data-testid={`input-room-number-${index}`}
@@ -1640,12 +1640,12 @@ export default function Houses() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor={`beds-${index}`}>Yatak Sayısı *</Label>
+                        <Label htmlFor={`beds-${index}`}>{t("houses.bedCount")} *</Label>
                         <Input
                           id={`beds-${index}`}
                           type="number"
                           min="1"
-                          placeholder="örn: 3"
+                          placeholder={t("houses.bedCountPlaceholder")}
                           value={room.beds === 0 ? "" : room.beds}
                           onChange={(e) => {
                             const val = e.target.value;
@@ -1672,7 +1672,7 @@ export default function Houses() {
                           htmlFor={`can-rent-${index}`}
                           className="text-sm font-normal cursor-pointer"
                         >
-                          Oda olarak kiraya verilebilir
+                          {t("houses.canRentAsRoom")}
                         </Label>
                       </div>
 
@@ -1697,13 +1697,13 @@ export default function Houses() {
                             htmlFor={`use-floor-${index}`}
                             className="text-sm font-normal cursor-pointer"
                           >
-                            Kat bilgisi gir
+                            {t("houses.includeFloor")}
                           </Label>
                         </div>
 
                         {room.useFloor && (
                           <div className="flex items-center gap-2">
-                            <Label htmlFor={`floor-${index}`} className="text-sm">Kat:</Label>
+                            <Label htmlFor={`floor-${index}`} className="text-sm">{t("houses.floor")}:</Label>
                             <Input
                               id={`floor-${index}`}
                               type="number"
@@ -1748,7 +1748,7 @@ export default function Houses() {
                           htmlFor={`use-room-pricing-${index}`}
                           className="text-sm font-normal cursor-pointer"
                         >
-                          Oda için özel fiyat
+                          {t("houses.roomPricing")}
                         </Label>
                       </div>
 
@@ -1757,7 +1757,7 @@ export default function Houses() {
                           <div className="grid grid-cols-2 gap-3">
                             {systemSettings.dailyRentalEnabled && (
                               <div className="space-y-2">
-                                <Label htmlFor={`room-bed-daily-${index}`} className="text-xs">Yatak Günlük (€)</Label>
+                                <Label htmlFor={`room-bed-daily-${index}`} className="text-xs">{t("houses.bedDaily")}</Label>
                                 <Input
                                   id={`room-bed-daily-${index}`}
                                   data-testid={`input-room-bed-daily-${index}`}
@@ -1781,7 +1781,7 @@ export default function Houses() {
                               </div>
                             )}
                             <div className="space-y-2">
-                              <Label htmlFor={`room-bed-monthly-${index}`} className="text-xs">Yatak Aylık (€)</Label>
+                              <Label htmlFor={`room-bed-monthly-${index}`} className="text-xs">{t("houses.bedMonthly")}</Label>
                               <Input
                                 id={`room-bed-monthly-${index}`}
                                 data-testid={`input-room-bed-monthly-${index}`}
@@ -1809,7 +1809,7 @@ export default function Houses() {
                             <div className="grid grid-cols-2 gap-3">
                               {systemSettings.dailyRentalEnabled && (
                                 <div className="space-y-2">
-                                  <Label htmlFor={`room-room-daily-${index}`} className="text-xs">Oda Günlük (€)</Label>
+                                  <Label htmlFor={`room-room-daily-${index}`} className="text-xs">{t("houses.roomDaily")}</Label>
                                   <Input
                                     id={`room-room-daily-${index}`}
                                     data-testid={`input-room-room-daily-${index}`}
@@ -1833,7 +1833,7 @@ export default function Houses() {
                                 </div>
                               )}
                               <div className="space-y-2">
-                                <Label htmlFor={`room-room-monthly-${index}`} className="text-xs">Oda Aylık (€)</Label>
+                                <Label htmlFor={`room-room-monthly-${index}`} className="text-xs">{t("houses.roomMonthly")}</Label>
                                 <Input
                                   id={`room-room-monthly-${index}`}
                                   data-testid={`input-room-room-monthly-${index}`}
@@ -1873,12 +1873,12 @@ export default function Houses() {
                 data-testid="button-add-room"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Oda Ekle
+                {t("houses.addRoom")}
               </Button>
 
               {formData.rooms.length > 0 && (
                 <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
-                  <span className="text-sm font-medium text-blue-900">Toplam Yatak Sayısı:</span>
+                  <span className="text-sm font-medium text-blue-900">{t("houses.totalBedCount")}</span>
                   <span className="text-lg font-bold text-blue-900" data-testid="text-calculated-total-beds">
                     {calculateTotalBeds()}
                   </span>

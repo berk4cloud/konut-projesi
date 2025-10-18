@@ -642,6 +642,21 @@
     "archivedTitle": "Archiviert",
     "unarchivedTitle": "Aus Archiv entfernt",
     "archivedDesc": "Unterkunft wurde archiviert",
-    "unarchivedDesc": "Unterkunft wurde aus dem Archiv entfernt und auf aktiv gesetzt"
+    "unarchivedDesc": "Unterkunft wurde aus dem Archiv entfernt und auf aktiv gesetzt",
+    "housePricing": "Unterkunft Preisgestaltung",
+    "housePricingDesc": "Benutzerdefinierte Preise für diese Unterkunft festlegen (optional)",
+    "useCustomPricing": "Benutzerdefinierte Preise verwenden",
+    "bedDaily": "Bett Täglich (€)",
+    "bedMonthly": "Bett Monatlich (€)",
+    "roomDaily": "Zimmer Täglich (€)",
+    "roomMonthly": "Zimmer Monatlich (€)",
+    "standard": "Standard",
+    "roomsSection": "Zimmer",
+    "roomsSectionDesc": "Geben Sie detaillierte Informationen für jedes Zimmer ein",
+    "canRentAsRoom": "Kann als Zimmer vermietet werden",
+    "includeFloor": "Etageninformationen einbeziehen",
+    "roomPricing": "Zimmerspezifische Preise",
+    "addRoom": "Zimmer hinzufügen",
+    "totalBedCount": "Gesamtzahl der Betten:"
   }
 }

@@ -642,6 +642,21 @@
     "archivedTitle": "Archivé",
     "unarchivedTitle": "Désarchivé",
     "archivedDesc": "Le logement a été archivé",
-    "unarchivedDesc": "Le logement a été désarchivé et défini comme actif"
+    "unarchivedDesc": "Le logement a été désarchivé et défini comme actif",
+    "housePricing": "Tarification du Logement",
+    "housePricingDesc": "Définir une tarification personnalisée pour ce logement (optionnel)",
+    "useCustomPricing": "Utiliser une tarification personnalisée",
+    "bedDaily": "Lit Journalier (€)",
+    "bedMonthly": "Lit Mensuel (€)",
+    "roomDaily": "Chambre Journalière (€)",
+    "roomMonthly": "Chambre Mensuelle (€)",
+    "standard": "Standard",
+    "roomsSection": "Chambres",
+    "roomsSectionDesc": "Entrez les informations détaillées pour chaque chambre",
+    "canRentAsRoom": "Peut être loué comme chambre",
+    "includeFloor": "Inclure les informations d'étage",
+    "roomPricing": "Tarification spécifique à la chambre",
+    "addRoom": "Ajouter une Chambre",
+    "totalBedCount": "Nombre Total de Lits:"
   }
 }

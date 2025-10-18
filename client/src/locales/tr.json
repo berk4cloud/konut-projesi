@@ -646,6 +646,21 @@
     "archivedTitle": "Arşive Kaldırıldı",
     "unarchivedTitle": "Arşivden Çıkarıldı",
     "archivedDesc": "Konut arşive kaldırıldı",
-    "unarchivedDesc": "Konut arşivden çıkarıldı ve aktif hale getirildi"
+    "unarchivedDesc": "Konut arşivden çıkarıldı ve aktif hale getirildi",
+    "housePricing": "Konut Fiyatlandırma",
+    "housePricingDesc": "Bu konut için özel fiyat belirleyin (isteğe bağlı)",
+    "useCustomPricing": "Özel fiyat kullan",
+    "bedDaily": "Yatak Günlük (€)",
+    "bedMonthly": "Yatak Aylık (€)",
+    "roomDaily": "Oda Günlük (€)",
+    "roomMonthly": "Oda Aylık (€)",
+    "standard": "Standart",
+    "roomsSection": "Odalar",
+    "roomsSectionDesc": "Her oda için detaylı bilgi girin",
+    "canRentAsRoom": "Oda olarak kiraya verilebilir",
+    "includeFloor": "Kat bilgisi gir",
+    "roomPricing": "Oda için özel fiyat",
+    "addRoom": "Oda Ekle",
+    "totalBedCount": "Toplam Yatak Sayısı:"
   }
 }
