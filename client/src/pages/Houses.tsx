@@ -469,7 +469,7 @@ const countries = [
 ];
 
 export default function Houses() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [houses, setHouses] = useState(initialMockHouses);
   const [searchQuery, setSearchQuery] = useState("");
@@ -1983,7 +1983,7 @@ export default function Houses() {
                             <div className="flex items-center justify-between mb-2">
                               <div className="space-y-1">
                                 <p className="text-sm font-medium" data-testid={`text-reading-date-${reading.id}`}>
-                                  {new Date(reading.date).toLocaleDateString("tr-TR", { 
+                                  {new Date(reading.date).toLocaleDateString(i18n.language, { 
                                     day: "numeric", 
                                     month: "long", 
                                     year: "numeric" 
@@ -1997,11 +1997,11 @@ export default function Houses() {
                               </div>
                               <div className="text-right">
                                 <p className="text-lg font-bold" data-testid={`text-reading-value-${reading.id}`}>
-                                  {reading.value.toLocaleString("tr-TR")} kWh
+                                  {reading.value.toLocaleString(i18n.language)} kWh
                                 </p>
                                 {consumption !== null && (
                                   <p className="text-xs text-muted-foreground" data-testid={`text-consumption-${reading.id}`}>
-                                    +{consumption.toLocaleString("tr-TR")} kWh
+                                    +{consumption.toLocaleString(i18n.language)} kWh
                                   </p>
                                 )}
                               </div>
@@ -2077,7 +2077,7 @@ export default function Houses() {
                             <div className="flex items-center justify-between mb-2">
                               <div className="space-y-1">
                                 <p className="text-sm font-medium" data-testid={`text-reading-date-${reading.id}`}>
-                                  {new Date(reading.date).toLocaleDateString("tr-TR", { 
+                                  {new Date(reading.date).toLocaleDateString(i18n.language, { 
                                     day: "numeric", 
                                     month: "long", 
                                     year: "numeric" 
@@ -2091,11 +2091,11 @@ export default function Houses() {
                               </div>
                               <div className="text-right">
                                 <p className="text-lg font-bold" data-testid={`text-reading-value-${reading.id}`}>
-                                  {reading.value.toLocaleString("tr-TR")} m³
+                                  {reading.value.toLocaleString(i18n.language)} m³
                                 </p>
                                 {consumption !== null && (
                                   <p className="text-xs text-muted-foreground" data-testid={`text-consumption-${reading.id}`}>
-                                    +{consumption.toLocaleString("tr-TR")} m³
+                                    +{consumption.toLocaleString(i18n.language)} m³
                                   </p>
                                 )}
                               </div>
@@ -2171,7 +2171,7 @@ export default function Houses() {
                             <div className="flex items-center justify-between mb-2">
                               <div className="space-y-1">
                                 <p className="text-sm font-medium" data-testid={`text-reading-date-${reading.id}`}>
-                                  {new Date(reading.date).toLocaleDateString("tr-TR", { 
+                                  {new Date(reading.date).toLocaleDateString(i18n.language, { 
                                     day: "numeric", 
                                     month: "long", 
                                     year: "numeric" 
@@ -2185,11 +2185,11 @@ export default function Houses() {
                               </div>
                               <div className="text-right">
                                 <p className="text-lg font-bold" data-testid={`text-reading-value-${reading.id}`}>
-                                  {reading.value.toLocaleString("tr-TR")} m³
+                                  {reading.value.toLocaleString(i18n.language)} m³
                                 </p>
                                 {consumption !== null && (
                                   <p className="text-xs text-muted-foreground" data-testid={`text-consumption-${reading.id}`}>
-                                    +{consumption.toLocaleString("tr-TR")} m³
+                                    +{consumption.toLocaleString(i18n.language)} m³
                                   </p>
                                 )}
                               </div>
@@ -2444,7 +2444,7 @@ export default function Houses() {
                     <div className="space-y-1">
                       <p className="text-sm text-muted-foreground">{t("lease.startDate")}</p>
                       <p className="font-medium" data-testid="text-lease-start">
-                        {new Date(selectedHouseForLease.leaseContract.startDate).toLocaleDateString("tr-TR")}
+                        {new Date(selectedHouseForLease.leaseContract.startDate).toLocaleDateString(i18n.language)}
                       </p>
                     </div>
                     
@@ -2452,7 +2452,7 @@ export default function Houses() {
                       <p className="text-sm text-muted-foreground">{t("lease.endDate")}</p>
                       <p className="font-medium" data-testid="text-lease-end">
                         {selectedHouseForLease.leaseContract.endDate 
-                          ? new Date(selectedHouseForLease.leaseContract.endDate).toLocaleDateString("tr-TR")
+                          ? new Date(selectedHouseForLease.leaseContract.endDate).toLocaleDateString(i18n.language)
                           : t("lease.indefinite")}
                       </p>
                     </div>
@@ -2655,7 +2655,7 @@ export default function Houses() {
                             <div className="flex items-center gap-4 text-sm text-muted-foreground">
                               <div className="flex items-center gap-1">
                                 <Calendar className="w-4 h-4" />
-                                {new Date(reminder.date).toLocaleDateString("tr-TR")}
+                                {new Date(reminder.date).toLocaleDateString(i18n.language)}
                               </div>
                               <div>
                                 {daysUntil > 0 ? t("reminders.daysLater", { days: daysUntil }) : daysUntil === 0 ? t("reminders.today") : t("reminders.daysAgo", { days: Math.abs(daysUntil) })}
