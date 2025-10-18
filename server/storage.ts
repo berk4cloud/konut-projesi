@@ -9,6 +9,11 @@ import {
   type InsertEmploymentPrivateData
 } from "@shared/schema";
 import { randomUUID } from "crypto";
+import { 
+  mockWorkerProfiles, 
+  mockEmployments, 
+  mockEmploymentPrivateData 
+} from "../client/src/mocks/federated-data";
 
 // Storage interface with federated worker identity support
 export interface IStorage {
@@ -48,6 +53,28 @@ export class MemStorage implements IStorage {
     this.workerProfiles = new Map();
     this.employments = new Map();
     this.employmentPrivateData = new Map();
+    
+    // Load mock data for development
+    this.loadMockData();
+  }
+  
+  private loadMockData() {
+    // Load worker profiles
+    mockWorkerProfiles.forEach(profile => {
+      this.workerProfiles.set(profile.id, profile);
+    });
+    
+    // Load employments
+    mockEmployments.forEach(employment => {
+      this.employments.set(employment.id, employment);
+    });
+    
+    // Load employment private data
+    mockEmploymentPrivateData.forEach(privateData => {
+      this.employmentPrivateData.set(privateData.id, privateData);
+    });
+    
+    console.log(`✅ Mock data loaded: ${this.workerProfiles.size} profiles, ${this.employments.size} employments, ${this.employmentPrivateData.size} private data`);
   }
 
   // ============================================
