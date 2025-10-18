@@ -18,7 +18,9 @@ import {
   type Room,
   type InsertRoom,
   type Bed,
-  type InsertBed
+  type InsertBed,
+  type Reservation,
+  type InsertReservation
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { 
@@ -97,6 +99,15 @@ export interface IStorage {
   createBed(bed: InsertBed): Promise<Bed>;
   updateBed(id: string, bed: Partial<InsertBed>): Promise<Bed | undefined>;
   deleteBed(id: string): Promise<boolean>;
+  
+  // Reservations
+  getReservation(id: string): Promise<Reservation | undefined>;
+  getReservationsByBed(bedId: string): Promise<Reservation[]>;
+  getActiveReservationsByTenant(tenantId: string): Promise<Reservation[]>;
+  getActiveReservationForBed(bedId: string): Promise<Reservation | undefined>;
+  createReservation(reservation: InsertReservation): Promise<Reservation>;
+  updateReservation(id: string, reservation: Partial<InsertReservation>): Promise<Reservation | undefined>;
+  completeReservation(id: string, checkOutDate: string): Promise<Reservation | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -469,6 +480,15 @@ export class MemStorage implements IStorage {
   async createBed(_bed: InsertBed): Promise<Bed> { throw new Error("Not implemented in MemStorage"); }
   async updateBed(_id: string, _bed: Partial<InsertBed>): Promise<Bed | undefined> { throw new Error("Not implemented in MemStorage"); }
   async deleteBed(_id: string): Promise<boolean> { throw new Error("Not implemented in MemStorage"); }
+  
+  // Reservations - Not implemented in MemStorage
+  async getReservation(_id: string): Promise<Reservation | undefined> { throw new Error("Not implemented in MemStorage"); }
+  async getReservationsByBed(_bedId: string): Promise<Reservation[]> { throw new Error("Not implemented in MemStorage"); }
+  async getActiveReservationsByTenant(_tenantId: string): Promise<Reservation[]> { throw new Error("Not implemented in MemStorage"); }
+  async getActiveReservationForBed(_bedId: string): Promise<Reservation | undefined> { throw new Error("Not implemented in MemStorage"); }
+  async createReservation(_reservation: InsertReservation): Promise<Reservation> { throw new Error("Not implemented in MemStorage"); }
+  async updateReservation(_id: string, _reservation: Partial<InsertReservation>): Promise<Reservation | undefined> { throw new Error("Not implemented in MemStorage"); }
+  async completeReservation(_id: string, _checkOutDate: string): Promise<Reservation | undefined> { throw new Error("Not implemented in MemStorage"); }
 }
 
 // ============================================
@@ -486,9 +506,10 @@ import {
   employmentPrivateData as employmentPrivateDataTable,
   houses as housesTable,
   rooms as roomsTable,
-  beds as bedsTable
+  beds as bedsTable,
+  reservations as reservationsTable
 } from "@shared/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, isNull } from "drizzle-orm";
 
 export class DbStorage implements IStorage {
   private seeded = false;
@@ -855,6 +876,74 @@ export class DbStorage implements IStorage {
   async deleteBed(id: string): Promise<boolean> {
     const result = await db.delete(bedsTable).where(eq(bedsTable.id, id)).returning();
     return result.length > 0;
+  }
+
+  // ============================================
+  // Reservations
+  // ============================================
+
+  async getReservation(id: string): Promise<Reservation | undefined> {
+    await this.ensureSeeded();
+    const result = await db.select().from(reservationsTable).where(eq(reservationsTable.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getReservationsByBed(bedId: string): Promise<Reservation[]> {
+    await this.ensureSeeded();
+    return await db.select().from(reservationsTable).where(eq(reservationsTable.bedId, bedId));
+  }
+
+  async getActiveReservationsByTenant(tenantId: string): Promise<Reservation[]> {
+    await this.ensureSeeded();
+    // Active = checked in (checkInDate not null) and not checked out (checkOutDate null)
+    return await db.select()
+      .from(reservationsTable)
+      .where(
+        and(
+          eq(reservationsTable.tenantId, tenantId),
+          isNull(reservationsTable.checkOutDate)
+        )
+      );
+  }
+
+  async getActiveReservationForBed(bedId: string): Promise<Reservation | undefined> {
+    await this.ensureSeeded();
+    // Active = checked in and not checked out
+    const result = await db.select()
+      .from(reservationsTable)
+      .where(
+        and(
+          eq(reservationsTable.bedId, bedId),
+          isNull(reservationsTable.checkOutDate)
+        )
+      )
+      .limit(1);
+    return result[0];
+  }
+
+  async createReservation(reservation: InsertReservation): Promise<Reservation> {
+    const result = await db.insert(reservationsTable).values(reservation).returning();
+    return result[0];
+  }
+
+  async updateReservation(id: string, reservation: Partial<InsertReservation>): Promise<Reservation | undefined> {
+    const result = await db.update(reservationsTable)
+      .set({ ...reservation, updatedAt: new Date() })
+      .where(eq(reservationsTable.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async completeReservation(id: string, checkOutDate: string): Promise<Reservation | undefined> {
+    const result = await db.update(reservationsTable)
+      .set({ 
+        checkOutDate,
+        status: "checked_out",
+        updatedAt: new Date() 
+      })
+      .where(eq(reservationsTable.id, id))
+      .returning();
+    return result[0];
   }
 }
 

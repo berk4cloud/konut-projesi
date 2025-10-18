@@ -686,7 +686,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // HOUSES ENDPOINTS
   // ============================================
 
-  // GET /houses - Get all houses for a tenant (with rooms)
+  // GET /houses - Get all houses for a tenant (with rooms, beds, and active reservations)
   apiRouter.get("/houses", async (req, res) => {
     try {
       const tenantId = req.query.tenantId as string;
@@ -697,25 +697,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const houses = await storage.getHousesByTenant(tenantId);
       
-      // Fetch rooms for each house
-      const housesWithRooms = await Promise.all(
+      // Fetch rooms, beds, and reservations for each house
+      const housesWithDetails = await Promise.all(
         houses.map(async (house) => {
           const rooms = await storage.getRoomsByHouse(house.id);
+          
+          // For each room, fetch beds with their active reservations
+          const roomsWithBeds = await Promise.all(
+            rooms.map(async (room) => {
+              const beds = await storage.getBedsByRoom(room.id);
+              
+              // For each bed, fetch active reservation and enrich with worker data
+              const bedsWithWorkers = await Promise.all(
+                beds.map(async (bed) => {
+                  const reservation = await storage.getActiveReservationForBed(bed.id);
+                  
+                  // If bed has active reservation, fetch employment/worker details
+                  let worker = undefined;
+                  if (reservation) {
+                    const employment = await storage.getEmployment(reservation.employmentId);
+                    if (employment) {
+                      const workerProfile = await storage.getWorkerProfile(employment.workerProfileId);
+                      if (workerProfile) {
+                        worker = {
+                          employmentId: employment.id,
+                          name: `${workerProfile.firstName} ${workerProfile.lastName}`,
+                          gender: workerProfile.gender,
+                        };
+                      }
+                    }
+                  }
+                  
+                  // Calculate bed status based on reservation
+                  let status = bed.status || "available";
+                  if (reservation && !reservation.checkOutDate) {
+                    status = reservation.checkInDate ? "occupied" : "reserved";
+                  }
+                  
+                  return {
+                    id: bed.id,
+                    bedNumber: bed.bedNumber,
+                    status,
+                    worker,
+                    expectedMoveOutDate: reservation?.endDate || undefined,
+                    expectedMoveInDate: reservation?.startDate || undefined,
+                  };
+                })
+              );
+              
+              return {
+                id: room.id,
+                roomNumber: room.roomNumber,
+                floor: room.floor,
+                beds: bedsWithWorkers,
+              };
+            })
+          );
+          
+          // Calculate aggregate counts
+          const totalBeds = roomsWithBeds.reduce((sum, room) => sum + room.beds.length, 0);
+          const occupiedBeds = roomsWithBeds.reduce(
+            (sum, room) => sum + room.beds.filter(b => b.status === "occupied").length,
+            0
+          );
+          
           return {
             ...house,
-            rooms: rooms.map(room => ({
-              id: room.id,
-              roomNumber: room.roomNumber,
-              beds: room.bedCount || 0,
-              floor: room.floor,
-              canRentAsRoom: false, // Default for now
-              useFloor: room.floor != null,
-            })),
+            rooms: roomsWithBeds,
+            totalBeds,
+            occupiedBeds,
           };
         })
       );
 
-      res.json(housesWithRooms);
+      res.json(housesWithDetails);
     } catch (error) {
       console.error("Error fetching houses:", error);
       res.status(500).json({ error: "Failed to fetch houses" });
@@ -742,33 +797,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: "active",
       });
 
-      // Create rooms if provided
+      // Create rooms and beds if provided
       if (rooms && Array.isArray(rooms)) {
-        await Promise.all(
-          rooms.map((room: any) =>
-            storage.createRoom({
-              houseId: house.id,
-              roomNumber: room.roomNumber || "",
-              floor: room.useFloor ? room.floor : null,
-              bedCount: room.beds || 0,
-              status: "active",
-            })
-          )
-        );
+        for (const roomData of rooms) {
+          // Create room
+          const createdRoom = await storage.createRoom({
+            houseId: house.id,
+            roomNumber: roomData.roomNumber || "",
+            floor: roomData.useFloor ? roomData.floor : null,
+            bedCount: roomData.beds || 0,
+            status: "active",
+          });
+          
+          // Create beds for this room
+          const bedCount = roomData.beds || 0;
+          for (let i = 1; i <= bedCount; i++) {
+            await storage.createBed({
+              roomId: createdRoom.id,
+              bedNumber: i,
+              status: "available",
+            });
+          }
+        }
       }
 
-      // Fetch created house with rooms
+      // Fetch created house with rooms and beds (using updated GET logic)
       const createdRooms = await storage.getRoomsByHouse(house.id);
+      const roomsWithBeds = await Promise.all(
+        createdRooms.map(async (room) => {
+          const beds = await storage.getBedsByRoom(room.id);
+          return {
+            id: room.id,
+            roomNumber: room.roomNumber,
+            floor: room.floor,
+            beds: beds.map(bed => ({
+              id: bed.id,
+              bedNumber: bed.bedNumber,
+              status: bed.status || "available",
+            })),
+          };
+        })
+      );
+
       const response = {
         ...house,
-        rooms: createdRooms.map(room => ({
-          id: room.id,
-          roomNumber: room.roomNumber,
-          beds: room.bedCount || 0,
-          floor: room.floor,
-          canRentAsRoom: false,
-          useFloor: room.floor != null,
-        })),
+        rooms: roomsWithBeds,
+        totalBeds: roomsWithBeds.reduce((sum, room) => sum + room.beds.length, 0),
+        occupiedBeds: 0,
       };
 
       res.json(response);
@@ -797,38 +872,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "House not found" });
       }
 
-      // Update rooms if provided
+      // Update rooms and beds if provided
       if (rooms && Array.isArray(rooms)) {
-        // Delete existing rooms and recreate (simple approach)
+        // Delete existing rooms (cascade will delete beds)
         const existingRooms = await storage.getRoomsByHouse(id);
-        await Promise.all(existingRooms.map(room => storage.deleteRoom(room.id)));
+        for (const room of existingRooms) {
+          // Delete beds first
+          const beds = await storage.getBedsByRoom(room.id);
+          await Promise.all(beds.map(bed => storage.deleteBed(bed.id)));
+          // Delete room
+          await storage.deleteRoom(room.id);
+        }
         
-        // Create new rooms
-        await Promise.all(
-          rooms.map((room: any) =>
-            storage.createRoom({
-              houseId: id,
-              roomNumber: room.roomNumber || "",
-              floor: room.useFloor ? room.floor : null,
-              bedCount: room.beds || 0,
-              status: "active",
-            })
-          )
-        );
+        // Create new rooms and beds
+        for (const roomData of rooms) {
+          const createdRoom = await storage.createRoom({
+            houseId: id,
+            roomNumber: roomData.roomNumber || "",
+            floor: roomData.useFloor ? roomData.floor : null,
+            bedCount: roomData.beds || 0,
+            status: "active",
+          });
+          
+          // Create beds for this room
+          const bedCount = roomData.beds || 0;
+          for (let i = 1; i <= bedCount; i++) {
+            await storage.createBed({
+              roomId: createdRoom.id,
+              bedNumber: i,
+              status: "available",
+            });
+          }
+        }
       }
 
-      // Fetch updated house with rooms
+      // Fetch updated house with rooms and beds
       const updatedRooms = await storage.getRoomsByHouse(id);
+      const roomsWithBeds = await Promise.all(
+        updatedRooms.map(async (room) => {
+          const beds = await storage.getBedsByRoom(room.id);
+          return {
+            id: room.id,
+            roomNumber: room.roomNumber,
+            floor: room.floor,
+            beds: beds.map(bed => ({
+              id: bed.id,
+              bedNumber: bed.bedNumber,
+              status: bed.status || "available",
+            })),
+          };
+        })
+      );
+
       const response = {
         ...house,
-        rooms: updatedRooms.map(room => ({
-          id: room.id,
-          roomNumber: room.roomNumber,
-          beds: room.bedCount || 0,
-          floor: room.floor,
-          canRentAsRoom: false,
-          useFloor: room.floor != null,
-        })),
+        rooms: roomsWithBeds,
+        totalBeds: roomsWithBeds.reduce((sum, room) => sum + room.beds.length, 0),
+        occupiedBeds: 0,
       };
 
       res.json(response);
