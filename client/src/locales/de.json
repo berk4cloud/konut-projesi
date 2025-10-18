@@ -646,6 +646,7 @@
     "housePricing": "Unterkunft Preisgestaltung",
     "housePricingDesc": "Benutzerdefinierte Preise für diese Unterkunft festlegen (optional)",
     "useCustomPricing": "Benutzerdefinierte Preise verwenden",
+    "customPricing": "Benutzerdefinierte Preise verwenden",
     "bedDaily": "Bett Täglich (€)",
     "bedMonthly": "Bett Monatlich (€)",
     "roomDaily": "Zimmer Täglich (€)",
@@ -653,10 +654,13 @@
     "standard": "Standard",
     "roomsSection": "Zimmer",
     "roomsSectionDesc": "Geben Sie detaillierte Informationen für jedes Zimmer ein",
+    "room": "Zimmer",
+    "floor": "Etage",
     "canRentAsRoom": "Kann als Zimmer vermietet werden",
     "includeFloor": "Etageninformationen einbeziehen",
     "roomPricing": "Zimmerspezifische Preise",
     "addRoom": "Zimmer hinzufügen",
-    "totalBedCount": "Gesamtzahl der Betten:"
+    "totalBedCount": "Gesamtzahl der Betten:",
+    "noRoomsAdded": "Noch keine Zimmer hinzugefügt. Klicken Sie auf \"Zimmer hinzufügen\", um zu beginnen."
   }
 }

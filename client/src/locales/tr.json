@@ -650,6 +650,7 @@
     "housePricing": "Konut Fiyatlandırma",
     "housePricingDesc": "Bu konut için özel fiyat belirleyin (isteğe bağlı)",
     "useCustomPricing": "Özel fiyat kullan",
+    "customPricing": "Özel fiyat kullan",
     "bedDaily": "Yatak Günlük (€)",
     "bedMonthly": "Yatak Aylık (€)",
     "roomDaily": "Oda Günlük (€)",
@@ -657,10 +658,13 @@
     "standard": "Standart",
     "roomsSection": "Odalar",
     "roomsSectionDesc": "Her oda için detaylı bilgi girin",
+    "room": "Oda",
+    "floor": "Kat",
     "canRentAsRoom": "Oda olarak kiraya verilebilir",
     "includeFloor": "Kat bilgisi gir",
     "roomPricing": "Oda için özel fiyat",
     "addRoom": "Oda Ekle",
-    "totalBedCount": "Toplam Yatak Sayısı:"
+    "totalBedCount": "Toplam Yatak Sayısı:",
+    "noRoomsAdded": "Henüz oda eklenmedi. \"Oda Ekle\" butonuna tıklayarak başlayın."
   }
 }

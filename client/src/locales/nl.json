@@ -646,6 +646,7 @@
     "housePricing": "Pand Prijsstelling",
     "housePricingDesc": "Aangepaste prijzen instellen voor dit pand (optioneel)",
     "useCustomPricing": "Aangepaste prijzen gebruiken",
+    "customPricing": "Aangepaste prijzen gebruiken",
     "bedDaily": "Bed Dagelijks (€)",
     "bedMonthly": "Bed Maandelijks (€)",
     "roomDaily": "Kamer Dagelijks (€)",
@@ -653,10 +654,13 @@
     "standard": "Standaard",
     "roomsSection": "Kamers",
     "roomsSectionDesc": "Voer gedetailleerde informatie in voor elke kamer",
+    "room": "Kamer",
+    "floor": "Verdieping",
     "canRentAsRoom": "Kan als kamer worden verhuurd",
     "includeFloor": "Verdiepinginformatie opnemen",
     "roomPricing": "Kamerspecifieke prijzen",
     "addRoom": "Kamer Toevoegen",
-    "totalBedCount": "Totaal Aantal Bedden:"
+    "totalBedCount": "Totaal Aantal Bedden:",
+    "noRoomsAdded": "Nog geen kamers toegevoegd. Klik op \"Kamer Toevoegen\" om te beginnen."
   }
 }

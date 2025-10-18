@@ -1596,7 +1596,7 @@ export default function Houses() {
                 <div className="text-center py-8 bg-muted/50 rounded-lg border-2 border-dashed">
                   <Building2 className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
                   <p className="text-sm text-muted-foreground">
-                    Henüz oda eklenmedi. "Oda Ekle" butonuna tıklayarak başlayın.
+                    {t("houses.noRoomsAdded")}
                   </p>
                 </div>
               )}
@@ -1931,10 +1931,10 @@ export default function Houses() {
                 }}
                 data-testid="button-cancel"
               >
-                İptal
+                {t("common.cancel")}
               </Button>
               <Button onClick={handleSave} data-testid="button-save-house">
-                {editingHouse ? "Güncelle" : "Kaydet"}
+                {editingHouse ? t("common.update") : t("common.save")}
               </Button>
             </div>
           </div>

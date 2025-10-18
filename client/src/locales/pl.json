@@ -646,6 +646,7 @@
     "housePricing": "Wycena Nieruchomości",
     "housePricingDesc": "Ustaw niestandardową wycenę dla tej nieruchomości (opcjonalne)",
     "useCustomPricing": "Użyj niestandardowej wyceny",
+    "customPricing": "Użyj niestandardowej wyceny",
     "bedDaily": "Łóżko Dziennie (€)",
     "bedMonthly": "Łóżko Miesięcznie (€)",
     "roomDaily": "Pokój Dziennie (€)",
@@ -653,10 +654,13 @@
     "standard": "Standard",
     "roomsSection": "Pokoje",
     "roomsSectionDesc": "Wprowadź szczegółowe informacje dla każdego pokoju",
+    "room": "Pokój",
+    "floor": "Piętro",
     "canRentAsRoom": "Może być wynajmowany jako pokój",
     "includeFloor": "Dołącz informacje o piętrze",
     "roomPricing": "Wycena specyficzna dla pokoju",
     "addRoom": "Dodaj Pokój",
-    "totalBedCount": "Całkowita Liczba Łóżek:"
+    "totalBedCount": "Całkowita Liczba Łóżek:",
+    "noRoomsAdded": "Nie dodano jeszcze żadnych pokoi. Kliknij \"Dodaj Pokój\", aby rozpocząć."
   }
 }

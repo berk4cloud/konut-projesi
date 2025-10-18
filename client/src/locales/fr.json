@@ -646,6 +646,7 @@
     "housePricing": "Tarification du Logement",
     "housePricingDesc": "Définir une tarification personnalisée pour ce logement (optionnel)",
     "useCustomPricing": "Utiliser une tarification personnalisée",
+    "customPricing": "Utiliser une tarification personnalisée",
     "bedDaily": "Lit Journalier (€)",
     "bedMonthly": "Lit Mensuel (€)",
     "roomDaily": "Chambre Journalière (€)",
@@ -653,10 +654,13 @@
     "standard": "Standard",
     "roomsSection": "Chambres",
     "roomsSectionDesc": "Entrez les informations détaillées pour chaque chambre",
+    "room": "Chambre",
+    "floor": "Étage",
     "canRentAsRoom": "Peut être loué comme chambre",
     "includeFloor": "Inclure les informations d'étage",
     "roomPricing": "Tarification spécifique à la chambre",
     "addRoom": "Ajouter une Chambre",
-    "totalBedCount": "Nombre Total de Lits:"
+    "totalBedCount": "Nombre Total de Lits:",
+    "noRoomsAdded": "Aucune chambre ajoutée pour le moment. Cliquez sur \"Ajouter une Chambre\" pour commencer."
   }
 }
