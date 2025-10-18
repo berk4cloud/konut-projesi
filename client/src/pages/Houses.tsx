@@ -1120,6 +1120,14 @@ export default function Houses() {
             {filteredHouses.map((house) => {
               const occupancyRate = ((house.occupiedBeds / house.totalBeds) * 100).toFixed(0);
               const emptyBeds = house.totalBeds - house.occupiedBeds;
+              
+              // Get translated ownership type
+              const getOwnershipTypeLabel = (type: string) => {
+                if (type === "Kiralık") return t("houses.rented");
+                if (type === "Mülk") return t("houses.owned");
+                if (type === "3. Taraf") return t("houses.thirdParty");
+                return type;
+              };
 
               return (
                 <Card 
@@ -1155,7 +1163,7 @@ export default function Houses() {
                         </div>
                       </div>
                       <Badge variant="outline" data-testid={`text-ownership-type-${house.id}`}>
-                        {house.ownershipType}
+                        {getOwnershipTypeLabel(house.ownershipType)}
                       </Badge>
                     </div>
                   </CardHeader>
