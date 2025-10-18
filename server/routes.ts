@@ -598,6 +598,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============================================
+  // COUNTRIES ENDPOINTS
+  // ============================================
+
+  // GET /countries - Get all active countries
+  apiRouter.get("/countries", async (req, res) => {
+    try {
+      const countries = await storage.getAllCountries();
+      res.json(countries);
+    } catch (error) {
+      console.error("Error fetching countries:", error);
+      res.status(500).json({ error: "Failed to fetch countries" });
+    }
+  });
+
   // Register API router with /api prefix
   app.use("/api", apiRouter);
 

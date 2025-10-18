@@ -10,13 +10,16 @@ import {
   type Employment,
   type InsertEmployment,
   type EmploymentPrivateData,
-  type InsertEmploymentPrivateData
+  type InsertEmploymentPrivateData,
+  type Country,
+  type InsertCountry
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { 
   demoPlatformAdmins,
   demoTenants,
-  demoTenantUsers
+  demoTenantUsers,
+  demoCountries
 } from "./demo-data";
 import {
   mockWorkerProfiles, 
@@ -26,6 +29,10 @@ import {
 
 // Storage interface with federated worker identity support + multi-tenant platform
 export interface IStorage {
+  // Countries (Platform-level reference data)
+  getAllCountries(): Promise<Country[]>;
+  getCountryByIsoCode(isoCode: string): Promise<Country | undefined>;
+  
   // Platform Admins
   getPlatformAdmin(id: string): Promise<PlatformAdmin | undefined>;
   getPlatformAdminByEmail(email: string): Promise<PlatformAdmin | undefined>;
@@ -66,6 +73,7 @@ export interface IStorage {
 }
 
 export class MemStorage implements IStorage {
+  private countries: Map<string, Country>;
   private platformAdmins: Map<string, PlatformAdmin>;
   private tenants: Map<string, Tenant>;
   private users: Map<string, User>;
@@ -74,6 +82,7 @@ export class MemStorage implements IStorage {
   private employmentPrivateData: Map<string, EmploymentPrivateData>;
 
   constructor() {
+    this.countries = new Map();
     this.platformAdmins = new Map();
     this.tenants = new Map();
     this.users = new Map();
@@ -86,6 +95,11 @@ export class MemStorage implements IStorage {
   }
   
   private loadMockData() {
+    // Load countries
+    demoCountries.forEach(country => {
+      this.countries.set(country.isoCode, country);
+    });
+    
     // Load platform admins
     demoPlatformAdmins.forEach(admin => {
       this.platformAdmins.set(admin.id, admin);
@@ -116,8 +130,20 @@ export class MemStorage implements IStorage {
       this.employmentPrivateData.set(privateData.id, privateData);
     });
     
-    console.log(`✅ Platform data: ${this.platformAdmins.size} admins, ${this.tenants.size} tenants, ${this.users.size} users`);
+    console.log(`✅ Platform data: ${this.countries.size} countries, ${this.platformAdmins.size} admins, ${this.tenants.size} tenants, ${this.users.size} users`);
     console.log(`✅ Worker data: ${this.workerProfiles.size} profiles, ${this.employments.size} employments, ${this.employmentPrivateData.size} private data`);
+  }
+
+  // ============================================
+  // Countries
+  // ============================================
+
+  async getAllCountries(): Promise<Country[]> {
+    return Array.from(this.countries.values()).filter(c => c.isActive);
+  }
+
+  async getCountryByIsoCode(isoCode: string): Promise<Country | undefined> {
+    return this.countries.get(isoCode);
   }
 
   // ============================================
@@ -403,6 +429,7 @@ export class MemStorage implements IStorage {
 
 import { db } from "./db";
 import { 
+  countries as countriesTable,
   platformAdmins as platformAdminsTable,
   tenants as tenantsTable,
   users as usersTable,
@@ -440,6 +467,9 @@ export class DbStorage implements IStorage {
 
       console.log("🌱 Seeding database with platform and worker data...");
 
+      // Insert countries
+      await db.insert(countriesTable).values(demoCountries);
+
       // Insert platform admins
       await db.insert(platformAdminsTable).values(demoPlatformAdmins);
       
@@ -458,12 +488,28 @@ export class DbStorage implements IStorage {
       // Insert employment private data
       await db.insert(employmentPrivateDataTable).values(mockEmploymentPrivateData);
 
-      console.log(`✅ Platform data seeded: ${demoPlatformAdmins.length} admins, ${demoTenants.length} tenants, ${demoTenantUsers.length} users`);
+      console.log(`✅ Platform data seeded: ${demoCountries.length} countries, ${demoPlatformAdmins.length} admins, ${demoTenants.length} tenants, ${demoTenantUsers.length} users`);
       console.log(`✅ Worker data seeded: ${mockWorkerProfiles.length} profiles, ${mockEmployments.length} employments, ${mockEmploymentPrivateData.length} private data`);
     } catch (error) {
       console.error("❌ Error seeding database:", error);
       throw error;
     }
+  }
+
+  // ============================================
+  // Countries
+  // ============================================
+
+  async getAllCountries(): Promise<Country[]> {
+    await this.seedPromise; // Ensure seeded before query
+    const result = await db.select().from(countriesTable).where(eq(countriesTable.isActive, true));
+    return result;
+  }
+
+  async getCountryByIsoCode(isoCode: string): Promise<Country | undefined> {
+    await this.seedPromise; // Ensure seeded before query
+    const result = await db.select().from(countriesTable).where(eq(countriesTable.isoCode, isoCode)).limit(1);
+    return result[0];
   }
 
   // ============================================
