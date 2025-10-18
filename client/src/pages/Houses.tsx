@@ -1447,12 +1447,14 @@ export default function Houses() {
                       className="w-full justify-between"
                       data-testid="select-house-country"
                     >
-                      {formData.country || t("houses.selectCountry")}
+                      {formData.country 
+                        ? countries.find(c => c.value === formData.country)?.label || formData.country
+                        : t("houses.selectCountry")}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-full p-0">
-                    <Command>
+                    <Command shouldFilter={false}>
                       <CommandInput placeholder={t("houses.searchCountry")} />
                       <CommandList>
                         <CommandEmpty>{t("houses.countryNotFound")}</CommandEmpty>
