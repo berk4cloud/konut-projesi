@@ -1760,10 +1760,10 @@ export default function HousingDashboard() {
               <div className="flex-1">
                 <h3 className="font-semibold text-lg mb-1 flex items-center gap-2">
                   <span className="text-status-occupied">●</span>
-                  Turuncu: Dolu (Para Geliyor)
+                  Turuncu: Kiraya Verildi
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Bu yatakta şu anda bir işçi kalıyor ve aylık kira geliri elde ediyorsunuz. İşçi aktif olarak konaklama yapıyor, ödeme alınıyor. Bu ideal durumdur - yatak para kazandırıyor.
+                  Bu yatak şu anda bir işçiye kiralanmış durumda ve aylık kira geliri sağlıyor. İşçi aktif olarak konaklama yapıyor ve düzenli ödeme alınıyor. Bu en ideal durumdur - yatak gelir getiriyor.
                 </p>
               </div>
             </div>
