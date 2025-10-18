@@ -43,7 +43,7 @@ export function employmentToLegacyWorker(
     dateOfBirth: profile.dateOfBirth || undefined,
     nationality: profile.nationality || undefined,
     jobTitle: employment.jobTitle || undefined,
-    status: employment.status,
+    status: employment.status || "active", // Default to active if null
   };
 }
 
