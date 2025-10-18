@@ -1,3 +1,4 @@
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE TYPE "public"."bed_status" AS ENUM('available', 'occupied', 'reserved', 'out_of_service');--> statement-breakpoint
 CREATE TYPE "public"."currency" AS ENUM('EUR', 'USD', 'TRY', 'GBP', 'CHF', 'CAD', 'MXN', 'CNY', 'JPY', 'RUB', 'SEK', 'NOK', 'DKK', 'HUF', 'PLN', 'CZK', 'RON', 'BGN', 'RSD', 'UAH');--> statement-breakpoint
 CREATE TYPE "public"."employment_status" AS ENUM('active', 'inactive', 'former', 'invited');--> statement-breakpoint

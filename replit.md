@@ -16,7 +16,7 @@ All UI text must be in Turkish language.
 **Frontend**: React 18 (TypeScript, Vite, TanStack Query, Wouter, Tailwind CSS with shadcn/ui).
 **Backend**: Node.js with Express and TypeScript, JWT authentication, bcrypt, connect-pg-simple.
 **Database**: PostgreSQL via Neon Database (serverless), Drizzle ORM.
-**Storage**: Hybrid MemStorage (development) and DbStorage (production).
+**Storage**: PostgreSQL always-on (DbStorage with auto-seed mock data).
 
 ### Design System
 
@@ -74,3 +74,31 @@ TanStack Query manages server state (caching, refetching). React's `useState` an
 
 -   **TanStack Query**: For server state management.
 -   **Fetch API**: Native browser API for HTTP requests.
+
+## Database Setup
+
+### PostgreSQL Configuration
+- **Storage Mode**: DbStorage (PostgreSQL) always-on for persistent data
+- **Auto-Seed**: Mock data automatically loads on first application start
+- **Mock Data**: 30 countries, 2 platform admins, 3 tenants, 7 users, 12 worker profiles
+
+### Fresh Database Setup
+To initialize a fresh PostgreSQL database with schema and mock data:
+```bash
+psql "$DATABASE_URL" < init-db.sql
+```
+
+This creates:
+- 12 tables (countries, platform_admins, tenants, users, worker_profiles, employments, employment_private_data, houses, rooms, beds, reservations, user_preferences)
+- 16 enum types
+- All constraints and indexes
+- Complete mock/demo data
+
+### Files
+- **init-db.sql** (933 lines): Full database export with schema + mock data
+- **DATABASE_SETUP.md**: Detailed setup instructions and database documentation
+
+### Schema Updates
+1. Edit `shared/schema.ts`
+2. Run `npm run db:push --force` to sync changes
+3. Export updated SQL: `pg_dump "$DATABASE_URL" --clean --if-exists --no-owner --no-acl > init-db.sql`
