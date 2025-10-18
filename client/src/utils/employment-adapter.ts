@@ -10,7 +10,8 @@ import { mockWorkerProfiles, mockEmployments, mockEmploymentPrivateData } from "
 
 // Legacy worker format that UI expects
 export interface LegacyWorker {
-  id: string; // This is now employmentId (not worker profile id)
+  id: string; // DEPRECATED: Use employmentId instead. This field contains employmentId (not worker profile id)
+  employmentId: string; // Federated model - unique employment ID
   firstName: string;
   lastName: string;
   gender: "male" | "female";
@@ -32,7 +33,8 @@ export function employmentToLegacyWorker(
   profile: WorkerProfile
 ): LegacyWorker {
   return {
-    id: employment.id, // EMPLOYMENT ID (not profile.id!)
+    id: employment.id, // DEPRECATED: Backward compatibility (same as employmentId)
+    employmentId: employment.id, // Federated model - unique employment ID
     firstName: profile.firstName,
     lastName: profile.lastName,
     gender: profile.gender,

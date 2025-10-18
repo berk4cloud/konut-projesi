@@ -386,7 +386,7 @@ export default function HousingDashboard() {
     searchCity: "all",
     searchType: "any" as "room" | "bed" | "any", // Oda mı, yatak mı arıyor
     // Step 2: İşçi
-    workerId: "",
+    employmentId: "",
     workerName: "",
     // Step 3: Oda/Yatak
     houseId: "",
@@ -623,7 +623,7 @@ export default function HousingDashboard() {
     setWorkers([...workers, result.legacyWorker]);
     setWizardData({
       ...wizardData,
-      workerId: result.employmentId, // This is the employment ID
+      employmentId: result.employmentId, // This is the employment ID
       workerName: fullName,
     });
     setQuickRegisterData({ firstName: "", lastName: "", dateOfBirth: "", gender: "" });
@@ -648,7 +648,7 @@ export default function HousingDashboard() {
     }
     
     // Step 2: İşçi validation
-    if (wizardStep === 2 && !wizardData.workerId) {
+    if (wizardStep === 2 && !wizardData.employmentId) {
       toast({
         title: "İşçi Seçimi Gerekli",
         description: "Devam etmek için bir işçi seçmelisiniz.",
@@ -676,7 +676,7 @@ export default function HousingDashboard() {
 
   const handleWizardComplete = () => {
     // Final validation
-    if (!wizardData.workerId || !wizardData.bedId || !wizardData.startDate) {
+    if (!wizardData.employmentId || !wizardData.bedId || !wizardData.startDate) {
       toast({
         title: "Eksik Bilgiler",
         description: "İşçi, yatak ve başlangıç tarihi seçimi zorunludur.",
@@ -686,7 +686,7 @@ export default function HousingDashboard() {
     }
     
     // Find selected worker
-    const selectedWorker = workers.find(w => w.id === wizardData.workerId);
+    const selectedWorker = workers.find(w => w.employmentId === wizardData.employmentId);
     if (!selectedWorker) {
       toast({
         title: "Hata",
@@ -716,7 +716,7 @@ export default function HousingDashboard() {
                   ...bed,
                   status: "occupied" as const,
                   worker: {
-                    id: selectedWorker.id,
+                    id: selectedWorker.employmentId,
                     name: `${selectedWorker.firstName} ${selectedWorker.lastName}`,
                     gender: selectedWorker.gender,
                   }
@@ -741,7 +741,7 @@ export default function HousingDashboard() {
       endDate: "",
       searchCity: "all",
       searchType: "any",
-      workerId: "",
+      employmentId: "",
       workerName: "",
       houseId: "",
       houseName: "",
@@ -1255,7 +1255,7 @@ export default function HousingDashboard() {
             endDate: "",
             searchCity: "all",
             searchType: "any",
-            workerId: "",
+            employmentId: "",
             workerName: "",
             houseId: "",
             houseName: "",
@@ -1426,9 +1426,9 @@ export default function HousingDashboard() {
                         className="w-full justify-between"
                         data-testid="select-wizard-worker"
                       >
-                        {wizardData.workerId 
+                        {wizardData.employmentId 
                           ? (() => {
-                              const worker = workers.find(w => w.id === wizardData.workerId);
+                              const worker = workers.find(w => w.employmentId === wizardData.employmentId);
                               return worker ? `${worker.firstName} ${worker.lastName} (${worker.dateOfBirth})` : t('checkIn.wizard.selectWorkerPrompt');
                             })()
                           : t('checkIn.wizard.selectWorkerPrompt')}
@@ -1443,12 +1443,12 @@ export default function HousingDashboard() {
                           <CommandGroup>
                             {workers.map(worker => (
                               <CommandItem
-                                key={worker.id}
+                                key={worker.employmentId}
                                 value={`${worker.firstName} ${worker.lastName} ${worker.dateOfBirth}`}
                                 onSelect={() => {
                                   setWizardData({
                                     ...wizardData,
-                                    workerId: worker.id,
+                                    employmentId: worker.employmentId,
                                     workerName: `${worker.firstName} ${worker.lastName}`
                                   });
                                   setWorkerComboboxOpen(false);
@@ -1457,7 +1457,7 @@ export default function HousingDashboard() {
                                 <Check
                                   className={cn(
                                     "mr-2 h-4 w-4",
-                                    wizardData.workerId === worker.id ? "opacity-100" : "opacity-0"
+                                    wizardData.employmentId === worker.employmentId ? "opacity-100" : "opacity-0"
                                   )}
                                 />
                                 {worker.firstName} {worker.lastName} ({worker.dateOfBirth})
@@ -1708,7 +1708,7 @@ export default function HousingDashboard() {
                   onClick={handleWizardNext}
                   disabled={
                     (wizardStep === 1 && !wizardData.startDate) ||
-                    (wizardStep === 2 && !wizardData.workerId) ||
+                    (wizardStep === 2 && !wizardData.employmentId) ||
                     (wizardStep === 3 && !wizardData.bedId)
                   }
                   data-testid="button-wizard-next"
