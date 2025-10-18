@@ -553,7 +553,15 @@ export default function HousingDashboard() {
         return; // Skip this house if city doesn't match
       }
       
+      if (!house.rooms || house.rooms.length === 0) {
+        return;
+      }
+      
       house.rooms.forEach((room: any) => {
+        if (!room.beds || room.beds.length === 0) {
+          return;
+        }
+        
         room.beds.forEach((bed: any) => {
           if (bed.status === "available") {
             availableOptions.push({
