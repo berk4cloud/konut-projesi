@@ -26,19 +26,21 @@ i18n
       bg: { translation: bg },
     },
     fallbackLng: 'tr', // Default language is Turkish
-    lng: localStorage.getItem('language') || 'tr', // Get saved language or default to Turkish
+    supportedLngs: ['tr', 'en', 'de', 'nl', 'fr', 'pl', 'bg'], // Supported languages
     
     interpolation: {
       escapeValue: false, // React already escapes values
     },
 
     detection: {
-      // Order of language detection
+      // Order of language detection: first check localStorage, if not found use browser language
       order: ['localStorage', 'navigator'],
       // Where to store language choice
       caches: ['localStorage'],
       // localStorage key
       lookupLocalStorage: 'language',
+      // Convert language codes (e.g., 'en-US' -> 'en')
+      convertDetectedLanguage: (lng) => lng.split('-')[0],
     },
   });
 

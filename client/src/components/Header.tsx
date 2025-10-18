@@ -21,6 +21,7 @@ import { useLocation } from "wouter";
 import { useState } from "react";
 import { useTheme } from "@/components/ThemeProvider";
 import NotificationsDialog from "@/components/NotificationsDialog";
+import LanguageSelector from "@/components/LanguageSelector";
 
 type Reminder = {
   id: string;
@@ -198,6 +199,8 @@ export default function Header({
         </div>
 
         <div className="flex items-center gap-2">
+          <LanguageSelector />
+          
           <Button
             variant="ghost"
             size="icon"
