@@ -1008,5 +1008,86 @@
         "description": "Yeni QR kod başarıyla oluşturuldu"
       }
     }
+  },
+  "workers": {
+    "pageTitle": "Çalışanlar",
+    "pageSubtitle": "Tüm çalışanları görüntüleyin ve yönetin",
+    "addButton": "Yeni Çalışan Ekle",
+    "search": {
+      "placeholder": "Çalışan ara...",
+      "tooltip": "İsim, ev, doğum tarihi veya ülke ile arama yapabilirsiniz"
+    },
+    "table": {
+      "worker": "Çalışan",
+      "gender": "Cinsiyet",
+      "country": "Ülke",
+      "accommodation": "Konaklama",
+      "actions": "İşlemler",
+      "noBirthDate": "Doğum tarihi yok",
+      "unassigned": "Atanmamış",
+      "room": "Oda",
+      "bed": "Yatak",
+      "empty": "Çalışan bulunamadı",
+      "edit": "Düzenle"
+    },
+    "gender": {
+      "male": "Erkek",
+      "female": "Kadın",
+      "selectPlaceholder": "Cinsiyet seçin"
+    },
+    "status": {
+      "active": "Aktif",
+      "inactive": "Pasif",
+      "former": "Eski Çalışan",
+      "invited": "Davet Edildi"
+    },
+    "pagination": {
+      "total": "Toplam {{count}} çalışan",
+      "page": "Sayfa {{current}}/{{total}}",
+      "perPage": "Sayfa başına:"
+    },
+    "addDialog": {
+      "title": "Yeni Çalışan Ekle",
+      "description": "Yeni bir çalışan kaydı oluşturun",
+      "firstName": "İsim *",
+      "lastName": "Soyisim *",
+      "birthDate": "Doğum Tarihi",
+      "gender": "Cinsiyet *",
+      "nationality": "Uyruk",
+      "email": "E-posta *",
+      "phone": "Telefon",
+      "startDate": "İşe Başlama Tarihi",
+      "position": "Pozisyon",
+      "department": "Departman",
+      "cancel": "İptal",
+      "save": "Kaydet"
+    },
+    "editDialog": {
+      "title": "Çalışan Düzenle",
+      "description": "{{name}} bilgilerini güncelleyin",
+      "update": "Güncelle"
+    },
+    "toasts": {
+      "workerAdded": {
+        "title": "Başarılı",
+        "description": "Çalışan başarıyla eklendi"
+      },
+      "workerUpdated": {
+        "title": "Başarılı",
+        "description": "Çalışan bilgileri güncellendi"
+      },
+      "addError": {
+        "title": "Hata",
+        "description": "Çalışan eklenemedi"
+      },
+      "updateError": {
+        "title": "Hata",
+        "description": "Güncelleme başarısız oldu"
+      },
+      "validationError": {
+        "title": "Hata",
+        "description": "Lütfen zorunlu alanları doldurun (Ad, Soyad, Cinsiyet, E-posta)"
+      }
+    }
   }
 }
