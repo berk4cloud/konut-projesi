@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useTranslation } from "react-i18next";
 
 interface WorkerAssignmentModalProps {
   open: boolean;
@@ -31,6 +32,7 @@ export default function WorkerAssignmentModal({
   bedNumber,
   roomNumber,
 }: WorkerAssignmentModalProps) {
+  const { t } = useTranslation();
   const [selectedWorker, setSelectedWorker] = useState("");
   const [startDate, setStartDate] = useState(new Date().toISOString().split("T")[0]);
   const [endDate, setEndDate] = useState("");
@@ -50,33 +52,33 @@ export default function WorkerAssignmentModal({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md" data-testid="modal-worker-assignment">
         <DialogHeader>
-          <DialogTitle>Çalışanı Yatağa Ata</DialogTitle>
+          <DialogTitle>{t('workerAssignment.title')}</DialogTitle>
           <DialogDescription>
             {roomNumber && bedNumber
-              ? `Oda ${roomNumber}, Yatak ${bedNumber} için atama yapılıyor`
-              : "Bir çalışan ve tarih aralığı seçin"}
+              ? `${t('housing.room')} ${roomNumber}, ${t('housing.bed')} ${bedNumber} ${t('workerAssignment.assigningTo')}`
+              : t('workerAssignment.selectWorkerAndDate')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="worker">Çalışan</Label>
+            <Label htmlFor="worker">{t('workerAssignment.worker')}</Label>
             <Select value={selectedWorker} onValueChange={setSelectedWorker}>
               <SelectTrigger id="worker" data-testid="select-worker">
-                <SelectValue placeholder="Çalışan seçin" />
+                <SelectValue placeholder={t('workerAssignment.selectWorker')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="w1">John Doe (Erkek)</SelectItem>
-                <SelectItem value="w2">Jane Smith (Kadın)</SelectItem>
-                <SelectItem value="w3">Mike Johnson (Erkek)</SelectItem>
-                <SelectItem value="w4">Sarah Williams (Kadın)</SelectItem>
+                <SelectItem value="w1">John Doe ({t('common.male')})</SelectItem>
+                <SelectItem value="w2">Jane Smith ({t('common.female')})</SelectItem>
+                <SelectItem value="w3">Mike Johnson ({t('common.male')})</SelectItem>
+                <SelectItem value="w4">Sarah Williams ({t('common.female')})</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="startDate">Başlangıç Tarihi</Label>
+              <Label htmlFor="startDate">{t('workerAssignment.startDate')}</Label>
               <Input
                 id="startDate"
                 type="date"
@@ -87,7 +89,7 @@ export default function WorkerAssignmentModal({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="endDate">Bitiş Tarihi</Label>
+              <Label htmlFor="endDate">{t('workerAssignment.endDate')}</Label>
               <Input
                 id="endDate"
                 type="date"
@@ -105,14 +107,14 @@ export default function WorkerAssignmentModal({
             onClick={onClose}
             data-testid="button-cancel-assignment"
           >
-            İptal
+            {t('common.cancel')}
           </Button>
           <Button
             onClick={handleAssign}
             disabled={!selectedWorker || !startDate}
             data-testid="button-confirm-assignment"
           >
-            Çalışanı Ata
+            {t('workerAssignment.assign')}
           </Button>
         </DialogFooter>
       </DialogContent>

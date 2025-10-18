@@ -8,6 +8,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 interface GenderWarningModalProps {
   open: boolean;
@@ -28,6 +29,8 @@ export default function GenderWarningModal({
   workerName,
   roomNumber,
 }: GenderWarningModalProps) {
+  const { t } = useTranslation();
+  
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md" data-testid="modal-gender-warning">
@@ -37,21 +40,21 @@ export default function GenderWarningModal({
               <AlertTriangle className="w-5 h-5 text-amber-600" />
             </div>
             <div>
-              <DialogTitle>Cinsiyet Uyuşmazlığı Tespit Edildi</DialogTitle>
+              <DialogTitle>{t('genderWarning.title')}</DialogTitle>
             </div>
           </div>
           <DialogDescription className="pt-3">
-            {workerName} isimli çalışan, Oda {roomNumber}'deki farklı soy isimlere sahip diğer sakinlerden farklı cinsiyete sahip.
-            Bu durum konaklama politikalarını ihlal edebilir.
+            {workerName} {t('genderWarning.roomPrefix')}{roomNumber}{t('genderWarning.roomSuffix')}
+            {t('genderWarning.policyViolation')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-2">
-          <p className="text-sm font-medium text-amber-900">Ne yapmak istersiniz?</p>
+          <p className="text-sm font-medium text-amber-900">{t('genderWarning.whatToDo')}</p>
           <ul className="text-sm text-amber-800 space-y-1 list-disc list-inside">
-            <li>Evli çift olarak işaretle (uygunsa)</li>
-            <li>Farklı bir odaya ata</li>
-            <li>Yine de bu atamayla devam et</li>
+            <li>{t('genderWarning.markAsCouple')}</li>
+            <li>{t('genderWarning.assignDifferentRoom')}</li>
+            <li>{t('genderWarning.continueAnyway')}</li>
           </ul>
         </div>
 
@@ -62,7 +65,7 @@ export default function GenderWarningModal({
             className="w-full"
             data-testid="button-mark-couple"
           >
-            Evli Çift Olarak İşaretle
+            {t('genderWarning.markAsCoupleBtn')}
           </Button>
           <Button
             onClick={onReassign}
@@ -70,7 +73,7 @@ export default function GenderWarningModal({
             className="w-full"
             data-testid="button-reassign"
           >
-            Farklı Odaya Ata
+            {t('genderWarning.assignDifferentBtn')}
           </Button>
           <Button
             onClick={onContinueAnyway}
@@ -78,7 +81,7 @@ export default function GenderWarningModal({
             className="w-full"
             data-testid="button-continue-anyway"
           >
-            Yine de Devam Et
+            {t('genderWarning.continueAnywayBtn')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -6,6 +6,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { User } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface Worker {
   id: string;
@@ -21,6 +22,7 @@ interface BedCardProps {
 }
 
 export default function BedCard({ bedNumber, status, worker, onClick }: BedCardProps) {
+  const { t } = useTranslation();
   const statusColors = {
     available: "bg-status-empty/10 dark:bg-status-empty/20 border-status-empty",
     occupied: "bg-status-occupied/10 dark:bg-status-occupied/20 border-status-occupied",
@@ -58,7 +60,7 @@ export default function BedCard({ bedNumber, status, worker, onClick }: BedCardP
 
       {status === "oos" && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/10 dark:bg-white/10 rounded-md">
-          <span className="text-[8px] font-bold text-status-oos">OOS</span>
+          <span className="text-[8px] font-bold text-status-oos">{t('bedCard.oos')}</span>
         </div>
       )}
     </button>
