@@ -79,14 +79,6 @@ type Worker = {
   bed?: string;
 };
 
-// Mock houses for dropdowns
-const mockHouses = [
-  { id: "h1", name: "Geldernstrasse 13", rooms: ["45", "46", "47"] },
-  { id: "h2", name: "Hauptstrasse 45", rooms: ["101", "102"] },
-  { id: "h3", name: "Marktplatz 7", rooms: ["201", "202"] },
-  { id: "h4", name: "Atatürk Caddesi 42", rooms: ["1", "2", "3"] },
-];
-
 export default function Workers() {
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -98,6 +90,21 @@ export default function Workers() {
   // Fetch workers from API (federated model)
   const { data: workers = [], isLoading } = useQuery<Worker[]>({
     queryKey: ['/api/workers'],
+  });
+
+  // Fetch houses for dropdown (replaces mockHouses)
+  type HouseForDropdown = {
+    id: string;
+    name: string;
+    rooms: Array<{ roomNumber: string }>;
+  };
+  const { data: houses = [] } = useQuery<HouseForDropdown[]>({
+    queryKey: ['/api/houses'],
+    select: (data: any[]) => data.map(house => ({
+      id: house.id,
+      name: house.name,
+      rooms: house.rooms || []
+    }))
   });
 
   // Helper: Convert empty strings to null for optional fields
