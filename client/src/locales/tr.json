@@ -674,5 +674,31 @@
     "noRoomsAdded": "Henüz oda eklenmedi. \"Oda Ekle\" butonuna tıklayarak başlayın.",
     "archive": "Arşive Kaldır",
     "unarchive": "Arşivden Çıkar"
+  },
+  "meters": {
+    "title": "Sayaç Bilgileri",
+    "description": "{{houseName}} için elektrik, su ve gaz sayacı okumaları",
+    "electricity": "Elektrik Sayacı",
+    "water": "Su Sayacı",
+    "gas": "Gaz Sayacı",
+    "showMore": "Daha fazla göster ({{count}} kayıt)",
+    "showLess": "Daha az göster",
+    "noRecords": "Kayıt bulunamadı",
+    "addReading": "Yeni Okuma Ekle",
+    "addReadingTitle": "Yeni Sayaç Okuması Ekle",
+    "addReadingDesc": "Elektrik, su veya gaz sayacı için yeni okuma değeri girin",
+    "meterType": "Sayaç Türü *",
+    "electricityOption": "Elektrik",
+    "waterOption": "Su",
+    "gasOption": "Gaz",
+    "dateRequired": "Tarih *",
+    "valueLabel": "Sayaç Değeri * ({{unit}})",
+    "valuePlaceholder": "örn: {{value}}",
+    "noteOptional": "Not (Opsiyonel)",
+    "notePlaceholder": "örn: Normal okuma, kaçak kontrol edildi",
+    "photoOptional": "Sayaç Fotoğrafı (Opsiyonel)",
+    "photoAlt": "Sayaç fotoğrafı",
+    "addPhoto": "Fotoğraf Ekle",
+    "photoError": "Fotoğraf yüklenemedi"
   }
 }

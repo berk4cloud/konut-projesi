@@ -670,5 +670,31 @@
     "noRoomsAdded": "Noch keine Zimmer hinzugefügt. Klicken Sie auf \"Zimmer hinzufügen\", um zu beginnen.",
     "archive": "Archivieren",
     "unarchive": "Aus Archiv Entfernen"
+  },
+  "meters": {
+    "title": "Zählerstandsinformationen",
+    "description": "Strom-, Wasser- und Gaszähler Ablesungen für {{houseName}}",
+    "electricity": "Stromzähler",
+    "water": "Wasserzähler",
+    "gas": "Gaszähler",
+    "showMore": "Mehr anzeigen ({{count}} Einträge)",
+    "showLess": "Weniger anzeigen",
+    "noRecords": "Keine Aufzeichnungen gefunden",
+    "addReading": "Neue Ablesung Hinzufügen",
+    "addReadingTitle": "Neue Zählerablesung Hinzufügen",
+    "addReadingDesc": "Neuen Ablesewert für Strom-, Wasser- oder Gaszähler eingeben",
+    "meterType": "Zählertyp *",
+    "electricityOption": "Strom",
+    "waterOption": "Wasser",
+    "gasOption": "Gas",
+    "dateRequired": "Datum *",
+    "valueLabel": "Zählerwert * ({{unit}})",
+    "valuePlaceholder": "z.B.: {{value}}",
+    "noteOptional": "Notiz (Optional)",
+    "notePlaceholder": "z.B.: Normale Ablesung, Leck überprüft",
+    "photoOptional": "Zählerfoto (Optional)",
+    "photoAlt": "Zählerfoto",
+    "addPhoto": "Foto Hinzufügen",
+    "photoError": "Foto konnte nicht hochgeladen werden"
   }
 }

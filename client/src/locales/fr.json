@@ -670,5 +670,31 @@
     "noRoomsAdded": "Aucune chambre ajoutée pour le moment. Cliquez sur \"Ajouter une Chambre\" pour commencer.",
     "archive": "Archiver",
     "unarchive": "Désarchiver"
+  },
+  "meters": {
+    "title": "Relevés de Compteurs",
+    "description": "Relevés de compteurs d'électricité, d'eau et de gaz pour {{houseName}}",
+    "electricity": "Compteur d'Électricité",
+    "water": "Compteur d'Eau",
+    "gas": "Compteur de Gaz",
+    "showMore": "Afficher plus ({{count}} enregistrements)",
+    "showLess": "Afficher moins",
+    "noRecords": "Aucun enregistrement trouvé",
+    "addReading": "Ajouter un Nouveau Relevé",
+    "addReadingTitle": "Ajouter un Nouveau Relevé de Compteur",
+    "addReadingDesc": "Entrez une nouvelle valeur de relevé pour le compteur d'électricité, d'eau ou de gaz",
+    "meterType": "Type de Compteur *",
+    "electricityOption": "Électricité",
+    "waterOption": "Eau",
+    "gasOption": "Gaz",
+    "dateRequired": "Date *",
+    "valueLabel": "Valeur du Compteur * ({{unit}})",
+    "valuePlaceholder": "ex: {{value}}",
+    "noteOptional": "Note (Optionnel)",
+    "notePlaceholder": "ex: Relevé régulier, fuite vérifiée",
+    "photoOptional": "Photo du Compteur (Optionnel)",
+    "photoAlt": "Photo du compteur",
+    "addPhoto": "Ajouter une Photo",
+    "photoError": "Échec du téléchargement de la photo"
   }
 }

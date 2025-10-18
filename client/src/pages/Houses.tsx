@@ -1945,9 +1945,9 @@ export default function Houses() {
       <Dialog open={isMeterDialogOpen} onOpenChange={setIsMeterDialogOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Sayaç Bilgileri</DialogTitle>
+            <DialogTitle>{t("meters.title")}</DialogTitle>
             <DialogDescription>
-              {selectedHouseForMeters?.name} için elektrik, su ve gaz sayacı okumaları
+              {t("meters.description", { houseName: selectedHouseForMeters?.name })}
             </DialogDescription>
           </DialogHeader>
 
@@ -1959,7 +1959,7 @@ export default function Houses() {
                   <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
                     <Zap className="w-4 h-4 text-amber-600" />
                   </div>
-                  <h3 className="font-semibold">Elektrik Sayacı</h3>
+                  <h3 className="font-semibold">{t("meters.electricity")}</h3>
                 </div>
                 
                 {selectedHouseForMeters.meterLogs?.electricity && selectedHouseForMeters.meterLogs.electricity.length > 0 ? (
@@ -2029,7 +2029,7 @@ export default function Houses() {
                         className="text-sm text-primary hover:underline"
                         data-testid="button-show-more-electricity"
                       >
-                        Daha fazla göster ({selectedHouseForMeters.meterLogs.electricity.length - 3} kayıt)
+                        {t("meters.showMore", { count: selectedHouseForMeters.meterLogs.electricity.length - 3 })}
                       </button>
                     )}
                     {showAllElectricity && selectedHouseForMeters.meterLogs.electricity.length > 3 && (
@@ -2038,12 +2038,12 @@ export default function Houses() {
                         className="text-sm text-primary hover:underline"
                         data-testid="button-show-less-electricity"
                       >
-                        Daha az göster
+                        {t("meters.showLess")}
                       </button>
                     )}
                   </>
                 ) : (
-                  <p className="text-sm text-muted-foreground">Kayıt bulunamadı</p>
+                  <p className="text-sm text-muted-foreground">{t("meters.noRecords")}</p>
                 )}
               </div>
 
@@ -2053,7 +2053,7 @@ export default function Houses() {
                   <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
                     <Droplet className="w-4 h-4 text-blue-600" />
                   </div>
-                  <h3 className="font-semibold">Su Sayacı</h3>
+                  <h3 className="font-semibold">{t("meters.water")}</h3>
                 </div>
                 
                 {selectedHouseForMeters.meterLogs?.water && selectedHouseForMeters.meterLogs.water.length > 0 ? (
@@ -2123,7 +2123,7 @@ export default function Houses() {
                         className="text-sm text-primary hover:underline"
                         data-testid="button-show-more-water"
                       >
-                        Daha fazla göster ({selectedHouseForMeters.meterLogs.water.length - 3} kayıt)
+                        {t("meters.showMore", { count: selectedHouseForMeters.meterLogs.water.length - 3 })}
                       </button>
                     )}
                     {showAllWater && selectedHouseForMeters.meterLogs.water.length > 3 && (
@@ -2132,12 +2132,12 @@ export default function Houses() {
                         className="text-sm text-primary hover:underline"
                         data-testid="button-show-less-water"
                       >
-                        Daha az göster
+                        {t("meters.showLess")}
                       </button>
                     )}
                   </>
                 ) : (
-                  <p className="text-sm text-muted-foreground">Kayıt bulunamadı</p>
+                  <p className="text-sm text-muted-foreground">{t("meters.noRecords")}</p>
                 )}
               </div>
 
@@ -2147,7 +2147,7 @@ export default function Houses() {
                   <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
                     <Flame className="w-4 h-4 text-orange-600" />
                   </div>
-                  <h3 className="font-semibold">Gaz Sayacı</h3>
+                  <h3 className="font-semibold">{t("meters.gas")}</h3>
                 </div>
                 
                 {selectedHouseForMeters.meterLogs?.gas && selectedHouseForMeters.meterLogs.gas.length > 0 ? (
@@ -2217,7 +2217,7 @@ export default function Houses() {
                         className="text-sm text-primary hover:underline"
                         data-testid="button-show-more-gas"
                       >
-                        Daha fazla göster ({selectedHouseForMeters.meterLogs.gas.length - 3} kayıt)
+                        {t("meters.showMore", { count: selectedHouseForMeters.meterLogs.gas.length - 3 })}
                       </button>
                     )}
                     {showAllGas && selectedHouseForMeters.meterLogs.gas.length > 3 && (
@@ -2226,12 +2226,12 @@ export default function Houses() {
                         className="text-sm text-primary hover:underline"
                         data-testid="button-show-less-gas"
                       >
-                        Daha az göster
+                        {t("meters.showLess")}
                       </button>
                     )}
                   </>
                 ) : (
-                  <p className="text-sm text-muted-foreground">Kayıt bulunamadı</p>
+                  <p className="text-sm text-muted-foreground">{t("meters.noRecords")}</p>
                 )}
               </div>
             </div>
@@ -2243,14 +2243,14 @@ export default function Houses() {
               onClick={() => setIsMeterDialogOpen(false)}
               data-testid="button-close-meter-dialog"
             >
-              Kapat
+              {t("common.close")}
             </Button>
             <Button 
               onClick={() => setIsAddReadingOpen(true)}
               data-testid="button-add-meter-reading"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Yeni Okuma Ekle
+              {t("meters.addReading")}
             </Button>
           </div>
         </DialogContent>
@@ -2260,15 +2260,15 @@ export default function Houses() {
       <Dialog open={isAddReadingOpen} onOpenChange={setIsAddReadingOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Yeni Sayaç Okuması Ekle</DialogTitle>
+            <DialogTitle>{t("meters.addReadingTitle")}</DialogTitle>
             <DialogDescription>
-              Elektrik, su veya gaz sayacı için yeni okuma değeri girin
+              {t("meters.addReadingDesc")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="meter-type">Sayaç Türü *</Label>
+              <Label htmlFor="meter-type">{t("meters.meterType")}</Label>
               <Select
                 value={newReading.meterType}
                 onValueChange={(value: "electricity" | "water" | "gas") => 
@@ -2282,19 +2282,19 @@ export default function Houses() {
                   <SelectItem value="electricity">
                     <div className="flex items-center gap-2">
                       <Zap className="w-4 h-4 text-amber-600" />
-                      Elektrik
+                      {t("meters.electricityOption")}
                     </div>
                   </SelectItem>
                   <SelectItem value="water">
                     <div className="flex items-center gap-2">
                       <Droplet className="w-4 h-4 text-blue-600" />
-                      Su
+                      {t("meters.waterOption")}
                     </div>
                   </SelectItem>
                   <SelectItem value="gas">
                     <div className="flex items-center gap-2">
                       <Flame className="w-4 h-4 text-orange-600" />
-                      Gaz
+                      {t("meters.gasOption")}
                     </div>
                   </SelectItem>
                 </SelectContent>
@@ -2302,7 +2302,7 @@ export default function Houses() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="reading-date">Tarih *</Label>
+              <Label htmlFor="reading-date">{t("meters.dateRequired")}</Label>
               <Input
                 id="reading-date"
                 type="date"
@@ -2314,13 +2314,13 @@ export default function Houses() {
 
             <div className="space-y-2">
               <Label htmlFor="reading-value">
-                Sayaç Değeri * ({newReading.meterType === "electricity" ? "kWh" : "m³"})
+                {t("meters.valueLabel", { unit: newReading.meterType === "electricity" ? "kWh" : "m³" })}
               </Label>
               <Input
                 id="reading-value"
                 type="number"
                 step="0.01"
-                placeholder={newReading.meterType === "electricity" ? "örn: 15420" : "örn: 8520"}
+                placeholder={t("meters.valuePlaceholder", { value: newReading.meterType === "electricity" ? "15420" : "8520" })}
                 value={newReading.value}
                 onChange={(e) => setNewReading({ ...newReading, value: e.target.value })}
                 data-testid="input-reading-value"
@@ -2328,10 +2328,10 @@ export default function Houses() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="reading-note">Not (Opsiyonel)</Label>
+              <Label htmlFor="reading-note">{t("meters.noteOptional")}</Label>
               <Input
                 id="reading-note"
-                placeholder="örn: Normal okuma, kaçak kontrol edildi"
+                placeholder={t("meters.notePlaceholder")}
                 value={newReading.note}
                 onChange={(e) => setNewReading({ ...newReading, note: e.target.value })}
                 data-testid="input-reading-note"
@@ -2339,12 +2339,12 @@ export default function Houses() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="reading-photo">Sayaç Fotoğrafı (Opsiyonel)</Label>
+              <Label htmlFor="reading-photo">{t("meters.photoOptional")}</Label>
               {newReading.photo ? (
                 <div className="relative">
                   <img 
                     src={newReading.photo} 
-                    alt="Sayaç fotoğrafı" 
+                    alt={t("meters.photoAlt")} 
                     className="w-full h-48 object-cover rounded-lg border"
                   />
                   <Button
@@ -2364,7 +2364,7 @@ export default function Houses() {
                   className="flex items-center justify-center gap-2 w-full p-6 border-2 border-dashed rounded-lg cursor-pointer hover-elevate"
                 >
                   <Camera className="w-5 h-5" />
-                  <span className="text-sm">Fotoğraf Ekle</span>
+                  <span className="text-sm">{t("meters.addPhoto")}</span>
                   <input
                     id="reading-photo"
                     type="file"
@@ -2379,8 +2379,8 @@ export default function Houses() {
                           setNewReading({ ...newReading, photo: compressed });
                         } catch (error) {
                           toast({
-                            title: "Hata",
-                            description: "Fotoğraf yüklenemedi",
+                            title: t("common.error"),
+                            description: t("meters.photoError"),
                             variant: "destructive",
                           });
                         }
@@ -2408,13 +2408,13 @@ export default function Houses() {
               }}
               data-testid="button-cancel-reading"
             >
-              İptal
+              {t("common.cancel")}
             </Button>
             <Button 
               onClick={handleAddMeterReading}
               data-testid="button-save-reading"
             >
-              Kaydet
+              {t("common.save")}
             </Button>
           </div>
         </DialogContent>

@@ -670,5 +670,31 @@
     "noRoomsAdded": "Nie dodano jeszcze żadnych pokoi. Kliknij \"Dodaj Pokój\", aby rozpocząć.",
     "archive": "Archiwizuj",
     "unarchive": "Przywróć z Archiwum"
+  },
+  "meters": {
+    "title": "Odczyty Liczników",
+    "description": "Odczyty liczników elektryczności, wody i gazu dla {{houseName}}",
+    "electricity": "Licznik Elektryczności",
+    "water": "Licznik Wody",
+    "gas": "Licznik Gazu",
+    "showMore": "Pokaż więcej ({{count}} rekordów)",
+    "showLess": "Pokaż mniej",
+    "noRecords": "Nie znaleziono zapisów",
+    "addReading": "Dodaj Nowy Odczyt",
+    "addReadingTitle": "Dodaj Nowy Odczyt Licznika",
+    "addReadingDesc": "Wprowadź nową wartość odczytu dla licznika elektryczności, wody lub gazu",
+    "meterType": "Typ Licznika *",
+    "electricityOption": "Elektryczność",
+    "waterOption": "Woda",
+    "gasOption": "Gaz",
+    "dateRequired": "Data *",
+    "valueLabel": "Wartość Licznika * ({{unit}})",
+    "valuePlaceholder": "np.: {{value}}",
+    "noteOptional": "Notatka (Opcjonalnie)",
+    "notePlaceholder": "np.: Normalny odczyt, sprawdzono przeciek",
+    "photoOptional": "Zdjęcie Licznika (Opcjonalnie)",
+    "photoAlt": "Zdjęcie licznika",
+    "addPhoto": "Dodaj Zdjęcie",
+    "photoError": "Nie udało się przesłać zdjęcia"
   }
 }

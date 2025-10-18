@@ -687,5 +687,31 @@
     "totalBedCount": "Total Bed Count:",
     "archive": "Archive",
     "unarchive": "Unarchive"
+  },
+  "meters": {
+    "title": "Meter Readings",
+    "description": "Electricity, water and gas meter readings for {{houseName}}",
+    "electricity": "Electricity Meter",
+    "water": "Water Meter",
+    "gas": "Gas Meter",
+    "showMore": "Show more ({{count}} records)",
+    "showLess": "Show less",
+    "noRecords": "No records found",
+    "addReading": "Add New Reading",
+    "addReadingTitle": "Add New Meter Reading",
+    "addReadingDesc": "Enter new reading value for electricity, water or gas meter",
+    "meterType": "Meter Type *",
+    "electricityOption": "Electricity",
+    "waterOption": "Water",
+    "gasOption": "Gas",
+    "dateRequired": "Date *",
+    "valueLabel": "Meter Value * ({{unit}})",
+    "valuePlaceholder": "e.g.: {{value}}",
+    "noteOptional": "Note (Optional)",
+    "notePlaceholder": "e.g.: Regular reading, leak checked",
+    "photoOptional": "Meter Photo (Optional)",
+    "photoAlt": "Meter photo",
+    "addPhoto": "Add Photo",
+    "photoError": "Failed to upload photo"
   }
 }

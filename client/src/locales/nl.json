@@ -670,5 +670,31 @@
     "noRoomsAdded": "Nog geen kamers toegevoegd. Klik op \"Kamer Toevoegen\" om te beginnen.",
     "archive": "Archiveren",
     "unarchive": "Uit Archief Halen"
+  },
+  "meters": {
+    "title": "Meterinformatie",
+    "description": "Elektriciteits-, water- en gasmeter afleesingen voor {{houseName}}",
+    "electricity": "Elektriciteitsmeter",
+    "water": "Watermeter",
+    "gas": "Gasmeter",
+    "showMore": "Meer weergeven ({{count}} records)",
+    "showLess": "Minder weergeven",
+    "noRecords": "Geen gegevens gevonden",
+    "addReading": "Nieuwe Aflezing Toevoegen",
+    "addReadingTitle": "Nieuwe Meteraflezing Toevoegen",
+    "addReadingDesc": "Voer nieuwe afleeswaarde in voor elektriciteits-, water- of gasmeter",
+    "meterType": "Metertype *",
+    "electricityOption": "Elektriciteit",
+    "waterOption": "Water",
+    "gasOption": "Gas",
+    "dateRequired": "Datum *",
+    "valueLabel": "Meterstand * ({{unit}})",
+    "valuePlaceholder": "bijv.: {{value}}",
+    "noteOptional": "Notitie (Optioneel)",
+    "notePlaceholder": "bijv.: Normale aflezing, lek gecontroleerd",
+    "photoOptional": "Meterfoto (Optioneel)",
+    "photoAlt": "Meterfoto",
+    "addPhoto": "Foto Toevoegen",
+    "photoError": "Foto kon niet worden geüpload"
   }
 }
