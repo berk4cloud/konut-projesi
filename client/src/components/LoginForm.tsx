@@ -70,7 +70,20 @@ export default function LoginForm() {
       }
 
       // Handle different response types
-      if (data.type === "redirect") {
+      if (data.type === "platform_admin") {
+        // Platform admin login
+        const adminData = {
+          id: data.admin.id,
+          email: data.admin.email,
+          firstName: data.admin.firstName,
+          lastName: data.admin.lastName,
+          role: data.admin.role,
+          isPlatformAdmin: true,
+        };
+        
+        login(adminData, data.token);
+        setLocation("/platform-admin");
+      } else if (data.type === "redirect") {
         // Single tenant + single role - direct login
         const userData = {
           id: data.user.id,

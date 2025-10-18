@@ -9,6 +9,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import NotFound from "@/pages/not-found";
 import LoginPage from "@/pages/LoginPage";
 import HousingDashboard from "@/pages/HousingDashboard";
+import PlatformAdminDashboard from "@/pages/PlatformAdminDashboard";
 import Houses from "@/pages/Houses";
 import Workers from "@/pages/Workers";
 import QRManagement from "@/pages/QRManagement";
@@ -22,6 +23,7 @@ function Router() {
     <Switch>
       <Route path="/" component={LoginPage} />
       <Route path="/qr/:code" component={QRPublicPage} />
+      <Route path="/platform-admin" component={PlatformAdminDashboard} />
       <Route path="/dashboard" component={HousingDashboard} />
       <Route path="/houses" component={Houses} />
       <Route path="/workers" component={Workers} />
