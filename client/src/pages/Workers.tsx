@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useTranslation } from "react-i18next";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -87,6 +88,7 @@ const mockHouses = [
 ];
 
 export default function Workers() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null);
@@ -127,15 +129,15 @@ export default function Workers() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/workers'] });
       toast({
-        title: "Başarılı",
-        description: "Çalışan başarıyla eklendi",
+        title: t('workers.toasts.workerAdded.title'),
+        description: t('workers.toasts.workerAdded.description'),
       });
       setIsAddDialogOpen(false);
     },
     onError: (error: Error) => {
       toast({
-        title: "Hata",
-        description: error.message || "Çalışan eklenemedi",
+        title: t('workers.toasts.addError.title'),
+        description: error.message || t('workers.toasts.addError.description'),
         variant: "destructive",
       });
     },
@@ -151,15 +153,15 @@ export default function Workers() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/workers'] });
       toast({
-        title: "Başarılı",
-        description: "Çalışan bilgileri güncellendi",
+        title: t('workers.toasts.workerUpdated.title'),
+        description: t('workers.toasts.workerUpdated.description'),
       });
       setIsEditDialogOpen(false);
     },
     onError: (error: Error) => {
       toast({
-        title: "Hata",
-        description: error.message || "Güncelleme başarısız oldu",
+        title: t('workers.toasts.updateError.title'),
+        description: error.message || t('workers.toasts.updateError.description'),
         variant: "destructive",
       });
     },
@@ -180,7 +182,7 @@ export default function Workers() {
 
   // Gender display helper
   const getGenderDisplay = (gender: "male" | "female") => {
-    return gender === "male" ? "Erkek" : "Kadın";
+    return gender === "male" ? t('workers.gender.male') : t('workers.gender.female');
   };
 
   // Employment status badge for federated model
@@ -189,25 +191,25 @@ export default function Workers() {
       case "active":
         return (
           <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300" data-testid={`badge-status-${worker.employmentId}`}>
-            Aktif
+            {t('workers.status.active')}
           </Badge>
         );
       case "inactive":
         return (
           <Badge variant="secondary" className="bg-gray-100 text-gray-700 dark:bg-gray-950 dark:text-gray-300" data-testid={`badge-status-${worker.employmentId}`}>
-            Pasif
+            {t('workers.status.inactive')}
           </Badge>
         );
       case "former":
         return (
           <Badge variant="secondary" className="bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300" data-testid={`badge-status-${worker.employmentId}`}>
-            Eski Çalışan {worker.endDate && `(${new Date(worker.endDate).toLocaleDateString("tr-TR")})`}
+            {t('workers.status.former')} {worker.endDate && `(${new Date(worker.endDate).toLocaleDateString("tr-TR")})`}
           </Badge>
         );
       case "invited":
         return (
           <Badge variant="secondary" className="bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300" data-testid={`badge-status-${worker.employmentId}`}>
-            Davet Edildi
+            {t('workers.status.invited')}
           </Badge>
         );
       default:
@@ -311,8 +313,8 @@ export default function Workers() {
     // Validation
     if (!formData.firstName || !formData.lastName || !formData.gender || !formData.email) {
       toast({
-        title: "Hata",
-        description: "Lütfen zorunlu alanları doldurun (Ad, Soyad, Cinsiyet, E-posta)",
+        title: t('workers.toasts.validationError.title'),
+        description: t('workers.toasts.validationError.description'),
         variant: "destructive",
       });
       return;
@@ -340,19 +342,19 @@ export default function Workers() {
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold mb-2">Çalışanlar</h2>
-              <p className="text-muted-foreground">Tüm çalışanları görüntüleyin ve yönetin</p>
+              <h2 className="text-2xl font-bold mb-2">{t('workers.pageTitle')}</h2>
+              <p className="text-muted-foreground">{t('workers.pageSubtitle')}</p>
             </div>
             <Button onClick={handleOpenAddDialog} data-testid="button-add-worker">
               <Plus className="w-4 h-4 mr-2" />
-              Yeni Çalışan Ekle
+              {t('workers.addButton')}
             </Button>
           </div>
 
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Çalışan ara..."
+              placeholder={t('workers.search.placeholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 pr-10"
@@ -364,7 +366,7 @@ export default function Workers() {
                   <Info className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground cursor-help" data-testid="icon-search-info" />
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p className="text-sm">İsim, ev, doğum tarihi veya ülke ile arama yapabilirsiniz</p>
+                  <p className="text-sm">{t('workers.search.tooltip')}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -386,16 +388,16 @@ export default function Workers() {
                       }}
                       data-testid="button-sort-name"
                     >
-                      Çalışan
+                      {t('workers.table.worker')}
                       {sortOrder === 'asc' && <ChevronUp className="ml-1 w-4 h-4" />}
                       {sortOrder === 'desc' && <ChevronDown className="ml-1 w-4 h-4" />}
                       {sortOrder === null && <ArrowUpDown className="ml-1 w-3 h-3 opacity-50" />}
                     </Button>
                   </TableHead>
-                  <TableHead>Cinsiyet</TableHead>
-                  <TableHead>Ülke</TableHead>
-                  <TableHead>Konaklama</TableHead>
-                  <TableHead>İşlemler</TableHead>
+                  <TableHead>{t('workers.table.gender')}</TableHead>
+                  <TableHead>{t('workers.table.country')}</TableHead>
+                  <TableHead>{t('workers.table.accommodation')}</TableHead>
+                  <TableHead>{t('workers.table.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -416,7 +418,7 @@ export default function Workers() {
                             )}
                           </div>
                           <div className="text-xs text-muted-foreground mt-0.5">
-                            {worker.dateOfBirth || "Doğum tarihi yok"}
+                            {worker.dateOfBirth || t('workers.table.noBirthDate')}
                             <span className="ml-2" data-testid={`text-worker-email-${worker.employmentId}`}>
                               • {worker.email}
                             </span>
@@ -441,11 +443,11 @@ export default function Workers() {
                         <div className="flex flex-col gap-0.5">
                           <span className="text-foreground">{worker.house}</span>
                           <span className="text-muted-foreground text-xs">
-                            Oda {worker.room} • Yatak {worker.bed}
+                            {t('workers.table.room')} {worker.room} • {t('workers.table.bed')} {worker.bed}
                           </span>
                         </div>
                       ) : (
-                        <span className="text-muted-foreground">Atanmamış</span>
+                        <span className="text-muted-foreground">{t('workers.table.unassigned')}</span>
                       )}
                     </TableCell>
                     <TableCell>
@@ -455,7 +457,7 @@ export default function Workers() {
                         onClick={() => handleOpenEditDialog(worker)}
                         data-testid={`button-edit-${worker.employmentId}`}
                       >
-                        Düzenle
+                        {t('workers.table.edit')}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -466,7 +468,7 @@ export default function Workers() {
 
           {filteredWorkers.length === 0 && (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">Çalışan bulunamadı</p>
+              <p className="text-muted-foreground">{t('workers.table.empty')}</p>
             </div>
           )}
 
@@ -474,17 +476,17 @@ export default function Workers() {
             <div className="flex items-center justify-between px-2 py-4">
               <div className="flex items-center gap-6">
                 <p className="text-sm text-muted-foreground">
-                  Toplam {filteredWorkers.length} çalışan
+                  {t('workers.pagination.total', { count: filteredWorkers.length })}
                   {filteredWorkers.length > pageSize && (
                     <span className="ml-2">
-                      (Sayfa {currentPage}/{totalPages})
+                      ({t('workers.pagination.page', { current: currentPage, total: totalPages })})
                     </span>
                   )}
                 </p>
                 
                 <div className="flex items-center gap-2">
                   <Label htmlFor="page-size" className="text-sm text-muted-foreground whitespace-nowrap">
-                    Sayfa başına:
+                    {t('workers.pagination.perPage')}
                   </Label>
                   <Select
                     value={pageSize.toString()}
@@ -560,16 +562,16 @@ export default function Workers() {
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Yeni Çalışan Ekle</DialogTitle>
+            <DialogTitle>{t('workers.addDialog.title')}</DialogTitle>
             <DialogDescription>
-              Yeni bir çalışan kaydı oluşturun
+              {t('workers.addDialog.description')}
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="add-firstname">İsim *</Label>
+                <Label htmlFor="add-firstname">{t('workers.addDialog.firstName')}</Label>
                 <Input
                   id="add-firstname"
                   placeholder="John"
@@ -580,7 +582,7 @@ export default function Workers() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="add-lastname">Soyisim *</Label>
+                <Label htmlFor="add-lastname">{t('workers.addDialog.lastName')}</Label>
                 <Input
                   id="add-lastname"
                   placeholder="Doe"
@@ -593,7 +595,7 @@ export default function Workers() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="add-dateOfBirth">Doğum Tarihi</Label>
+                <Label htmlFor="add-dateOfBirth">{t('workers.addDialog.birthDate')}</Label>
                 <Input
                   id="add-dateOfBirth"
                   type="date"
@@ -604,17 +606,17 @@ export default function Workers() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="add-gender">Cinsiyet *</Label>
+                <Label htmlFor="add-gender">{t('workers.addDialog.gender')}</Label>
                 <Select
                   value={formData.gender}
                   onValueChange={(value: "male" | "female") => setFormData({ ...formData, gender: value })}
                 >
                   <SelectTrigger id="add-gender" data-testid="select-worker-gender">
-                    <SelectValue placeholder="Cinsiyet seçin" />
+                    <SelectValue placeholder={t('workers.gender.selectPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="male">Erkek</SelectItem>
-                    <SelectItem value="female">Kadın</SelectItem>
+                    <SelectItem value="male">{t('workers.gender.male')}</SelectItem>
+                    <SelectItem value="female">{t('workers.gender.female')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -622,7 +624,7 @@ export default function Workers() {
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="add-nationality">Uyruk</Label>
+                <Label htmlFor="add-nationality">{t('workers.addDialog.nationality')}</Label>
                 <Input
                   id="add-nationality"
                   placeholder="Türkiye"
@@ -633,7 +635,7 @@ export default function Workers() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="add-email">E-posta *</Label>
+                <Label htmlFor="add-email">{t('workers.addDialog.email')}</Label>
                 <Input
                   id="add-email"
                   type="email"
@@ -647,7 +649,7 @@ export default function Workers() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="add-phone">Telefon</Label>
+                <Label htmlFor="add-phone">{t('workers.addDialog.phone')}</Label>
                 <Input
                   id="add-phone"
                   type="tel"
@@ -659,7 +661,7 @@ export default function Workers() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="add-startDate">İşe Başlama Tarihi</Label>
+                <Label htmlFor="add-startDate">{t('workers.addDialog.startDate')}</Label>
                 <Input
                   id="add-startDate"
                   type="date"
@@ -672,7 +674,7 @@ export default function Workers() {
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="add-jobTitle">Pozisyon</Label>
+                <Label htmlFor="add-jobTitle">{t('workers.addDialog.position')}</Label>
                 <Input
                   id="add-jobTitle"
                   placeholder="Temizlik Görevlisi"
@@ -683,7 +685,7 @@ export default function Workers() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="add-department">Departman</Label>
+                <Label htmlFor="add-department">{t('workers.addDialog.department')}</Label>
                 <Input
                   id="add-department"
                   placeholder="Operasyon"
@@ -700,13 +702,13 @@ export default function Workers() {
                 onClick={() => setIsAddDialogOpen(false)}
                 data-testid="button-cancel-add"
               >
-                İptal
+                {t('workers.addDialog.cancel')}
               </Button>
               <Button
                 onClick={handleSaveWorker}
                 data-testid="button-save-worker"
               >
-                Kaydet
+                {t('workers.addDialog.save')}
               </Button>
             </div>
           </div>
@@ -717,16 +719,16 @@ export default function Workers() {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Çalışan Düzenle</DialogTitle>
+            <DialogTitle>{t('workers.editDialog.title')}</DialogTitle>
             <DialogDescription>
-              {selectedWorker && `${selectedWorker.firstName} ${selectedWorker.lastName}`} bilgilerini güncelleyin
+              {selectedWorker && t('workers.editDialog.description', { name: `${selectedWorker.firstName} ${selectedWorker.lastName}` })}
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-firstname">İsim *</Label>
+                <Label htmlFor="edit-firstname">{t('workers.addDialog.firstName')}</Label>
                 <Input
                   id="edit-firstname"
                   placeholder="John"
@@ -737,7 +739,7 @@ export default function Workers() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="edit-lastname">Soyisim *</Label>
+                <Label htmlFor="edit-lastname">{t('workers.addDialog.lastName')}</Label>
                 <Input
                   id="edit-lastname"
                   placeholder="Doe"
@@ -750,7 +752,7 @@ export default function Workers() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-dateOfBirth">Doğum Tarihi</Label>
+                <Label htmlFor="edit-dateOfBirth">{t('workers.addDialog.birthDate')}</Label>
                 <Input
                   id="edit-dateOfBirth"
                   type="date"
@@ -761,17 +763,17 @@ export default function Workers() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="edit-gender">Cinsiyet *</Label>
+                <Label htmlFor="edit-gender">{t('workers.addDialog.gender')}</Label>
                 <Select
                   value={formData.gender}
                   onValueChange={(value: "male" | "female") => setFormData({ ...formData, gender: value })}
                 >
                   <SelectTrigger id="edit-gender" data-testid="select-edit-worker-gender">
-                    <SelectValue placeholder="Cinsiyet seçin" />
+                    <SelectValue placeholder={t('workers.gender.selectPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="male">Erkek</SelectItem>
-                    <SelectItem value="female">Kadın</SelectItem>
+                    <SelectItem value="male">{t('workers.gender.male')}</SelectItem>
+                    <SelectItem value="female">{t('workers.gender.female')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -779,7 +781,7 @@ export default function Workers() {
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-nationality">Uyruk</Label>
+                <Label htmlFor="edit-nationality">{t('workers.addDialog.nationality')}</Label>
                 <Input
                   id="edit-nationality"
                   placeholder="Türkiye"
@@ -790,7 +792,7 @@ export default function Workers() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="edit-email">E-posta *</Label>
+                <Label htmlFor="edit-email">{t('workers.addDialog.email')}</Label>
                 <Input
                   id="edit-email"
                   type="email"
@@ -804,7 +806,7 @@ export default function Workers() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-phone">Telefon</Label>
+                <Label htmlFor="edit-phone">{t('workers.addDialog.phone')}</Label>
                 <Input
                   id="edit-phone"
                   type="tel"
@@ -816,7 +818,7 @@ export default function Workers() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="edit-startDate">İşe Başlama Tarihi</Label>
+                <Label htmlFor="edit-startDate">{t('workers.addDialog.startDate')}</Label>
                 <Input
                   id="edit-startDate"
                   type="date"
@@ -829,7 +831,7 @@ export default function Workers() {
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-jobTitle">Pozisyon</Label>
+                <Label htmlFor="edit-jobTitle">{t('workers.addDialog.position')}</Label>
                 <Input
                   id="edit-jobTitle"
                   placeholder="Temizlik Görevlisi"
@@ -840,7 +842,7 @@ export default function Workers() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="edit-department">Departman</Label>
+                <Label htmlFor="edit-department">{t('workers.addDialog.department')}</Label>
                 <Input
                   id="edit-department"
                   placeholder="Operasyon"
@@ -857,13 +859,13 @@ export default function Workers() {
                 onClick={() => setIsEditDialogOpen(false)}
                 data-testid="button-cancel-edit"
               >
-                İptal
+                {t('workers.addDialog.cancel')}
               </Button>
               <Button
                 onClick={handleSaveWorker}
                 data-testid="button-update-worker"
               >
-                Güncelle
+                {t('workers.editDialog.update')}
               </Button>
             </div>
           </div>
