@@ -711,13 +711,11 @@ export class DbStorage implements IStorage {
 }
 
 // ============================================
-// Hybrid Storage Selection
+// Storage Selection
 // ============================================
 
-// Use DbStorage in production, MemStorage in development
-export const storage = process.env.NODE_ENV === 'production'
-  ? new DbStorage()
-  : new MemStorage();
+// Use DbStorage for persistent PostgreSQL storage
+export const storage = new DbStorage();
 
-console.log(`💾 Storage mode: ${process.env.NODE_ENV === 'production' ? 'PostgreSQL (DbStorage)' : 'In-Memory (MemStorage)'}`);
+console.log(`💾 Storage mode: PostgreSQL (DbStorage)`);
 
