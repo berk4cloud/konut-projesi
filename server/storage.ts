@@ -14,6 +14,11 @@ import {
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { 
+  demoPlatformAdmins,
+  demoTenants,
+  demoTenantUsers
+} from "./demo-data";
+import {
   mockWorkerProfiles, 
   mockEmployments, 
   mockEmploymentPrivateData 
@@ -80,6 +85,21 @@ export class MemStorage implements IStorage {
   }
   
   private loadMockData() {
+    // Load platform admins
+    demoPlatformAdmins.forEach(admin => {
+      this.platformAdmins.set(admin.id, admin);
+    });
+    
+    // Load tenants
+    demoTenants.forEach(tenant => {
+      this.tenants.set(tenant.id, tenant);
+    });
+    
+    // Load tenant users
+    demoTenantUsers.forEach(user => {
+      this.users.set(user.id, user);
+    });
+    
     // Load worker profiles
     mockWorkerProfiles.forEach(profile => {
       this.workerProfiles.set(profile.id, profile);
@@ -95,7 +115,8 @@ export class MemStorage implements IStorage {
       this.employmentPrivateData.set(privateData.id, privateData);
     });
     
-    console.log(`✅ Mock data loaded: ${this.workerProfiles.size} profiles, ${this.employments.size} employments, ${this.employmentPrivateData.size} private data`);
+    console.log(`✅ Platform data: ${this.platformAdmins.size} admins, ${this.tenants.size} tenants, ${this.users.size} users`);
+    console.log(`✅ Worker data: ${this.workerProfiles.size} profiles, ${this.employments.size} employments, ${this.employmentPrivateData.size} private data`);
   }
 
   // ============================================
@@ -386,6 +407,12 @@ import { eq, and } from "drizzle-orm";
 
 export class DbStorage implements IStorage {
   private seeded = false;
+  private seedPromise: Promise<void> | null = null;
+
+  constructor() {
+    // Auto-seed on initialization
+    this.seedPromise = this.ensureSeeded();
+  }
 
   // Auto-seed on first access
   private async ensureSeeded() {
@@ -397,14 +424,23 @@ export class DbStorage implements IStorage {
 
   private async seedMockData() {
     try {
-      // Check if already seeded
-      const existingProfiles = await db.select().from(workerProfilesTable).limit(1);
-      if (existingProfiles.length > 0) {
+      // Check if already seeded (check platform admins instead of worker profiles)
+      const existingAdmins = await db.select().from(platformAdminsTable).limit(1);
+      if (existingAdmins.length > 0) {
         console.log("📦 Database already has data, skipping seed");
         return;
       }
 
-      console.log("🌱 Seeding database with mock data...");
+      console.log("🌱 Seeding database with platform and worker data...");
+
+      // Insert platform admins
+      await db.insert(platformAdminsTable).values(demoPlatformAdmins);
+      
+      // Insert tenants
+      await db.insert(tenantsTable).values(demoTenants);
+      
+      // Insert tenant users
+      await db.insert(usersTable).values(demoTenantUsers);
 
       // Insert worker profiles
       await db.insert(workerProfilesTable).values(mockWorkerProfiles);
@@ -415,7 +451,8 @@ export class DbStorage implements IStorage {
       // Insert employment private data
       await db.insert(employmentPrivateDataTable).values(mockEmploymentPrivateData);
 
-      console.log(`✅ Database seeded: ${mockWorkerProfiles.length} profiles, ${mockEmployments.length} employments, ${mockEmploymentPrivateData.length} private data`);
+      console.log(`✅ Platform data seeded: ${demoPlatformAdmins.length} admins, ${demoTenants.length} tenants, ${demoTenantUsers.length} users`);
+      console.log(`✅ Worker data seeded: ${mockWorkerProfiles.length} profiles, ${mockEmployments.length} employments, ${mockEmploymentPrivateData.length} private data`);
     } catch (error) {
       console.error("❌ Error seeding database:", error);
       throw error;
@@ -427,11 +464,13 @@ export class DbStorage implements IStorage {
   // ============================================
 
   async getPlatformAdmin(id: string): Promise<PlatformAdmin | undefined> {
+    await this.seedPromise; // Ensure seeded before query
     const result = await db.select().from(platformAdminsTable).where(eq(platformAdminsTable.id, id)).limit(1);
     return result[0];
   }
 
   async getPlatformAdminByEmail(email: string): Promise<PlatformAdmin | undefined> {
+    await this.seedPromise; // Ensure seeded before query
     const result = await db.select().from(platformAdminsTable).where(eq(platformAdminsTable.email, email)).limit(1);
     return result[0];
   }
@@ -446,16 +485,19 @@ export class DbStorage implements IStorage {
   // ============================================
 
   async getTenant(id: string): Promise<Tenant | undefined> {
+    await this.seedPromise; // Ensure seeded before query
     const result = await db.select().from(tenantsTable).where(eq(tenantsTable.id, id)).limit(1);
     return result[0];
   }
 
   async getTenantBySlug(slug: string): Promise<Tenant | undefined> {
+    await this.seedPromise; // Ensure seeded before query
     const result = await db.select().from(tenantsTable).where(eq(tenantsTable.slug, slug)).limit(1);
     return result[0];
   }
 
   async getAllTenants(): Promise<Tenant[]> {
+    await this.seedPromise; // Ensure seeded before query
     return await db.select().from(tenantsTable);
   }
 
@@ -477,16 +519,19 @@ export class DbStorage implements IStorage {
   // ============================================
 
   async getUser(id: string): Promise<User | undefined> {
+    await this.seedPromise; // Ensure seeded before query
     const result = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
     return result[0];
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
+    await this.seedPromise; // Ensure seeded before query
     const result = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
     return result[0];
   }
 
   async getUserByTenantEmail(tenantId: string, email: string): Promise<User | undefined> {
+    await this.seedPromise; // Ensure seeded before query
     const result = await db.select().from(usersTable)
       .where(and(
         eq(usersTable.tenantId, tenantId),

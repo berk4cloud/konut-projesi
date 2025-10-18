@@ -26,7 +26,7 @@ export const demoPlatformAdmins: PlatformAdmin[] = [
   {
     id: "platform-admin-1",
     email: "tahir@arpdo.com",
-    password: "hashed_SecurePass123", // TODO: Hash with bcrypt
+    password: "$2b$10$u4sWHn3bMnlABUZYUgTMueiodv/FCOIS2Zsq4ndM82CORfyIEFOYi", // SecurePass123
     firstName: "Tahir",
     lastName: "Çetin",
     role: "super_admin",
@@ -37,7 +37,7 @@ export const demoPlatformAdmins: PlatformAdmin[] = [
   {
     id: "platform-admin-2",
     email: "admin@arpdo.com",
-    password: "hashed_AdminPass123",
+    password: "$2b$10$zvf1NaDn8ehyDQ5mOyMTzuU8Olb0pWE.2xTVSnie0pEN1AejxljI6", // AdminPass123
     firstName: "Platform",
     lastName: "Admin",
     role: "admin",
@@ -120,7 +120,7 @@ export const demoTenantUsers: User[] = [
     id: "user-cova-owner",
     tenantId: "tenant-cova",
     email: "jan@cova.nl",
-    password: "hashed_CovaPass123", // TODO: Hash with bcrypt
+    password: "$2b$10$3JuG8fX.Huj3N0dRR7e/z.E0LazSCvINqehli.2Nckf0NtVA/Qxni", // CovaPass123
     firstName: "Jan",
     lastName: "de Vries",
     role: "owner",
@@ -139,7 +139,7 @@ export const demoTenantUsers: User[] = [
     id: "user-cova-admin",
     tenantId: "tenant-cova",
     email: "lisa@cova.nl",
-    password: "hashed_LisaPass123",
+    password: "$2b$10$y0Dx5e.0Hp7i.DiK9Ew6rOwMsI7kJ6YYQI9pJZNY1ceFd4GQzWqCG", // LisaPass123
     firstName: "Lisa",
     lastName: "Janssen",
     role: "admin",
@@ -158,7 +158,7 @@ export const demoTenantUsers: User[] = [
     id: "user-apple-owner",
     tenantId: "tenant-apple",
     email: "tim@apple.nl",
-    password: "hashed_ApplePass123",
+    password: "$2b$10$4vd9MwrRn9AWgM7sWyDWKOEjmopbqizhluYTIJb1HeZBJ3FYJc.xe", // ApplePass123
     firstName: "Tim",
     lastName: "Cook",
     role: "owner",
@@ -177,7 +177,7 @@ export const demoTenantUsers: User[] = [
     id: "user-oneflex-owner",
     tenantId: "tenant-oneflex",
     email: "sophie@oneflex.nl",
-    password: "hashed_OneFlexPass123",
+    password: "$2b$10$SX49cSlGk/7lsJmdraD4c.NvCcTPUEkPPoJaX0vfW62gO.wIWIBAu", // OneFlexPass123
     firstName: "Sophie",
     lastName: "van der Berg",
     role: "owner",

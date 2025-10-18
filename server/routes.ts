@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { Router } from "express";
 import { storage } from "./storage";
 import { 
   insertWorkerProfileSchema, 
@@ -11,12 +12,14 @@ import { requireTenant } from "./middleware/tenant";
 import { verifyPassword, generateTenantUserToken, generatePlatformAdminToken } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  const apiRouter = Router();
+
   // ============================================
   // AUTHENTICATION ENDPOINTS
   // ============================================
 
-  // POST /api/tenant/login - Tenant user login
-  app.post("/api/tenant/login", requireTenant, async (req, res) => {
+  // POST /tenant/login - Tenant user login
+  apiRouter.post("/tenant/login", requireTenant, async (req, res) => {
     try {
       const { email, password } = req.body;
       
@@ -87,8 +90,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // POST /api/platform/login - Platform admin login
-  app.post("/api/platform/login", async (req, res) => {
+  // POST /platform/login - Platform admin login
+  apiRouter.post("/platform/login", async (req, res) => {
     try {
       const { email, password } = req.body;
       
@@ -133,9 +136,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // FEDERATED WORKER IDENTITY ENDPOINTS
   // ============================================
 
-  // POST /api/workers - Create new worker (profile + employment + private data)
+  // POST /workers - Create new worker (profile + employment + private data)
   // This creates a federated worker with all associated records
-  app.post("/api/workers", async (req, res) => {
+  apiRouter.post("/workers", async (req, res) => {
     try {
       const tenantId = req.body.tenantId || "cova"; // Default tenant for now
 
@@ -235,8 +238,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/workers - Get all active workers for tenant
-  app.get("/api/workers", async (req, res) => {
+  // GET /workers - Get all active workers for tenant
+  apiRouter.get("/workers", async (req, res) => {
     try {
       const tenantId = req.query.tenantId as string || "cova";
 
@@ -284,8 +287,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/workers/:employmentId - Get specific worker by employmentId
-  app.get("/api/workers/:employmentId", async (req, res) => {
+  // GET /workers/:employmentId - Get specific worker by employmentId
+  apiRouter.get("/workers/:employmentId", async (req, res) => {
     try {
       const { employmentId } = req.params;
 
@@ -327,8 +330,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // PATCH /api/employments/:id - Update employment
-  app.patch("/api/employments/:id", async (req, res) => {
+  // PATCH /employments/:id - Update employment
+  apiRouter.patch("/employments/:id", async (req, res) => {
     try {
       const { id } = req.params;
       
@@ -354,8 +357,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/worker-profiles/:email - Check if worker profile exists
-  app.get("/api/worker-profiles/:email", async (req, res) => {
+  // GET /worker-profiles/:email - Check if worker profile exists
+  apiRouter.get("/worker-profiles/:email", async (req, res) => {
     try {
       const { email } = req.params;
       
@@ -372,8 +375,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/employments/worker/:workerProfileId - Get all employments for a worker
-  app.get("/api/employments/worker/:workerProfileId", async (req, res) => {
+  // GET /employments/worker/:workerProfileId - Get all employments for a worker
+  apiRouter.get("/employments/worker/:workerProfileId", async (req, res) => {
     try {
       const { workerProfileId } = req.params;
       
@@ -385,6 +388,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to fetch employments" });
     }
   });
+
+  // Register API router with /api prefix
+  app.use("/api", apiRouter);
 
   const httpServer = createServer(app);
 
