@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, numeric, integer, date, boolean, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, numeric, integer, date, boolean, pgEnum, jsonb, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -69,7 +69,7 @@ export const tenants = pgTable("tenants", {
   subscriptionStartsAt: timestamp("subscription_starts_at"),
   
   // Feature flags (which modules are enabled)
-  modules: text("modules").default('{"workers":true,"planning":false,"accommodation":false,"transport":false,"finance":false}'),
+  modules: jsonb("modules").default(sql`'{"workers":true,"planning":false,"accommodation":false,"transport":false,"finance":false}'::jsonb`).notNull(),
   
   // Settings
   currency: currencyEnum("currency").default("EUR").notNull(),
@@ -116,7 +116,10 @@ export const users = pgTable("users", {
   
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => ({
+  // Ensure email is unique per tenant
+  tenantEmailUnique: unique().on(table.tenantId, table.email),
+}));
 
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
