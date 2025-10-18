@@ -585,7 +585,7 @@ export default function Assignments() {
     amount: 0,
     paymentDate: new Date().toISOString().split('T')[0],
     paymentMethod: "cash" as PaymentMethod,
-    collectorName: "",
+    collectorName: "Admin",
     notes: "",
   });
 
@@ -643,7 +643,7 @@ export default function Assignments() {
       amount: charge.remainingAmount, // Default to remaining amount
       paymentDate: new Date().toISOString().split('T')[0],
       paymentMethod: "cash",
-      collectorName: "",
+      collectorName: "Admin",
       notes: "",
     });
     setPaymentDialogOpen(true);
@@ -693,7 +693,7 @@ export default function Assignments() {
       amount: 0,
       paymentDate: new Date().toISOString().split('T')[0],
       paymentMethod: "cash",
-      collectorName: "",
+      collectorName: "Admin",
       notes: "",
     });
   };
@@ -1502,6 +1502,8 @@ export default function Assignments() {
                   onChange={(e) => setNewPayment({ ...newPayment, collectorName: e.target.value })}
                   placeholder={t('assignments.paymentDialog.collectorPlaceholder')}
                   data-testid="input-collector-name"
+                  disabled
+                  className="bg-muted text-muted-foreground cursor-not-allowed"
                 />
               </div>
 
@@ -1560,8 +1562,8 @@ export default function Assignments() {
           }
         }}
       >
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>{t('assignments.detailsDialog.title')}</DialogTitle>
             {selectedAssignment && (
               <div className="space-y-2 mt-2">
@@ -1580,6 +1582,7 @@ export default function Assignments() {
             )}
           </DialogHeader>
 
+          <div className="flex-1 overflow-y-auto">
           {selectedAssignment && (
             <div className="space-y-4 pb-4">
               {/* Conversation Notes List */}
@@ -1641,8 +1644,9 @@ export default function Assignments() {
               </div>
             </div>
           )}
+          </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex-shrink-0">
             <Button 
               variant="outline" 
               onClick={() => {
