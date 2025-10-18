@@ -21,6 +21,7 @@ import {
 import { useLocation } from "wouter";
 import { useState } from "react";
 import { useTheme } from "@/components/ThemeProvider";
+import { useAuth } from "@/contexts/AuthContext";
 import NotificationsDialog from "@/components/NotificationsDialog";
 import LanguageSelector from "@/components/LanguageSelector";
 
@@ -59,6 +60,18 @@ export default function Header({
   const [sheetOpen, setSheetOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/logout", { method: "POST" });
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      logout();
+      setLocation("/");
+    }
+  };
 
   const menuItems = [
     { icon: Home, label: t('nav.housingOverview'), path: "/dashboard" },
@@ -248,7 +261,7 @@ export default function Header({
                 <User className="w-4 h-4 mr-2" />
                 {t("nav.profile")}
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => console.log("Logout clicked")}>
+              <DropdownMenuItem onClick={handleLogout} data-testid="button-logout">
                 <LogOut className="w-4 h-4 mr-2" />
                 {t("nav.logout")}
               </DropdownMenuItem>

@@ -5,53 +5,88 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useTranslation } from "react-i18next";
+import { useToast } from "@/hooks/use-toast";
 
 export default function LoginForm() {
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const { login } = useAuth();
+  const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [tenant] = useState("cova"); // Fixed tenant for ARPDO HABITAT
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = () => {
-    console.log("Login triggered:", { email, password, tenant });
+  const handleLogin = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     
-    // Mock user data for demo - in production this would come from API
-    const mockUser = {
-      id: "user-1",
-      tenantId: tenant || "cova",
-      email: email,
-      password: "", // Never store in context
-      name: "Admin User",
-      role: "tenant_admin",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    
-    login(mockUser);
-    setLocation("/dashboard");
+    if (!email || !password) {
+      toast({
+        variant: "destructive",
+        title: "Hata",
+        description: "Email ve şifre gerekli",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Giriş başarısız");
+      }
+
+      // Handle different response types
+      if (data.type === "redirect") {
+        // Single tenant + single role - direct login
+        const userData = {
+          id: data.user.id,
+          email: data.user.email,
+          firstName: data.user.firstName,
+          lastName: data.user.lastName,
+          tenantId: data.tenant.id,
+          tenantName: data.tenant.name,
+          tenantSlug: data.tenant.slug,
+          role: data.role,
+        };
+        
+        login(userData, data.token);
+        setLocation("/dashboard");
+      } else if (data.type === "select_tenant") {
+        // Multi-tenant user - show tenant selector (TODO: implement)
+        toast({
+          title: "Çoklu Tenant",
+          description: "Tenant seçim ekranı yakında gelecek",
+        });
+      } else if (data.type === "select_role") {
+        // Multi-role user - show role selector (TODO: implement)
+        toast({
+          title: "Çoklu Rol",
+          description: "Rol seçim ekranı yakında gelecek",
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Giriş Hatası",
+        description: error instanceof Error ? error.message : "Bir hata oluştu",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleDemoLogin = () => {
-    setEmail("admin@cova.nl");
-    setPassword("demo123");
-    console.log("Demo login triggered");
-    
-    // Mock demo user
-    const demoUser = {
-      id: "demo-user-1",
-      tenantId: "cova",
-      email: "admin@cova.nl",
-      password: "",
-      name: "Admin Demo",
-      role: "tenant_admin",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    
-    login(demoUser);
-    setTimeout(() => setLocation("/dashboard"), 100);
+    setEmail("jan@cova.nl");
+    setPassword("CovaPass123");
+    setTimeout(() => handleLogin(), 100);
   };
 
   return (
@@ -61,7 +96,7 @@ export default function LoginForm() {
         <p className="text-muted-foreground">{t('auth.appSubtitle')}</p>
       </div>
 
-      <div className="space-y-4">
+      <form onSubmit={handleLogin} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="email">{t('auth.email')}</Label>
           <Input
@@ -70,6 +105,7 @@ export default function LoginForm() {
             placeholder={t('auth.emailPlaceholder')}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            disabled={isLoading}
             data-testid="input-email"
           />
         </div>
@@ -82,27 +118,31 @@ export default function LoginForm() {
             placeholder={t('auth.passwordPlaceholder')}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            disabled={isLoading}
             data-testid="input-password"
           />
         </div>
 
         <Button
+          type="submit"
           className="w-full"
-          onClick={handleLogin}
+          disabled={isLoading}
           data-testid="button-login"
         >
-          {t('auth.login')}
+          {isLoading ? "Giriş yapılıyor..." : t('auth.login')}
         </Button>
 
         <Button
+          type="button"
           variant="outline"
           className="w-full"
           onClick={handleDemoLogin}
+          disabled={isLoading}
           data-testid="button-demo-login"
         >
           {t('auth.demoLogin')}
         </Button>
-      </div>
+      </form>
     </div>
   );
 }
