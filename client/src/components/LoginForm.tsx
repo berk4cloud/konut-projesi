@@ -124,10 +124,54 @@ export default function LoginForm() {
     }
   };
 
-  const handleDemoLogin = () => {
-    setEmail("jan@cova.nl");
-    setPassword("CovaPass123");
-    setTimeout(() => handleLogin(), 100);
+  const handleDemoLogin = async () => {
+    // Demo credentials
+    const demoEmail = "jan@cova.nl";
+    const demoPassword = "CovaPass123";
+    
+    // Update form fields for visual feedback
+    setEmail(demoEmail);
+    setPassword(demoPassword);
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: demoEmail, password: demoPassword }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Giriş başarısız");
+      }
+
+      // Handle response (should be redirect type for jan@cova.nl)
+      if (data.type === "redirect") {
+        const userData = {
+          id: data.user.id,
+          email: data.user.email,
+          firstName: data.user.firstName,
+          lastName: data.user.lastName,
+          tenantId: data.tenant.id,
+          tenantName: data.tenant.name,
+          tenantSlug: data.tenant.slug,
+          role: data.role,
+        };
+        
+        login(userData, data.token);
+        setLocation("/dashboard");
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Demo Giriş Hatası",
+        description: error instanceof Error ? error.message : "Bir hata oluştu",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleTenantSelect = async (option: TenantOption) => {
