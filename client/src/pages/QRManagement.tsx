@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
@@ -37,13 +40,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { mockQRCodes, type QRCodeData, type QRCodeType, type QRStatus } from "@shared/mockQRData";
+import { type QRCodeData, type QRCodeType, type QRStatus } from "@shared/mockQRData";
 
 export default function QRManagement() {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
-  const [qrCodes, setQrCodes] = useState<QRCodeData[]>(mockQRCodes);
+  
+  // Fetch QR codes from API
+  const { data: qrCodes = [], isLoading } = useQuery<QRCodeData[]>({
+    queryKey: ['/api/qr-codes', user?.tenantId],
+    enabled: !!user?.tenantId,
+  });
   
   // Create QR Dialog States
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -60,6 +69,40 @@ export default function QRManagement() {
   // View QR Dialog States
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [selectedQR, setSelectedQR] = useState<QRCodeData | null>(null);
+
+  // Create QR mutation
+  const createQRMutation = useMutation({
+    mutationFn: async (data: any) => apiRequest('POST', '/api/qr-codes', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/qr-codes'] });
+      toast({
+        title: t('qrManagement.toasts.created.title'),
+        description: t('qrManagement.toasts.created.description'),
+      });
+    },
+  });
+
+  // Update QR mutation
+  const updateQRMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) =>
+      apiRequest('PATCH', `/api/qr-codes/${id}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/qr-codes'] });
+    },
+  });
+
+  // Delete QR mutation
+  const deleteQRMutation = useMutation({
+    mutationFn: async (id: string) => apiRequest('DELETE', `/api/qr-codes/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/qr-codes'] });
+      toast({
+        title: t('qrManagement.toasts.deleted.title'),
+        description: t('qrManagement.toasts.deleted.description'),
+        variant: "destructive",
+      });
+    },
+  });
 
   const filteredQRCodes = qrCodes.filter((qr) =>
     qr.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -102,26 +145,25 @@ export default function QRManagement() {
     });
   };
 
-  const handleToggleStatus = (id: string) => {
-    setQrCodes(qrCodes.map(qr => {
-      if (qr.id === id && qr.status !== "expired") {
-        return { ...qr, status: qr.status === "active" ? "disabled" : "active" };
+  const handleToggleStatus = (id: string, currentStatus: QRStatus) => {
+    if (currentStatus === "expired") return;
+    
+    const newStatus = currentStatus === "active" ? "disabled" : "active";
+    updateQRMutation.mutate({ 
+      id, 
+      data: { status: newStatus } 
+    }, {
+      onSuccess: () => {
+        toast({
+          title: t('qrManagement.toasts.statusChanged.title'),
+          description: t('qrManagement.toasts.statusChanged.description'),
+        });
       }
-      return qr;
-    }));
-    toast({
-      title: t('qrManagement.toasts.statusChanged.title'),
-      description: t('qrManagement.toasts.statusChanged.description'),
     });
   };
 
   const handleDelete = (id: string) => {
-    setQrCodes(qrCodes.filter(qr => qr.id !== id));
-    toast({
-      title: t('qrManagement.toasts.deleted.title'),
-      description: t('qrManagement.toasts.deleted.description'),
-      variant: "destructive",
-    });
+    deleteQRMutation.mutate(id);
   };
 
   const getUsageText = (qr: QRCodeData) => {
@@ -174,26 +216,24 @@ export default function QRManagement() {
       
       const expiryDate = formData.expiryDays === "unlimited"
         ? null
-        : new Date(Date.now() + parseInt(formData.expiryDays) * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        : new Date(Date.now() + parseInt(formData.expiryDays) * 24 * 60 * 60 * 1000).toISOString();
       
-      const newQR: QRCodeData = {
-        id: Date.now().toString(),
+      createQRMutation.mutate({
+        tenantId: user?.tenantId,
         code,
         type: formData.type,
         title: formData.title || getTypeLabel(formData.type),
         usageLimit,
-        usedCount: 0,
         expiryDate,
         status: "active",
-        createdAt: new Date().toISOString().split('T')[0],
-      };
-      
-      setQrCodes([newQR, ...qrCodes]);
-      setStep(3);
-      
-      toast({
-        title: t('qrManagement.toasts.qrCreated.title'),
-        description: t('qrManagement.toasts.qrCreated.description'),
+      }, {
+        onSuccess: () => {
+          setStep(3);
+          toast({
+            title: t('qrManagement.toasts.qrCreated.title'),
+            description: t('qrManagement.toasts.qrCreated.description'),
+          });
+        }
       });
     }
   };
@@ -310,7 +350,7 @@ export default function QRManagement() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  onClick={() => handleToggleStatus(qr.id)}
+                                  onClick={() => handleToggleStatus(qr.id, qr.status)}
                                   data-testid={`button-toggle-${qr.id}`}
                                 >
                                   {qr.status === "active" ? (
