@@ -1105,6 +1105,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============================================
+  // QR Codes Endpoints
+  // ============================================
+
+  // GET /qr-codes - Get all QR codes for tenant
+  apiRouter.get("/qr-codes", async (req, res) => {
+    try {
+      const { tenantId } = req.query;
+      if (!tenantId) {
+        return res.status(400).json({ error: "tenantId required" });
+      }
+      const qrCodes = await storage.getQRCodesByTenant(tenantId as string);
+      res.json(qrCodes);
+    } catch (error) {
+      console.error("Error fetching QR codes:", error);
+      res.status(500).json({ error: "Failed to fetch QR codes" });
+    }
+  });
+
+  // POST /qr-codes - Create new QR code
+  apiRouter.post("/qr-codes", async (req, res) => {
+    try {
+      const qrCode = await storage.createQRCode(req.body);
+      res.status(201).json(qrCode);
+    } catch (error) {
+      console.error("Error creating QR code:", error);
+      res.status(500).json({ error: "Failed to create QR code" });
+    }
+  });
+
+  // PATCH /qr-codes/:id - Update QR code
+  apiRouter.patch("/qr-codes/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updated = await storage.updateQRCode(id, req.body);
+      if (!updated) {
+        return res.status(404).json({ error: "QR code not found" });
+      }
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating QR code:", error);
+      res.status(500).json({ error: "Failed to update QR code" });
+    }
+  });
+
+  // DELETE /qr-codes/:id - Delete QR code
+  apiRouter.delete("/qr-codes/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteQRCode(id);
+      if (!deleted) {
+        return res.status(404).json({ error: "QR code not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting QR code:", error);
+      res.status(500).json({ error: "Failed to delete QR code" });
+    }
+  });
+
+  // POST /qr-codes/:code/use - Increment usage count
+  apiRouter.post("/qr-codes/:code/use", async (req, res) => {
+    try {
+      const { code } = req.params;
+      const qrCode = await storage.getQRCodeByCode(code);
+      if (!qrCode) {
+        return res.status(404).json({ error: "QR code not found" });
+      }
+      
+      // Check if expired or disabled
+      if (qrCode.status !== "active") {
+        return res.status(400).json({ error: "QR code is not active" });
+      }
+      
+      // Check usage limit
+      if (qrCode.usageLimit !== null && qrCode.usedCount >= qrCode.usageLimit) {
+        return res.status(400).json({ error: "QR code usage limit reached" });
+      }
+      
+      const updated = await storage.incrementQRUsage(qrCode.id);
+      res.json(updated);
+    } catch (error) {
+      console.error("Error using QR code:", error);
+      res.status(500).json({ error: "Failed to use QR code" });
+    }
+  });
+
   // Register API router with /api prefix
   app.use("/api", apiRouter);
 

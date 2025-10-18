@@ -17,6 +17,8 @@ export const currencyEnum = pgEnum("currency", [
   "EUR", "USD", "TRY", "GBP", "CHF", "CAD", "MXN", "CNY", "JPY",
   "RUB", "SEK", "NOK", "DKK", "HUF", "PLN", "CZK", "RON", "BGN", "RSD", "UAH"
 ]);
+export const qrCodeTypeEnum = pgEnum("qr_code_type", ["worker_registration", "meter_reading", "document_upload"]);
+export const qrCodeStatusEnum = pgEnum("qr_code_status", ["active", "disabled", "expired"]);
 
 // Platform-level enums
 export const platformAdminRoleEnum = pgEnum("platform_admin_role", ["super_admin", "admin", "support"]);
@@ -401,3 +403,26 @@ export const insertReservationSchema = createInsertSchema(reservations).omit({
 });
 export type InsertReservation = z.infer<typeof insertReservationSchema>;
 export type Reservation = typeof reservations.$inferSelect;
+
+// QR Codes table for task delegation system
+export const qrCodes = pgTable("qr_codes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id").notNull(),
+  type: qrCodeTypeEnum("type").notNull(),
+  code: varchar("code", { length: 20 }).notNull().unique(),
+  title: text("title").notNull(),
+  status: qrCodeStatusEnum("status").notNull().default("active"),
+  usageLimit: integer("usage_limit"), // null = unlimited
+  usedCount: integer("used_count").notNull().default(0),
+  expiryDate: timestamp("expiry_date"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdBy: varchar("created_by"),
+});
+
+export const insertQRCodeSchema = createInsertSchema(qrCodes).omit({
+  id: true,
+  createdAt: true,
+  usedCount: true,
+});
+export type InsertQRCode = z.infer<typeof insertQRCodeSchema>;
+export type QRCode = typeof qrCodes.$inferSelect;

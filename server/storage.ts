@@ -20,7 +20,9 @@ import {
   type Bed,
   type InsertBed,
   type Reservation,
-  type InsertReservation
+  type InsertReservation,
+  type QRCode,
+  type InsertQRCode
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { 
@@ -108,6 +110,15 @@ export interface IStorage {
   createReservation(reservation: InsertReservation): Promise<Reservation>;
   updateReservation(id: string, reservation: Partial<InsertReservation>): Promise<Reservation | undefined>;
   completeReservation(id: string, checkOutDate: string): Promise<Reservation | undefined>;
+  
+  // QR Codes (Task Delegation System)
+  getQRCode(id: string): Promise<QRCode | undefined>;
+  getQRCodeByCode(code: string): Promise<QRCode | undefined>;
+  getQRCodesByTenant(tenantId: string): Promise<QRCode[]>;
+  createQRCode(qrCode: InsertQRCode): Promise<QRCode>;
+  updateQRCode(id: string, qrCode: Partial<InsertQRCode>): Promise<QRCode | undefined>;
+  deleteQRCode(id: string): Promise<boolean>;
+  incrementQRUsage(id: string): Promise<QRCode | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -489,6 +500,15 @@ export class MemStorage implements IStorage {
   async createReservation(_reservation: InsertReservation): Promise<Reservation> { throw new Error("Not implemented in MemStorage"); }
   async updateReservation(_id: string, _reservation: Partial<InsertReservation>): Promise<Reservation | undefined> { throw new Error("Not implemented in MemStorage"); }
   async completeReservation(_id: string, _checkOutDate: string): Promise<Reservation | undefined> { throw new Error("Not implemented in MemStorage"); }
+  
+  // QR Codes stubs
+  async getQRCode(_id: string): Promise<QRCode | undefined> { throw new Error("Not implemented in MemStorage"); }
+  async getQRCodeByCode(_code: string): Promise<QRCode | undefined> { throw new Error("Not implemented in MemStorage"); }
+  async getQRCodesByTenant(_tenantId: string): Promise<QRCode[]> { throw new Error("Not implemented in MemStorage"); }
+  async createQRCode(_qrCode: InsertQRCode): Promise<QRCode> { throw new Error("Not implemented in MemStorage"); }
+  async updateQRCode(_id: string, _qrCode: Partial<InsertQRCode>): Promise<QRCode | undefined> { throw new Error("Not implemented in MemStorage"); }
+  async deleteQRCode(_id: string): Promise<boolean> { throw new Error("Not implemented in MemStorage"); }
+  async incrementQRUsage(_id: string): Promise<QRCode | undefined> { throw new Error("Not implemented in MemStorage"); }
 }
 
 // ============================================
@@ -507,9 +527,10 @@ import {
   houses as housesTable,
   rooms as roomsTable,
   beds as bedsTable,
-  reservations as reservationsTable
+  reservations as reservationsTable,
+  qrCodes as qrCodesTable
 } from "@shared/schema";
-import { eq, and, isNull } from "drizzle-orm";
+import { eq, and, isNull, sql } from "drizzle-orm";
 
 export class DbStorage implements IStorage {
   private seeded = false;
@@ -942,6 +963,50 @@ export class DbStorage implements IStorage {
         updatedAt: new Date() 
       })
       .where(eq(reservationsTable.id, id))
+      .returning();
+    return result[0];
+  }
+
+  // ============================================
+  // QR Codes Implementation
+  // ============================================
+
+  async getQRCode(id: string): Promise<QRCode | undefined> {
+    const result = await db.select().from(qrCodesTable).where(eq(qrCodesTable.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getQRCodeByCode(code: string): Promise<QRCode | undefined> {
+    const result = await db.select().from(qrCodesTable).where(eq(qrCodesTable.code, code)).limit(1);
+    return result[0];
+  }
+
+  async getQRCodesByTenant(tenantId: string): Promise<QRCode[]> {
+    return db.select().from(qrCodesTable).where(eq(qrCodesTable.tenantId, tenantId));
+  }
+
+  async createQRCode(qrCode: InsertQRCode): Promise<QRCode> {
+    const result = await db.insert(qrCodesTable).values(qrCode).returning();
+    return result[0];
+  }
+
+  async updateQRCode(id: string, qrCode: Partial<InsertQRCode>): Promise<QRCode | undefined> {
+    const result = await db.update(qrCodesTable)
+      .set(qrCode)
+      .where(eq(qrCodesTable.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteQRCode(id: string): Promise<boolean> {
+    const result = await db.delete(qrCodesTable).where(eq(qrCodesTable.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async incrementQRUsage(id: string): Promise<QRCode | undefined> {
+    const result = await db.update(qrCodesTable)
+      .set({ usedCount: sql`${qrCodesTable.usedCount} + 1` })
+      .where(eq(qrCodesTable.id, id))
       .returning();
     return result[0];
   }
