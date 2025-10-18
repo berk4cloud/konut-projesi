@@ -1,0 +1,113 @@
+Çok önemli bir nokta! Evet, **mutlaka belirtmeliyiz**. Replit bunu otomatik olarak anlamayabilir. İşte daha kapsamlı bir prompt:
+
+---
+
+**Task: Implement Federated Worker Identity with Extended Worker Information**
+
+**Context:**
+We have a SaaS application with federated authentication (SSO/IdP). User identity data comes from the IdP, but we need to store additional work-related information in our application.
+
+**Architecture Requirements:**
+
+1. **Data Model Structure:**
+
+   ```
+   [IdP/SSO System] → User Identity (managed externally)
+   ├── id (from IdP)
+   ├── firstName
+   ├── lastName  
+   ├── email
+   ├── dateOfBirth
+   └── gender
+
+   [Our SaaS Database] → Worker Extended Info (we manage)
+   ├── id (primary key)
+   ├── saasUserId (foreign key → links to IdP user)
+   ├── position
+   ├── department
+   ├── startDate
+   ├── phone
+   └── nationality
+   ```
+
+2. **Database Implementation:**
+   - Create a `worker_extended_info` table (or similar name)
+   - This table should have a foreign key `saas_user_id` that links to the federated user ID
+   - This allows us to store additional information without modifying IdP data
+
+3. **Form Logic:**
+   ```javascript
+   // When loading the edit form:
+   // 1. Fetch user identity from IdP/SSO (read-only fields)
+   const userIdentity = await fetchUserFromIdP(userId);
+   
+   // 2. Fetch extended worker info from our database (editable fields)
+   const workerExtendedInfo = await fetchWorkerExtendedInfo(userId);
+   
+   // 3. Combine both for display
+   const workerData = {
+     // Read-only from IdP
+     firstName: userIdentity.firstName,
+     lastName: userIdentity.lastName,
+     email: userIdentity.email,
+     dateOfBirth: userIdentity.dateOfBirth,
+     gender: userIdentity.gender,
+     isFederated: true,
+     
+     // Editable from our database
+     position: workerExtendedInfo.position,
+     department: workerExtendedInfo.department,
+     startDate: workerExtendedInfo.startDate,
+     phone: workerExtendedInfo.phone,
+     nationality: workerExtendedInfo.nationality
+   };
+   ```
+
+4. **Update Logic:**
+   ```javascript
+   // When saving the form:
+   // Only update the fields in OUR database (worker_extended_info table)
+   // Do NOT attempt to update IdP-managed fields
+   
+   await updateWorkerExtendedInfo({
+     saasUserId: userId,
+     position: formData.position,
+     department: formData.department,
+     startDate: formData.startDate,
+     phone: formData.phone,
+     nationality: formData.nationality
+   });
+   
+   // Show success message
+   ```
+
+**UI Requirements:**
+- IdP-synced fields: disabled, gray background, with info icon
+- Our database fields: normal input, fully editable
+- Clear visual distinction between the two types of fields
+
+**Database Migration Needed:**
+```sql
+CREATE TABLE worker_extended_info (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  saas_user_id VARCHAR(255) UNIQUE NOT NULL, -- Links to federated user
+  position VARCHAR(255),
+  department VARCHAR(255),
+  start_date DATE,
+  phone VARCHAR(50),
+  nationality VARCHAR(100),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (saas_user_id) REFERENCES users(id)
+);
+```
+
+**Key Points:**
+- We NEVER store or update firstName, lastName, email, DOB, gender in our database for federated users
+- We ONLY store work-related extended information
+- Single source of truth: IdP for identity, our DB for work info
+- When a user is deleted from IdP, we should handle the cascade appropriately
+
+---
+
+Bu şekilde Replit'e mimariyi net bir şekilde açıklamış olursunuz. Böylece doğru veri modelini ve entegrasyon yapısını oluşturabilir.
