@@ -1,0 +1,171 @@
+Elbette! İşte güncellenmiş ve daha kapsamlı prompt:
+
+---
+
+**Task: Implement Federated Worker Identity with Extended Worker Information**
+
+**Context:**
+We have a SaaS application with federated authentication (SSO/IdP). User identity data comes from the IdP, but we need to store additional work-related information in our application.
+
+**CRITICAL RULE: We CANNOT edit SaaS/IdP user information from our module. Identity data is managed externally.**
+
+**Architecture Requirements:**
+
+1. **Data Model Structure:**
+
+   ```
+   [IdP/SSO System] → User Identity (managed externally - READ ONLY for us)
+   ├── id (from IdP)
+   ├── firstName
+   ├── lastName  
+   ├── email
+   ├── dateOfBirth
+   └── gender
+
+   [Our SaaS Database] → Worker Extended Info (we manage - EDITABLE)
+   ├── id (primary key)
+   ├── saasUserId (foreign key → links to IdP user)
+   ├── position
+   ├── department
+   ├── startDate
+   ├── phone
+   └── nationality
+   ```
+
+2. **Database Implementation:**
+   - Create a `worker_extended_info` table (or similar name)
+   - This table should have a foreign key `saas_user_id` that links to the federated user ID
+   - This allows us to store additional information without modifying IdP data
+   - **IMPORTANT:** We do NOT duplicate or store IdP fields (firstName, lastName, email, etc.) in our database
+
+3. **Edit Worker Form - Field Rules:**
+
+   **READ-ONLY Fields (from SaaS/IdP - CANNOT be edited):**
+   - First Name ❌
+   - Last Name ❌
+   - Email ❌
+   - Date of Birth ❌
+   - Gender ❌
+   
+   **EDITABLE Fields (from our module database):**
+   - Position ✅
+   - Department ✅
+   - Start Date ✅
+   - Phone ✅
+   - Nationality ✅
+
+4. **Form Logic:**
+   ```javascript
+   // When loading the edit form:
+   
+   // 1. Fetch user identity from IdP/SSO (read-only fields)
+   const userIdentity = await fetchUserFromIdP(userId);
+   
+   // 2. Fetch extended worker info from our database (editable fields)
+   const workerExtendedInfo = await fetchWorkerExtendedInfo(userId);
+   
+   // 3. Combine both for display
+   const workerData = {
+     // READ-ONLY from IdP - Display but DO NOT allow editing
+     firstName: userIdentity.firstName,
+     lastName: userIdentity.lastName,
+     email: userIdentity.email,
+     dateOfBirth: userIdentity.dateOfBirth,
+     gender: userIdentity.gender,
+     isFederated: true,
+     
+     // EDITABLE from our database
+     position: workerExtendedInfo.position,
+     department: workerExtendedInfo.department,
+     startDate: workerExtendedInfo.startDate,
+     phone: workerExtendedInfo.phone,
+     nationality: workerExtendedInfo.nationality
+   };
+   ```
+
+5. **Update Logic:**
+   ```javascript
+   // When saving the form:
+   // ONLY update the fields in OUR database (worker_extended_info table)
+   // DO NOT attempt to update SaaS/IdP-managed fields
+   // DO NOT send firstName, lastName, email, DOB, gender to any update API
+   
+   await updateWorkerExtendedInfo({
+     saasUserId: userId,
+     position: formData.position,
+     department: formData.department,
+     startDate: formData.startDate,
+     phone: formData.phone,
+     nationality: formData.nationality
+   });
+   
+   // Show success message
+   ```
+
+**UI Requirements:**
+
+1. **For SaaS/IdP Fields (Read-Only):**
+   - Add `disabled` attribute
+   - Gray background (#f5f5f5)
+   - Gray text color (#6b7280)
+   - Add info icon (ℹ️) next to each field
+   - Tooltip on hover: "This information is managed by your identity provider and cannot be edited here"
+   - **Optional:** Add a banner at the top of form: "⚠️ User identity information (name, email, etc.) is managed by your SSO provider and cannot be modified here."
+
+2. **For Our Module Fields (Editable):**
+   - Normal white background
+   - Normal input styling
+   - Full editing capability
+
+3. **Visual Grouping (Optional but Recommended):**
+   ```
+   ┌─────────────────────────────────────┐
+   │ User Identity (From SSO)            │
+   │ ℹ️ These fields cannot be edited    │
+   ├─────────────────────────────────────┤
+   │ First Name: [Ahmet] 🔒              │
+   │ Last Name:  [Yılmaz] 🔒             │
+   │ Email:      [ahmet@...] 🔒          │
+   └─────────────────────────────────────┘
+   
+   ┌─────────────────────────────────────┐
+   │ Work Information (Editable)         │
+   ├─────────────────────────────────────┤
+   │ Position:   [Warehouse Worker] ✏️   │
+   │ Department: [Logistics] ✏️          │
+   │ Start Date: [15/10/2024] ✏️         │
+   └─────────────────────────────────────┘
+   ```
+
+**Database Migration Needed:**
+```sql
+CREATE TABLE worker_extended_info (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  saas_user_id VARCHAR(255) UNIQUE NOT NULL, -- Links to federated user
+  position VARCHAR(255),
+  department VARCHAR(255),
+  start_date DATE,
+  phone VARCHAR(50),
+  nationality VARCHAR(100),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (saas_user_id) REFERENCES users(id)
+);
+```
+
+**Key Points:**
+- ❌ We NEVER store or update firstName, lastName, email, DOB, gender in our database for federated users
+- ❌ We NEVER attempt to update SaaS/IdP user information through any API
+- ✅ We ONLY store and update work-related extended information in our own table
+- ✅ Single source of truth: IdP for identity, our DB for work info
+- ✅ When displaying the form, we fetch IdP data for display only
+- ✅ When saving the form, we only update our `worker_extended_info` table
+- ✅ When a user is deleted from IdP, we should handle the cascade appropriately
+
+**Error Handling:**
+- If someone tries to modify SaaS fields (through API manipulation), reject the request
+- Return error: "Identity fields cannot be modified. Please contact your SSO administrator."
+
+---
+
+Bu şekilde Replit'e hem mimariyi hem de "SaaS bilgilerini asla düzenleyemeyeceğimizi" net bir şekilde iletmiş oluyoruz. 🎯
