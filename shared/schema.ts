@@ -18,14 +18,66 @@ export const currencyEnum = pgEnum("currency", [
   "RUB", "SEK", "NOK", "DKK", "HUF", "PLN", "CZK", "RON", "BGN", "RSD", "UAH"
 ]);
 
-// Tenants table
+// Platform-level enums
+export const platformAdminRoleEnum = pgEnum("platform_admin_role", ["super_admin", "admin", "support"]);
+export const tenantTypeEnum = pgEnum("tenant_type", ["direct_employer", "staffing_agency"]);
+export const tenantStatusEnum = pgEnum("tenant_status", ["trial", "active", "suspended", "cancelled"]);
+export const tenantPlanEnum = pgEnum("tenant_plan", ["basic", "professional", "enterprise"]);
+export const tenantUserStatusEnum = pgEnum("tenant_user_status", ["invited", "active", "inactive"]);
+
+// ============================================
+// PLATFORM LEVEL (SAAS)
+// ============================================
+
+// Platform Admins table (ARPDO team)
+export const platformAdmins = pgTable("platform_admins", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: text("email").notNull().unique(),
+  password: text("password").notNull(),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  role: platformAdminRoleEnum("role").default("admin").notNull(),
+  lastLoginAt: timestamp("last_login_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertPlatformAdminSchema = createInsertSchema(platformAdmins).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  lastLoginAt: true,
+});
+export type InsertPlatformAdmin = z.infer<typeof insertPlatformAdminSchema>;
+export type PlatformAdmin = typeof platformAdmins.$inferSelect;
+
+// Tenants table (Customer companies)
 export const tenants = pgTable("tenants", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
-  email: text("email"),
+  slug: text("slug").notNull().unique(), // For subdomain: cova-bv.arpdo.com
+  type: tenantTypeEnum("type").default("staffing_agency").notNull(),
+  status: tenantStatusEnum("status").default("trial").notNull(),
+  
+  // Contact info
+  contactEmail: text("contact_email"),
+  contactPhone: text("contact_phone"),
+  
+  // Subscription
+  plan: tenantPlanEnum("plan").default("professional").notNull(),
+  trialEndsAt: timestamp("trial_ends_at"),
+  subscriptionStartsAt: timestamp("subscription_starts_at"),
+  
+  // Feature flags (which modules are enabled)
+  modules: text("modules").default('{"workers":true,"planning":false,"accommodation":false,"transport":false,"finance":false}'),
+  
+  // Settings
   currency: currencyEnum("currency").default("EUR").notNull(),
+  
+  // Audit
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+  createdBy: varchar("created_by"), // Platform admin who created this tenant
 });
 
 export const insertTenantSchema = createInsertSchema(tenants).omit({
@@ -36,14 +88,32 @@ export const insertTenantSchema = createInsertSchema(tenants).omit({
 export type InsertTenant = z.infer<typeof insertTenantSchema>;
 export type Tenant = typeof tenants.$inferSelect;
 
-// Users table
+// ============================================
+// TENANT LEVEL
+// ============================================
+
+// Tenant Users table (Each tenant's users)
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   tenantId: varchar("tenant_id").notNull(),
-  email: text("email").notNull().unique(),
-  password: text("password").notNull(),
-  name: text("name").notNull(),
-  role: text("role").notNull().default("office_staff"), // tenant_admin, admin, office_staff
+  
+  email: text("email").notNull(),
+  password: text("password"), // Null if invited but not activated
+  
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  
+  role: text("role").notNull().default("user"), // owner, admin, user
+  status: tenantUserStatusEnum("status").default("invited").notNull(),
+  
+  // Invitation flow
+  invitedAt: timestamp("invited_at"),
+  invitedBy: varchar("invited_by"), // User ID or Platform Admin ID
+  activatedAt: timestamp("activated_at"),
+  invitationToken: text("invitation_token"),
+  
+  lastLoginAt: timestamp("last_login_at"),
+  
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -52,6 +122,7 @@ export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+  lastLoginAt: true,
 });
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
