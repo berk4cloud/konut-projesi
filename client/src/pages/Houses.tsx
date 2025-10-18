@@ -2429,7 +2429,7 @@ export default function Houses() {
       }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Kira Sözleşmesi Bilgileri</DialogTitle>
+            <DialogTitle>{t("lease.title")}</DialogTitle>
             <DialogDescription>
               {selectedHouseForLease?.name}
             </DialogDescription>
@@ -2442,34 +2442,34 @@ export default function Houses() {
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">Başlangıç Tarihi</p>
+                      <p className="text-sm text-muted-foreground">{t("lease.startDate")}</p>
                       <p className="font-medium" data-testid="text-lease-start">
                         {new Date(selectedHouseForLease.leaseContract.startDate).toLocaleDateString("tr-TR")}
                       </p>
                     </div>
                     
                     <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">Bitiş Tarihi</p>
+                      <p className="text-sm text-muted-foreground">{t("lease.endDate")}</p>
                       <p className="font-medium" data-testid="text-lease-end">
                         {selectedHouseForLease.leaseContract.endDate 
                           ? new Date(selectedHouseForLease.leaseContract.endDate).toLocaleDateString("tr-TR")
-                          : "Belirsiz"}
+                          : t("lease.indefinite")}
                       </p>
                     </div>
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">Aylık Kira</p>
+                      <p className="text-sm text-muted-foreground">{t("lease.monthlyRent")}</p>
                       <p className="text-2xl font-semibold" data-testid="text-lease-rent">
                         {selectedHouseForLease.leaseContract.monthlyRent.toLocaleString()} {selectedHouseForLease.leaseContract.currency}
                       </p>
                     </div>
                     
                     <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">Ödeme Günü</p>
+                      <p className="text-sm text-muted-foreground">{t("lease.paymentDay")}</p>
                       <p className="font-medium" data-testid="text-lease-payment-day">
-                        Her ayın {selectedHouseForLease.leaseContract.paymentDay}. günü
+                        {t("lease.dayOfMonth", { day: selectedHouseForLease.leaseContract.paymentDay })}
                       </p>
                     </div>
                   </div>
@@ -2479,12 +2479,14 @@ export default function Houses() {
                       <div className="flex items-start gap-3">
                         <Calendar className="w-5 h-5 text-amber-600 mt-0.5" />
                         <div>
-                          <p className="font-medium text-sm">Sözleşme Bitiş Uyarısı</p>
+                          <p className="font-medium text-sm">{t("lease.contractEndWarning")}</p>
                           <p className="text-sm text-muted-foreground mt-1">
-                            Sözleşme {Math.ceil(
-                              (new Date(selectedHouseForLease.leaseContract.endDate).getTime() - new Date().getTime()) / 
-                              (1000 * 60 * 60 * 24)
-                            )} gün sonra bitiyor
+                            {t("lease.contractEndsInDays", { 
+                              days: Math.ceil(
+                                (new Date(selectedHouseForLease.leaseContract.endDate).getTime() - new Date().getTime()) / 
+                                (1000 * 60 * 60 * 24)
+                              )
+                            })}
                           </p>
                         </div>
                       </div>
@@ -2494,7 +2496,7 @@ export default function Houses() {
                   <div className="flex justify-end pt-4 border-t">
                     <Button onClick={handleEditLease} data-testid="button-edit-lease">
                       <Edit className="w-4 h-4 mr-2" />
-                      Düzenle
+                      {t("common.edit")}
                     </Button>
                   </div>
                 </div>
@@ -2503,7 +2505,7 @@ export default function Houses() {
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="edit-lease-start">Başlangıç Tarihi *</Label>
+                      <Label htmlFor="edit-lease-start">{t("lease.startDateRequired")}</Label>
                       <Input
                         id="edit-lease-start"
                         type="date"
@@ -2514,7 +2516,7 @@ export default function Houses() {
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="edit-lease-end">Bitiş Tarihi</Label>
+                      <Label htmlFor="edit-lease-end">{t("lease.endDateRequired")}</Label>
                       <Input
                         id="edit-lease-end"
                         type="date"
@@ -2522,13 +2524,13 @@ export default function Houses() {
                         onChange={(e) => setEditedLeaseData({ ...editedLeaseData, endDate: e.target.value })}
                         data-testid="input-edit-lease-end"
                       />
-                      <p className="text-xs text-muted-foreground">Boş bırakılırsa belirsiz süre</p>
+                      <p className="text-xs text-muted-foreground">{t("lease.indefiniteHelper")}</p>
                     </div>
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="edit-lease-rent">Aylık Kira ({selectedHouseForLease.leaseContract.currency}) *</Label>
+                      <Label htmlFor="edit-lease-rent">{t("lease.monthlyRentRequired", { currency: selectedHouseForLease.leaseContract.currency })}</Label>
                       <Input
                         id="edit-lease-rent"
                         type="number"
@@ -2541,7 +2543,7 @@ export default function Houses() {
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="edit-lease-payment-day">Ödeme Günü (1-31) *</Label>
+                      <Label htmlFor="edit-lease-payment-day">{t("lease.paymentDayRequired")}</Label>
                       <Input
                         id="edit-lease-payment-day"
                         type="number"
@@ -2560,14 +2562,14 @@ export default function Houses() {
                       onClick={handleCancelEditLease}
                       data-testid="button-cancel-edit-lease"
                     >
-                      İptal
+                      {t("common.cancel")}
                     </Button>
                     <Button
                       onClick={handleSaveLease}
                       data-testid="button-save-lease"
                     >
                       <Save className="w-4 h-4 mr-2" />
-                      Kaydet
+                      {t("common.save")}
                     </Button>
                   </div>
                 </div>
@@ -2576,7 +2578,7 @@ export default function Houses() {
           ) : (
             <div className="text-center py-8">
               <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground">Bu konut için kira sözleşmesi bilgisi bulunamadı</p>
+              <p className="text-muted-foreground">{t("lease.noContractInfo")}</p>
             </div>
           )}
         </DialogContent>
