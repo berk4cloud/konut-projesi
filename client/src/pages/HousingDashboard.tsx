@@ -371,6 +371,7 @@ export default function HousingDashboard() {
   const [warningModalOpen, setWarningModalOpen] = useState(false);
   const [selectedBed, setSelectedBed] = useState<any>(null);
   const [checkInWizardOpen, setCheckInWizardOpen] = useState(false);
+  const [colorInfoDialogOpen, setColorInfoDialogOpen] = useState(false);
   
   // Check-in wizard state
   const [wizardStep, setWizardStep] = useState(1);
@@ -872,38 +873,13 @@ export default function HousingDashboard() {
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <h2 className="text-2xl font-bold">Konaklama Genel Bakış</h2>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button className="text-muted-foreground hover:text-foreground transition-colors" data-testid="button-color-info">
-                            <Info className="w-5 h-5" />
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent side="right" className="max-w-sm">
-                          <div className="space-y-2 text-xs">
-                            <p className="font-semibold">Renk Sistemi - LOJİK Perspektifi:</p>
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 rounded-sm bg-status-empty" />
-                                <span><strong>Yeşil:</strong> Kiraya Verilebilir (Boş)</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 rounded-sm bg-status-occupied" />
-                                <span><strong>Turuncu:</strong> Dolu (Para geliyor)</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 rounded-sm bg-status-reserved" />
-                                <span><strong>Sarı:</strong> Rezerve (Biri gelecek)</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 rounded-sm bg-status-oos" />
-                                <span><strong>Kırmızı:</strong> Sorun Var (Hizmet dışı)</span>
-                              </div>
-                            </div>
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                    <button 
+                      onClick={() => setColorInfoDialogOpen(true)}
+                      className="text-muted-foreground hover-elevate active-elevate-2 rounded-full p-1 transition-colors" 
+                      data-testid="button-color-info"
+                    >
+                      <Info className="w-5 h-5" />
+                    </button>
                   </div>
                   <p className="text-muted-foreground">
                     Tüm mülklerdeki çalışan konaklamalarını yönetin
@@ -1741,6 +1717,98 @@ export default function HousingDashboard() {
                   Tamamla
                 </Button>
               )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Color System Info Dialog */}
+      <Dialog open={colorInfoDialogOpen} onOpenChange={setColorInfoDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <Info className="w-6 h-6 text-primary" />
+              Renk Sistemi Açıklaması
+            </DialogTitle>
+            <DialogDescription>
+              LOJİK (Konaklama Satış Müdürü) bakış açısıyla yatak durumlarının anlamı
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6 py-4">
+            {/* Green - Available */}
+            <div className="flex gap-4">
+              <div className="flex-shrink-0 w-16 h-16 rounded-lg bg-status-empty flex items-center justify-center">
+                <CheckCircle className="w-8 h-8 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-lg mb-1 flex items-center gap-2">
+                  <span className="text-status-empty">●</span>
+                  Yeşil: Kiraya Verilebilir (Boş)
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Bu yatak şu anda müsait ve yeni bir işçiye atanabilir durumda. Yatak temiz, hazır ve gelir getirmeye başlamak için bekliyor. Rezervasyon yapılabilir.
+                </p>
+              </div>
+            </div>
+
+            {/* Orange - Occupied */}
+            <div className="flex gap-4">
+              <div className="flex-shrink-0 w-16 h-16 rounded-lg bg-status-occupied flex items-center justify-center">
+                <UserPlus className="w-8 h-8 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-lg mb-1 flex items-center gap-2">
+                  <span className="text-status-occupied">●</span>
+                  Turuncu: Dolu (Para Geliyor)
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Bu yatakta şu anda bir işçi kalıyor ve aylık kira geliri elde ediyorsunuz. İşçi aktif olarak konaklama yapıyor, ödeme alınıyor. Bu ideal durumdur - yatak para kazandırıyor.
+                </p>
+              </div>
+            </div>
+
+            {/* Yellow - Reserved */}
+            <div className="flex gap-4">
+              <div className="flex-shrink-0 w-16 h-16 rounded-lg bg-status-reserved flex items-center justify-center">
+                <Clock className="w-8 h-8 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-lg mb-1 flex items-center gap-2">
+                  <span className="text-status-reserved">●</span>
+                  Sarı: Rezerve Edildi (Biri Gelecek)
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Bu yatak gelecek tarihli bir rezervasyon için ayrıldı. Henüz gelir getirmiyor ama yakında bir işçi gelecek ve doluluk başlayacak. Planlı ve kontrollü bir durum.
+                </p>
+              </div>
+            </div>
+
+            {/* Red - Out of Service */}
+            <div className="flex gap-4">
+              <div className="flex-shrink-0 w-16 h-16 rounded-lg bg-status-oos flex items-center justify-center">
+                <AlertCircle className="w-8 h-8 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-lg mb-1 flex items-center gap-2">
+                  <span className="text-status-oos">●</span>
+                  Kırmızı: Hizmet Dışı (Sorun Var)
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Bu yatakta bir problem var ve şu anda kiralanamıyor. Bakım, onarım veya temizlik gerekiyor olabilir. Bu yatak kullanıma kapatılmış durumda - gelir getirmiyor ve rezerve edilemez.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t pt-4">
+            <div className="bg-muted/50 rounded-lg p-4">
+              <div className="flex gap-3">
+                <Info className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-muted-foreground">
+                  <strong className="text-foreground">İpucu:</strong> Maksimum gelir için turuncu (dolu) yatak sayısını artırın, yeşil (boş) yatakları hızlıca doldurun ve kırmızı (hizmet dışı) yatakları en kısa sürede geri hizmete alın.
+                </p>
+              </div>
             </div>
           </div>
         </DialogContent>
