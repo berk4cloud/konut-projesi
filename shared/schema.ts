@@ -19,6 +19,11 @@ export const currencyEnum = pgEnum("currency", [
 ]);
 export const qrCodeTypeEnum = pgEnum("qr_code_type", ["worker_registration", "meter_reading", "document_upload"]);
 export const qrCodeStatusEnum = pgEnum("qr_code_status", ["active", "disabled", "expired"]);
+export const assignmentStatusEnum = pgEnum("assignment_status", ["active", "ending_soon", "ended"]);
+export const depositStatusEnum = pgEnum("deposit_status", ["pending", "collected", "refunded", "partially_refunded"]);
+export const paymentStatusEnum = pgEnum("payment_status", ["pending", "partial", "paid", "overdue"]);
+export const paymentMethodEnum = pgEnum("payment_method", ["cash", "bank_transfer", "pos", "other"]);
+export const chargeCalculationTypeEnum = pgEnum("charge_calculation_type", ["full_month", "partial", "prorated"]);
 
 // Platform-level enums
 export const platformAdminRoleEnum = pgEnum("platform_admin_role", ["super_admin", "admin", "support"]);
@@ -426,3 +431,97 @@ export const insertQRCodeSchema = createInsertSchema(qrCodes).omit({
 });
 export type InsertQRCode = z.infer<typeof insertQRCodeSchema>;
 export type QRCode = typeof qrCodes.$inferSelect;
+
+// ============================================
+// ASSIGNMENT MANAGEMENT SYSTEM
+// ============================================
+
+// Assignments table - Worker-to-bed assignments (active accommodation)
+export const assignments = pgTable("assignments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id").notNull(),
+  employmentId: varchar("employment_id").notNull(),
+  houseId: varchar("house_id").notNull(),
+  roomId: varchar("room_id").notNull(),
+  bedId: varchar("bed_id").notNull(),
+  startDate: date("start_date").notNull(),
+  endDate: date("end_date"),
+  monthlyRate: numeric("monthly_rate").notNull(),
+  status: assignmentStatusEnum("status").notNull().default("active"),
+  
+  // Deposit tracking
+  depositCollected: boolean("deposit_collected").default(false).notNull(),
+  depositAmount: numeric("deposit_amount").default("0"),
+  depositDate: date("deposit_date"),
+  depositCollector: varchar("deposit_collector"),
+  depositStatus: depositStatusEnum("deposit_status").default("pending").notNull(),
+  depositRefundDate: date("deposit_refund_date"),
+  depositRefundAmount: numeric("deposit_refund_amount"),
+  damageAmount: numeric("damage_amount"),
+  damageNote: text("damage_note"),
+  
+  // Agreement notes
+  agreementNotes: text("agreement_notes"),
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  createdBy: varchar("created_by"),
+});
+
+export const insertAssignmentSchema = createInsertSchema(assignments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertAssignment = z.infer<typeof insertAssignmentSchema>;
+export type Assignment = typeof assignments.$inferSelect;
+
+// Charges table - Monthly accommodation charges
+export const charges = pgTable("charges", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id").notNull(),
+  assignmentId: varchar("assignment_id").notNull(),
+  month: varchar("month", { length: 7 }).notNull(), // "2025-11" format
+  amount: numeric("amount").notNull(), // Total charge
+  expectedAmount: numeric("expected_amount").notNull(),
+  remainingAmount: numeric("remaining_amount").notNull(),
+  days: integer("days").notNull(), // Number of days in charge period
+  calculationType: chargeCalculationTypeEnum("calculation_type").notNull(),
+  dueDate: date("due_date").notNull(),
+  status: paymentStatusEnum("status").notNull().default("pending"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertChargeSchema = createInsertSchema(charges).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertCharge = z.infer<typeof insertChargeSchema>;
+export type Charge = typeof charges.$inferSelect;
+
+// Payments table - Payment records for charges
+export const payments = pgTable("payments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id").notNull(),
+  chargeId: varchar("charge_id").notNull(),
+  amount: numeric("amount").notNull(),
+  paymentDate: date("payment_date").notNull(),
+  paymentMethod: paymentMethodEnum("payment_method").notNull(),
+  collectorName: varchar("collector_name"),
+  recordedAt: timestamp("recorded_at").defaultNow().notNull(),
+  reference: varchar("reference"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdBy: varchar("created_by"),
+});
+
+export const insertPaymentSchema = createInsertSchema(payments).omit({
+  id: true,
+  createdAt: true,
+  recordedAt: true,
+});
+export type InsertPayment = z.infer<typeof insertPaymentSchema>;
+export type Payment = typeof payments.$inferSelect;
