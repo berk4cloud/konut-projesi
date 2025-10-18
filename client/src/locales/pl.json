@@ -667,6 +667,8 @@
     "roomPricing": "Wycena specyficzna dla pokoju",
     "addRoom": "Dodaj Pokój",
     "totalBedCount": "Całkowita Liczba Łóżek:",
-    "noRoomsAdded": "Nie dodano jeszcze żadnych pokoi. Kliknij \"Dodaj Pokój\", aby rozpocząć."
+    "noRoomsAdded": "Nie dodano jeszcze żadnych pokoi. Kliknij \"Dodaj Pokój\", aby rozpocząć.",
+    "archive": "Archiwizuj",
+    "unarchive": "Przywróć z Archiwum"
   }
 }

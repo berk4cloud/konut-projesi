@@ -667,6 +667,8 @@
     "roomPricing": "Tarification spécifique à la chambre",
     "addRoom": "Ajouter une Chambre",
     "totalBedCount": "Nombre Total de Lits:",
-    "noRoomsAdded": "Aucune chambre ajoutée pour le moment. Cliquez sur \"Ajouter une Chambre\" pour commencer."
+    "noRoomsAdded": "Aucune chambre ajoutée pour le moment. Cliquez sur \"Ajouter une Chambre\" pour commencer.",
+    "archive": "Archiver",
+    "unarchive": "Désarchiver"
   }
 }

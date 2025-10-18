@@ -667,6 +667,8 @@
     "roomPricing": "Kamerspecifieke prijzen",
     "addRoom": "Kamer Toevoegen",
     "totalBedCount": "Totaal Aantal Bedden:",
-    "noRoomsAdded": "Nog geen kamers toegevoegd. Klik op \"Kamer Toevoegen\" om te beginnen."
+    "noRoomsAdded": "Nog geen kamers toegevoegd. Klik op \"Kamer Toevoegen\" om te beginnen.",
+    "archive": "Archiveren",
+    "unarchive": "Uit Archief Halen"
   }
 }

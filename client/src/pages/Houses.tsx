@@ -1900,10 +1900,10 @@ export default function Houses() {
                   setHouses(updatedHouses);
                   setIsDialogOpen(false);
                   toast({
-                    title: editingHouse.archived ? "Arşivden Çıkarıldı" : "Arşive Kaldırıldı",
+                    title: editingHouse.archived ? t("houses.unarchivedTitle") : t("houses.archivedTitle"),
                     description: editingHouse.archived 
-                      ? "Konut arşivden çıkarıldı ve aktif hale getirildi" 
-                      : "Konut arşive kaldırıldı",
+                      ? t("houses.unarchivedDesc")
+                      : t("houses.archivedDesc"),
                   });
                 }}
                 data-testid="button-toggle-archive"
@@ -1911,12 +1911,12 @@ export default function Houses() {
                 {editingHouse.archived ? (
                   <>
                     <ArchiveRestore className="w-4 h-4 mr-2" />
-                    Arşivden Çıkar
+                    {t("houses.unarchive")}
                   </>
                 ) : (
                   <>
                     <Archive className="w-4 h-4 mr-2" />
-                    Arşive Kaldır
+                    {t("houses.archive")}
                   </>
                 )}
               </Button>

@@ -671,6 +671,8 @@
     "roomPricing": "Oda için özel fiyat",
     "addRoom": "Oda Ekle",
     "totalBedCount": "Toplam Yatak Sayısı:",
-    "noRoomsAdded": "Henüz oda eklenmedi. \"Oda Ekle\" butonuna tıklayarak başlayın."
+    "noRoomsAdded": "Henüz oda eklenmedi. \"Oda Ekle\" butonuna tıklayarak başlayın.",
+    "archive": "Arşive Kaldır",
+    "unarchive": "Arşivden Çıkar"
   }
 }

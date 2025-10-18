@@ -667,6 +667,8 @@
     "roomPricing": "Zimmerspezifische Preise",
     "addRoom": "Zimmer hinzufügen",
     "totalBedCount": "Gesamtzahl der Betten:",
-    "noRoomsAdded": "Noch keine Zimmer hinzugefügt. Klicken Sie auf \"Zimmer hinzufügen\", um zu beginnen."
+    "noRoomsAdded": "Noch keine Zimmer hinzugefügt. Klicken Sie auf \"Zimmer hinzufügen\", um zu beginnen.",
+    "archive": "Archivieren",
+    "unarchive": "Aus Archiv Entfernen"
   }
 }

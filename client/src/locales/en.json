@@ -684,6 +684,8 @@
     "includeFloor": "Include floor information",
     "roomPricing": "Room-specific pricing",
     "addRoom": "Add Room",
-    "totalBedCount": "Total Bed Count:"
+    "totalBedCount": "Total Bed Count:",
+    "archive": "Archive",
+    "unarchive": "Unarchive"
   }
 }
