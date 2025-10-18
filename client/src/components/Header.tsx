@@ -1,6 +1,7 @@
 import { Building2, User, LogOut, Menu, Home, Users, Settings, Moon, Sun, QrCode, Bell, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useTranslation } from "react-i18next";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,18 +54,19 @@ export default function Header({
   onCompleteReminder,
   onAddNote,
 }: HeaderProps) {
+  const { t } = useTranslation();
   const [location, setLocation] = useLocation();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
 
   const menuItems = [
-    { icon: Home, label: "Konaklama Genel Bakış", path: "/dashboard" },
-    { icon: Building2, label: "Konutlar", path: "/houses" },
-    { icon: Users, label: "Çalışanlar", path: "/workers" },
-    { icon: ClipboardList, label: "Konaklama", path: "/assignments" },
-    { icon: QrCode, label: "QR Yönetimi", path: "/qr-management" },
-    { icon: Settings, label: "Ayarlar", path: "/settings" },
+    { icon: Home, label: t('nav.housingOverview'), path: "/dashboard" },
+    { icon: Building2, label: t('nav.houses'), path: "/houses" },
+    { icon: Users, label: t('nav.workers'), path: "/workers" },
+    { icon: ClipboardList, label: t('nav.accommodation'), path: "/assignments" },
+    { icon: QrCode, label: t('nav.qrManagement'), path: "/qr-management" },
+    { icon: Settings, label: t('nav.settings'), path: "/settings" },
   ];
 
   // Mock QR submissions (pending approvals)
@@ -164,7 +166,7 @@ export default function Header({
                   APDO HABITAT
                 </SheetTitle>
                 <SheetDescription>
-                  Navigasyon Menüsü
+                  {t('nav.navigationMenu')}
                 </SheetDescription>
               </SheetHeader>
               <div className="mt-6 space-y-2">

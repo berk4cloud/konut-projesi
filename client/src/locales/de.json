@@ -497,6 +497,17 @@
     "pl": "Polnisch",
     "bg": "Bulgarisch"
   },
+  "nav": {
+    "housingOverview": "Unterkunfts-Übersicht",
+    "houses": "Unterkünfte",
+    "workers": "Mitarbeiter",
+    "accommodation": "Unterkunft",
+    "qrManagement": "QR-Verwaltung",
+    "settings": "Einstellungen",
+    "navigationMenu": "Navigationsmenü",
+    "profile": "Profil",
+    "logout": "Abmelden"
+  },
   "errors": {
     "required": "Dieses Feld ist erforderlich",
     "invalidEmail": "Geben Sie eine gültige E-Mail-Adresse ein",

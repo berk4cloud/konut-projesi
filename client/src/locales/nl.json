@@ -497,6 +497,17 @@
     "pl": "Pools",
     "bg": "Bulgaars"
   },
+  "nav": {
+    "housingOverview": "Huisvestingsoverzicht",
+    "houses": "Huisvesting",
+    "workers": "Werknemers",
+    "accommodation": "Accommodatie",
+    "qrManagement": "QR-beheer",
+    "settings": "Instellingen",
+    "navigationMenu": "Navigatiemenu",
+    "profile": "Profiel",
+    "logout": "Uitloggen"
+  },
   "errors": {
     "required": "Dit veld is verplicht",
     "invalidEmail": "Voer een geldig e-mailadres in",

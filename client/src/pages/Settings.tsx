@@ -388,7 +388,7 @@ export default function Settings() {
                   ))}
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  ⭐ Varsayılan ülke filtrelerde otomatik seçili gelir
+                  ⭐ {t('settings.defaultCountryInfo')}
                 </p>
               </div>
             </CardContent>

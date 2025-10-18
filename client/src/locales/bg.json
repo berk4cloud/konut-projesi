@@ -497,6 +497,17 @@
     "pl": "Полски",
     "bg": "Български"
   },
+  "nav": {
+    "housingOverview": "Преглед на Настаняването",
+    "houses": "Жилища",
+    "workers": "Работници",
+    "accommodation": "Настаняване",
+    "qrManagement": "Управление на QR",
+    "settings": "Настройки",
+    "navigationMenu": "Навигационно Меню",
+    "profile": "Профил",
+    "logout": "Излез"
+  },
   "errors": {
     "required": "Това поле е задължително",
     "invalidEmail": "Въведете валиден имейл адрес",

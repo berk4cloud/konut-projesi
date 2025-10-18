@@ -497,6 +497,17 @@
     "pl": "Polski",
     "bg": "Bułgarski"
   },
+  "nav": {
+    "housingOverview": "Przegląd Zakwaterowania",
+    "houses": "Nieruchomości",
+    "workers": "Pracownicy",
+    "accommodation": "Zakwaterowanie",
+    "qrManagement": "Zarządzanie QR",
+    "settings": "Ustawienia",
+    "navigationMenu": "Menu Nawigacji",
+    "profile": "Profil",
+    "logout": "Wyloguj"
+  },
   "errors": {
     "required": "To pole jest wymagane",
     "invalidEmail": "Wprowadź prawidłowy adres e-mail",

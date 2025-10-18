@@ -921,13 +921,13 @@ export default function HousingDashboard() {
                                   {upcomingVacancies.length > 0 && (
                                     <Badge variant="outline" className="text-amber-600 border-amber-600">
                                       <Clock className="w-3 h-3 mr-1" />
-                                      {upcomingVacancies.length} çıkış yapıyor
+                                      {upcomingVacancies.length} {t('housing.checkingOutBadge')}
                                     </Badge>
                                   )}
                                   {upcomingCheckIns.length > 0 && (
                                     <Badge variant="outline" className="text-green-600 border-green-600">
                                       <Clock className="w-3 h-3 mr-1" />
-                                      {upcomingCheckIns.length} giriş yapıyor
+                                      {upcomingCheckIns.length} {t('housing.checkingInBadge')}
                                     </Badge>
                                   )}
                                 </h3>
@@ -935,7 +935,7 @@ export default function HousingDashboard() {
                                   <MapPin className="w-3 h-3" />
                                   {house.city}
                                   <span>•</span>
-                                  <span>{house.totalBeds - house.occupiedBeds > 0 ? `${house.totalBeds - house.occupiedBeds} boş yatak` : 'Tam dolu'}</span>
+                                  <span>{house.totalBeds - house.occupiedBeds > 0 ? `${house.totalBeds - house.occupiedBeds} ${t('housing.emptyBeds')}` : t('housing.fullOccupancy')}</span>
                                 </div>
                               </div>
                               <div className="flex items-center gap-2">
@@ -953,16 +953,16 @@ export default function HousingDashboard() {
                                 <Clock className="w-4 h-4 text-amber-600 mt-0.5" />
                                 <div className="flex-1">
                                   <h4 className="font-medium text-sm text-amber-900 dark:text-amber-100 mb-2">
-                                    Yakında Çıkış Yapacak İşçiler
+                                    {t('housing.upcomingCheckOuts')}
                                   </h4>
                                   <div className="space-y-1">
                                     {upcomingVacancies.map((vacancy, idx) => (
                                       <div key={idx} className="text-sm text-amber-800 dark:text-amber-200">
-                                        <span className="font-medium">Oda {vacancy.roomNumber}</span>
+                                        <span className="font-medium">{t('housing.room')} {vacancy.roomNumber}</span>
                                         <span className="text-amber-600 dark:text-amber-400"> • </span>
-                                        <span>Yatak {vacancy.bedNumber}</span>
+                                        <span>{t('housing.bed')} {vacancy.bedNumber}</span>
                                         <span className="text-amber-600 dark:text-amber-400"> • </span>
-                                        <span className="font-medium">{vacancy.daysUntil} gün sonra</span>
+                                        <span className="font-medium">{vacancy.daysUntil} {t('housing.daysLater')}</span>
                                         <span className="text-amber-600 dark:text-amber-400"> • </span>
                                         <span>{vacancy.workerName}</span>
                                       </div>
@@ -979,16 +979,16 @@ export default function HousingDashboard() {
                                 <Clock className="w-4 h-4 text-green-600 mt-0.5" />
                                 <div className="flex-1">
                                   <h4 className="font-medium text-sm text-green-900 dark:text-green-100 mb-2">
-                                    Yakında Giriş Yapacak İşçiler
+                                    {t('housing.upcomingCheckIns')}
                                   </h4>
                                   <div className="space-y-1">
                                     {upcomingCheckIns.map((checkIn, idx) => (
                                       <div key={idx} className="text-sm text-green-800 dark:text-green-200">
-                                        <span className="font-medium">Oda {checkIn.roomNumber}</span>
+                                        <span className="font-medium">{t('housing.room')} {checkIn.roomNumber}</span>
                                         <span className="text-green-600 dark:text-green-400"> • </span>
-                                        <span>Yatak {checkIn.bedNumber}</span>
+                                        <span>{t('housing.bed')} {checkIn.bedNumber}</span>
                                         <span className="text-green-600 dark:text-green-400"> • </span>
-                                        <span className="font-medium">{checkIn.daysUntil} gün sonra</span>
+                                        <span className="font-medium">{checkIn.daysUntil} {t('housing.daysLater')}</span>
                                         <span className="text-green-600 dark:text-green-400"> • </span>
                                         <span>{checkIn.workerName}</span>
                                       </div>
@@ -1024,7 +1024,7 @@ export default function HousingDashboard() {
                               data-testid={`button-reminders-${house.id}`}
                             >
                               <Bell className="w-4 h-4 mr-2" />
-                              Hatırlatıcılar
+                              {t('housing.reminders')}
                               {house.reminders && house.reminders.length > 0 && (
                                 <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-xs">
                                   {house.reminders.length}
@@ -1130,7 +1130,7 @@ export default function HousingDashboard() {
                         Sözleşme {Math.ceil(
                           (new Date(selectedHouseForLease.leaseContract.endDate).getTime() - new Date().getTime()) / 
                           (1000 * 60 * 60 * 24)
-                        )} gün sonra bitiyor
+                        )} {t('housing.daysLater')}
                       </p>
                     </div>
                   </div>
@@ -1150,7 +1150,7 @@ export default function HousingDashboard() {
       <Dialog open={isRemindersDialogOpen} onOpenChange={setIsRemindersDialogOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Hatırlatıcılar</DialogTitle>
+            <DialogTitle>{t('housing.reminders')}</DialogTitle>
             <DialogDescription>
               {selectedHouseForReminders?.name}
             </DialogDescription>
@@ -1219,7 +1219,7 @@ export default function HousingDashboard() {
                               {new Date(reminder.date).toLocaleDateString("tr-TR")}
                             </div>
                             <div>
-                              {daysUntil > 0 ? `${daysUntil} gün sonra` : daysUntil === 0 ? "Bugün" : `${Math.abs(daysUntil)} gün önce`}
+                              {daysUntil > 0 ? `${daysUntil} ${t('housing.daysLater')}` : daysUntil === 0 ? t('common.today') : `${Math.abs(daysUntil)} gün önce`}
                             </div>
                           </div>
                           
@@ -1385,12 +1385,12 @@ export default function HousingDashboard() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Ne Arıyor?</Label>
+                  <Label>{t('checkIn.wizard.whatLookingFor')}</Label>
                   <SearchCombobox
                     options={[
-                      { value: "any", label: "Farketmez (Oda veya Yatak)" },
-                      { value: "room", label: "Tam Oda" },
-                      { value: "bed", label: "Tek Yatak" }
+                      { value: "any", label: t('checkIn.wizard.doesntMatter') },
+                      { value: "room", label: t('checkIn.wizard.wholeRoom') },
+                      { value: "bed", label: t('checkIn.wizard.singleBed') }
                     ]}
                     value={wizardData.searchType}
                     onValueChange={(value) => setWizardData({ ...wizardData, searchType: value as "room" | "bed" | "any" })}
@@ -1558,7 +1558,7 @@ export default function HousingDashboard() {
             {wizardStep === 3 && (
               <div className="space-y-4">
                 <div className="space-y-3">
-                  <Label>Müsait Oda ve Yatak Seçin</Label>
+                  <Label>{t('housing.selectAvailableRoomAndBed')}</Label>
                   <div className="border rounded-lg max-h-[400px] overflow-y-auto">
                     {getAvailableRoomsAndBeds().length > 0 ? (
                       <div className="divide-y">
@@ -1694,7 +1694,7 @@ export default function HousingDashboard() {
               disabled={wizardStep === 1}
               data-testid="button-wizard-back"
             >
-              Geri
+              {t('checkIn.wizard.back')}
             </Button>
             
             <div className="flex gap-2">
@@ -1708,7 +1708,7 @@ export default function HousingDashboard() {
                   }
                   data-testid="button-wizard-next"
                 >
-                  İleri
+                  {t('checkIn.wizard.next')}
                 </Button>
               ) : (
                 <Button
@@ -1716,7 +1716,7 @@ export default function HousingDashboard() {
                   disabled={!wizardData.startDate}
                   data-testid="button-wizard-complete"
                 >
-                  Tamamla
+                  {t('checkIn.wizard.complete')}
                 </Button>
               )}
             </div>
@@ -1730,10 +1730,10 @@ export default function HousingDashboard() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-xl">
               <Info className="w-6 h-6 text-primary" />
-              Renk Sistemi Açıklaması
+              {t('dashboard.colorInfoTitle')}
             </DialogTitle>
             <DialogDescription>
-              LOJİK (Konaklama Satış Müdürü) bakış açısıyla yatak durumlarının anlamı
+              {t('dashboard.colorInfoSubtitle')}
             </DialogDescription>
           </DialogHeader>
           
@@ -1746,10 +1746,10 @@ export default function HousingDashboard() {
               <div className="flex-1">
                 <h3 className="font-semibold text-lg mb-1 flex items-center gap-2">
                   <span className="text-status-empty">●</span>
-                  Yeşil: Kiraya Verilebilir (Boş)
+                  {t('dashboard.greenTitle')}
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Bu yatak şu anda müsait ve yeni bir işçiye atanabilir durumda. Yatak temiz, hazır ve gelir getirmeye başlamak için bekliyor. Rezervasyon yapılabilir.
+                  {t('dashboard.greenDesc')}
                 </p>
               </div>
             </div>
@@ -1762,10 +1762,10 @@ export default function HousingDashboard() {
               <div className="flex-1">
                 <h3 className="font-semibold text-lg mb-1 flex items-center gap-2">
                   <span className="text-status-occupied">●</span>
-                  Turuncu: Kiraya Verildi
+                  {t('dashboard.orangeTitle')}
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Bu yatak şu anda bir işçiye kiralanmış durumda ve aylık kira geliri sağlıyor. İşçi aktif olarak konaklama yapıyor ve düzenli ödeme alınıyor. Bu en ideal durumdur - yatak gelir getiriyor.
+                  {t('dashboard.orangeDesc')}
                 </p>
               </div>
             </div>
@@ -1778,10 +1778,10 @@ export default function HousingDashboard() {
               <div className="flex-1">
                 <h3 className="font-semibold text-lg mb-1 flex items-center gap-2">
                   <span className="text-status-reserved">●</span>
-                  Sarı: Rezerve Edildi (Biri Gelecek)
+                  {t('dashboard.yellowTitle')}
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Bu yatak gelecek tarihli bir rezervasyon için ayrıldı. Henüz gelir getirmiyor ama yakında bir işçi gelecek ve doluluk başlayacak. Planlı ve kontrollü bir durum.
+                  {t('dashboard.yellowDesc')}
                 </p>
               </div>
             </div>
@@ -1794,10 +1794,10 @@ export default function HousingDashboard() {
               <div className="flex-1">
                 <h3 className="font-semibold text-lg mb-1 flex items-center gap-2">
                   <span className="text-status-oos">●</span>
-                  Kırmızı: Hizmet Dışı (Sorun Var)
+                  {t('dashboard.redTitle')}
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Bu yatakta bir problem var ve şu anda kiralanamıyor. Bakım, onarım veya temizlik gerekiyor olabilir. Bu yatak kullanıma kapatılmış durumda - gelir getirmiyor ve rezerve edilemez.
+                  {t('dashboard.redDesc')}
                 </p>
               </div>
             </div>
@@ -1808,7 +1808,7 @@ export default function HousingDashboard() {
               <div className="flex gap-3">
                 <Info className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-muted-foreground">
-                  <strong className="text-foreground">İpucu:</strong> Maksimum gelir için turuncu (dolu) yatak sayısını artırın, yeşil (boş) yatakları hızlıca doldurun ve kırmızı (hizmet dışı) yatakları en kısa sürede geri hizmete alın.
+                  <strong className="text-foreground">{t('dashboard.colorTip')}</strong> {t('dashboard.colorTipDesc')}
                 </p>
               </div>
             </div>
