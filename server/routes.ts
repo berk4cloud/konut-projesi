@@ -283,6 +283,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // POST /logout - Logout (JWT-based, client-side token removal)
+  apiRouter.post("/logout", async (req, res) => {
+    // Since we're using JWT tokens, logout is handled client-side by removing the token
+    // This endpoint exists for future session management or audit logging
+    res.json({ success: true, message: "Çıkış yapıldı" });
+  });
+
   // ============================================
   // FEDERATED WORKER IDENTITY ENDPOINTS
   // ============================================
