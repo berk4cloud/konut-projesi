@@ -111,7 +111,7 @@ type ConversationNote = {
 const mockAssignments: Assignment[] = [
   {
     id: "a1",
-    employmentId: "w1",
+    employmentId: "emp-1",
     workerName: "Ahmet Yılmaz",
     houseId: "h1",
     houseName: "Geldernstrasse 13, 52511",
@@ -127,8 +127,8 @@ const mockAssignments: Assignment[] = [
   },
   {
     id: "a2",
-    employmentId: "w2",
-    workerName: "Mehmet Kaya",
+    employmentId: "emp-2",
+    workerName: "Mehmet Demir",
     houseId: "h1",
     houseName: "Geldernstrasse 13, 52511",
     roomNumber: "45",
@@ -143,8 +143,8 @@ const mockAssignments: Assignment[] = [
   },
   {
     id: "a3",
-    employmentId: "w3",
-    workerName: "Ali Demir",
+    employmentId: "emp-3",
+    workerName: "Ayşe Kaya",
     houseId: "h2",
     houseName: "Hauptstrasse 45, 5911",
     roomNumber: "101",
@@ -160,7 +160,7 @@ const mockAssignments: Assignment[] = [
   },
   {
     id: "a4",
-    employmentId: "w4",
+    employmentId: "emp-4",
     workerName: "Fatma Şahin",
     houseId: "h1",
     houseName: "Geldernstrasse 13, 52511",
@@ -207,7 +207,7 @@ const mockCharges: Charge[] = [
   {
     id: "c3",
     assignmentId: "a2",
-    workerName: "Mehmet Kaya",
+    workerName: "Mehmet Demir",
     month: "2024-11",
     amount: 600,
     expectedAmount: 600,
@@ -220,7 +220,7 @@ const mockCharges: Charge[] = [
   {
     id: "c4",
     assignmentId: "a3",
-    workerName: "Ali Demir",
+    workerName: "Ayşe Kaya",
     month: "2024-11",
     amount: 275,
     expectedAmount: 275,
@@ -350,11 +350,11 @@ const mockPayments: Payment[] = [
     notes: "Haziran 2023 - nakit ödeme",
   },
   
-  // Mehmet Kaya - 2024 ödemeleri
+  // Mehmet Demir - 2024 ödemeleri
   {
     id: "p9",
     chargeId: "c3",
-    workerName: "Mehmet Kaya",
+    workerName: "Mehmet Demir",
     amount: 600,
     paymentDate: "2024-10-25",
     paymentMethod: "bank_transfer",
@@ -366,7 +366,7 @@ const mockPayments: Payment[] = [
   {
     id: "p10",
     chargeId: "c_mk2",
-    workerName: "Mehmet Kaya",
+    workerName: "Mehmet Demir",
     amount: 600,
     paymentDate: "2024-09-20",
     paymentMethod: "pos",
@@ -378,7 +378,7 @@ const mockPayments: Payment[] = [
   {
     id: "p11",
     chargeId: "c_mk3",
-    workerName: "Mehmet Kaya",
+    workerName: "Mehmet Demir",
     amount: 600,
     paymentDate: "2024-08-15",
     paymentMethod: "cash",
@@ -388,11 +388,11 @@ const mockPayments: Payment[] = [
     notes: "Ağustos ayı - nakit",
   },
   
-  // Mehmet Kaya - 2023 ödemeleri
+  // Mehmet Demir - 2023 ödemeleri
   {
     id: "p12",
     chargeId: "c_mk_2023_1",
-    workerName: "Mehmet Kaya",
+    workerName: "Mehmet Demir",
     amount: 580,
     paymentDate: "2023-11-10",
     paymentMethod: "bank_transfer",
@@ -404,7 +404,7 @@ const mockPayments: Payment[] = [
   {
     id: "p13",
     chargeId: "c_mk_2023_2",
-    workerName: "Mehmet Kaya",
+    workerName: "Mehmet Demir",
     amount: 580,
     paymentDate: "2023-03-15",
     paymentMethod: "cash",
@@ -414,11 +414,11 @@ const mockPayments: Payment[] = [
     notes: "Mart 2023 - nakit ödeme",
   },
   
-  // Ali Demir - 2024 ödemeleri
+  // Ayşe Kaya - 2024 ödemeleri
   {
     id: "p14",
     chargeId: "c_ad1",
-    workerName: "Ali Demir",
+    workerName: "Ayşe Kaya",
     amount: 550,
     paymentDate: "2024-10-15",
     paymentMethod: "bank_transfer",
@@ -430,7 +430,7 @@ const mockPayments: Payment[] = [
   {
     id: "p15",
     chargeId: "c_ad2",
-    workerName: "Ali Demir",
+    workerName: "Ayşe Kaya",
     amount: 550,
     paymentDate: "2024-09-10",
     paymentMethod: "automatic",
