@@ -15,6 +15,17 @@ export default function PlatformAdminDashboard() {
     }
   }, [isAuthenticated, user, setLocation]);
 
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/logout", { method: "POST" });
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      logout();
+      setLocation("/");
+    }
+  };
+
   if (!isAuthenticated || !user) {
     return null;
   }
@@ -30,7 +41,7 @@ export default function PlatformAdminDashboard() {
               Hoş geldiniz, {user.firstName} {user.lastName}
             </p>
           </div>
-          <Button variant="outline" onClick={logout} data-testid="button-logout">
+          <Button variant="outline" onClick={handleLogout} data-testid="button-logout">
             Çıkış Yap
           </Button>
         </div>
