@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Search, Building2, MapPin, Edit, Bed, Trash2, ChevronsUpDown, Check, Zap, Droplet, Flame, FileText, Bell, Calendar, AlertCircle, Camera, X, Eye, Archive, ArchiveRestore } from "lucide-react";
+import { Plus, Search, Building2, MapPin, Edit, Bed, Trash2, ChevronsUpDown, Check, Zap, Droplet, Flame, FileText, Bell, Calendar, AlertCircle, Camera, X, Eye, Archive, ArchiveRestore, Save } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -468,6 +469,7 @@ const countries = [
 ];
 
 export default function Houses() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [houses, setHouses] = useState(initialMockHouses);
   const [searchQuery, setSearchQuery] = useState("");
@@ -1062,8 +1064,8 @@ export default function Houses() {
     setNewlyAddedRoomIndex(null); // Clear highlight when saving
     
     toast({
-      title: "Başarılı",
-      description: editingHouse ? "Konut güncellendi" : "Yeni konut eklendi",
+      title: t("houses.success"),
+      description: editingHouse ? t("houses.houseUpdated") : t("houses.houseAdded"),
     });
   };
 
@@ -1082,12 +1084,12 @@ export default function Houses() {
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold mb-2">Konutlar</h2>
-              <p className="text-muted-foreground">Tüm konutları görüntüleyin ve yönetin</p>
+              <h2 className="text-2xl font-bold mb-2">{t("houses.title")}</h2>
+              <p className="text-muted-foreground">{t("houses.description")}</p>
             </div>
             <Button onClick={handleAddNew} data-testid="button-add-house">
               <Plus className="w-4 h-4 mr-2" />
-              Yeni Konut Ekle
+              {t("houses.addNew")}
             </Button>
           </div>
 
@@ -1095,7 +1097,7 @@ export default function Houses() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Konut ara (adres, şehir)..."
+                placeholder={t("houses.searchPlaceholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -1105,7 +1107,7 @@ export default function Houses() {
             
             <div className="flex items-center gap-3 px-4 py-2 border rounded-lg bg-card">
               <Archive className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Arşiv olanları da göster</span>
+              <span className="text-sm font-medium">{t("houses.showArchived")}</span>
               <Switch
                 checked={showArchived}
                 onCheckedChange={setShowArchived}
@@ -1142,7 +1144,7 @@ export default function Houses() {
                             {house.archived && (
                               <Badge variant="secondary" className="text-xs" data-testid={`badge-archived-${house.id}`}>
                                 <Archive className="w-3 h-3 mr-1" />
-                                Arşiv
+                                {t("houses.archived")}
                               </Badge>
                             )}
                           </div>
@@ -1167,13 +1169,13 @@ export default function Houses() {
 
                     <div className="grid grid-cols-2 gap-4 py-3 border-t border-b">
                       <div>
-                        <p className="text-xs text-muted-foreground">Oda Sayısı</p>
+                        <p className="text-xs text-muted-foreground">{t("houses.roomCount")}</p>
                         <p className="text-lg font-semibold" data-testid={`text-room-count-${house.id}`}>
                           {house.rooms.length}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-muted-foreground">Toplam Yatak</p>
+                        <p className="text-xs text-muted-foreground">{t("houses.totalBeds")}</p>
                         <p className="text-lg font-semibold flex items-center gap-1" data-testid={`text-total-beds-${house.id}`}>
                           <Bed className="w-4 h-4" />
                           {house.totalBeds}
@@ -1183,7 +1185,7 @@ export default function Houses() {
 
                     {/* Room details with rental status */}
                     <div className="space-y-2">
-                      <p className="text-xs text-muted-foreground font-medium">Odalar:</p>
+                      <p className="text-xs text-muted-foreground font-medium">{t("houses.rooms")}</p>
                       <div className="space-y-1.5">
                         {house.rooms.map((room) => (
                           <div 
@@ -1192,18 +1194,18 @@ export default function Houses() {
                             data-testid={`room-info-${house.id}-${room.roomNumber}`}
                           >
                             <div className="flex items-center gap-2">
-                              <span className="font-medium">Oda {room.roomNumber}</span>
+                              <span className="font-medium">{t("houses.room")} {room.roomNumber}</span>
                               {room.useFloor && room.floor !== undefined && (
                                 <span className="text-xs text-muted-foreground" data-testid={`text-floor-${house.id}-${room.roomNumber}`}>
-                                  (Kat {room.floor})
+                                  ({t("houses.floor")} {room.floor})
                                 </span>
                               )}
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className="text-muted-foreground">{room.beds} yatak</span>
+                              <span className="text-muted-foreground">{room.beds} {t("houses.beds")}</span>
                               {room.canRentAsRoom && (
                                 <Badge variant="outline" className="text-xs" data-testid={`badge-can-rent-${house.id}-${room.roomNumber}`}>
-                                  Oda kirası
+                                  {t("houses.canRentRoom")}
                                 </Badge>
                               )}
                             </div>
@@ -1214,7 +1216,7 @@ export default function Houses() {
 
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Doluluk</span>
+                        <span className="text-muted-foreground">{t("houses.occupancy")}</span>
                         <span className="font-semibold" data-testid={`text-occupancy-rate-${house.id}`}>
                           {occupancyRate}%
                         </span>
@@ -1227,10 +1229,10 @@ export default function Houses() {
                       </div>
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
                         <span data-testid={`text-occupied-beds-${house.id}`}>
-                          Dolu: {house.occupiedBeds}
+                          {t("houses.occupied")} {house.occupiedBeds}
                         </span>
                         <span data-testid={`text-empty-beds-${house.id}`}>
-                          Boş: {emptyBeds}
+                          {t("houses.empty")} {emptyBeds}
                         </span>
                       </div>
                     </div>
@@ -1243,7 +1245,7 @@ export default function Houses() {
                         data-testid={`button-edit-house-${house.id}`}
                       >
                         <Edit className="w-4 h-4 mr-2" />
-                        Düzenle
+                        {t("houses.edit")}
                       </Button>
                       <Button
                         variant="outline"
@@ -1255,7 +1257,7 @@ export default function Houses() {
                         data-testid={`button-meters-${house.id}`}
                       >
                         <Zap className="w-4 h-4 mr-2" />
-                        Sayaçlar
+                        {t("houses.meters")}
                       </Button>
                       
                       {(house.ownershipType === "Kiralık" || house.ownershipType === "3. Taraf") && (
@@ -1269,7 +1271,7 @@ export default function Houses() {
                           data-testid={`button-lease-${house.id}`}
                         >
                           <FileText className="w-4 h-4 mr-2" />
-                          Kira Detayları
+                          {t("houses.leaseDetails")}
                         </Button>
                       )}
                       
@@ -1283,7 +1285,7 @@ export default function Houses() {
                         data-testid={`button-reminders-${house.id}`}
                       >
                         <Bell className="w-4 h-4 mr-2" />
-                        Hatırlatıcılar
+                        {t("houses.reminders")}
                       </Button>
                     </div>
                   </CardContent>
@@ -1296,7 +1298,7 @@ export default function Houses() {
             <div className="text-center py-12">
               <Building2 className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" />
               <p className="text-muted-foreground" data-testid="text-no-houses">
-                Konut bulunamadı
+                {t("houses.noHouses")}
               </p>
             </div>
           )}
@@ -1307,27 +1309,27 @@ export default function Houses() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {editingHouse ? "Konut Düzenle" : "Yeni Konut Ekle"}
+              {editingHouse ? t("houses.editHouse") : t("houses.addHouse")}
             </DialogTitle>
             <DialogDescription>
               {editingHouse 
-                ? "Konut bilgilerini güncelleyin" 
-                : "Yeni konut bilgilerini girin. Varsayılan ülke ayarlardan otomatik seçilir."}
+                ? t("houses.editHouseDescription") 
+                : t("houses.addHouseDescription")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="address">Adres *</Label>
+              <Label htmlFor="address">{t("houses.address")} *</Label>
               <Input
                 id="address"
-                placeholder="örn: Geldernstrasse 13, 52511"
+                placeholder={t("houses.addressPlaceholder")}
                 value={formData.address}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                 data-testid="input-house-address"
               />
               <p className="text-xs text-muted-foreground">
-                Konut adı olarak varsayılan adres kullanılır
+                {t("houses.addressHelper")}
               </p>
             </div>
 
@@ -1345,22 +1347,22 @@ export default function Houses() {
                   htmlFor="useCustomName" 
                   className="text-sm font-normal cursor-pointer"
                 >
-                  Özel bir isim kullan
+                  {t("houses.useCustomName")}
                 </Label>
               </div>
 
               {formData.useCustomName && (
                 <div className="space-y-2 pl-6">
-                  <Label htmlFor="customName">Özel İsim *</Label>
+                  <Label htmlFor="customName">{t("houses.customName")} *</Label>
                   <Input
                     id="customName"
-                    placeholder="örn: Villa Sunset"
+                    placeholder={t("houses.customNamePlaceholder")}
                     value={formData.customName}
                     onChange={(e) => setFormData({ ...formData, customName: e.target.value })}
                     data-testid="input-custom-name"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Girilen isim: "{formData.customName || "..."} - {formData.address || "..."}"
+                    {t("houses.customNamePreview", { name: formData.customName || "...", address: formData.address || "..." })}
                   </p>
                 </div>
               )}
@@ -1368,10 +1370,10 @@ export default function Houses() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="city">Şehir *</Label>
+                <Label htmlFor="city">{t("houses.city")} *</Label>
                 <Input
                   id="city"
-                  placeholder="örn: Geilenkirchen"
+                  placeholder={t("houses.cityPlaceholder")}
                   value={formData.city}
                   onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                   data-testid="input-house-city"
@@ -1379,7 +1381,7 @@ export default function Houses() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="country">Ülke *</Label>
+                <Label htmlFor="country">{t("houses.country")} *</Label>
                 <Popover open={countryOpen} onOpenChange={setCountryOpen}>
                   <PopoverTrigger asChild>
                     <Button
@@ -1389,15 +1391,15 @@ export default function Houses() {
                       className="w-full justify-between"
                       data-testid="select-house-country"
                     >
-                      {formData.country || "Ülke seçin"}
+                      {formData.country || t("houses.selectCountry")}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-full p-0">
                     <Command>
-                      <CommandInput placeholder="Ülke ara..." />
+                      <CommandInput placeholder={t("houses.searchCountry")} />
                       <CommandList>
-                        <CommandEmpty>Ülke bulunamadı.</CommandEmpty>
+                        <CommandEmpty>{t("houses.countryNotFound")}</CommandEmpty>
                         <CommandGroup>
                           {countries.map((country) => (
                             <CommandItem
@@ -1426,18 +1428,18 @@ export default function Houses() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="ownershipType">Mülkiyet Tipi *</Label>
+              <Label htmlFor="ownershipType">{t("houses.ownershipType")} *</Label>
               <Select
                 value={formData.ownershipType}
                 onValueChange={(value) => setFormData({ ...formData, ownershipType: value })}
               >
                 <SelectTrigger id="ownershipType" data-testid="select-ownership-type">
-                  <SelectValue placeholder="Mülkiyet tipi seçin" />
+                  <SelectValue placeholder={t("houses.selectOwnershipType")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Kiralık">Kiralık</SelectItem>
-                  <SelectItem value="Mülk">Mülk</SelectItem>
-                  <SelectItem value="3. Taraf">3. Taraf</SelectItem>
+                  <SelectItem value="Kiralık">{t("houses.rented")}</SelectItem>
+                  <SelectItem value="Mülk">{t("houses.owned")}</SelectItem>
+                  <SelectItem value="3. Taraf">{t("houses.thirdParty")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
