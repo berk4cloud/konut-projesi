@@ -139,7 +139,7 @@ export const demoTenantUsers: User[] = [
     id: "user-cova-admin",
     tenantId: "tenant-cova",
     email: "lisa@cova.nl",
-    password: "$2b$10$y0Dx5e.0Hp7i.DiK9Ew6rOwMsI7kJ6YYQI9pJZNY1ceFd4GQzWqCG", // LisaPass123
+    password: "$2b$10$jKQJEgKDrPwGD3yx/pdv1e0mOiYRQy1TStBv54gJg/TZd62L4Oeei", // LisaPass123
     firstName: "Lisa",
     lastName: "Janssen",
     roles: ["admin"],
