@@ -116,37 +116,17 @@ type Reminder = {
   completedAt?: string;
 };
 
-// Helper to load system settings from localStorage
-const loadSystemSettings = () => {
-  const stored = localStorage.getItem("apdo_system_settings");
-  if (stored) {
-    try {
-      return JSON.parse(stored);
-    } catch {
-      return null;
-    }
-  }
-  return null;
-};
-
-// Helper to save system settings to localStorage
-export const saveSystemSettings = (settings: typeof systemSettings) => {
-  localStorage.setItem("apdo_system_settings", JSON.stringify(settings));
-};
-
-// Global system settings for pricing
-const defaultSettings = {
+// Default pricing settings (used as fallback)
+const defaultPricingSettings = {
   currency: "EUR" as "EUR" | "USD" | "TRY" | "GBP" | "CHF" | "CAD" | "MXN" | "CNY" | "JPY" | "RUB" | "SEK" | "NOK" | "DKK" | "HUF" | "PLN" | "CZK" | "RON" | "BGN" | "RSD" | "UAH",
-  dailyRentalEnabled: true, // Günlük Kiralama Modu ON
+  dailyRentalEnabled: false,
   standardPricing: {
-    bedDailyPrice: 25, // €25/gün
-    bedMonthlyPrice: 600, // €600/ay
-    roomDailyPrice: 60, // €60/gün
-    roomMonthlyPrice: 1500, // €1500/ay
+    bedDailyPrice: 25,
+    bedMonthlyPrice: 600,
+    roomDailyPrice: 70,
+    roomMonthlyPrice: 1700,
   }
 };
-
-export const systemSettings = loadSystemSettings() || defaultSettings;
 
 // Pricing calculation helper functions
 type HouseWithPricing = typeof initialMockHouses[0];
@@ -155,12 +135,13 @@ type HouseWithPricing = typeof initialMockHouses[0];
  * Get the applicable price for a bed/room based on priority hierarchy:
  * 1. Room-specific pricing (if enabled)
  * 2. House-specific pricing (if enabled)
- * 3. Standard system pricing
+ * 3. Standard system pricing (from tenant settings)
  */
 export function getApplicablePrice(
   room: RoomInfo,
   house: HouseWithPricing,
-  priceType: 'bedDaily' | 'bedMonthly' | 'roomDaily' | 'roomMonthly'
+  priceType: 'bedDaily' | 'bedMonthly' | 'roomDaily' | 'roomMonthly',
+  tenantPricing?: typeof defaultPricingSettings
 ): number {
   const priceField = priceType === 'bedDaily' ? 'bedDailyPrice' :
                      priceType === 'bedMonthly' ? 'bedMonthlyPrice' :
@@ -177,8 +158,9 @@ export function getApplicablePrice(
     return house.pricing[priceField]!;
   }
   
-  // Priority 3: Standard pricing
-  return systemSettings.standardPricing[priceField];
+  // Priority 3: Standard pricing (from tenant settings or default)
+  const pricing = tenantPricing || defaultPricingSettings;
+  return pricing.standardPricing[priceField];
 }
 
 /**

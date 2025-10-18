@@ -259,19 +259,17 @@ export default function Settings() {
       return;
     }
 
-    // Update global settings and persist to localStorage
-    systemSettings.dailyRentalEnabled = dailyRentalEnabled;
-    if (dailyRentalEnabled) {
-      systemSettings.standardPricing.bedDailyPrice = prices.bedDaily;
-      systemSettings.standardPricing.roomDailyPrice = prices.roomDaily;
-    }
-    systemSettings.standardPricing.bedMonthlyPrice = prices.bedMonthly;
-    systemSettings.standardPricing.roomMonthlyPrice = prices.roomMonthly;
-    saveSystemSettings(systemSettings);
-
-    toast({
-      title: "Kaydedildi",
-      description: "Standart fiyatlar güncellendi",
+    // Update tenant pricing settings via API
+    updateTenantMutation.mutate({
+      pricingSettings: {
+        dailyRentalEnabled,
+        standardPricing: {
+          bedDailyPrice: prices.bedDaily,
+          bedMonthlyPrice: prices.bedMonthly,
+          roomDailyPrice: prices.roomDaily,
+          roomMonthlyPrice: prices.roomMonthly,
+        },
+      },
     });
   };
 
