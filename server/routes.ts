@@ -1192,6 +1192,210 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============================================
+  // ASSIGNMENT MANAGEMENT ROUTES
+  // ============================================
+  
+  // GET /tenants/:tenantId/assignments - Get all assignments for tenant
+  apiRouter.get("/tenants/:tenantId/assignments", async (req, res) => {
+    try {
+      const { tenantId } = req.params;
+      const assignments = await storage.getAssignmentsByTenant(tenantId);
+      res.json(assignments);
+    } catch (error) {
+      console.error("Error fetching assignments:", error);
+      res.status(500).json({ error: "Failed to fetch assignments" });
+    }
+  });
+
+  // GET /assignments/:id - Get single assignment
+  apiRouter.get("/assignments/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const assignment = await storage.getAssignment(id);
+      if (!assignment) {
+        return res.status(404).json({ error: "Assignment not found" });
+      }
+      res.json(assignment);
+    } catch (error) {
+      console.error("Error fetching assignment:", error);
+      res.status(500).json({ error: "Failed to fetch assignment" });
+    }
+  });
+
+  // POST /tenants/:tenantId/assignments - Create assignment
+  apiRouter.post("/tenants/:tenantId/assignments", async (req, res) => {
+    try {
+      const { tenantId } = req.params;
+      const assignment = await storage.createAssignment({ ...req.body, tenantId });
+      res.status(201).json(assignment);
+    } catch (error) {
+      console.error("Error creating assignment:", error);
+      res.status(500).json({ error: "Failed to create assignment" });
+    }
+  });
+
+  // PATCH /assignments/:id - Update assignment
+  apiRouter.patch("/assignments/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updated = await storage.updateAssignment(id, req.body);
+      if (!updated) {
+        return res.status(404).json({ error: "Assignment not found" });
+      }
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating assignment:", error);
+      res.status(500).json({ error: "Failed to update assignment" });
+    }
+  });
+
+  // DELETE /assignments/:id - Delete assignment
+  apiRouter.delete("/assignments/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteAssignment(id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Assignment not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting assignment:", error);
+      res.status(500).json({ error: "Failed to delete assignment" });
+    }
+  });
+
+  // ============================================
+  // CHARGES ROUTES
+  // ============================================
+  
+  // GET /tenants/:tenantId/charges - Get all charges for tenant
+  apiRouter.get("/tenants/:tenantId/charges", async (req, res) => {
+    try {
+      const { tenantId } = req.params;
+      const charges = await storage.getChargesByTenant(tenantId);
+      res.json(charges);
+    } catch (error) {
+      console.error("Error fetching charges:", error);
+      res.status(500).json({ error: "Failed to fetch charges" });
+    }
+  });
+
+  // GET /charges/:id - Get single charge
+  apiRouter.get("/charges/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const charge = await storage.getCharge(id);
+      if (!charge) {
+        return res.status(404).json({ error: "Charge not found" });
+      }
+      res.json(charge);
+    } catch (error) {
+      console.error("Error fetching charge:", error);
+      res.status(500).json({ error: "Failed to fetch charge" });
+    }
+  });
+
+  // POST /tenants/:tenantId/charges - Create charge
+  apiRouter.post("/tenants/:tenantId/charges", async (req, res) => {
+    try {
+      const { tenantId } = req.params;
+      const charge = await storage.createCharge({ ...req.body, tenantId });
+      res.status(201).json(charge);
+    } catch (error) {
+      console.error("Error creating charge:", error);
+      res.status(500).json({ error: "Failed to create charge" });
+    }
+  });
+
+  // PATCH /charges/:id - Update charge
+  apiRouter.patch("/charges/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updated = await storage.updateCharge(id, req.body);
+      if (!updated) {
+        return res.status(404).json({ error: "Charge not found" });
+      }
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating charge:", error);
+      res.status(500).json({ error: "Failed to update charge" });
+    }
+  });
+
+  // DELETE /charges/:id - Delete charge
+  apiRouter.delete("/charges/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteCharge(id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Charge not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting charge:", error);
+      res.status(500).json({ error: "Failed to delete charge" });
+    }
+  });
+
+  // ============================================
+  // PAYMENTS ROUTES
+  // ============================================
+  
+  // GET /tenants/:tenantId/payments - Get all payments for tenant
+  apiRouter.get("/tenants/:tenantId/payments", async (req, res) => {
+    try {
+      const { tenantId } = req.params;
+      const payments = await storage.getPaymentsByTenant(tenantId);
+      res.json(payments);
+    } catch (error) {
+      console.error("Error fetching payments:", error);
+      res.status(500).json({ error: "Failed to fetch payments" });
+    }
+  });
+
+  // GET /payments/:id - Get single payment
+  apiRouter.get("/payments/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const payment = await storage.getPayment(id);
+      if (!payment) {
+        return res.status(404).json({ error: "Payment not found" });
+      }
+      res.json(payment);
+    } catch (error) {
+      console.error("Error fetching payment:", error);
+      res.status(500).json({ error: "Failed to fetch payment" });
+    }
+  });
+
+  // POST /tenants/:tenantId/payments - Create payment
+  apiRouter.post("/tenants/:tenantId/payments", async (req, res) => {
+    try {
+      const { tenantId } = req.params;
+      const payment = await storage.createPayment({ ...req.body, tenantId });
+      res.status(201).json(payment);
+    } catch (error) {
+      console.error("Error creating payment:", error);
+      res.status(500).json({ error: "Failed to create payment" });
+    }
+  });
+
+  // DELETE /payments/:id - Delete payment
+  apiRouter.delete("/payments/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deletePayment(id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Payment not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting payment:", error);
+      res.status(500).json({ error: "Failed to delete payment" });
+    }
+  });
+
   // Register API router with /api prefix
   app.use("/api", apiRouter);
 

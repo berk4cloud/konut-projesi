@@ -22,7 +22,13 @@ import {
   type Reservation,
   type InsertReservation,
   type QRCode,
-  type InsertQRCode
+  type InsertQRCode,
+  type Assignment,
+  type InsertAssignment,
+  type Charge,
+  type InsertCharge,
+  type Payment,
+  type InsertPayment
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { 
@@ -119,6 +125,29 @@ export interface IStorage {
   updateQRCode(id: string, qrCode: Partial<InsertQRCode>): Promise<QRCode | undefined>;
   deleteQRCode(id: string): Promise<boolean>;
   incrementQRUsage(id: string): Promise<QRCode | undefined>;
+  
+  // Assignments (Accommodation management)
+  getAssignment(id: string): Promise<Assignment | undefined>;
+  getAssignmentsByTenant(tenantId: string): Promise<Assignment[]>;
+  getAssignmentsByEmployment(employmentId: string): Promise<Assignment[]>;
+  createAssignment(assignment: InsertAssignment): Promise<Assignment>;
+  updateAssignment(id: string, assignment: Partial<InsertAssignment>): Promise<Assignment | undefined>;
+  deleteAssignment(id: string): Promise<boolean>;
+  
+  // Charges (Monthly accommodation charges)
+  getCharge(id: string): Promise<Charge | undefined>;
+  getChargesByTenant(tenantId: string): Promise<Charge[]>;
+  getChargesByAssignment(assignmentId: string): Promise<Charge[]>;
+  createCharge(charge: InsertCharge): Promise<Charge>;
+  updateCharge(id: string, charge: Partial<InsertCharge>): Promise<Charge | undefined>;
+  deleteCharge(id: string): Promise<boolean>;
+  
+  // Payments (Payment records)
+  getPayment(id: string): Promise<Payment | undefined>;
+  getPaymentsByTenant(tenantId: string): Promise<Payment[]>;
+  getPaymentsByCharge(chargeId: string): Promise<Payment[]>;
+  createPayment(payment: InsertPayment): Promise<Payment>;
+  deletePayment(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -1009,6 +1038,162 @@ export class DbStorage implements IStorage {
       .where(eq(qrCodesTable.id, id))
       .returning();
     return result[0];
+  }
+
+  // ============================================
+  // Assignments Implementation
+  // ============================================
+  
+  async getAssignment(id: string): Promise<Assignment | undefined> {
+    await this.ensureSeeded();
+    const { assignments: assignmentsTable } = await import("@shared/schema");
+    const result = await db.select()
+      .from(assignmentsTable)
+      .where(eq(assignmentsTable.id, id))
+      .limit(1);
+    return result[0];
+  }
+
+  async getAssignmentsByTenant(tenantId: string): Promise<Assignment[]> {
+    await this.ensureSeeded();
+    const { assignments: assignmentsTable } = await import("@shared/schema");
+    return db.select()
+      .from(assignmentsTable)
+      .where(eq(assignmentsTable.tenantId, tenantId))
+      .orderBy(desc(assignmentsTable.startDate));
+  }
+
+  async getAssignmentsByEmployment(employmentId: string): Promise<Assignment[]> {
+    await this.ensureSeeded();
+    const { assignments: assignmentsTable } = await import("@shared/schema");
+    return db.select()
+      .from(assignmentsTable)
+      .where(eq(assignmentsTable.employmentId, employmentId))
+      .orderBy(desc(assignmentsTable.startDate));
+  }
+
+  async createAssignment(assignment: InsertAssignment): Promise<Assignment> {
+    const { assignments: assignmentsTable } = await import("@shared/schema");
+    const result = await db.insert(assignmentsTable).values(assignment).returning();
+    return result[0];
+  }
+
+  async updateAssignment(id: string, assignment: Partial<InsertAssignment>): Promise<Assignment | undefined> {
+    const { assignments: assignmentsTable } = await import("@shared/schema");
+    const result = await db.update(assignmentsTable)
+      .set({ ...assignment, updatedAt: new Date() })
+      .where(eq(assignmentsTable.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteAssignment(id: string): Promise<boolean> {
+    const { assignments: assignmentsTable } = await import("@shared/schema");
+    const result = await db.delete(assignmentsTable)
+      .where(eq(assignmentsTable.id, id))
+      .returning();
+    return result.length > 0;
+  }
+
+  // ============================================
+  // Charges Implementation
+  // ============================================
+  
+  async getCharge(id: string): Promise<Charge | undefined> {
+    await this.ensureSeeded();
+    const { charges: chargesTable } = await import("@shared/schema");
+    const result = await db.select()
+      .from(chargesTable)
+      .where(eq(chargesTable.id, id))
+      .limit(1);
+    return result[0];
+  }
+
+  async getChargesByTenant(tenantId: string): Promise<Charge[]> {
+    await this.ensureSeeded();
+    const { charges: chargesTable } = await import("@shared/schema");
+    return db.select()
+      .from(chargesTable)
+      .where(eq(chargesTable.tenantId, tenantId))
+      .orderBy(desc(chargesTable.dueDate));
+  }
+
+  async getChargesByAssignment(assignmentId: string): Promise<Charge[]> {
+    await this.ensureSeeded();
+    const { charges: chargesTable } = await import("@shared/schema");
+    return db.select()
+      .from(chargesTable)
+      .where(eq(chargesTable.assignmentId, assignmentId))
+      .orderBy(desc(chargesTable.dueDate));
+  }
+
+  async createCharge(charge: InsertCharge): Promise<Charge> {
+    const { charges: chargesTable } = await import("@shared/schema");
+    const result = await db.insert(chargesTable).values(charge).returning();
+    return result[0];
+  }
+
+  async updateCharge(id: string, charge: Partial<InsertCharge>): Promise<Charge | undefined> {
+    const { charges: chargesTable } = await import("@shared/schema");
+    const result = await db.update(chargesTable)
+      .set({ ...charge, updatedAt: new Date() })
+      .where(eq(chargesTable.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteCharge(id: string): Promise<boolean> {
+    const { charges: chargesTable } = await import("@shared/schema");
+    const result = await db.delete(chargesTable)
+      .where(eq(chargesTable.id, id))
+      .returning();
+    return result.length > 0;
+  }
+
+  // ============================================
+  // Payments Implementation
+  // ============================================
+  
+  async getPayment(id: string): Promise<Payment | undefined> {
+    await this.ensureSeeded();
+    const { payments: paymentsTable } = await import("@shared/schema");
+    const result = await db.select()
+      .from(paymentsTable)
+      .where(eq(paymentsTable.id, id))
+      .limit(1);
+    return result[0];
+  }
+
+  async getPaymentsByTenant(tenantId: string): Promise<Payment[]> {
+    await this.ensureSeeded();
+    const { payments: paymentsTable } = await import("@shared/schema");
+    return db.select()
+      .from(paymentsTable)
+      .where(eq(paymentsTable.tenantId, tenantId))
+      .orderBy(desc(paymentsTable.paymentDate));
+  }
+
+  async getPaymentsByCharge(chargeId: string): Promise<Payment[]> {
+    await this.ensureSeeded();
+    const { payments: paymentsTable } = await import("@shared/schema");
+    return db.select()
+      .from(paymentsTable)
+      .where(eq(paymentsTable.chargeId, chargeId))
+      .orderBy(desc(paymentsTable.paymentDate));
+  }
+
+  async createPayment(payment: InsertPayment): Promise<Payment> {
+    const { payments: paymentsTable } = await import("@shared/schema");
+    const result = await db.insert(paymentsTable).values(payment).returning();
+    return result[0];
+  }
+
+  async deletePayment(id: string): Promise<boolean> {
+    const { payments: paymentsTable } = await import("@shared/schema");
+    const result = await db.delete(paymentsTable)
+      .where(eq(paymentsTable.id, id))
+      .returning();
+    return result.length > 0;
   }
 }
 
