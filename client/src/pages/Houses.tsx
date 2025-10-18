@@ -2588,7 +2588,7 @@ export default function Houses() {
       <Dialog open={isRemindersDialogOpen} onOpenChange={setIsRemindersDialogOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Hatırlatıcılar</DialogTitle>
+            <DialogTitle>{t("reminders.title")}</DialogTitle>
             <DialogDescription>
               {selectedHouseForReminders?.name}
             </DialogDescription>
@@ -2605,11 +2605,11 @@ export default function Houses() {
                     const shouldAlert = daysUntil <= reminder.alertDaysBefore && daysUntil >= 0;
                     
                     const typeLabels = {
-                      maintenance: "Bakım",
-                      lease_end: "Kira Sonu",
-                      meter_reading: "Sayaç Okuma",
-                      inspection: "Denetim",
-                      other: "Diğer",
+                      maintenance: t("reminders.typeMaintenance"),
+                      lease_end: t("reminders.typeLeaseEnd"),
+                      meter_reading: t("reminders.typeMeterReading"),
+                      inspection: t("reminders.typeInspection"),
+                      other: t("reminders.typeOther"),
                     };
                     
                     const typeColors = {
@@ -2637,13 +2637,13 @@ export default function Houses() {
                               </Badge>
                               {reminder.recurring && reminder.recurring !== "none" && (
                                 <Badge variant="outline" className="text-xs">
-                                  {reminder.recurring === "monthly" ? "Aylık" : "Yıllık"}
+                                  {reminder.recurring === "monthly" ? t("reminders.recurringMonthly") : t("reminders.recurringYearly")}
                                 </Badge>
                               )}
                               {shouldAlert && (
                                 <Badge variant="default" className="bg-amber-600">
                                   <AlertCircle className="w-3 h-3 mr-1" />
-                                  Yaklaşıyor
+                                  {t("reminders.approaching")}
                                 </Badge>
                               )}
                             </div>
@@ -2658,7 +2658,7 @@ export default function Houses() {
                                 {new Date(reminder.date).toLocaleDateString("tr-TR")}
                               </div>
                               <div>
-                                {daysUntil > 0 ? `${daysUntil} gün sonra` : daysUntil === 0 ? "Bugün" : `${Math.abs(daysUntil)} gün önce`}
+                                {daysUntil > 0 ? t("reminders.daysLater", { days: daysUntil }) : daysUntil === 0 ? t("reminders.today") : t("reminders.daysAgo", { days: Math.abs(daysUntil) })}
                               </div>
                             </div>
                             
@@ -2680,19 +2680,19 @@ export default function Houses() {
                   data-testid="button-add-reminder"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Yeni Hatırlatıcı Ekle
+                  {t("reminders.addReminder")}
                 </Button>
               </>
             ) : (
               <div className="text-center py-8">
                 <Bell className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-                <p className="text-muted-foreground mb-4">Henüz hatırlatıcı eklenmedi</p>
+                <p className="text-muted-foreground mb-4">{t("reminders.noReminders")}</p>
                 <Button
                   onClick={() => setIsAddReminderOpen(true)}
                   data-testid="button-add-first-reminder"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  İlk Hatırlatıcıyı Ekle
+                  {t("reminders.addFirstReminder")}
                 </Button>
               </div>
             )}
@@ -2704,15 +2704,15 @@ export default function Houses() {
       <Dialog open={isAddReminderOpen} onOpenChange={setIsAddReminderOpen}>
         <DialogContent className="max-w-xl">
           <DialogHeader>
-            <DialogTitle>Yeni Hatırlatıcı Ekle</DialogTitle>
+            <DialogTitle>{t("reminders.addReminderTitle")}</DialogTitle>
             <DialogDescription>
-              {selectedHouseForReminders?.name} için hatırlatıcı oluştur
+              {t("reminders.createFor", { houseName: selectedHouseForReminders?.name })}
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="reminder-type">Hatırlatıcı Türü *</Label>
+              <Label htmlFor="reminder-type">{t("reminders.reminderType")}</Label>
               <Select
                 value={newReminder.type}
                 onValueChange={(value) => setNewReminder({ ...newReminder, type: value as Reminder["type"] })}
@@ -2721,20 +2721,20 @@ export default function Houses() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="maintenance">Bakım</SelectItem>
-                  <SelectItem value="lease_end">Kira Sonu</SelectItem>
-                  <SelectItem value="meter_reading">Sayaç Okuma</SelectItem>
-                  <SelectItem value="inspection">Denetim</SelectItem>
-                  <SelectItem value="other">Diğer</SelectItem>
+                  <SelectItem value="maintenance">{t("reminders.typeMaintenance")}</SelectItem>
+                  <SelectItem value="lease_end">{t("reminders.typeLeaseEnd")}</SelectItem>
+                  <SelectItem value="meter_reading">{t("reminders.typeMeterReading")}</SelectItem>
+                  <SelectItem value="inspection">{t("reminders.typeInspection")}</SelectItem>
+                  <SelectItem value="other">{t("reminders.typeOther")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="reminder-title">Başlık *</Label>
+              <Label htmlFor="reminder-title">{t("reminders.titleRequired")}</Label>
               <Input
                 id="reminder-title"
-                placeholder="örn: Yıllık bakım"
+                placeholder={t("reminders.titlePlaceholder")}
                 value={newReminder.title}
                 onChange={(e) => setNewReminder({ ...newReminder, title: e.target.value })}
                 data-testid="input-reminder-title"
@@ -2742,7 +2742,7 @@ export default function Houses() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="reminder-date">Tarih *</Label>
+              <Label htmlFor="reminder-date">{t("reminders.dateRequired")}</Label>
               <Input
                 id="reminder-date"
                 type="date"
@@ -2753,7 +2753,7 @@ export default function Houses() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="reminder-alert">Kaç Gün Önce Uyarı? *</Label>
+              <Label htmlFor="reminder-alert">{t("reminders.alertDays")}</Label>
               <Select
                 value={newReminder.alertDaysBefore.toString()}
                 onValueChange={(value) => setNewReminder({ ...newReminder, alertDaysBefore: parseInt(value) })}
@@ -2762,17 +2762,17 @@ export default function Houses() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">1 gün önce</SelectItem>
-                  <SelectItem value="3">3 gün önce</SelectItem>
-                  <SelectItem value="7">1 hafta önce</SelectItem>
-                  <SelectItem value="14">2 hafta önce</SelectItem>
-                  <SelectItem value="30">1 ay önce</SelectItem>
+                  <SelectItem value="1">{t("reminders.alert1Day")}</SelectItem>
+                  <SelectItem value="3">{t("reminders.alert3Days")}</SelectItem>
+                  <SelectItem value="7">{t("reminders.alert1Week")}</SelectItem>
+                  <SelectItem value="14">{t("reminders.alert2Weeks")}</SelectItem>
+                  <SelectItem value="30">{t("reminders.alert1Month")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="reminder-recurring">Tekrarlama</Label>
+              <Label htmlFor="reminder-recurring">{t("reminders.recurring")}</Label>
               <Select
                 value={newReminder.recurring || "none"}
                 onValueChange={(value) => setNewReminder({ ...newReminder, recurring: value as Reminder["recurring"] })}
@@ -2781,18 +2781,18 @@ export default function Houses() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Tekrarlanmaz</SelectItem>
-                  <SelectItem value="monthly">Aylık</SelectItem>
-                  <SelectItem value="yearly">Yıllık</SelectItem>
+                  <SelectItem value="none">{t("reminders.recurringNone")}</SelectItem>
+                  <SelectItem value="monthly">{t("reminders.recurringMonthly")}</SelectItem>
+                  <SelectItem value="yearly">{t("reminders.recurringYearly")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="reminder-note">Not (Opsiyonel)</Label>
+              <Label htmlFor="reminder-note">{t("reminders.noteOptional")}</Label>
               <Input
                 id="reminder-note"
-                placeholder="örn: Kalorifer bakımı yapılacak"
+                placeholder={t("reminders.notePlaceholder")}
                 value={newReminder.note}
                 onChange={(e) => setNewReminder({ ...newReminder, note: e.target.value })}
                 data-testid="input-reminder-note"
@@ -2816,14 +2816,14 @@ export default function Houses() {
               }}
               data-testid="button-cancel-reminder"
             >
-              İptal
+              {t("common.cancel")}
             </Button>
             <Button
               onClick={() => {
                 if (!newReminder.title || !newReminder.date) {
                   toast({
-                    title: "Eksik Bilgi",
-                    description: "Lütfen tüm zorunlu alanları doldurun",
+                    title: t("reminders.missingInfo"),
+                    description: t("reminders.fillRequired"),
                     variant: "destructive",
                   });
                   return;
@@ -2850,8 +2850,8 @@ export default function Houses() {
                   setSelectedHouseForReminders(updatedHouses.find(h => h.id === selectedHouseForReminders.id) || null);
                   
                   toast({
-                    title: "Başarılı",
-                    description: "Hatırlatıcı eklendi",
+                    title: t("common.success"),
+                    description: t("reminders.reminderAdded"),
                   });
 
                   setIsAddReminderOpen(false);
@@ -2867,7 +2867,7 @@ export default function Houses() {
               }}
               data-testid="button-save-reminder"
             >
-              Kaydet
+              {t("common.save")}
             </Button>
           </div>
         </DialogContent>
