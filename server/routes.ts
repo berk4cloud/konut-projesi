@@ -682,6 +682,185 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============================================
+  // HOUSES ENDPOINTS
+  // ============================================
+
+  // GET /houses - Get all houses for a tenant (with rooms)
+  apiRouter.get("/houses", async (req, res) => {
+    try {
+      const tenantId = req.query.tenantId as string;
+      
+      if (!tenantId) {
+        return res.status(400).json({ error: "tenantId required" });
+      }
+
+      const houses = await storage.getHousesByTenant(tenantId);
+      
+      // Fetch rooms for each house
+      const housesWithRooms = await Promise.all(
+        houses.map(async (house) => {
+          const rooms = await storage.getRoomsByHouse(house.id);
+          return {
+            ...house,
+            rooms: rooms.map(room => ({
+              id: room.id,
+              roomNumber: room.roomNumber,
+              beds: room.bedCount || 0,
+              floor: room.floor,
+              canRentAsRoom: false, // Default for now
+              useFloor: room.floor != null,
+            })),
+          };
+        })
+      );
+
+      res.json(housesWithRooms);
+    } catch (error) {
+      console.error("Error fetching houses:", error);
+      res.status(500).json({ error: "Failed to fetch houses" });
+    }
+  });
+
+  // POST /houses - Create a new house (with rooms)
+  apiRouter.post("/houses", async (req, res) => {
+    try {
+      const { tenantId, name, address, city, country, ownershipType, rooms } = req.body;
+
+      if (!tenantId || !address) {
+        return res.status(400).json({ error: "tenantId and address required" });
+      }
+
+      // Create house
+      const house = await storage.createHouse({
+        tenantId,
+        name: name || address,
+        address,
+        city,
+        country,
+        ownershipType: ownershipType || "rent",
+        status: "active",
+      });
+
+      // Create rooms if provided
+      if (rooms && Array.isArray(rooms)) {
+        await Promise.all(
+          rooms.map((room: any) =>
+            storage.createRoom({
+              houseId: house.id,
+              roomNumber: room.roomNumber || "",
+              floor: room.useFloor ? room.floor : null,
+              bedCount: room.beds || 0,
+              status: "active",
+            })
+          )
+        );
+      }
+
+      // Fetch created house with rooms
+      const createdRooms = await storage.getRoomsByHouse(house.id);
+      const response = {
+        ...house,
+        rooms: createdRooms.map(room => ({
+          id: room.id,
+          roomNumber: room.roomNumber,
+          beds: room.bedCount || 0,
+          floor: room.floor,
+          canRentAsRoom: false,
+          useFloor: room.floor != null,
+        })),
+      };
+
+      res.json(response);
+    } catch (error) {
+      console.error("Error creating house:", error);
+      res.status(500).json({ error: "Failed to create house" });
+    }
+  });
+
+  // PATCH /houses/:id - Update house (with rooms)
+  apiRouter.patch("/houses/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { name, address, city, country, ownershipType, rooms } = req.body;
+
+      // Update house
+      const house = await storage.updateHouse(id, {
+        name,
+        address,
+        city,
+        country,
+        ownershipType,
+      });
+
+      if (!house) {
+        return res.status(404).json({ error: "House not found" });
+      }
+
+      // Update rooms if provided
+      if (rooms && Array.isArray(rooms)) {
+        // Delete existing rooms and recreate (simple approach)
+        const existingRooms = await storage.getRoomsByHouse(id);
+        await Promise.all(existingRooms.map(room => storage.deleteRoom(room.id)));
+        
+        // Create new rooms
+        await Promise.all(
+          rooms.map((room: any) =>
+            storage.createRoom({
+              houseId: id,
+              roomNumber: room.roomNumber || "",
+              floor: room.useFloor ? room.floor : null,
+              bedCount: room.beds || 0,
+              status: "active",
+            })
+          )
+        );
+      }
+
+      // Fetch updated house with rooms
+      const updatedRooms = await storage.getRoomsByHouse(id);
+      const response = {
+        ...house,
+        rooms: updatedRooms.map(room => ({
+          id: room.id,
+          roomNumber: room.roomNumber,
+          beds: room.bedCount || 0,
+          floor: room.floor,
+          canRentAsRoom: false,
+          useFloor: room.floor != null,
+        })),
+      };
+
+      res.json(response);
+    } catch (error) {
+      console.error("Error updating house:", error);
+      res.status(500).json({ error: "Failed to update house" });
+    }
+  });
+
+  // DELETE /houses/:id - Delete house (cascade delete rooms)
+  apiRouter.delete("/houses/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      // Delete all rooms first
+      const rooms = await storage.getRoomsByHouse(id);
+      await Promise.all(rooms.map(room => storage.deleteRoom(room.id)));
+
+      // Delete house
+      const deleted = await storage.deleteHouse(id);
+
+      if (!deleted) {
+        return res.status(404).json({ error: "House not found" });
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting house:", error);
+      res.status(500).json({ error: "Failed to delete house" });
+    }
+  });
+
   // Register API router with /api prefix
   app.use("/api", apiRouter);
 

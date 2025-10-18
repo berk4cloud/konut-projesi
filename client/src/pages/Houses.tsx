@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -476,7 +477,6 @@ const initialMockHouses = [
 export default function Houses() {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
-  const [houses, setHouses] = useState(initialMockHouses);
   const [searchQuery, setSearchQuery] = useState("");
   const [showArchived, setShowArchived] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -487,6 +487,132 @@ export default function Houses() {
   const tenant = JSON.parse(localStorage.getItem("tenant") || "{}");
   const { data: countriesData = [], isLoading: isLoadingCountries } = useQuery<Country[]>({
     queryKey: ["/api/countries"],
+  });
+
+  // Fetch houses from API with fallback to initialMockHouses
+  const { data: apiHouses, isLoading: isLoadingHouses, error: housesError } = useQuery({
+    queryKey: ["/api/houses", tenant.id],
+    queryFn: async () => {
+      if (!tenant.id) return [];
+      const response = await fetch(`/api/houses?tenantId=${tenant.id}`);
+      if (!response.ok) throw new Error("Failed to fetch houses");
+      return response.json();
+    },
+    enabled: !!tenant.id,
+  });
+
+  // Merge API data with client-side features from localStorage
+  const getClientSideData = (houseId: string) => {
+    const stored = localStorage.getItem(`house_client_data_${houseId}`);
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch {
+        return {};
+      }
+    }
+    return {};
+  };
+
+  // Save client-side data to localStorage
+  const saveClientSideData = (houseId: string, data: any) => {
+    localStorage.setItem(`house_client_data_${houseId}`, JSON.stringify(data));
+  };
+
+  // Merge API houses with client-side data (pricing, meterLogs, leaseContract, reminders)
+  const houses = useMemo(() => {
+    const baseHouses = apiHouses && apiHouses.length > 0 ? apiHouses : initialMockHouses;
+    
+    return baseHouses.map((house: any) => {
+      const clientData = getClientSideData(house.id);
+      return {
+        ...house,
+        totalBeds: house.totalBeds || house.rooms?.reduce((sum: number, r: any) => sum + (r.beds || 0), 0) || 0,
+        occupiedBeds: clientData.occupiedBeds || 0,
+        archived: clientData.archived || false,
+        pricing: clientData.pricing || { useCustomPricing: false },
+        leaseContract: clientData.leaseContract,
+        reminders: clientData.reminders || [],
+        meterLogs: clientData.meterLogs || { electricity: [], water: [], gas: [] },
+        useCustomName: clientData.useCustomName || false,
+        customName: clientData.customName || "",
+      };
+    });
+  }, [apiHouses]);
+
+  // Create house mutation
+  const createHouseMutation = useMutation({
+    mutationFn: async (houseData: any) => {
+      const response = await apiRequest("POST", "/api/houses", {
+        tenantId: tenant.id,
+        name: houseData.name,
+        address: houseData.address,
+        city: houseData.city,
+        country: houseData.country,
+        ownershipType: houseData.ownershipType,
+        rooms: houseData.rooms,
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      // Save client-side data (pricing, meterLogs, etc.)
+      saveClientSideData(data.id, {
+        pricing: data.pricing,
+        leaseContract: data.leaseContract,
+        reminders: data.reminders || [],
+        meterLogs: data.meterLogs || { electricity: [], water: [], gas: [] },
+        occupiedBeds: data.occupiedBeds || 0,
+        archived: false,
+        useCustomName: data.useCustomName || false,
+        customName: data.customName || "",
+      });
+      
+      // Invalidate and refetch
+      queryClient.invalidateQueries({ queryKey: ["/api/houses", tenant.id] });
+    },
+  });
+
+  // Update house mutation
+  const updateHouseMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      const response = await apiRequest("PATCH", `/api/houses/${id}`, {
+        name: data.name,
+        address: data.address,
+        city: data.city,
+        country: data.country,
+        ownershipType: data.ownershipType,
+        rooms: data.rooms,
+      });
+      return response.json();
+    },
+    onSuccess: (data, variables) => {
+      // Update client-side data
+      const existingClientData = getClientSideData(variables.id);
+      saveClientSideData(variables.id, {
+        ...existingClientData,
+        pricing: variables.data.pricing,
+        useCustomName: variables.data.useCustomName,
+        customName: variables.data.customName,
+      });
+      
+      // Invalidate and refetch
+      queryClient.invalidateQueries({ queryKey: ["/api/houses", tenant.id] });
+    },
+  });
+
+  // Delete house mutation
+  const deleteHouseMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await apiRequest("DELETE", `/api/houses/${id}`, undefined);
+      return { success: true };
+    },
+    onSuccess: (_, id) => {
+      // Clean up localStorage for this house
+      localStorage.removeItem(`house_client_data_${id}`);
+      
+      // Invalidate and refetch
+      queryClient.invalidateQueries({ queryKey: ["/api/houses", tenant.id] });
+    },
   });
 
   // Get localized country name with proper language normalization
@@ -639,16 +765,25 @@ export default function Houses() {
   
   // Reminder management functions
   const handleCompleteReminder = (reminderId: string) => {
-    setHouses(prevHouses =>
-      prevHouses.map(house => ({
-        ...house,
-        reminders: house.reminders?.map(reminder =>
-          reminder.id === reminderId
-            ? { ...reminder, completed: true, completedAt: new Date().toISOString() }
-            : reminder
-        ),
-      }))
-    );
+    // Find which house has this reminder
+    const house = houses.find(h => h.reminders?.some(r => r.id === reminderId));
+    if (!house) return;
+    
+    // Update client-side data in localStorage
+    const existingClientData = getClientSideData(house.id);
+    const updatedReminders = existingClientData.reminders?.map((reminder: any) =>
+      reminder.id === reminderId
+        ? { ...reminder, completed: true, completedAt: new Date().toISOString() }
+        : reminder
+    ) || [];
+    
+    saveClientSideData(house.id, {
+      ...existingClientData,
+      reminders: updatedReminders,
+    });
+    
+    // Trigger re-render
+    queryClient.invalidateQueries({ queryKey: ["/api/houses", tenant.id] });
     
     toast({
       title: "Hatırlatma tamamlandı",
@@ -657,14 +792,23 @@ export default function Houses() {
   };
   
   const handleAddNoteToReminder = (reminderId: string, note: string) => {
-    setHouses(prevHouses =>
-      prevHouses.map(house => ({
-        ...house,
-        reminders: house.reminders?.map(reminder =>
-          reminder.id === reminderId ? { ...reminder, note } : reminder
-        ),
-      }))
-    );
+    // Find which house has this reminder
+    const house = houses.find(h => h.reminders?.some(r => r.id === reminderId));
+    if (!house) return;
+    
+    // Update client-side data in localStorage
+    const existingClientData = getClientSideData(house.id);
+    const updatedReminders = existingClientData.reminders?.map((reminder: any) =>
+      reminder.id === reminderId ? { ...reminder, note } : reminder
+    ) || [];
+    
+    saveClientSideData(house.id, {
+      ...existingClientData,
+      reminders: updatedReminders,
+    });
+    
+    // Trigger re-render
+    queryClient.invalidateQueries({ queryKey: ["/api/houses", tenant.id] });
     
     toast({
       title: "Not eklendi",
@@ -724,22 +868,21 @@ export default function Houses() {
       return;
     }
     
-    setHouses(prevHouses =>
-      prevHouses.map(house =>
-        house.id === selectedHouseForLease.id
-          ? {
-              ...house,
-              leaseContract: {
-                ...house.leaseContract!,
-                startDate: editedLeaseData.startDate,
-                endDate: editedLeaseData.endDate || null,
-                monthlyRent,
-                paymentDay,
-              },
-            }
-          : house
-      )
-    );
+    // Update client-side data in localStorage
+    const existingClientData = getClientSideData(selectedHouseForLease.id);
+    saveClientSideData(selectedHouseForLease.id, {
+      ...existingClientData,
+      leaseContract: {
+        ...existingClientData.leaseContract,
+        startDate: editedLeaseData.startDate,
+        endDate: editedLeaseData.endDate || null,
+        monthlyRent,
+        paymentDay,
+      },
+    });
+    
+    // Trigger re-render
+    queryClient.invalidateQueries({ queryKey: ["/api/houses", tenant.id] });
     
     toast({
       title: "Başarılı",
@@ -942,35 +1085,28 @@ export default function Houses() {
       photo: newReading.photo || "",
     };
 
-    // Update the house with the new reading
-    setHouses(houses.map(h => {
-      if (h.id === selectedHouseForMeters.id) {
-        const updatedLogs = { ...h.meterLogs };
-        if (newReading.meterType === "electricity") {
-          updatedLogs.electricity = [newReadingData, ...(updatedLogs.electricity || [])] as MeterReading[];
-        } else if (newReading.meterType === "water") {
-          updatedLogs.water = [newReadingData, ...(updatedLogs.water || [])] as MeterReading[];
-        } else {
-          updatedLogs.gas = [newReadingData, ...(updatedLogs.gas || [])] as MeterReading[];
-        }
-        return { ...h, meterLogs: updatedLogs };
-      }
-      return h;
-    }));
+    // Update client-side data in localStorage
+    const existingClientData = getClientSideData(selectedHouseForMeters.id);
+    const updatedLogs = { ...(existingClientData.meterLogs || { electricity: [], water: [], gas: [] }) };
+    
+    if (newReading.meterType === "electricity") {
+      updatedLogs.electricity = [newReadingData, ...(updatedLogs.electricity || [])] as MeterReading[];
+    } else if (newReading.meterType === "water") {
+      updatedLogs.water = [newReadingData, ...(updatedLogs.water || [])] as MeterReading[];
+    } else {
+      updatedLogs.gas = [newReadingData, ...(updatedLogs.gas || [])] as MeterReading[];
+    }
+    
+    saveClientSideData(selectedHouseForMeters.id, {
+      ...existingClientData,
+      meterLogs: updatedLogs,
+    });
 
     // Update selectedHouseForMeters to reflect changes
-    const updatedHouse = houses.find(h => h.id === selectedHouseForMeters.id);
-    if (updatedHouse) {
-      const updatedLogs = { ...updatedHouse.meterLogs };
-      if (newReading.meterType === "electricity") {
-        updatedLogs.electricity = [newReadingData, ...(updatedLogs.electricity || [])] as MeterReading[];
-      } else if (newReading.meterType === "water") {
-        updatedLogs.water = [newReadingData, ...(updatedLogs.water || [])] as MeterReading[];
-      } else {
-        updatedLogs.gas = [newReadingData, ...(updatedLogs.gas || [])] as MeterReading[];
-      }
-      setSelectedHouseForMeters({ ...updatedHouse, meterLogs: updatedLogs });
-    }
+    setSelectedHouseForMeters({ ...selectedHouseForMeters, meterLogs: updatedLogs });
+    
+    // Trigger re-render
+    queryClient.invalidateQueries({ queryKey: ["/api/houses", tenant.id] });
 
     // Reset form
     setNewReading({
@@ -989,7 +1125,7 @@ export default function Houses() {
     });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // Validation
     if (!formData.address.trim()) {
       toast({
@@ -1055,66 +1191,64 @@ export default function Houses() {
     
     console.log("Saving house:", formData);
     
-    const totalBeds = calculateTotalBeds();
+    // Prepare house data for API
+    const houseData = {
+      name: getDisplayName(formData.customName, formData.address, formData.useCustomName),
+      address: formData.address,
+      city: formData.city,
+      country: formData.country,
+      ownershipType: formData.ownershipType,
+      rooms: formData.rooms,
+      // Client-side data (will be saved to localStorage)
+      pricing: formData.pricing,
+      useCustomName: formData.useCustomName,
+      customName: formData.customName,
+      leaseContract: formData.ownershipType === "Kiralık" ? {
+        startDate: new Date().toISOString().split('T')[0],
+        monthlyRent: 0,
+        currency: "EUR",
+        paymentDay: 1,
+      } : undefined,
+      reminders: editingHouse?.reminders || [],
+      meterLogs: editingHouse?.meterLogs || {
+        electricity: [],
+        water: [],
+        gas: [],
+      },
+      occupiedBeds: editingHouse?.occupiedBeds || 0,
+    };
     
-    if (editingHouse) {
-      // Update existing house
-      setHouses(houses.map(h => 
-        h.id === editingHouse.id 
-          ? {
-              ...h,
-              name: getDisplayName(formData.customName, formData.address, formData.useCustomName),
-              useCustomName: formData.useCustomName,
-              customName: formData.customName,
-              address: formData.address,
-              city: formData.city,
-              country: formData.country,
-              rooms: formData.rooms,
-              totalBeds,
-              ownershipType: formData.ownershipType,
-              pricing: formData.pricing,
-            }
-          : h
-      ));
-    } else {
-      // Add new house (mock - no occupiedBeds data)
-      const newHouse = {
-        id: `h${houses.length + 1}`,
-        name: getDisplayName(formData.customName, formData.address, formData.useCustomName),
-        useCustomName: formData.useCustomName,
-        customName: formData.customName,
-        address: formData.address,
-        city: formData.city,
-        country: formData.country,
-        rooms: formData.rooms,
-        totalBeds,
-        occupiedBeds: 0, // Default to 0 for new houses
-        ownershipType: formData.ownershipType,
-        archived: false,
-        pricing: formData.pricing,
-        leaseContract: formData.ownershipType === "Kiralık" ? {
-          startDate: new Date().toISOString().split('T')[0],
-          monthlyRent: 0,
-          currency: "EUR",
-          paymentDay: 1,
-        } : undefined,
-        reminders: [],
-        meterLogs: {
-          electricity: [],
-          water: [],
-          gas: [],
-        },
-      };
-      setHouses([...houses, newHouse]);
+    try {
+      if (editingHouse) {
+        // Update existing house
+        await updateHouseMutation.mutateAsync({
+          id: editingHouse.id,
+          data: houseData,
+        });
+        
+        toast({
+          title: t("houses.success"),
+          description: t("houses.houseUpdated"),
+        });
+      } else {
+        // Create new house
+        await createHouseMutation.mutateAsync(houseData);
+        
+        toast({
+          title: t("houses.success"),
+          description: t("houses.houseAdded"),
+        });
+      }
+      
+      setIsDialogOpen(false);
+      setNewlyAddedRoomIndex(null); // Clear highlight when saving
+    } catch (error) {
+      toast({
+        title: "Hata",
+        description: error instanceof Error ? error.message : "Kaydetme başarısız oldu",
+        variant: "destructive",
+      });
     }
-    
-    setIsDialogOpen(false);
-    setNewlyAddedRoomIndex(null); // Clear highlight when saving
-    
-    toast({
-      title: t("houses.success"),
-      description: editingHouse ? t("houses.houseUpdated") : t("houses.houseAdded"),
-    });
   };
 
   return (
@@ -1164,10 +1298,19 @@ export default function Houses() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredHouses.map((house) => {
-              const occupancyRate = ((house.occupiedBeds / house.totalBeds) * 100).toFixed(0);
-              const emptyBeds = house.totalBeds - house.occupiedBeds;
+          {/* Loading state */}
+          {isLoadingHouses ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                <p className="text-muted-foreground">{t("common.loading") || "Yükleniyor..."}</p>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredHouses.map((house) => {
+                const occupancyRate = ((house.occupiedBeds / house.totalBeds) * 100).toFixed(0);
+                const emptyBeds = house.totalBeds - house.occupiedBeds;
               
               // Get translated ownership type
               const getOwnershipTypeLabel = (type: string) => {
@@ -1349,8 +1492,9 @@ export default function Houses() {
               );
             })}
           </div>
+          )}
 
-          {filteredHouses.length === 0 && (
+          {!isLoadingHouses && filteredHouses.length === 0 && (
             <div className="text-center py-12">
               <Building2 className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" />
               <p className="text-muted-foreground" data-testid="text-no-houses">
@@ -1942,12 +2086,18 @@ export default function Houses() {
               <Button
                 variant="outline"
                 onClick={() => {
-                  const updatedHouses = houses.map(h =>
-                    h.id === editingHouse.id
-                      ? { ...h, archived: !h.archived }
-                      : h
-                  );
-                  setHouses(updatedHouses);
+                  if (!editingHouse) return;
+                  
+                  // Update client-side data in localStorage
+                  const existingClientData = getClientSideData(editingHouse.id);
+                  saveClientSideData(editingHouse.id, {
+                    ...existingClientData,
+                    archived: !editingHouse.archived,
+                  });
+                  
+                  // Trigger re-render
+                  queryClient.invalidateQueries({ queryKey: ["/api/houses", tenant.id] });
+                  
                   setIsDialogOpen(false);
                   toast({
                     title: editingHouse.archived ? t("houses.unarchivedTitle") : t("houses.archivedTitle"),
@@ -2880,24 +3030,23 @@ export default function Houses() {
                 }
 
                 if (selectedHouseForReminders) {
-                  const updatedHouses = houses.map((h) => {
-                    if (h.id === selectedHouseForReminders.id) {
-                      return {
-                        ...h,
-                        reminders: [
-                          ...(h.reminders || []),
-                          {
-                            id: `r${Date.now()}`,
-                            ...newReminder,
-                          },
-                        ],
-                      };
-                    }
-                    return h;
+                  // Update client-side data in localStorage
+                  const existingClientData = getClientSideData(selectedHouseForReminders.id);
+                  const newReminderData = {
+                    id: `r${Date.now()}`,
+                    ...newReminder,
+                  };
+                  
+                  saveClientSideData(selectedHouseForReminders.id, {
+                    ...existingClientData,
+                    reminders: [
+                      ...(existingClientData.reminders || []),
+                      newReminderData,
+                    ],
                   });
                   
-                  setHouses(updatedHouses);
-                  setSelectedHouseForReminders(updatedHouses.find(h => h.id === selectedHouseForReminders.id) || null);
+                  // Trigger re-render
+                  queryClient.invalidateQueries({ queryKey: ["/api/houses", tenant.id] });
                   
                   toast({
                     title: t("common.success"),

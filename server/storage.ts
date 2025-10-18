@@ -12,7 +12,13 @@ import {
   type EmploymentPrivateData,
   type InsertEmploymentPrivateData,
   type Country,
-  type InsertCountry
+  type InsertCountry,
+  type House,
+  type InsertHouse,
+  type Room,
+  type InsertRoom,
+  type Bed,
+  type InsertBed
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { 
@@ -70,6 +76,27 @@ export interface IStorage {
   getEmploymentPrivateData(employmentId: string): Promise<EmploymentPrivateData | undefined>;
   createEmploymentPrivateData(data: InsertEmploymentPrivateData): Promise<EmploymentPrivateData>;
   updateEmploymentPrivateData(employmentId: string, data: Partial<InsertEmploymentPrivateData>): Promise<EmploymentPrivateData | undefined>;
+  
+  // Houses (Tenant-specific)
+  getHouse(id: string): Promise<House | undefined>;
+  getHousesByTenant(tenantId: string): Promise<House[]>;
+  createHouse(house: InsertHouse): Promise<House>;
+  updateHouse(id: string, house: Partial<InsertHouse>): Promise<House | undefined>;
+  deleteHouse(id: string): Promise<boolean>;
+  
+  // Rooms (House-specific)
+  getRoom(id: string): Promise<Room | undefined>;
+  getRoomsByHouse(houseId: string): Promise<Room[]>;
+  createRoom(room: InsertRoom): Promise<Room>;
+  updateRoom(id: string, room: Partial<InsertRoom>): Promise<Room | undefined>;
+  deleteRoom(id: string): Promise<boolean>;
+  
+  // Beds (Room-specific)
+  getBed(id: string): Promise<Bed | undefined>;
+  getBedsByRoom(roomId: string): Promise<Bed[]>;
+  createBed(bed: InsertBed): Promise<Bed>;
+  updateBed(id: string, bed: Partial<InsertBed>): Promise<Bed | undefined>;
+  deleteBed(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -423,6 +450,25 @@ export class MemStorage implements IStorage {
     this.employmentPrivateData.set(existing.id, updated);
     return updated;
   }
+
+  // ============================================
+  // Houses/Rooms/Beds (Not implemented for MemStorage)
+  // ============================================
+  async getHouse(_id: string): Promise<House | undefined> { throw new Error("Not implemented in MemStorage"); }
+  async getHousesByTenant(_tenantId: string): Promise<House[]> { throw new Error("Not implemented in MemStorage"); }
+  async createHouse(_house: InsertHouse): Promise<House> { throw new Error("Not implemented in MemStorage"); }
+  async updateHouse(_id: string, _house: Partial<InsertHouse>): Promise<House | undefined> { throw new Error("Not implemented in MemStorage"); }
+  async deleteHouse(_id: string): Promise<boolean> { throw new Error("Not implemented in MemStorage"); }
+  async getRoom(_id: string): Promise<Room | undefined> { throw new Error("Not implemented in MemStorage"); }
+  async getRoomsByHouse(_houseId: string): Promise<Room[]> { throw new Error("Not implemented in MemStorage"); }
+  async createRoom(_room: InsertRoom): Promise<Room> { throw new Error("Not implemented in MemStorage"); }
+  async updateRoom(_id: string, _room: Partial<InsertRoom>): Promise<Room | undefined> { throw new Error("Not implemented in MemStorage"); }
+  async deleteRoom(_id: string): Promise<boolean> { throw new Error("Not implemented in MemStorage"); }
+  async getBed(_id: string): Promise<Bed | undefined> { throw new Error("Not implemented in MemStorage"); }
+  async getBedsByRoom(_roomId: string): Promise<Bed[]> { throw new Error("Not implemented in MemStorage"); }
+  async createBed(_bed: InsertBed): Promise<Bed> { throw new Error("Not implemented in MemStorage"); }
+  async updateBed(_id: string, _bed: Partial<InsertBed>): Promise<Bed | undefined> { throw new Error("Not implemented in MemStorage"); }
+  async deleteBed(_id: string): Promise<boolean> { throw new Error("Not implemented in MemStorage"); }
 }
 
 // ============================================
@@ -437,7 +483,10 @@ import {
   users as usersTable,
   workerProfiles as workerProfilesTable,
   employments as employmentsTable,
-  employmentPrivateData as employmentPrivateDataTable
+  employmentPrivateData as employmentPrivateDataTable,
+  houses as housesTable,
+  rooms as roomsTable,
+  beds as bedsTable
 } from "@shared/schema";
 import { eq, and } from "drizzle-orm";
 
@@ -707,6 +756,105 @@ export class DbStorage implements IStorage {
       .where(eq(employmentPrivateDataTable.employmentId, employmentId))
       .returning();
     return result[0];
+  }
+
+  // ============================================
+  // Houses (Tenant-specific)
+  // ============================================
+
+  async getHouse(id: string): Promise<House | undefined> {
+    await this.ensureSeeded();
+    const result = await db.select().from(housesTable).where(eq(housesTable.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getHousesByTenant(tenantId: string): Promise<House[]> {
+    await this.ensureSeeded();
+    return await db.select().from(housesTable).where(eq(housesTable.tenantId, tenantId));
+  }
+
+  async createHouse(house: InsertHouse): Promise<House> {
+    const result = await db.insert(housesTable).values(house).returning();
+    return result[0];
+  }
+
+  async updateHouse(id: string, house: Partial<InsertHouse>): Promise<House | undefined> {
+    const result = await db.update(housesTable)
+      .set({ ...house, updatedAt: new Date() })
+      .where(eq(housesTable.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteHouse(id: string): Promise<boolean> {
+    const result = await db.delete(housesTable).where(eq(housesTable.id, id)).returning();
+    return result.length > 0;
+  }
+
+  // ============================================
+  // Rooms (House-specific)
+  // ============================================
+
+  async getRoom(id: string): Promise<Room | undefined> {
+    await this.ensureSeeded();
+    const result = await db.select().from(roomsTable).where(eq(roomsTable.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getRoomsByHouse(houseId: string): Promise<Room[]> {
+    await this.ensureSeeded();
+    return await db.select().from(roomsTable).where(eq(roomsTable.houseId, houseId));
+  }
+
+  async createRoom(room: InsertRoom): Promise<Room> {
+    const result = await db.insert(roomsTable).values(room).returning();
+    return result[0];
+  }
+
+  async updateRoom(id: string, room: Partial<InsertRoom>): Promise<Room | undefined> {
+    const result = await db.update(roomsTable)
+      .set({ ...room, updatedAt: new Date() })
+      .where(eq(roomsTable.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteRoom(id: string): Promise<boolean> {
+    const result = await db.delete(roomsTable).where(eq(roomsTable.id, id)).returning();
+    return result.length > 0;
+  }
+
+  // ============================================
+  // Beds (Room-specific)
+  // ============================================
+
+  async getBed(id: string): Promise<Bed | undefined> {
+    await this.ensureSeeded();
+    const result = await db.select().from(bedsTable).where(eq(bedsTable.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getBedsByRoom(roomId: string): Promise<Bed[]> {
+    await this.ensureSeeded();
+    return await db.select().from(bedsTable).where(eq(bedsTable.roomId, roomId));
+  }
+
+  async createBed(bed: InsertBed): Promise<Bed> {
+    const result = await db.insert(bedsTable).values(bed).returning();
+    return result[0];
+  }
+
+  async updateBed(id: string, bed: Partial<InsertBed>): Promise<Bed | undefined> {
+    const result = await db.update(bedsTable)
+      .set({ ...bed, updatedAt: new Date() })
+      .where(eq(bedsTable.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteBed(id: string): Promise<boolean> {
+    const result = await db.delete(bedsTable).where(eq(bedsTable.id, id)).returning();
+    return result.length > 0;
   }
 }
 
