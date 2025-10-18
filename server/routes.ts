@@ -305,7 +305,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Get tenant
-      const tenant = await storage.getTenantById(tenantId);
+      const tenant = await storage.getTenant(tenantId);
       if (!tenant) {
         return res.status(404).json({ error: "Tenant bulunamadı" });
       }
