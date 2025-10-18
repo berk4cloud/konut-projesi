@@ -1834,7 +1834,10 @@ export default function Houses() {
                           type="number"
                           min="1"
                           placeholder={t("houses.bedCountPlaceholder")}
-                          value={room.beds === 0 ? "" : room.beds}
+                          value={(() => {
+                            const bedCount = Array.isArray(room.beds) ? room.beds.length : (room.beds || 0);
+                            return bedCount === 0 ? "" : bedCount;
+                          })()}
                           onChange={(e) => {
                             const val = e.target.value;
                             if (val === "") {
