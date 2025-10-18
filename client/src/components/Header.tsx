@@ -246,11 +246,11 @@ export default function Header({
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => console.log("Profile clicked")}>
                 <User className="w-4 h-4 mr-2" />
-                Profil
+                {t("nav.profile")}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => console.log("Logout clicked")}>
                 <LogOut className="w-4 h-4 mr-2" />
-                Çıkış Yap
+                {t("nav.logout")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
