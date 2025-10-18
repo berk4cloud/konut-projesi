@@ -807,16 +807,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (rooms && Array.isArray(rooms)) {
         for (const roomData of rooms) {
           // Create room
+          // Handle beds: can be number (from form) or array (from API GET response)
+          const bedCount = Array.isArray(roomData.beds) ? roomData.beds.length : (roomData.beds || 0);
+          
           const createdRoom = await storage.createRoom({
             houseId: house.id,
             roomNumber: roomData.roomNumber || "",
             floor: roomData.useFloor ? roomData.floor : null,
-            bedCount: roomData.beds || 0,
+            bedCount: bedCount,
             status: "active",
           });
           
           // Create beds for this room
-          const bedCount = roomData.beds || 0;
           for (let i = 1; i <= bedCount; i++) {
             await storage.createBed({
               roomId: createdRoom.id,
@@ -898,16 +900,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Create new rooms and beds
         for (const roomData of rooms) {
+          // Handle beds: can be number (from form) or array (from API GET response)
+          const bedCount = Array.isArray(roomData.beds) ? roomData.beds.length : (roomData.beds || 0);
+          
           const createdRoom = await storage.createRoom({
             houseId: id,
             roomNumber: roomData.roomNumber || "",
             floor: roomData.useFloor ? roomData.floor : null,
-            bedCount: roomData.beds || 0,
+            bedCount: bedCount,
             status: "active",
           });
           
           // Create beds for this room
-          const bedCount = roomData.beds || 0;
           for (let i = 1; i <= bedCount; i++) {
             await storage.createBed({
               roomId: createdRoom.id,

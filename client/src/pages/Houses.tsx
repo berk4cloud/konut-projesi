@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -477,28 +478,33 @@ const initialMockHouses = [
 export default function Houses() {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
+  const { user, isAuthenticated } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [showArchived, setShowArchived] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingHouse, setEditingHouse] = useState<typeof initialMockHouses[0] | null>(null);
   const [countryOpen, setCountryOpen] = useState(false);
 
-  // Load tenant and countries
-  const tenant = JSON.parse(localStorage.getItem("tenant") || "{}");
+  // Auth guard
+  if (!isAuthenticated || !user) {
+    return null;
+  }
+
+  // Load countries
   const { data: countriesData = [], isLoading: isLoadingCountries } = useQuery<Country[]>({
     queryKey: ["/api/countries"],
   });
 
   // Fetch houses from API with fallback to initialMockHouses
   const { data: apiHouses, isLoading: isLoadingHouses, error: housesError } = useQuery({
-    queryKey: ["/api/houses", tenant.id],
+    queryKey: ["/api/houses", user.tenantId],
     queryFn: async () => {
-      if (!tenant.id) return [];
-      const response = await fetch(`/api/houses?tenantId=${tenant.id}`);
+      if (!user.tenantId) return [];
+      const response = await fetch(`/api/houses?tenantId=${user.tenantId}`);
       if (!response.ok) throw new Error("Failed to fetch houses");
       return response.json();
     },
-    enabled: !!tenant.id,
+    enabled: !!user.tenantId,
   });
 
   // Merge API data with client-side features from localStorage
@@ -544,7 +550,7 @@ export default function Houses() {
   const createHouseMutation = useMutation({
     mutationFn: async (houseData: any) => {
       const response = await apiRequest("POST", "/api/houses", {
-        tenantId: tenant.id,
+        tenantId: user.tenantId,
         name: houseData.name,
         address: houseData.address,
         city: houseData.city,
@@ -568,7 +574,7 @@ export default function Houses() {
       });
       
       // Invalidate and refetch
-      queryClient.invalidateQueries({ queryKey: ["/api/houses", tenant.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/houses", user.tenantId] });
     },
   });
 
@@ -596,7 +602,7 @@ export default function Houses() {
       });
       
       // Invalidate and refetch
-      queryClient.invalidateQueries({ queryKey: ["/api/houses", tenant.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/houses", user.tenantId] });
     },
   });
 
@@ -611,7 +617,7 @@ export default function Houses() {
       localStorage.removeItem(`house_client_data_${id}`);
       
       // Invalidate and refetch
-      queryClient.invalidateQueries({ queryKey: ["/api/houses", tenant.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/houses", user.tenantId] });
     },
   });
 
@@ -629,8 +635,8 @@ export default function Houses() {
     if (!countriesData.length) return [];
     
     const currentLang = i18n.resolvedLanguage || i18n.language;
-    const favoriteIsoCodes = tenant.favoriteCountries || [];
-    const defaultIso = tenant.defaultCountry;
+    const favoriteIsoCodes = user.favoriteCountries || [];
+    const defaultIso = user.defaultCountry;
     
     // Separate into categories
     const defaultCountry = defaultIso ? countriesData.find(c => c.isoCode === defaultIso) : null;
@@ -650,7 +656,7 @@ export default function Houses() {
       value: c.isoCode,
       label: getCountryName(c, currentLang)
     }));
-  }, [countriesData, tenant.favoriteCountries, tenant.defaultCountry, i18n.resolvedLanguage, i18n.language]);
+  }, [countriesData, user.favoriteCountries, user.defaultCountry, i18n.resolvedLanguage, i18n.language]);
   
   // Meter logs state
   const [isMeterDialogOpen, setIsMeterDialogOpen] = useState(false);
@@ -783,7 +789,7 @@ export default function Houses() {
     });
     
     // Trigger re-render
-    queryClient.invalidateQueries({ queryKey: ["/api/houses", tenant.id] });
+    queryClient.invalidateQueries({ queryKey: ["/api/houses", user.tenantId] });
     
     toast({
       title: "Hatırlatma tamamlandı",
@@ -808,7 +814,7 @@ export default function Houses() {
     });
     
     // Trigger re-render
-    queryClient.invalidateQueries({ queryKey: ["/api/houses", tenant.id] });
+    queryClient.invalidateQueries({ queryKey: ["/api/houses", user.tenantId] });
     
     toast({
       title: "Not eklendi",
@@ -882,7 +888,7 @@ export default function Houses() {
     });
     
     // Trigger re-render
-    queryClient.invalidateQueries({ queryKey: ["/api/houses", tenant.id] });
+    queryClient.invalidateQueries({ queryKey: ["/api/houses", user.tenantId] });
     
     toast({
       title: "Başarılı",
@@ -1054,7 +1060,11 @@ export default function Houses() {
   };
 
   const calculateTotalBeds = () => {
-    return formData.rooms.reduce((sum, room) => sum + (room.beds || 0), 0);
+    return formData.rooms.reduce((sum, room) => {
+      // Handle beds: can be number (from form) or array (from API GET response)
+      const bedCount = Array.isArray(room.beds) ? room.beds.length : (room.beds || 0);
+      return sum + bedCount;
+    }, 0);
   };
 
   const handleAddMeterReading = () => {
@@ -1106,7 +1116,7 @@ export default function Houses() {
     setSelectedHouseForMeters({ ...selectedHouseForMeters, meterLogs: updatedLogs });
     
     // Trigger re-render
-    queryClient.invalidateQueries({ queryKey: ["/api/houses", tenant.id] });
+    queryClient.invalidateQueries({ queryKey: ["/api/houses", user.tenantId] });
 
     // Reset form
     setNewReading({
@@ -1401,7 +1411,9 @@ export default function Houses() {
                               )}
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className="text-muted-foreground">{room.beds} {t("houses.beds")}</span>
+                              <span className="text-muted-foreground">
+                                {Array.isArray(room.beds) ? room.beds.length : room.beds} {t("houses.beds")}
+                              </span>
                               {room.canRentAsRoom && (
                                 <Badge variant="outline" className="text-xs" data-testid={`badge-can-rent-${house.id}-${room.roomNumber}`}>
                                   {t("houses.canRentRoom")}
@@ -2096,7 +2108,7 @@ export default function Houses() {
                   });
                   
                   // Trigger re-render
-                  queryClient.invalidateQueries({ queryKey: ["/api/houses", tenant.id] });
+                  queryClient.invalidateQueries({ queryKey: ["/api/houses", user.tenantId] });
                   
                   setIsDialogOpen(false);
                   toast({
@@ -3046,7 +3058,7 @@ export default function Houses() {
                   });
                   
                   // Trigger re-render
-                  queryClient.invalidateQueries({ queryKey: ["/api/houses", tenant.id] });
+                  queryClient.invalidateQueries({ queryKey: ["/api/houses", user.tenantId] });
                   
                   toast({
                     title: t("common.success"),
