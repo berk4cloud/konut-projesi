@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +40,7 @@ import { useToast } from "@/hooks/use-toast";
 import { mockQRCodes, type QRCodeData, type QRCodeType, type QRStatus } from "@shared/mockQRData";
 
 export default function QRManagement() {
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [qrCodes, setQrCodes] = useState<QRCodeData[]>(mockQRCodes);
@@ -66,9 +68,9 @@ export default function QRManagement() {
 
   const getTypeLabel = (type: QRCodeType) => {
     const labels = {
-      worker_registration: "Çalışan Kaydı",
-      meter_reading: "Sayaç Okuma",
-      document_upload: "Döküman Upload",
+      worker_registration: t('qrManagement.types.workerRegistration'),
+      meter_reading: t('qrManagement.types.meterReading'),
+      document_upload: t('qrManagement.types.documentUpload'),
     };
     return labels[type];
   };
@@ -84,9 +86,9 @@ export default function QRManagement() {
 
   const getStatusBadge = (status: QRStatus) => {
     const config = {
-      active: { label: "Aktif", variant: "default" as const },
-      disabled: { label: "Pasif", variant: "secondary" as const },
-      expired: { label: "Süresi Doldu", variant: "destructive" as const },
+      active: { label: t('qrManagement.status.active'), variant: "default" as const },
+      disabled: { label: t('qrManagement.status.disabled'), variant: "secondary" as const },
+      expired: { label: t('qrManagement.status.expired'), variant: "destructive" as const },
     };
     return config[status];
   };
@@ -95,8 +97,8 @@ export default function QRManagement() {
     const link = `https://apdohabitat.app/qr/${code}`;
     navigator.clipboard.writeText(link);
     toast({
-      title: "Link Kopyalandı",
-      description: "QR kodu linki panoya kopyalandı",
+      title: t('qrManagement.toasts.linkCopied.title'),
+      description: t('qrManagement.toasts.linkCopied.description'),
     });
   };
 
@@ -108,30 +110,31 @@ export default function QRManagement() {
       return qr;
     }));
     toast({
-      title: "Durum Değiştirildi",
-      description: "QR kod durumu güncellendi",
+      title: t('qrManagement.toasts.statusChanged.title'),
+      description: t('qrManagement.toasts.statusChanged.description'),
     });
   };
 
   const handleDelete = (id: string) => {
     setQrCodes(qrCodes.filter(qr => qr.id !== id));
     toast({
-      title: "Silindi",
-      description: "QR kod başarıyla silindi",
+      title: t('qrManagement.toasts.deleted.title'),
+      description: t('qrManagement.toasts.deleted.description'),
       variant: "destructive",
     });
   };
 
   const getUsageText = (qr: QRCodeData) => {
     if (qr.usageLimit === null) {
-      return `${qr.usedCount} / Sınırsız`;
+      return `${qr.usedCount} / ${t('qrManagement.usage.unlimited')}`;
     }
     return `${qr.usedCount} / ${qr.usageLimit}`;
   };
 
   const getExpiryText = (expiryDate: string | null) => {
-    if (!expiryDate) return "Sınırsız";
-    return new Date(expiryDate).toLocaleDateString("tr-TR");
+    if (!expiryDate) return t('qrManagement.usage.unlimited');
+    const locale = i18n.language.split('-')[0];
+    return new Date(expiryDate).toLocaleDateString(locale);
   };
 
   const generateQRCode = () => {
@@ -189,8 +192,8 @@ export default function QRManagement() {
       setStep(3);
       
       toast({
-        title: "QR Kod Oluşturuldu",
-        description: "Yeni QR kod başarıyla oluşturuldu",
+        title: t('qrManagement.toasts.qrCreated.title'),
+        description: t('qrManagement.toasts.qrCreated.description'),
       });
     }
   };
@@ -213,27 +216,30 @@ export default function QRManagement() {
         <div className="space-y-6">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
-              <h2 className="text-2xl font-bold mb-2">QR Yönetimi</h2>
-              <p className="text-muted-foreground">QR kodlarınızı oluşturun ve yönetin</p>
+              <h2 className="text-2xl font-bold mb-2">{t('qrManagement.pageTitle')}</h2>
+              <p className="text-muted-foreground">{t('qrManagement.pageSubtitle')}</p>
             </div>
             <Button onClick={handleOpenCreateDialog} data-testid="button-create-qr">
               <Plus className="w-4 h-4 mr-2" />
-              Yeni QR Oluştur
+              {t('qrManagement.createButton')}
             </Button>
           </div>
 
           <Card>
             <CardHeader>
-              <CardTitle>Aktif QR Kodlar</CardTitle>
+              <CardTitle>{t('qrManagement.card.title')}</CardTitle>
               <CardDescription>
-                Toplam {qrCodes.length} QR kod • {qrCodes.filter(q => q.status === "active").length} aktif
+                {t('qrManagement.card.description', {
+                  total: qrCodes.length,
+                  active: qrCodes.filter(q => q.status === "active").length
+                })}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="relative mb-4">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
-                  placeholder="QR kod veya başlık ara..."
+                  placeholder={t('qrManagement.search.placeholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
@@ -245,20 +251,20 @@ export default function QRManagement() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Tip</TableHead>
-                      <TableHead>Başlık</TableHead>
-                      <TableHead>Kod</TableHead>
-                      <TableHead>Kullanım</TableHead>
-                      <TableHead>Geçerlilik</TableHead>
-                      <TableHead>Durum</TableHead>
-                      <TableHead className="text-right">İşlemler</TableHead>
+                      <TableHead>{t('qrManagement.table.type')}</TableHead>
+                      <TableHead>{t('qrManagement.table.title')}</TableHead>
+                      <TableHead>{t('qrManagement.table.code')}</TableHead>
+                      <TableHead>{t('qrManagement.table.usage')}</TableHead>
+                      <TableHead>{t('qrManagement.table.validity')}</TableHead>
+                      <TableHead>{t('qrManagement.table.status')}</TableHead>
+                      <TableHead className="text-right">{t('qrManagement.table.actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredQRCodes.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                          QR kod bulunamadı
+                          {t('qrManagement.table.empty')}
                         </TableCell>
                       </TableRow>
                     ) : (
@@ -340,14 +346,14 @@ export default function QRManagement() {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>
-              {step === 1 && "QR Kod Tipi Seçin"}
-              {step === 2 && "QR Ayarlarını Yapın"}
-              {step === 3 && "QR Kod Oluşturuldu!"}
+              {step === 1 && t('qrManagement.createDialog.step1.title')}
+              {step === 2 && t('qrManagement.createDialog.step2.title')}
+              {step === 3 && t('qrManagement.createDialog.step3.title')}
             </DialogTitle>
             <DialogDescription>
-              {step === 1 && "QR kodunun hangi amaçla kullanılacağını seçin"}
-              {step === 2 && "Kullanım limiti ve geçerlilik süresini belirleyin"}
-              {step === 3 && "QR kodunuzu paylaşın veya indirin"}
+              {step === 1 && t('qrManagement.createDialog.step1.description')}
+              {step === 2 && t('qrManagement.createDialog.step2.description')}
+              {step === 3 && t('qrManagement.createDialog.step3.description')}
             </DialogDescription>
           </DialogHeader>
 
@@ -364,10 +370,10 @@ export default function QRManagement() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <Users className="w-5 h-5 text-primary" />
-                        <h4 className="font-medium">Çalışan Kaydı</h4>
+                        <h4 className="font-medium">{t('qrManagement.createDialog.step1.workerType.title')}</h4>
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        Çalışanlar kendi bilgilerini girebilir, siz sadece onaylarsınız
+                        {t('qrManagement.createDialog.step1.workerType.description')}
                       </p>
                     </div>
                   </label>
@@ -377,10 +383,10 @@ export default function QRManagement() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <Gauge className="w-5 h-5 text-primary" />
-                        <h4 className="font-medium">Sayaç Okuma</h4>
+                        <h4 className="font-medium">{t('qrManagement.createDialog.step1.meterType.title')}</h4>
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        Sayaç değeri girme ve fotoğraf yükleme
+                        {t('qrManagement.createDialog.step1.meterType.description')}
                       </p>
                     </div>
                   </label>
@@ -390,10 +396,10 @@ export default function QRManagement() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <FileUp className="w-5 h-5 text-primary" />
-                        <h4 className="font-medium">Döküman Upload</h4>
+                        <h4 className="font-medium">{t('qrManagement.createDialog.step1.documentType.title')}</h4>
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        PDF, resim gibi dosya yükleme
+                        {t('qrManagement.createDialog.step1.documentType.description')}
                       </p>
                     </div>
                   </label>
@@ -402,10 +408,10 @@ export default function QRManagement() {
 
               <div className="flex justify-end gap-3 pt-4">
                 <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                  İptal
+                  {t('qrManagement.createDialog.step1.cancel')}
                 </Button>
                 <Button onClick={handleNextStep} data-testid="button-next-step-1">
-                  İleri
+                  {t('qrManagement.createDialog.step1.next')}
                 </Button>
               </div>
             </div>
@@ -415,10 +421,10 @@ export default function QRManagement() {
           {step === 2 && (
             <div className="space-y-6 py-4">
               <div className="space-y-2">
-                <Label htmlFor="qr-title">Başlık (İsteğe Bağlı)</Label>
+                <Label htmlFor="qr-title">{t('qrManagement.createDialog.step2.titleLabel')}</Label>
                 <Input
                   id="qr-title"
-                  placeholder="QR kod için açıklayıcı bir başlık girin"
+                  placeholder={t('qrManagement.createDialog.step2.titlePlaceholder')}
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   data-testid="input-qr-title"
@@ -426,7 +432,7 @@ export default function QRManagement() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="usage-limit">Kullanım Limiti</Label>
+                <Label htmlFor="usage-limit">{t('qrManagement.createDialog.step2.usageLimitLabel')}</Label>
                 <Select
                   value={formData.usageLimit}
                   onValueChange={(value) => setFormData({ ...formData, usageLimit: value })}
@@ -435,19 +441,19 @@ export default function QRManagement() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="unlimited">Sınırsız</SelectItem>
-                    <SelectItem value="1">1 Kere</SelectItem>
-                    <SelectItem value="5">5 Kere</SelectItem>
-                    <SelectItem value="10">10 Kere</SelectItem>
-                    <SelectItem value="50">50 Kere</SelectItem>
-                    <SelectItem value="100">100 Kere</SelectItem>
-                    <SelectItem value="custom">Özel Miktar</SelectItem>
+                    <SelectItem value="unlimited">{t('qrManagement.createDialog.step2.usageLimitOptions.unlimited')}</SelectItem>
+                    <SelectItem value="1">{t('qrManagement.createDialog.step2.usageLimitOptions.1')}</SelectItem>
+                    <SelectItem value="5">{t('qrManagement.createDialog.step2.usageLimitOptions.5')}</SelectItem>
+                    <SelectItem value="10">{t('qrManagement.createDialog.step2.usageLimitOptions.10')}</SelectItem>
+                    <SelectItem value="50">{t('qrManagement.createDialog.step2.usageLimitOptions.50')}</SelectItem>
+                    <SelectItem value="100">{t('qrManagement.createDialog.step2.usageLimitOptions.100')}</SelectItem>
+                    <SelectItem value="custom">{t('qrManagement.createDialog.step2.usageLimitOptions.custom')}</SelectItem>
                   </SelectContent>
                 </Select>
                 {formData.usageLimit === "custom" && (
                   <Input
                     type="number"
-                    placeholder="Özel kullanım limiti"
+                    placeholder={t('qrManagement.createDialog.step2.customPlaceholder')}
                     value={formData.customLimit}
                     onChange={(e) => setFormData({ ...formData, customLimit: e.target.value })}
                     className="mt-2"
@@ -457,7 +463,7 @@ export default function QRManagement() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="expiry-days">Geçerlilik Süresi</Label>
+                <Label htmlFor="expiry-days">{t('qrManagement.createDialog.step2.expiryLabel')}</Label>
                 <Select
                   value={formData.expiryDays}
                   onValueChange={(value) => setFormData({ ...formData, expiryDays: value })}
@@ -466,22 +472,22 @@ export default function QRManagement() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="unlimited">Sınırsız</SelectItem>
-                    <SelectItem value="1">1 Gün</SelectItem>
-                    <SelectItem value="3">3 Gün</SelectItem>
-                    <SelectItem value="7">1 Hafta</SelectItem>
-                    <SelectItem value="30">1 Ay</SelectItem>
-                    <SelectItem value="180">6 Ay</SelectItem>
+                    <SelectItem value="unlimited">{t('qrManagement.createDialog.step2.expiryOptions.unlimited')}</SelectItem>
+                    <SelectItem value="1">{t('qrManagement.createDialog.step2.expiryOptions.1')}</SelectItem>
+                    <SelectItem value="3">{t('qrManagement.createDialog.step2.expiryOptions.3')}</SelectItem>
+                    <SelectItem value="7">{t('qrManagement.createDialog.step2.expiryOptions.7')}</SelectItem>
+                    <SelectItem value="30">{t('qrManagement.createDialog.step2.expiryOptions.30')}</SelectItem>
+                    <SelectItem value="180">{t('qrManagement.createDialog.step2.expiryOptions.180')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="flex justify-end gap-3 pt-4">
                 <Button variant="outline" onClick={() => setStep(1)}>
-                  Geri
+                  {t('qrManagement.createDialog.step2.back')}
                 </Button>
                 <Button onClick={handleNextStep} data-testid="button-create-qr-submit">
-                  Oluştur
+                  {t('qrManagement.createDialog.step2.create')}
                 </Button>
               </div>
             </div>
@@ -496,9 +502,9 @@ export default function QRManagement() {
                 </div>
                 
                 <div>
-                  <h3 className="text-lg font-semibold mb-2">QR Kod Başarıyla Oluşturuldu!</h3>
+                  <h3 className="text-lg font-semibold mb-2">{t('qrManagement.createDialog.step3.success')}</h3>
                   <p className="text-sm text-muted-foreground">
-                    QR kodunuzu aşağıdan paylaşabilir veya indirebilirsiniz
+                    {t('qrManagement.createDialog.step3.successDescription')}
                   </p>
                 </div>
 
@@ -507,7 +513,7 @@ export default function QRManagement() {
                 </div>
 
                 <div className="w-full p-3 bg-muted rounded-lg">
-                  <p className="text-xs text-muted-foreground mb-1">Link</p>
+                  <p className="text-xs text-muted-foreground mb-1">{t('qrManagement.createDialog.step3.link')}</p>
                   <code className="text-sm break-all">
                     https://apdohabitat.app/qr/{generatedCode}
                   </code>
@@ -521,7 +527,7 @@ export default function QRManagement() {
                     data-testid="button-copy-generated-link"
                   >
                     <Copy className="w-4 h-4 mr-2" />
-                    Linki Kopyala
+                    {t('qrManagement.createDialog.step3.copyLink')}
                   </Button>
                   <Button
                     variant="outline"
@@ -529,14 +535,14 @@ export default function QRManagement() {
                     data-testid="button-download-qr"
                   >
                     <QrCode className="w-4 h-4 mr-2" />
-                    QR İndir
+                    {t('qrManagement.createDialog.step3.downloadQR')}
                   </Button>
                 </div>
               </div>
 
               <div className="flex justify-end pt-4">
                 <Button onClick={handleCloseDialog} data-testid="button-close-success">
-                  Tamam
+                  {t('qrManagement.createDialog.step3.done')}
                 </Button>
               </div>
             </div>
@@ -548,7 +554,7 @@ export default function QRManagement() {
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
         <DialogContent className="max-w-xl">
           <DialogHeader>
-            <DialogTitle>QR Kod Detayları</DialogTitle>
+            <DialogTitle>{t('qrManagement.viewDialog.title')}</DialogTitle>
             <DialogDescription>
               {selectedQR?.title || getTypeLabel(selectedQR?.type || "worker_registration")}
             </DialogDescription>
@@ -564,7 +570,7 @@ export default function QRManagement() {
                 <div className="w-full space-y-3">
                   <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
                     <div>
-                      <p className="text-xs text-muted-foreground">Link</p>
+                      <p className="text-xs text-muted-foreground">{t('qrManagement.viewDialog.link')}</p>
                       <code className="text-sm">https://apdohabitat.app/qr/{selectedQR.code}</code>
                     </div>
                     <Button
@@ -578,13 +584,13 @@ export default function QRManagement() {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="p-3 bg-muted rounded-lg">
-                      <p className="text-xs text-muted-foreground mb-1">Tip</p>
+                      <p className="text-xs text-muted-foreground mb-1">{t('qrManagement.viewDialog.type')}</p>
                       <Badge variant={getTypeVariant(selectedQR.type)}>
                         {getTypeLabel(selectedQR.type)}
                       </Badge>
                     </div>
                     <div className="p-3 bg-muted rounded-lg">
-                      <p className="text-xs text-muted-foreground mb-1">Durum</p>
+                      <p className="text-xs text-muted-foreground mb-1">{t('qrManagement.viewDialog.status')}</p>
                       <Badge variant={getStatusBadge(selectedQR.status).variant}>
                         {getStatusBadge(selectedQR.status).label}
                       </Badge>
@@ -593,19 +599,19 @@ export default function QRManagement() {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="p-3 bg-muted rounded-lg">
-                      <p className="text-xs text-muted-foreground mb-1">Kullanım</p>
+                      <p className="text-xs text-muted-foreground mb-1">{t('qrManagement.viewDialog.usage')}</p>
                       <p className="text-sm font-medium">{getUsageText(selectedQR)}</p>
                     </div>
                     <div className="p-3 bg-muted rounded-lg">
-                      <p className="text-xs text-muted-foreground mb-1">Geçerlilik</p>
+                      <p className="text-xs text-muted-foreground mb-1">{t('qrManagement.viewDialog.validity')}</p>
                       <p className="text-sm font-medium">{getExpiryText(selectedQR.expiryDate)}</p>
                     </div>
                   </div>
 
                   <div className="p-3 bg-muted rounded-lg">
-                    <p className="text-xs text-muted-foreground mb-1">Oluşturulma Tarihi</p>
+                    <p className="text-xs text-muted-foreground mb-1">{t('qrManagement.viewDialog.createdAt')}</p>
                     <p className="text-sm font-medium">
-                      {new Date(selectedQR.createdAt).toLocaleDateString("tr-TR")}
+                      {new Date(selectedQR.createdAt).toLocaleDateString(i18n.language.split('-')[0])}
                     </p>
                   </div>
                 </div>
@@ -618,7 +624,7 @@ export default function QRManagement() {
                     data-testid="button-copy-qr-link"
                   >
                     <Copy className="w-4 h-4 mr-2" />
-                    Linki Kopyala
+                    {t('qrManagement.viewDialog.copyLink')}
                   </Button>
                   <Button
                     variant="outline"
@@ -626,7 +632,7 @@ export default function QRManagement() {
                     data-testid="button-download-qr-view"
                   >
                     <QrCode className="w-4 h-4 mr-2" />
-                    QR İndir
+                    {t('qrManagement.viewDialog.downloadQR')}
                   </Button>
                 </div>
               </div>
