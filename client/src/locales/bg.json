@@ -148,13 +148,19 @@
   },
   "checkIn": {
     "wizard": {
-      "title": "Настаняване",
+      "title": "Ново Разпределение на Настаняване",
       "step1": "Дата",
-      "step1Full": "Дата и филтри",
+      "step1Line1": "Дата и",
+      "step1Line2": "филтри",
+      "step1Description": "Задайте начална дата и филтри за търсене",
       "step2": "Служител",
+      "step2Description": "Изберете служител или въведете данни за нов служител",
       "step3": "Стая/Легло",
-      "step3Short": "Стая/\nЛегло",
+      "step3Line1": "Стая/",
+      "step3Line2": "Легло",
+      "step3Description": "Изберете подходяща стая и легло",
       "step4": "Цена",
+      "step4Description": "Въведете информация за цена и депозит",
       "selectCheckInDate": "Изберете дата на настаняване",
       "selectCheckInTime": "Изберете час на настаняване",
       "startDate": "Начална дата",
@@ -190,7 +196,13 @@
       "bedDailyRate": "Легло Дневно (€)",
       "bedMonthlyRate": "Легло Месечно (€)",
       "roomDailyRate": "Стая Дневно (€)",
-      "roomMonthlyRate": "Стая Месечно (€)"
+      "roomMonthlyRate": "Стая Месечно (€)",
+      "whatLookingFor": "Какво търсят?",
+      "doesntMatter": "Няма значение (Стая или Легло)",
+      "wholeRoom": "Цяла Стая",
+      "singleBed": "Единично Легло",
+      "firstDayStaying": "Първи ден на престой на работника",
+      "lookingForRoomOrBed": "Търсят ли цяла стая или само легло?"
     },
     "newWorker": {
       "title": "Нова регистрация на служител",

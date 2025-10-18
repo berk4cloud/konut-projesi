@@ -152,13 +152,19 @@
   },
   "checkIn": {
     "wizard": {
-      "title": "Check-In",
+      "title": "New Accommodation Entry",
       "step1": "Date",
-      "step1Full": "Date & Filters",
+      "step1Line1": "Date &",
+      "step1Line2": "Filters",
+      "step1Description": "Set start date and search filters",
       "step2": "Worker",
+      "step2Description": "Select worker or enter new worker details",
       "step3": "Room/Bed",
-      "step3Short": "Room/\nBed",
+      "step3Line1": "Room/",
+      "step3Line2": "Bed",
+      "step3Description": "Select suitable room and bed",
       "step4": "Price",
+      "step4Description": "Enter pricing and deposit information",
       "selectCheckInDate": "Select Check-In Date",
       "selectCheckInTime": "Select Check-In Time",
       "startDate": "Start Date",
@@ -198,7 +204,9 @@
       "whatLookingFor": "What are they looking for?",
       "doesntMatter": "Doesn't Matter (Room or Bed)",
       "wholeRoom": "Whole Room",
-      "singleBed": "Single Bed"
+      "singleBed": "Single Bed",
+      "firstDayStaying": "Worker's first day of stay",
+      "lookingForRoomOrBed": "Are they looking for a whole room or just a bed?"
     },
     "newWorker": {
       "title": "New Worker Registration",

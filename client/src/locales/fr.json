@@ -148,13 +148,19 @@
   },
   "checkIn": {
     "wizard": {
-      "title": "Enregistrement",
+      "title": "Nouvelle Attribution d'Hébergement",
       "step1": "Date",
-      "step1Full": "Date & Filtres",
+      "step1Line1": "Date &",
+      "step1Line2": "Filtres",
+      "step1Description": "Définir la date de début et les filtres de recherche",
       "step2": "Collaborateur",
+      "step2Description": "Sélectionner un collaborateur ou saisir les données d'un nouveau collaborateur",
       "step3": "Chambre/Lit",
-      "step3Short": "Chambre/\nLit",
+      "step3Line1": "Chambre/",
+      "step3Line2": "Lit",
+      "step3Description": "Sélectionner la chambre et le lit appropriés",
       "step4": "Prix",
+      "step4Description": "Saisir les informations de prix et de caution",
       "selectCheckInDate": "Sélectionner la date d'arrivée",
       "selectCheckInTime": "Sélectionner l'heure d'arrivée",
       "startDate": "Date de début",
@@ -190,7 +196,13 @@
       "bedDailyRate": "Lit Journalier (€)",
       "bedMonthlyRate": "Lit Mensuel (€)",
       "roomDailyRate": "Chambre Journalier (€)",
-      "roomMonthlyRate": "Chambre Mensuel (€)"
+      "roomMonthlyRate": "Chambre Mensuel (€)",
+      "whatLookingFor": "Que recherchent-ils ?",
+      "doesntMatter": "Peu importe (Chambre ou Lit)",
+      "wholeRoom": "Chambre Complète",
+      "singleBed": "Lit Simple",
+      "firstDayStaying": "Premier jour de séjour du travailleur",
+      "lookingForRoomOrBed": "Cherchent-ils une chambre entière ou juste un lit ?"
     },
     "newWorker": {
       "title": "Nouvel enregistrement de collaborateur",

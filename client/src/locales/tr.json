@@ -152,13 +152,19 @@
   },
   "checkIn": {
     "wizard": {
-      "title": "Konaklama Girişi",
+      "title": "Yeni Konaklama Girişi",
       "step1": "Tarih",
-      "step1Full": "Tarih & Filtreler",
+      "step1Line1": "Tarih &",
+      "step1Line2": "Filtreler",
+      "step1Description": "Başlangıç tarihi ve arama filtrelerini belirleyin",
       "step2": "İşçi",
+      "step2Description": "İşçi seçin veya yeni işçi bilgilerini girin",
       "step3": "Oda/Yatak",
-      "step3Short": "Oda/\nYatak",
+      "step3Line1": "Oda/",
+      "step3Line2": "Yatak",
+      "step3Description": "Uygun oda ve yatak seçin",
       "step4": "Fiyat",
+      "step4Description": "Fiyat ve depozito bilgilerini girin",
       "selectCheckInDate": "Giriş Tarihi Seçin",
       "selectCheckInTime": "Giriş Saati Seçin",
       "startDate": "Başlangıç Tarihi",
@@ -198,7 +204,9 @@
       "whatLookingFor": "Ne Arıyor?",
       "doesntMatter": "Farketmez (Oda veya Yatak)",
       "wholeRoom": "Tam Oda",
-      "singleBed": "Tek Yatak"
+      "singleBed": "Tek Yatak",
+      "firstDayStaying": "İşçinin kalacağı ilk gün",
+      "lookingForRoomOrBed": "Odanın tamamını mı yoksa sadece bir yatak mı arıyor?"
     },
     "newWorker": {
       "title": "Yeni İşçi Kaydı",

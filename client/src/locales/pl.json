@@ -148,13 +148,19 @@
   },
   "checkIn": {
     "wizard": {
-      "title": "Zameldowanie",
+      "title": "Nowe Przypisanie Zakwaterowania",
       "step1": "Data",
-      "step1Full": "Data i filtry",
+      "step1Line1": "Data i",
+      "step1Line2": "filtry",
+      "step1Description": "Ustaw datę rozpoczęcia i filtry wyszukiwania",
       "step2": "Pracownik",
+      "step2Description": "Wybierz pracownika lub wprowadź dane nowego pracownika",
       "step3": "Pokój/Łóżko",
-      "step3Short": "Pokój/\nŁóżko",
+      "step3Line1": "Pokój/",
+      "step3Line2": "Łóżko",
+      "step3Description": "Wybierz odpowiedni pokój i łóżko",
       "step4": "Cena",
+      "step4Description": "Wprowadź informacje o cenie i kaucji",
       "selectCheckInDate": "Wybierz datę zameldowania",
       "selectCheckInTime": "Wybierz godzinę zameldowania",
       "startDate": "Data rozpoczęcia",
@@ -190,7 +196,13 @@
       "bedDailyRate": "Łóżko Dziennie (€)",
       "bedMonthlyRate": "Łóżko Miesięcznie (€)",
       "roomDailyRate": "Pokój Dziennie (€)",
-      "roomMonthlyRate": "Pokój Miesięcznie (€)"
+      "roomMonthlyRate": "Pokój Miesięcznie (€)",
+      "whatLookingFor": "Czego szukają?",
+      "doesntMatter": "Nieważne (Pokój lub Łóżko)",
+      "wholeRoom": "Cały Pokój",
+      "singleBed": "Pojedyncze Łóżko",
+      "firstDayStaying": "Pierwszy dzień pobytu pracownika",
+      "lookingForRoomOrBed": "Czy szukają całego pokoju czy tylko łóżka?"
     },
     "newWorker": {
       "title": "Nowa rejestracja pracownika",

@@ -148,13 +148,19 @@
   },
   "checkIn": {
     "wizard": {
-      "title": "Check-in",
+      "title": "Neue Unterkunftszuweisung",
       "step1": "Datum",
-      "step1Full": "Datum & Filter",
+      "step1Line1": "Datum &",
+      "step1Line2": "Filter",
+      "step1Description": "Startdatum und Suchfilter festlegen",
       "step2": "Mitarbeiter",
+      "step2Description": "Mitarbeiter auswählen oder neue Mitarbeiterdaten eingeben",
       "step3": "Zimmer/Bett",
-      "step3Short": "Zimmer/\nBett",
+      "step3Line1": "Zimmer/",
+      "step3Line2": "Bett",
+      "step3Description": "Geeignetes Zimmer und Bett auswählen",
       "step4": "Preis",
+      "step4Description": "Preis- und Kautionsinformationen eingeben",
       "selectCheckInDate": "Check-in-Datum auswählen",
       "selectCheckInTime": "Check-in-Zeit auswählen",
       "startDate": "Startdatum",
@@ -190,7 +196,13 @@
       "bedDailyRate": "Bett Täglich (€)",
       "bedMonthlyRate": "Bett Monatlich (€)",
       "roomDailyRate": "Zimmer Täglich (€)",
-      "roomMonthlyRate": "Zimmer Monatlich (€)"
+      "roomMonthlyRate": "Zimmer Monatlich (€)",
+      "whatLookingFor": "Was suchen sie?",
+      "doesntMatter": "Egal (Zimmer oder Bett)",
+      "wholeRoom": "Ganzes Zimmer",
+      "singleBed": "Einzelbett",
+      "firstDayStaying": "Erster Aufenthaltstag des Mitarbeiters",
+      "lookingForRoomOrBed": "Suchen sie ein ganzes Zimmer oder nur ein Bett?"
     },
     "newWorker": {
       "title": "Neue Mitarbeiterregistrierung",

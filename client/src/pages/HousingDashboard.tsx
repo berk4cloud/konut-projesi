@@ -1269,12 +1269,12 @@ export default function HousingDashboard() {
       }}>
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Yeni Konaklama Girişi</DialogTitle>
+            <DialogTitle>{t('checkIn.wizard.title')}</DialogTitle>
             <DialogDescription>
-              {wizardStep === 1 && "Başlangıç tarihi ve arama filtrelerini belirleyin"}
-              {wizardStep === 2 && "İşçi seçin veya yeni işçi bilgilerini girin"}
-              {wizardStep === 3 && "Uygun oda ve yatak seçin"}
-              {wizardStep === 4 && "Fiyat ve depozito bilgilerini girin"}
+              {wizardStep === 1 && t('checkIn.wizard.step1Description')}
+              {wizardStep === 2 && t('checkIn.wizard.step2Description')}
+              {wizardStep === 3 && t('checkIn.wizard.step3Description')}
+              {wizardStep === 4 && t('checkIn.wizard.step4Description')}
             </DialogDescription>
           </DialogHeader>
 
@@ -1288,7 +1288,9 @@ export default function HousingDashboard() {
               )}>
                 {wizardStep > 1 ? <Check className="w-6 h-6" /> : "1"}
               </div>
-              <span className="text-xs text-muted-foreground text-center">Tarih &<br/>Filtreler</span>
+              <span className="text-xs text-muted-foreground text-center">
+                {t('checkIn.wizard.step1Line1')}<br/>{t('checkIn.wizard.step1Line2')}
+              </span>
             </div>
 
             {/* Connector 1-2 */}
@@ -1305,7 +1307,7 @@ export default function HousingDashboard() {
               )}>
                 {wizardStep > 2 ? <Check className="w-6 h-6" /> : "2"}
               </div>
-              <span className="text-xs text-muted-foreground">İşçi</span>
+              <span className="text-xs text-muted-foreground">{t('checkIn.wizard.step2')}</span>
             </div>
 
             {/* Connector 2-3 */}
@@ -1322,7 +1324,9 @@ export default function HousingDashboard() {
               )}>
                 {wizardStep > 3 ? <Check className="w-6 h-6" /> : "3"}
               </div>
-              <span className="text-xs text-muted-foreground text-center">Oda/<br/>Yatak</span>
+              <span className="text-xs text-muted-foreground text-center">
+                {t('checkIn.wizard.step3Line1')}<br/>{t('checkIn.wizard.step3Line2')}
+              </span>
             </div>
 
             {/* Connector 3-4 */}
@@ -1339,7 +1343,7 @@ export default function HousingDashboard() {
               )}>
                 4
               </div>
-              <span className="text-xs text-muted-foreground">Fiyat</span>
+              <span className="text-xs text-muted-foreground">{t('checkIn.wizard.step4')}</span>
             </div>
           </div>
           
@@ -1348,27 +1352,27 @@ export default function HousingDashboard() {
             {wizardStep === 1 && (
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="wizard-start-date">Başlangıç Tarihi *</Label>
+                  <Label htmlFor="wizard-start-date">{t('checkIn.wizard.startDateRequired')}</Label>
                   <ModernDatePicker
                     date={wizardData.startDate ? new Date(wizardData.startDate) : undefined}
                     onDateChange={(date) => {
                       const dateString = date ? date.toISOString().split('T')[0] : "";
                       setWizardData({ ...wizardData, startDate: dateString });
                     }}
-                    placeholder="Tarih seçin"
+                    placeholder={t('checkIn.wizard.selectDate')}
                     data-testid="input-wizard-start-date"
                     className="w-full"
                   />
                   <p className="text-sm text-muted-foreground">
-                    İşçinin kalacağı ilk gün
+                    {t('checkIn.wizard.firstDayStaying')}
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Şehir</Label>
+                  <Label>{t('filters.city')}</Label>
                   <SearchCombobox
                     options={[
-                      { value: "all", label: "Tüm Şehirler" },
+                      { value: "all", label: t('checkIn.wizard.allCities') },
                       ...Array.from(new Set(houses.map(h => h.city))).map(city => ({
                         value: city.toLowerCase(),
                         label: city
@@ -1376,9 +1380,9 @@ export default function HousingDashboard() {
                     ]}
                     value={wizardData.searchCity}
                     onValueChange={(value) => setWizardData({ ...wizardData, searchCity: value })}
-                    placeholder="Şehir seçin"
-                    searchPlaceholder="Şehir ara..."
-                    emptyText="Şehir bulunamadı"
+                    placeholder={t('checkIn.wizard.selectCity')}
+                    searchPlaceholder={t('filters.searchCity')}
+                    emptyText={t('filters.noCityFound')}
                     data-testid="select-wizard-city"
                     className="w-full"
                   />
@@ -1394,14 +1398,14 @@ export default function HousingDashboard() {
                     ]}
                     value={wizardData.searchType}
                     onValueChange={(value) => setWizardData({ ...wizardData, searchType: value as "room" | "bed" | "any" })}
-                    placeholder="Seçiniz"
-                    searchPlaceholder="Ara..."
-                    emptyText="Seçenek bulunamadı"
+                    placeholder={t('common.search')}
+                    searchPlaceholder={t('common.search')}
+                    emptyText={t('filters.noHouseFound')}
                     data-testid="select-wizard-search-type"
                     className="w-full"
                   />
                   <p className="text-sm text-muted-foreground">
-                    Odanın tamamını mı yoksa sadece bir yatak mı arıyor?
+                    {t('checkIn.wizard.lookingForRoomOrBed')}
                   </p>
                 </div>
               </div>
@@ -1411,7 +1415,7 @@ export default function HousingDashboard() {
             {wizardStep === 2 && (
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="worker-select">Kayıtlı İşçi Seç</Label>
+                  <Label htmlFor="worker-select">{t('checkIn.wizard.selectWorker')}</Label>
                   <Popover open={workerComboboxOpen} onOpenChange={setWorkerComboboxOpen}>
                     <PopoverTrigger asChild>
                       <Button

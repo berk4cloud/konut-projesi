@@ -148,13 +148,19 @@
   },
   "checkIn": {
     "wizard": {
-      "title": "Inchecken",
+      "title": "Nieuwe Accommodatietoewijzing",
       "step1": "Datum",
-      "step1Full": "Datum & Filters",
+      "step1Line1": "Datum &",
+      "step1Line2": "Filters",
+      "step1Description": "Startdatum en zoekfilters instellen",
       "step2": "Werknemer",
+      "step2Description": "Werknemer selecteren of nieuwe werknemersgegevens invoeren",
       "step3": "Kamer/Bed",
-      "step3Short": "Kamer/\nBed",
+      "step3Line1": "Kamer/",
+      "step3Line2": "Bed",
+      "step3Description": "Geschikte kamer en bed selecteren",
       "step4": "Prijs",
+      "step4Description": "Prijs- en borginformatie invoeren",
       "selectCheckInDate": "Incheckdatum Selecteren",
       "selectCheckInTime": "Inchecktijd Selecteren",
       "startDate": "Startdatum",
@@ -190,7 +196,13 @@
       "bedDailyRate": "Bed Dagelijks (€)",
       "bedMonthlyRate": "Bed Maandelijks (€)",
       "roomDailyRate": "Kamer Dagelijks (€)",
-      "roomMonthlyRate": "Kamer Maandelijks (€)"
+      "roomMonthlyRate": "Kamer Maandelijks (€)",
+      "whatLookingFor": "Waar zijn ze naar op zoek?",
+      "doesntMatter": "Maakt niet uit (Kamer of Bed)",
+      "wholeRoom": "Hele Kamer",
+      "singleBed": "Enkel Bed",
+      "firstDayStaying": "Eerste dag van verblijf van de werknemer",
+      "lookingForRoomOrBed": "Zijn ze op zoek naar een hele kamer of slechts een bed?"
     },
     "newWorker": {
       "title": "Nieuwe Werknemersregistratie",
