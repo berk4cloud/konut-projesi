@@ -1036,15 +1036,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Bed already has an active reservation" });
       }
 
-      // Create reservation
+      // Create reservation with house and room info
       const reservation = await storage.createReservation({
         employmentId,
+        houseId: house.id,
+        roomId: room.id,
         bedId,
+        tenantId,
         startDate: new Date(startDate),
         endDate: endDate ? new Date(endDate) : null,
         checkInDate: checkInDate ? new Date(checkInDate) : new Date(),
         checkOutDate: null,
-        status: "active",
+        status: "checked_in", // Use correct enum value
       });
 
       res.json(reservation);

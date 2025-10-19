@@ -492,7 +492,7 @@ export default function HousingDashboard() {
     if (wizardStep > 1) setWizardStep(wizardStep - 1);
   };
 
-  const handleWizardComplete = () => {
+  const handleWizardComplete = async () => {
     // Final validation
     if (!wizardData.employmentId || !wizardData.bedId || !wizardData.startDate) {
       toast({
@@ -514,62 +514,55 @@ export default function HousingDashboard() {
       return;
     }
 
-    // Update houses state - assign worker to bed and update counters
-    setHouses(prevHouses => 
-      prevHouses.map(house => {
-        if (house.id !== wizardData.houseId) return house;
-        
-        return {
-          ...house,
-          occupiedBeds: house.occupiedBeds + 1, // Increment occupied count
-          rooms: house.rooms.map((room: any) => {
-            if (room.id !== wizardData.roomId) return room;
-            
-            return {
-              ...room,
-              beds: room.beds.map((bed: any) => {
-                if (bed.id !== wizardData.bedId) return bed;
-                
-                return {
-                  ...bed,
-                  status: "occupied" as const,
-                  worker: {
-                    employmentId: selectedWorker.employmentId,
-                    name: `${selectedWorker.firstName} ${selectedWorker.lastName}`,
-                    gender: selectedWorker.gender,
-                  }
-                };
-              })
-            };
-          })
-        };
-      })
-    );
-    
-    toast({
-      title: "Konaklama Girişi Başarılı",
-      description: `${selectedWorker.firstName} ${selectedWorker.lastName} için ${wizardData.houseName} oteline konaklama kaydı oluşturuldu.`,
-    });
-    
-    // Reset wizard
-    setCheckInWizardOpen(false);
-    setWizardStep(1);
-    setWizardData({
-      startDate: "",
-      endDate: "",
-      searchCity: "all",
-      searchType: "any",
-      employmentId: "",
-      workerName: "",
-      houseId: "",
-      houseName: "",
-      roomId: "",
-      bedId: "",
-      monthlyRate: 600,
-      depositAmount: 500,
-      depositCollected: false,
-      depositCollector: "",
-    });
+    try {
+      // Call backend API to create reservation in database
+      const response = await apiRequest("POST", `/api/beds/${wizardData.bedId}/check-in`, {
+        employmentId: wizardData.employmentId,
+        startDate: wizardData.startDate,
+        endDate: wizardData.endDate || null,
+        checkInDate: wizardData.startDate, // Check in immediately
+        tenantId: user.tenantId,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create reservation");
+      }
+
+      // Invalidate queries to refresh data from backend
+      await queryClient.invalidateQueries({ queryKey: [`/api/houses?tenantId=${user.tenantId}`] });
+
+      toast({
+        title: "Konaklama Girişi Başarılı",
+        description: `${selectedWorker.firstName} ${selectedWorker.lastName} için ${wizardData.houseName} oteline konaklama kaydı oluşturuldu.`,
+      });
+      
+      // Reset wizard
+      setCheckInWizardOpen(false);
+      setWizardStep(1);
+      setWizardData({
+        startDate: "",
+        endDate: "",
+        searchCity: "all",
+        searchType: "any",
+        employmentId: "",
+        workerName: "",
+        houseId: "",
+        houseName: "",
+        roomId: "",
+        bedId: "",
+        monthlyRate: 600,
+        depositAmount: 500,
+        depositCollected: false,
+        depositCollector: "",
+      });
+    } catch (error) {
+      console.error("Check-in error:", error);
+      toast({
+        title: "Hata",
+        description: "Konaklama girişi sırasında bir hata oluştu.",
+        variant: "destructive",
+      });
+    }
   };
 
   // Get available rooms and beds (filtered by Step 1 selections)
