@@ -570,7 +570,7 @@ export default function HousingDashboard() {
       }
 
       // Invalidate queries to refresh data from backend
-      await queryClient.invalidateQueries({ queryKey: [`/api/houses?tenantId=${user.tenantId}`] });
+      await queryClient.invalidateQueries({ queryKey: [`/api/houses?tenantId=${user.tenantId}&date=${selectedDate}`] });
       await queryClient.invalidateQueries({ queryKey: ["/api/tenants", user.tenantId, "assignments"] });
 
       toast({

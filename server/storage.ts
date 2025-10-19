@@ -570,7 +570,7 @@ import {
   reservations as reservationsTable,
   qrCodes as qrCodesTable
 } from "@shared/schema";
-import { eq, and, isNull, sql, gt, asc, desc } from "drizzle-orm";
+import { eq, and, isNull, sql, gt, gte, or, asc, desc } from "drizzle-orm";
 
 export class DbStorage implements IStorage {
   private seeded = false;
@@ -956,26 +956,38 @@ export class DbStorage implements IStorage {
 
   async getActiveReservationsByTenant(tenantId: string): Promise<Reservation[]> {
     await this.ensureSeeded();
-    // Active = checked in (checkInDate not null) and not checked out (checkOutDate null)
+    // Active = checked in and (not checked out OR checkout date is in the future, not today)
+    // Use local date components to avoid UTC timezone conversion bugs
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     return await db.select()
       .from(reservationsTable)
       .where(
         and(
           eq(reservationsTable.tenantId, tenantId),
-          isNull(reservationsTable.checkOutDate)
+          or(
+            isNull(reservationsTable.checkOutDate),
+            gt(reservationsTable.checkOutDate, today)
+          )
         )
       );
   }
 
   async getActiveReservationForBed(bedId: string): Promise<Reservation | undefined> {
     await this.ensureSeeded();
-    // Active = checked in and not checked out
+    // Active = checked in and (not checked out OR checkout date is in the future, not today)
+    // Use local date components to avoid UTC timezone conversion bugs
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const result = await db.select()
       .from(reservationsTable)
       .where(
         and(
           eq(reservationsTable.bedId, bedId),
-          isNull(reservationsTable.checkOutDate)
+          or(
+            isNull(reservationsTable.checkOutDate),
+            gt(reservationsTable.checkOutDate, today)
+          )
         )
       )
       .limit(1);
