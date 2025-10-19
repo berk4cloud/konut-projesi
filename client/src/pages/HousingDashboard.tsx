@@ -11,6 +11,7 @@ import WorkerAssignmentModal from "@/components/WorkerAssignmentModal";
 import GenderWarningModal from "@/components/GenderWarningModal";
 import LeaseContractDialog from "@/components/LeaseContractDialog";
 import BedDetailsModal from "@/components/BedDetailsModal";
+import CheckOutWizard from "@/components/CheckOutWizard";
 import { SearchCombobox } from "@/components/ui/search-combobox";
 import { ModernDatePicker } from "@/components/ui/modern-date-picker";
 import { Button } from "@/components/ui/button";
@@ -38,7 +39,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { useToast } from "@/hooks/use-toast";
-import { FileText, Bell, Calendar, AlertCircle, Plus, ChevronDown, ChevronUp, MapPin, Clock, CheckCircle, Check, ChevronsUpDown, UserPlus, Info } from "lucide-react";
+import { FileText, Bell, Calendar, AlertCircle, Plus, ChevronDown, ChevronUp, MapPin, Clock, CheckCircle, Check, ChevronsUpDown, UserPlus, Info, DoorOpen } from "lucide-react";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useMutation } from "@tanstack/react-query";
 import {
@@ -160,6 +161,7 @@ export default function HousingDashboard() {
   const [checkInWizardOpen, setCheckInWizardOpen] = useState(false);
   const [colorInfoDialogOpen, setColorInfoDialogOpen] = useState(false);
   const [bedDetailsModalOpen, setBedDetailsModalOpen] = useState(false);
+  const [checkOutWizardOpen, setCheckOutWizardOpen] = useState(false);
   
   // Check-in wizard state
   const [wizardStep, setWizardStep] = useState(1);
@@ -722,14 +724,25 @@ export default function HousingDashboard() {
               )}
             </div>
           </div>
-          <Button
-            onClick={() => setCheckInWizardOpen(true)}
-            className="gap-2"
-            data-testid="button-new-checkin"
-          >
-            <Plus className="w-4 h-4" />
-            {t('checkIn.newCheckIn')}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => setCheckInWizardOpen(true)}
+              className="gap-2"
+              data-testid="button-new-checkin"
+            >
+              <Plus className="w-4 h-4" />
+              {t('checkIn.newCheckIn')}
+            </Button>
+            <Button
+              onClick={() => setCheckOutWizardOpen(true)}
+              variant="outline"
+              className="gap-2"
+              data-testid="button-new-checkout"
+            >
+              <DoorOpen className="w-4 h-4" />
+              {t('bedDetails.checkOut')}
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -991,6 +1004,18 @@ export default function HousingDashboard() {
         open={bedDetailsModalOpen}
         onClose={() => setBedDetailsModalOpen(false)}
         bed={selectedBed}
+      />
+
+      <CheckOutWizard
+        open={checkOutWizardOpen}
+        onClose={() => setCheckOutWizardOpen(false)}
+        onComplete={() => {
+          queryClient.invalidateQueries({ queryKey: ['/api/houses'] });
+          toast({
+            title: t('common.success'),
+            description: "Çıkış işlemi tamamlandı",
+          });
+        }}
       />
 
       {/* Lease Contract Dialog */}
