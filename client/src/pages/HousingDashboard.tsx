@@ -1749,11 +1749,11 @@ export default function HousingDashboard() {
                                   );
 
                                   // For bed rental: skip rooms with no available beds
-                                  // For room rental: only show rooms where ALL beds are empty
+                                  // For room rental: show ALL rooms (available and unavailable)
                                   if (wizardData.rentalType === "bed" && availableBeds.length === 0) return null;
-                                  if (wizardData.rentalType === "room" && !allBedsAvailable) return null;
                                   
                                   const isRoomSelected = wizardData.rentalType === "room" && wizardData.roomId === room.id;
+                                  const isRoomAvailable = wizardData.rentalType === "room" && allBedsAvailable;
 
                                   return (
                                     <div 
@@ -1761,12 +1761,23 @@ export default function HousingDashboard() {
                                       className={cn(
                                         "border rounded-lg p-3 space-y-2 transition-all",
                                         wizardData.rentalType === "room" 
-                                          ? "cursor-pointer hover-elevate bg-muted/30" 
+                                          ? allBedsAvailable 
+                                            ? "cursor-pointer hover-elevate bg-muted/30" 
+                                            : "cursor-not-allowed opacity-50 bg-muted/20"
                                           : "bg-muted/30",
                                         isRoomSelected && "border-2 border-primary bg-primary/5"
                                       )}
                                       onClick={() => {
                                         if (wizardData.rentalType === "room") {
+                                          if (!allBedsAvailable) {
+                                            // Show toast warning for unavailable rooms
+                                            toast({
+                                              title: "Bu oda seçilemez",
+                                              description: "Oda kiralaması için bütün yataklar boş olmalıdır.",
+                                              variant: "destructive",
+                                            });
+                                            return;
+                                          }
                                           setWizardData({
                                             ...wizardData,
                                             houseId: house.id,
@@ -1786,7 +1797,9 @@ export default function HousingDashboard() {
                                             <CheckCircle className="w-4 h-4 text-primary" />
                                           )}
                                           <span className="text-sm text-muted-foreground">
-                                            {totalBeds} yatak
+                                            {wizardData.rentalType === "room" 
+                                              ? `${availableBeds.length}/${totalBeds} yatak`
+                                              : `${totalBeds} yatak`}
                                           </span>
                                         </div>
                                       </div>
