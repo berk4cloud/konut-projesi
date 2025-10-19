@@ -130,7 +130,7 @@ export default function Settings() {
 
   // Update state when tenant data is fetched
   useEffect(() => {
-    if (tenantData) {
+    if (tenantData && tenantData.pricingSettings) {
       setCurrency(tenantData.currency);
       setFavoriteCountries(tenantData.favoriteCountries || []);
       setDefaultCountry(tenantData.defaultCountry || null);

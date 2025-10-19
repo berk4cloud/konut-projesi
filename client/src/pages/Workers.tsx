@@ -138,7 +138,7 @@ export default function Workers() {
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/workers'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/workers?tenantId=${user?.tenantId}`] });
       toast({
         title: t('workers.toasts.workerAdded.title'),
         description: t('workers.toasts.workerAdded.description'),
@@ -162,7 +162,7 @@ export default function Workers() {
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/workers'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/workers?tenantId=${user?.tenantId}`] });
       toast({
         title: t('workers.toasts.workerUpdated.title'),
         description: t('workers.toasts.workerUpdated.description'),

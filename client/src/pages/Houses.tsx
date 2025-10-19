@@ -477,6 +477,13 @@ export default function Houses() {
     queryKey: ["/api/countries"],
   });
 
+  // Fetch tenant pricing settings
+  const { data: tenantData } = useQuery<{pricingSettings: typeof defaultPricingSettings}>({
+    queryKey: [`/api/tenants/${user.tenantId}`],
+    enabled: !!user.tenantId,
+  });
+  const systemSettings = tenantData?.pricingSettings || defaultPricingSettings;
+
   // Fetch houses from API with fallback to initialMockHouses
   const { data: apiHouses, isLoading: isLoadingHouses, error: housesError } = useQuery({
     queryKey: ["/api/houses", user.tenantId],
@@ -509,7 +516,7 @@ export default function Houses() {
 
   // Merge API houses with client-side data (pricing, meterLogs, leaseContract, reminders)
   const houses = useMemo(() => {
-    const baseHouses = apiHouses && apiHouses.length > 0 ? apiHouses : initialMockHouses;
+    const baseHouses = apiHouses || [];
     
     return baseHouses.map((house: any) => {
       const clientData = getClientSideData(house.id);
