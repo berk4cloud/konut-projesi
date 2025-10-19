@@ -10,7 +10,7 @@ interface Worker {
 interface Bed {
   id: string;
   bedNumber: number;
-  status: "available" | "occupied" | "reserved" | "oos";
+  status: "available" | "occupied" | "reserved" | "out_of_service";
   worker?: Worker;
   hasFutureReservation?: boolean;
   expectedMoveInDate?: string;

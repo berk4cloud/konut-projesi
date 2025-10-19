@@ -573,7 +573,8 @@
     "pageNotAdded": "Bent u vergeten de pagina aan de router toe te voegen?"
   },
   "bedCard": {
-    "oos": "B.G."
+    "oos": "B.G.",
+    "daysUntil": "over {{days}} dagen"
   },
   "houses": {
     "title": "Panden",

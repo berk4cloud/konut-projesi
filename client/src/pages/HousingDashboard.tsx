@@ -111,7 +111,7 @@ type House = {
   rooms: {
     id: string;
     roomNumber: string;
-    floor: number | null;
+    floor?: number;
     beds: {
       id: string;
       bedNumber: number;
@@ -121,6 +121,7 @@ type House = {
         name: string;
         gender: "male" | "female";
       };
+      hasFutureReservation?: boolean;
       expectedMoveOutDate?: string;
       expectedMoveInDate?: string;
     }[];
@@ -1446,18 +1447,18 @@ export default function HousingDashboard() {
               return (
                 <div className="space-y-4">
                   <div className="space-y-3">
-                    <Label>Uygun Oda ve Yatak Seçin</Label>
+                    <Label>{t('checkIn.wizard.selectSuitableRoomAndBed')}</Label>
                     {selectedGender && (
                       <div className="text-sm text-muted-foreground">
-                        Seçilen işçi: <span className="font-medium">{selectedWorker?.firstName} {selectedWorker?.lastName}</span> 
-                        {" "}({selectedGender === "male" ? "Erkek" : "Kadın"})
+                        {t('checkIn.wizard.selectedWorker')} <span className="font-medium">{selectedWorker?.firstName} {selectedWorker?.lastName}</span> 
+                        {" "}({selectedGender === "male" ? t('gender.male') : t('gender.female')})
                       </div>
                     )}
                     
                     <div className="border rounded-lg max-h-[500px] overflow-y-auto space-y-4 p-4">
                       {housesLoading ? (
                         <div className="p-8 text-center text-muted-foreground">
-                          Yükleniyor...
+                          {t('checkIn.wizard.loading')}
                         </div>
                       ) : availableHouses.length > 0 ? (
                         availableHouses.map(house => {
@@ -1485,7 +1486,7 @@ export default function HousingDashboard() {
                                 {hasGenderConflict && (
                                   <Badge variant="outline" className="bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800">
                                     <AlertCircle className="w-3 h-3 mr-1" />
-                                    Cinsiyet Karışık
+                                    {t('checkIn.wizard.genderMixed')}
                                   </Badge>
                                 )}
                               </div>
@@ -1508,9 +1509,9 @@ export default function HousingDashboard() {
                                     <div key={room.id} className="border rounded-lg p-3 space-y-2 bg-muted/30">
                                       {/* Room Header */}
                                       <div className="flex items-center justify-between">
-                                        <h4 className="font-medium text-sm">Oda {room.roomNumber}</h4>
+                                        <h4 className="font-medium text-sm">{t('checkIn.wizard.room', { number: room.roomNumber })}</h4>
                                         <span className="text-xs text-muted-foreground">
-                                          {availableBeds.length} boş
+                                          {t('checkIn.wizard.availableBeds', { count: availableBeds.length })}
                                         </span>
                                       </div>
 
@@ -1523,17 +1524,18 @@ export default function HousingDashboard() {
                                                 "w-3 h-3 rounded-full",
                                                 bed.worker?.gender === "male" ? "bg-gender-male" : "bg-gender-female"
                                               )} />
-                                              <span>Yatak {bed.bedNumber}: {bed.worker?.name}</span>
+                                              <span>{t('checkIn.wizard.bed', { number: bed.bedNumber })}: {bed.worker?.name}</span>
                                             </div>
                                           ))}
                                           {futureReservations.map(bed => {
-                                            const daysUntil = bed.expectedMoveInDate 
-                                              ? Math.ceil((new Date(bed.expectedMoveInDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+                                            // Calculate days from selected start date, not today
+                                            const daysUntil = bed.expectedMoveInDate && wizardData.startDate
+                                              ? Math.ceil((new Date(bed.expectedMoveInDate).getTime() - new Date(wizardData.startDate).getTime()) / (1000 * 60 * 60 * 24))
                                               : 0;
                                             return (
                                               <div key={bed.id} className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
                                                 <Clock className="w-3 h-3" />
-                                                <span>Yatak {bed.bedNumber}: {bed.worker?.name} ({daysUntil} gün sonra)</span>
+                                                <span>{t('checkIn.wizard.bed', { number: bed.bedNumber })}: {bed.worker?.name} ({t('checkIn.wizard.daysLater', { days: daysUntil })})</span>
                                               </div>
                                             );
                                           })}
@@ -1564,7 +1566,7 @@ export default function HousingDashboard() {
                                               )}
                                               data-testid={`bed-option-${bed.id}`}
                                             >
-                                              Yatak {bed.bedNumber}
+                                              {t('checkIn.wizard.bed', { number: bed.bedNumber })}
                                               {roomHasConflict && (
                                                 <AlertCircle className="w-3 h-3 ml-1 inline text-amber-500" />
                                               )}
@@ -1581,7 +1583,7 @@ export default function HousingDashboard() {
                         })
                       ) : (
                         <div className="p-8 text-center text-muted-foreground">
-                          Şu anda müsait yatak bulunmamaktadır
+                          {t('checkIn.wizard.noAvailableBeds')}
                         </div>
                       )}
                     </div>

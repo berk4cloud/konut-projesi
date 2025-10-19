@@ -206,7 +206,16 @@
       "wholeRoom": "Whole Room",
       "singleBed": "Single Bed",
       "firstDayStaying": "Worker's first day of stay",
-      "lookingForRoomOrBed": "Are they looking for a whole room or just a bed?"
+      "lookingForRoomOrBed": "Are they looking for a whole room or just a bed?",
+      "selectSuitableRoomAndBed": "Select Suitable Room and Bed",
+      "selectedWorker": "Selected worker:",
+      "genderMixed": "Mixed Gender",
+      "availableBeds": "{{count}} available",
+      "bed": "Bed {{number}}",
+      "room": "Room {{number}}",
+      "daysLater": "in {{days}} days",
+      "noAvailableBeds": "No beds available at this time",
+      "loading": "Loading..."
     },
     "newWorker": {
       "title": "New Worker Registration",
@@ -577,7 +586,8 @@
     "pageNotAdded": "Did you forget to add the page to the router?"
   },
   "bedCard": {
-    "oos": "OOS"
+    "oos": "OOS",
+    "daysUntil": "in {{days}} days"
   },
   "houses": {
     "title": "Properties",

@@ -573,7 +573,8 @@
     "pageNotAdded": "Avez-vous oublié d'ajouter la page au routeur ?"
   },
   "bedCard": {
-    "oos": "H.S."
+    "oos": "H.S.",
+    "daysUntil": "dans {{days}} jours"
   },
   "houses": {
     "title": "Logements",

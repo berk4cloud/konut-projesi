@@ -573,7 +573,8 @@
     "pageNotAdded": "Haben Sie vergessen, die Seite zum Router hinzuzufügen?"
   },
   "bedCard": {
-    "oos": "A.B."
+    "oos": "A.B.",
+    "daysUntil": "in {{days}} Tagen"
   },
   "houses": {
     "title": "Unterkünfte",

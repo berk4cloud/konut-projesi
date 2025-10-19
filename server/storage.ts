@@ -570,7 +570,7 @@ import {
   reservations as reservationsTable,
   qrCodes as qrCodesTable
 } from "@shared/schema";
-import { eq, and, isNull, sql, gt, asc } from "drizzle-orm";
+import { eq, and, isNull, sql, gt, asc, desc } from "drizzle-orm";
 
 export class DbStorage implements IStorage {
   private seeded = false;

@@ -16,7 +16,7 @@ interface Worker {
 
 interface BedCardProps {
   bedNumber: number;
-  status: "available" | "occupied" | "reserved" | "oos";
+  status: "available" | "occupied" | "reserved" | "out_of_service";
   worker?: Worker;
   hasFutureReservation?: boolean;
   expectedMoveInDate?: string;
@@ -29,7 +29,7 @@ export default function BedCard({ bedNumber, status, worker, hasFutureReservatio
     available: "bg-status-empty/10 dark:bg-status-empty/20 border-status-empty",
     occupied: "bg-status-occupied/10 dark:bg-status-occupied/20 border-status-occupied",
     reserved: "bg-status-reserved/10 dark:bg-status-reserved/20 border-status-reserved",
-    oos: "bg-status-oos/10 dark:bg-status-oos/20 border-status-oos",
+    out_of_service: "bg-status-oos/10 dark:bg-status-oos/20 border-status-oos",
   };
 
   const genderColors = {
@@ -66,7 +66,7 @@ export default function BedCard({ bedNumber, status, worker, hasFutureReservatio
         </div>
       )}
 
-      {status === "oos" && (
+      {status === "out_of_service" && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/10 dark:bg-white/10 rounded-md">
           <span className="text-[8px] font-bold text-status-oos">{t('bedCard.oos')}</span>
         </div>
@@ -95,7 +95,7 @@ export default function BedCard({ bedNumber, status, worker, hasFutureReservatio
                 <>
                   <Clock className="w-3 h-3" />
                   <span className="font-medium">
-                    {worker?.name} ({daysUntil} gün sonra)
+                    {worker?.name} ({t('bedCard.daysUntil', { days: daysUntil })})
                   </span>
                 </>
               ) : (

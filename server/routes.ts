@@ -735,14 +735,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   let status = bed.status || "available";
                   let hasFutureReservation = false;
                   
-                  if (reservation && !reservation.checkOutDate) {
+                  if (reservation && reservation.checkInDate) {
                     const checkInDateStr = new Date(reservation.checkInDate).toISOString().split('T')[0];
+                    const checkOutDateStr = reservation.checkOutDate 
+                      ? new Date(reservation.checkOutDate).toISOString().split('T')[0]
+                      : null;
                     
-                    // If check-in date is today or past → occupied
-                    if (checkInDateStr <= selectedDate) {
+                    // If already checked out before or on selected date → available
+                    if (checkOutDateStr && checkOutDateStr <= selectedDate) {
+                      status = "available";
+                      worker = undefined; // Don't show worker for checked out reservations
+                    }
+                    // If checked in on/before selected date AND (no checkout OR checkout after selected date) → occupied
+                    else if (checkInDateStr <= selectedDate && (!checkOutDateStr || checkOutDateStr > selectedDate)) {
                       status = "occupied";
-                    } else {
-                      // If check-in date is in future → available but has future reservation
+                    }
+                    // If check-in is in future → available with future reservation
+                    else if (checkInDateStr > selectedDate) {
                       status = "available";
                       hasFutureReservation = true;
                     }

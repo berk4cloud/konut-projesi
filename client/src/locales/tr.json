@@ -208,7 +208,16 @@
       "wholeRoom": "Tam Oda",
       "singleBed": "Tek Yatak",
       "firstDayStaying": "İşçinin kalacağı ilk gün",
-      "lookingForRoomOrBed": "Odanın tamamını mı yoksa sadece bir yatak mı arıyor?"
+      "lookingForRoomOrBed": "Odanın tamamını mı yoksa sadece bir yatak mı arıyor?",
+      "selectSuitableRoomAndBed": "Uygun Oda ve Yatak Seçin",
+      "selectedWorker": "Seçilen işçi:",
+      "genderMixed": "Cinsiyet Karışık",
+      "availableBeds": "{{count}} boş",
+      "bed": "Yatak {{number}}",
+      "room": "Oda {{number}}",
+      "daysLater": "{{days}} gün sonra",
+      "noAvailableBeds": "Şu anda müsait yatak bulunmamaktadır",
+      "loading": "Yükleniyor..."
     },
     "newWorker": {
       "title": "Yeni İşçi Kaydı",
@@ -583,7 +592,8 @@
     "pageNotAdded": "Yönlendiriciye sayfayı eklemeyi unuttunuz mu?"
   },
   "bedCard": {
-    "oos": "OOS"
+    "oos": "OOS",
+    "daysUntil": "{{days}} gün sonra"
   },
   "houses": {
     "title": "Konutlar",
