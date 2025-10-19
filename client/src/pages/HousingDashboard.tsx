@@ -547,7 +547,7 @@ export default function HousingDashboard() {
       if (!alreadyAdded) {
         setWizardData({
           ...wizardData,
-          occupants: [{
+          occupants: [...wizardData.occupants, {
             id: `lead-${Date.now()}`,
             employmentId: wizardData.employmentId,
             workerName: wizardData.workerName,
@@ -1941,7 +1941,7 @@ export default function HousingDashboard() {
                                     }}
                                     data-testid={`button-remove-occupant-${index}`}
                                   >
-                                    <Check className="w-4 h-4" />
+                                    <X className="w-4 h-4" />
                                     Kaldır
                                   </Button>
                                 </div>
