@@ -7,7 +7,8 @@ import {
   insertEmploymentSchema,
   insertEmploymentPrivateDataSchema,
   type User,
-  type Tenant
+  type Tenant,
+  type InsertReservation
 } from "@shared/schema";
 import { z } from "zod";
 import { requireTenant } from "./middleware/tenant";
@@ -1256,45 +1257,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // PATCH /reservations/:id/check-out - Check out worker from bed
-  apiRouter.patch("/reservations/:id/check-out", async (req, res) => {
-    try {
-      const { id } = req.params;
-      const { checkOutDate, tenantId } = req.body;
-
-      if (!tenantId) {
-        return res.status(400).json({ error: "tenantId required" });
-      }
-
-      // Verify reservation exists
-      const reservation = await storage.getReservation(id);
-      if (!reservation) {
-        return res.status(404).json({ error: "Reservation not found" });
-      }
-
-      // Verify reservation belongs to tenant (check employment)
-      const employment = await storage.getEmployment(reservation.employmentId);
-      if (!employment || employment.tenantId !== tenantId) {
-        return res.status(404).json({ error: "Reservation not found or access denied" });
-      }
-
-      if (reservation.checkOutDate) {
-        return res.status(400).json({ error: "Reservation already checked out" });
-      }
-
-      // Complete reservation
-      const updated = await storage.completeReservation(
-        id,
-        checkOutDate ? new Date(checkOutDate) : new Date()
-      );
-
-      res.json(updated);
-    } catch (error) {
-      console.error("Error checking out:", error);
-      res.status(500).json({ error: "Failed to check out" });
-    }
-  });
-
   // GET /reservations - Get reservations by filters
   apiRouter.get("/reservations", async (req, res) => {
     try {
@@ -1620,7 +1582,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ============================================
 
   // PATCH /reservations/:id/check-out - Update reservation checkout date
-  apiRouter.patch("/reservations/:id/check-out", async (req, res) => {
+  apiRouter.patch("/reservations/:id/check-out", authenticateTenantUser, async (req, res) => {
     try {
       const { id } = req.params;
       const { checkOutDate, checkOutType, notes, vacationStart, vacationEnd } = req.body;
@@ -1694,7 +1656,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // POST /reservations/:id/notes - Add note to reservation
-  apiRouter.post("/reservations/:id/notes", async (req, res) => {
+  apiRouter.post("/reservations/:id/notes", authenticateTenantUser, async (req, res) => {
     try {
       const { id } = req.params;
       const { note } = req.body;
@@ -1730,7 +1692,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // GET /reservations/:id/notes - Get reservation notes
-  apiRouter.get("/reservations/:id/notes", async (req, res) => {
+  apiRouter.get("/reservations/:id/notes", authenticateTenantUser, async (req, res) => {
     try {
       const { id } = req.params;
       

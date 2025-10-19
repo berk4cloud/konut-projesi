@@ -25,6 +25,7 @@ function Router() {
       <Route path="/qr/:code" component={QRPublicPage} />
       <Route path="/platform-admin" component={PlatformAdminDashboard} />
       <Route path="/dashboard" component={HousingDashboard} />
+      <Route path="/housing" component={HousingDashboard} />
       <Route path="/houses" component={Houses} />
       <Route path="/workers" component={Workers} />
       <Route path="/assignments" component={Assignments} />

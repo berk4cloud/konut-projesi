@@ -73,8 +73,7 @@ export default function BedDetailsModal({
       
       // Fetch reservation notes if we have a reservationId
       if (bed.reservationId) {
-        fetch(`/api/reservations/${bed.reservationId}/notes`)
-          .then(res => res.json())
+        apiRequest("GET", `/api/reservations/${bed.reservationId}/notes`)
           .then(data => {
             if (data.notes) {
               setReservationNotes(data.notes);
@@ -90,6 +89,68 @@ export default function BedDetailsModal({
     }
   }, [open, bed]);
 
+  // Checkout mutation (must be before early return to maintain hook order)
+  const checkoutMutation = useMutation({
+    mutationFn: async (data: any) => {
+      if (!bed?.reservationId) {
+        throw new Error("No reservation ID");
+      }
+      return apiRequest("PATCH", `/api/reservations/${bed.reservationId}/check-out`, data);
+    },
+    onSuccess: async () => {
+      toast({
+        title: t('common.success'),
+        description: t('bedDetails.checkOutSuccess'),
+      });
+      await queryClient.refetchQueries({ queryKey: ['/api/houses'] });
+      handleClose();
+    },
+    onError: (error: any) => {
+      toast({
+        title: t('common.error'),
+        description: error.message || t('bedDetails.checkOutError'),
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Add note mutation
+  const addNoteMutation = useMutation({
+    mutationFn: async (note: string) => {
+      if (!bed?.reservationId) {
+        throw new Error("No reservation ID");
+      }
+      return apiRequest("POST", `/api/reservations/${bed.reservationId}/notes`, { note });
+    },
+    onSuccess: async () => {
+      toast({
+        title: t('common.success'),
+        description: t('bedDetails.noteAdded'),
+      });
+      setIsAddingNote(false);
+      setNotes("");
+      // Refresh notes
+      if (bed?.reservationId) {
+        try {
+          const data = await apiRequest("GET", `/api/reservations/${bed.reservationId}/notes`);
+          if (data.notes) {
+            setReservationNotes(data.notes);
+          }
+        } catch (err) {
+          console.error('Failed to refresh notes:', err);
+        }
+      }
+    },
+    onError: (error: any) => {
+      toast({
+        title: t('common.error'),
+        description: error.message || t('bedDetails.noteError'),
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Early return after all hooks to maintain hook order
   if (!bed) return null;
 
   const handleClose = () => {
@@ -105,64 +166,6 @@ export default function BedDetailsModal({
   const handleCheckOutAction = (action: CheckOutAction) => {
     setSelectedAction(action);
   };
-
-  // Checkout mutation
-  const checkoutMutation = useMutation({
-    mutationFn: async (data: any) => {
-      if (!bed.reservationId) {
-        throw new Error("No reservation ID");
-      }
-      return apiRequest(`/reservations/${bed.reservationId}/check-out`, {
-        method: "PATCH",
-        body: JSON.stringify(data),
-      });
-    },
-    onSuccess: () => {
-      toast({
-        title: t('common.success'),
-        description: t('bedDetails.checkOutSuccess'),
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/houses'] });
-      handleClose();
-    },
-    onError: (error: any) => {
-      toast({
-        title: t('common.error'),
-        description: error.message || t('bedDetails.checkOutError'),
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Add note mutation
-  const addNoteMutation = useMutation({
-    mutationFn: async (note: string) => {
-      if (!bed.reservationId) {
-        throw new Error("No reservation ID");
-      }
-      return apiRequest(`/reservations/${bed.reservationId}/notes`, {
-        method: "POST",
-        body: JSON.stringify({ note }),
-      });
-    },
-    onSuccess: () => {
-      toast({
-        title: t('common.success'),
-        description: t('bedDetails.noteAdded'),
-      });
-      setIsAddingNote(false);
-      setNotes("");
-      // Refresh notes
-      // TODO: Fetch updated notes
-    },
-    onError: (error: any) => {
-      toast({
-        title: t('common.error'),
-        description: error.message || t('bedDetails.noteError'),
-        variant: "destructive",
-      });
-    },
-  });
 
   const handleConfirmCheckOut = () => {
     if (!bed.reservationId) {
@@ -283,7 +286,7 @@ export default function BedDetailsModal({
   };
 
   // Check if we can modify checkout date
-  const hasScheduledCheckOut = bed.checkOutDate && new Date(bed.checkOutDate) > new Date();
+  const hasScheduledCheckOut = bed?.checkOutDate && new Date(bed.checkOutDate) > new Date();
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -318,8 +321,9 @@ export default function BedDetailsModal({
                 <div className="flex-1">
                   <h3 className="font-semibold text-lg mb-1">{bed.worker.name}</h3>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <User className={bed.worker.gender === 'male' ? 'text-blue-600' : 'text-pink-600'} size={16} />
                     <span className={bed.worker.gender === 'male' ? 'text-blue-600' : 'text-pink-600'}>
-                      {bed.worker.gender === 'male' ? '♂' : '♀'} {t(`common.${bed.worker.gender}`)}
+                      {t(`common.${bed.worker.gender}`)}
                     </span>
                   </div>
                 </div>
