@@ -159,7 +159,20 @@
     "outOfService": "Nieczynne",
     "capacity": "Pojemność"
   },
+  "bedDetails": {
+    "workerInformation": "Informacje o pracowniku i zakwaterowaniu",
+    "bedInformation": "Informacje o łóżku",
+    "checkInDate": "Data zameldowania",
+    "expectedCheckOut": "Przewidywana data wymeldowania",
+    "checkOut": "Wymelduj",
+    "addNote": "Dodaj notatkę",
+    "reservedBed": "Zarezerwowane łóżko",
+    "reservedDescription": "To łóżko jest zarezerwowane na przyszłą datę.",
+    "outOfService": "Nieczynne",
+    "maintenanceDescription": "To łóżko jest obecnie w konserwacji lub niedostępne."
+  },
   "checkIn": {
+    "newCheckIn": "Nowe Zameldowanie",
     "wizard": {
       "title": "Nowe Przypisanie Zakwaterowania",
       "step1": "Data",

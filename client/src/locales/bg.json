@@ -159,7 +159,20 @@
     "outOfService": "Извън експлоатация",
     "capacity": "Капацитет"
   },
+  "bedDetails": {
+    "workerInformation": "Информация за служителя и настаняването",
+    "bedInformation": "Информация за леглото",
+    "checkInDate": "Дата на настаняване",
+    "expectedCheckOut": "Очаквана дата на напускане",
+    "checkOut": "Напусни",
+    "addNote": "Добави бележка",
+    "reservedBed": "Резервирано легло",
+    "reservedDescription": "Това легло е резервирано за бъдеща дата.",
+    "outOfService": "Извън експлоатация",
+    "maintenanceDescription": "Това легло в момента е в поддръжка или не е налично."
+  },
   "checkIn": {
+    "newCheckIn": "Ново Настаняване",
     "wizard": {
       "title": "Ново Разпределение на Настаняване",
       "step1": "Дата",

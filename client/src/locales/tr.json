@@ -134,6 +134,18 @@
     "rentableAsWholeRoom": "Oda olarak kiraya verilebilir",
     "customPricing": "Oda için özel fiyat"
   },
+  "bedDetails": {
+    "workerInformation": "Çalışan ve konaklama bilgileri",
+    "bedInformation": "Yatak bilgileri",
+    "checkInDate": "Giriş Tarihi",
+    "expectedCheckOut": "Beklenen Çıkış Tarihi",
+    "checkOut": "Çıkış Yap",
+    "addNote": "Not Ekle",
+    "reservedBed": "Rezerve Edilmiş Yatak",
+    "reservedDescription": "Bu yatak gelecek bir tarih için rezerve edilmiştir.",
+    "outOfService": "Hizmet Dışı",
+    "maintenanceDescription": "Bu yatak şu anda bakımda veya kullanım dışı durumdadır."
+  },
   "filters": {
     "title": "Filtreler",
     "date": "Tarih",
@@ -166,6 +178,7 @@
     "capacity": "Kapasite"
   },
   "checkIn": {
+    "newCheckIn": "Yeni Konaklama Girişi",
     "wizard": {
       "title": "Yeni Konaklama Girişi",
       "step1": "Tarih",

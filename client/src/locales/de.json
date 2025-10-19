@@ -159,7 +159,20 @@
     "outOfService": "Außer Betrieb",
     "capacity": "Kapazität"
   },
+  "bedDetails": {
+    "workerInformation": "Mitarbeiter- und Unterkunftsinformationen",
+    "bedInformation": "Bettinformationen",
+    "checkInDate": "Check-in-Datum",
+    "expectedCheckOut": "Voraussichtliches Check-out-Datum",
+    "checkOut": "Auschecken",
+    "addNote": "Notiz hinzufügen",
+    "reservedBed": "Reserviertes Bett",
+    "reservedDescription": "Dieses Bett ist für ein zukünftiges Datum reserviert.",
+    "outOfService": "Außer Betrieb",
+    "maintenanceDescription": "Dieses Bett ist derzeit in Wartung oder nicht verfügbar."
+  },
   "checkIn": {
+    "newCheckIn": "Neuer Check-in",
     "wizard": {
       "title": "Neue Unterkunftszuweisung",
       "step1": "Datum",

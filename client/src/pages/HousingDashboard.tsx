@@ -10,6 +10,7 @@ import HouseCard from "@/components/HouseCard";
 import WorkerAssignmentModal from "@/components/WorkerAssignmentModal";
 import GenderWarningModal from "@/components/GenderWarningModal";
 import LeaseContractDialog from "@/components/LeaseContractDialog";
+import BedDetailsModal from "@/components/BedDetailsModal";
 import { SearchCombobox } from "@/components/ui/search-combobox";
 import { ModernDatePicker } from "@/components/ui/modern-date-picker";
 import { Button } from "@/components/ui/button";
@@ -158,6 +159,7 @@ export default function HousingDashboard() {
   const [selectedBed, setSelectedBed] = useState<any>(null);
   const [checkInWizardOpen, setCheckInWizardOpen] = useState(false);
   const [colorInfoDialogOpen, setColorInfoDialogOpen] = useState(false);
+  const [bedDetailsModalOpen, setBedDetailsModalOpen] = useState(false);
   
   // Check-in wizard state
   const [wizardStep, setWizardStep] = useState(1);
@@ -465,6 +467,8 @@ export default function HousingDashboard() {
     setSelectedBed(bed);
     if (bed.status === "available") {
       setAssignmentModalOpen(true);
+    } else if (bed.status === "occupied" || bed.status === "reserved" || bed.status === "out_of_service") {
+      setBedDetailsModalOpen(true);
     }
   };
 
@@ -981,6 +985,12 @@ export default function HousingDashboard() {
         }}
         workerName="Jane Smith"
         roomNumber="45"
+      />
+
+      <BedDetailsModal
+        open={bedDetailsModalOpen}
+        onClose={() => setBedDetailsModalOpen(false)}
+        bed={selectedBed}
       />
 
       {/* Lease Contract Dialog */}

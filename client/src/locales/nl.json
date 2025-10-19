@@ -159,7 +159,20 @@
     "outOfService": "Buiten Gebruik",
     "capacity": "Capaciteit"
   },
+  "bedDetails": {
+    "workerInformation": "Werknemer- en accommodatie-informatie",
+    "bedInformation": "Bedinformatie",
+    "checkInDate": "Incheckdatum",
+    "expectedCheckOut": "Verwachte Uitcheckdatum",
+    "checkOut": "Uitchecken",
+    "addNote": "Notitie Toevoegen",
+    "reservedBed": "Gereserveerd Bed",
+    "reservedDescription": "Dit bed is gereserveerd voor een toekomstige datum.",
+    "outOfService": "Buiten Gebruik",
+    "maintenanceDescription": "Dit bed is momenteel in onderhoud of niet beschikbaar."
+  },
   "checkIn": {
+    "newCheckIn": "Nieuwe Inchecking",
     "wizard": {
       "title": "Nieuwe Accommodatietoewijzing",
       "step1": "Datum",

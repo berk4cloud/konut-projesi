@@ -159,7 +159,20 @@
     "outOfService": "Hors service",
     "capacity": "Capacité"
   },
+  "bedDetails": {
+    "workerInformation": "Informations sur le collaborateur et l'hébergement",
+    "bedInformation": "Informations sur le lit",
+    "checkInDate": "Date d'arrivée",
+    "expectedCheckOut": "Date de départ prévue",
+    "checkOut": "Faire le check-out",
+    "addNote": "Ajouter une note",
+    "reservedBed": "Lit réservé",
+    "reservedDescription": "Ce lit est réservé pour une date future.",
+    "outOfService": "Hors service",
+    "maintenanceDescription": "Ce lit est actuellement en maintenance ou indisponible."
+  },
   "checkIn": {
+    "newCheckIn": "Nouvelle Arrivée",
     "wizard": {
       "title": "Nouvelle Attribution d'Hébergement",
       "step1": "Date",

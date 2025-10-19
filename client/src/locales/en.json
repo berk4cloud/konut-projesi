@@ -163,7 +163,20 @@
     "outOfService": "Out of Service",
     "capacity": "Capacity"
   },
+  "bedDetails": {
+    "workerInformation": "Worker and accommodation information",
+    "bedInformation": "Bed information",
+    "checkInDate": "Check-In Date",
+    "expectedCheckOut": "Expected Check-Out Date",
+    "checkOut": "Check Out",
+    "addNote": "Add Note",
+    "reservedBed": "Reserved Bed",
+    "reservedDescription": "This bed is reserved for a future date.",
+    "outOfService": "Out of Service",
+    "maintenanceDescription": "This bed is currently under maintenance or unavailable."
+  },
   "checkIn": {
+    "newCheckIn": "New Check-In",
     "wizard": {
       "title": "New Accommodation Entry",
       "step1": "Date",
