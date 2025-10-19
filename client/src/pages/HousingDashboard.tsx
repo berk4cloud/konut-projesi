@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import Header from "@/components/Header";
 import FilterPanel from "@/components/FilterPanel";
 import CapacityWidget from "@/components/CapacityWidget";
+import ColorStatusLegend from "@/components/ColorStatusLegend";
 import HouseCard from "@/components/HouseCard";
 import WorkerAssignmentModal from "@/components/WorkerAssignmentModal";
 import GenderWarningModal from "@/components/GenderWarningModal";
@@ -192,7 +193,15 @@ export default function HousingDashboard() {
   const [houses, setHouses] = useState<House[]>([]);
 
   // Selected date state - default to today (this is the "zero point" for all date calculations)
-  const todayStr = new Date().toISOString().split('T')[0];
+  // Timezone-safe: use local date parts instead of UTC conversion
+  const getTodayString = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+  const todayStr = getTodayString();
   const [selectedDate, setSelectedDate] = useState<string>(todayStr);
   
   // Fetch houses from API with selected date as reference
@@ -671,8 +680,18 @@ export default function HousingDashboard() {
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-muted-foreground" />
               <ModernDatePicker
-                value={selectedDate}
-                onChange={(newDate) => setSelectedDate(newDate || todayStr)}
+                date={selectedDate ? new Date(selectedDate + 'T00:00:00') : undefined}
+                onDateChange={(date) => {
+                  if (date) {
+                    // Convert to YYYY-MM-DD in local timezone (NOT UTC)
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    setSelectedDate(`${year}-${month}-${day}`);
+                  } else {
+                    setSelectedDate(todayStr);
+                  }
+                }}
                 placeholder={t('filters.selectDate')}
                 data-testid="datepicker-reference-date"
               />
@@ -705,6 +724,7 @@ export default function HousingDashboard() {
         {/* Left Sidebar - Desktop only, sticky */}
         <aside className="hidden lg:block border-r bg-muted/30 min-h-[calc(100vh-4rem)] p-6 sticky top-16 overflow-y-auto">
           <div className="space-y-6">
+            <ColorStatusLegend />
             <CapacityWidget
               totalBeds={totalBeds}
               occupiedBeds={occupiedBeds}
@@ -773,32 +793,6 @@ export default function HousingDashboard() {
           {/* Main Content Area */}
           <div className="p-4 lg:p-6">
             <div className="max-w-7xl mx-auto space-y-4">
-              <div className="hidden lg:flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <h2 className="text-2xl font-bold">{t('dashboard.title')}</h2>
-                    <button 
-                      onClick={() => setColorInfoDialogOpen(true)}
-                      className="text-muted-foreground hover-elevate active-elevate-2 rounded-full p-1 transition-colors" 
-                      data-testid="button-color-info"
-                    >
-                      <Info className="w-5 h-5" />
-                    </button>
-                  </div>
-                  <p className="text-muted-foreground">
-                    {t('dashboard.subtitle')}
-                  </p>
-                </div>
-                <Button 
-                  onClick={() => setCheckInWizardOpen(true)}
-                  data-testid="button-new-check-in"
-                  className="gap-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  {t('dashboard.newCheckIn')}
-                </Button>
-              </div>
-
               {/* House List */}
               <div className="space-y-3">
                 {filteredHouses.length > 0 ? (
