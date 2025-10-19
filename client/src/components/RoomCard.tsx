@@ -12,6 +12,8 @@ interface Bed {
   bedNumber: number;
   status: "available" | "occupied" | "reserved" | "oos";
   worker?: Worker;
+  hasFutureReservation?: boolean;
+  expectedMoveInDate?: string;
 }
 
 interface RoomCardProps {
@@ -42,6 +44,8 @@ export default function RoomCard({ roomNumber, floor, beds, onBedClick }: RoomCa
             bedNumber={bed.bedNumber}
             status={bed.status}
             worker={bed.worker}
+            hasFutureReservation={bed.hasFutureReservation}
+            expectedMoveInDate={bed.expectedMoveInDate}
             onClick={() => onBedClick?.(bed)}
           />
         ))}

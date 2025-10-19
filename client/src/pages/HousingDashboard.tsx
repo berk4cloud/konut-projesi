@@ -154,9 +154,12 @@ export default function HousingDashboard() {
   // State for houses (synced from API)
   const [houses, setHouses] = useState<House[]>([]);
 
-  // Fetch houses from API
+  // Get today's date in YYYY-MM-DD format for API
+  const todayStr = new Date().toISOString().split('T')[0];
+  
+  // Fetch houses from API with selected date
   const { data: apiHouses, isLoading: housesLoading } = useQuery<House[]>({
-    queryKey: [`/api/houses?tenantId=${user.tenantId}`],
+    queryKey: [`/api/houses?tenantId=${user.tenantId}&date=${todayStr}`],
     enabled: !!user.tenantId,
   });
 

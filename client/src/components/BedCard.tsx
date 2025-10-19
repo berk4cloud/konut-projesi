@@ -5,7 +5,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { User } from "lucide-react";
+import { User, Clock } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 interface Worker {
@@ -18,10 +18,12 @@ interface BedCardProps {
   bedNumber: number;
   status: "available" | "occupied" | "reserved" | "oos";
   worker?: Worker;
+  hasFutureReservation?: boolean;
+  expectedMoveInDate?: string;
   onClick?: () => void;
 }
 
-export default function BedCard({ bedNumber, status, worker, onClick }: BedCardProps) {
+export default function BedCard({ bedNumber, status, worker, hasFutureReservation, expectedMoveInDate, onClick }: BedCardProps) {
   const { t } = useTranslation();
   const statusColors = {
     available: "bg-status-empty/10 dark:bg-status-empty/20 border-status-empty",
@@ -49,13 +51,19 @@ export default function BedCard({ bedNumber, status, worker, onClick }: BedCardP
         <span className="text-xs font-semibold">{bedNumber}</span>
       </div>
 
-      {worker && (
+      {worker && !hasFutureReservation && (
         <div
           className={cn(
             "absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-background",
             genderColors[worker.gender]
           )}
         />
+      )}
+
+      {hasFutureReservation && (
+        <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-background bg-amber-500 flex items-center justify-center">
+          <Clock className="w-2.5 h-2.5 text-white" />
+        </div>
       )}
 
       {status === "oos" && (
@@ -66,7 +74,15 @@ export default function BedCard({ bedNumber, status, worker, onClick }: BedCardP
     </button>
   );
 
-  if (worker) {
+  if (worker || hasFutureReservation) {
+    // Calculate days until check-in for future reservations
+    let daysUntil = 0;
+    if (hasFutureReservation && expectedMoveInDate) {
+      const today = new Date();
+      const checkInDate = new Date(expectedMoveInDate);
+      daysUntil = Math.ceil((checkInDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    }
+
     return (
       <TooltipProvider>
         <Tooltip>
@@ -75,8 +91,19 @@ export default function BedCard({ bedNumber, status, worker, onClick }: BedCardP
           </TooltipTrigger>
           <TooltipContent>
             <div className="flex items-center gap-2">
-              <User className="w-3 h-3" />
-              <span className="font-medium">{worker.name}</span>
+              {hasFutureReservation ? (
+                <>
+                  <Clock className="w-3 h-3" />
+                  <span className="font-medium">
+                    {worker?.name} ({daysUntil} gün sonra)
+                  </span>
+                </>
+              ) : (
+                <>
+                  <User className="w-3 h-3" />
+                  <span className="font-medium">{worker?.name}</span>
+                </>
+              )}
             </div>
           </TooltipContent>
         </Tooltip>

@@ -692,6 +692,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.get("/houses", async (req, res) => {
     try {
       const tenantId = req.query.tenantId as string;
+      const selectedDate = req.query.date as string || new Date().toISOString().split('T')[0];
       
       if (!tenantId) {
         return res.status(400).json({ error: "tenantId required" });
@@ -730,17 +731,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     }
                   }
                   
-                  // Calculate bed status based on reservation
+                  // Calculate bed status based on reservation and selected date
                   let status = bed.status || "available";
+                  let hasFutureReservation = false;
+                  
                   if (reservation && !reservation.checkOutDate) {
-                    status = reservation.checkInDate ? "occupied" : "reserved";
+                    const checkInDateStr = new Date(reservation.checkInDate).toISOString().split('T')[0];
+                    
+                    // If check-in date is today or past → occupied
+                    if (checkInDateStr <= selectedDate) {
+                      status = "occupied";
+                    } else {
+                      // If check-in date is in future → available but has future reservation
+                      status = "available";
+                      hasFutureReservation = true;
+                    }
                   }
                   
                   return {
                     id: bed.id,
                     bedNumber: bed.bedNumber,
                     status,
-                    worker,
+                    worker: hasFutureReservation ? worker : (status === "occupied" ? worker : undefined),
+                    hasFutureReservation,
                     expectedMoveOutDate: reservation?.endDate || undefined,
                     expectedMoveInDate: reservation?.startDate || undefined,
                   };
