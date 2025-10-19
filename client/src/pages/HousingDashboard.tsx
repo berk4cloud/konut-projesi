@@ -6,7 +6,6 @@ import { useQuery } from "@tanstack/react-query";
 import Header from "@/components/Header";
 import FilterPanel from "@/components/FilterPanel";
 import CapacityWidget from "@/components/CapacityWidget";
-import ColorStatusLegend from "@/components/ColorStatusLegend";
 import HouseCard from "@/components/HouseCard";
 import WorkerAssignmentModal from "@/components/WorkerAssignmentModal";
 import GenderWarningModal from "@/components/GenderWarningModal";
@@ -676,7 +675,18 @@ export default function HousingDashboard() {
       <div className="sticky top-16 z-20 bg-background border-b">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <h2 className="text-lg font-semibold">{t('dashboard.title')}</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-semibold">{t('dashboard.title')}</h2>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={() => setColorInfoDialogOpen(true)}
+                data-testid="button-color-info"
+              >
+                <Info className="w-4 h-4 text-muted-foreground" />
+              </Button>
+            </div>
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-muted-foreground" />
               <ModernDatePicker
@@ -724,7 +734,6 @@ export default function HousingDashboard() {
         {/* Left Sidebar - Desktop only, sticky */}
         <aside className="hidden lg:block border-r bg-muted/30 min-h-[calc(100vh-4rem)] p-6 sticky top-16 overflow-y-auto">
           <div className="space-y-6">
-            <ColorStatusLegend />
             <CapacityWidget
               totalBeds={totalBeds}
               occupiedBeds={occupiedBeds}
@@ -1878,6 +1887,107 @@ export default function HousingDashboard() {
                 <Info className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-muted-foreground">
                   <strong className="text-foreground">{t('dashboard.colorTip')}</strong> {t('dashboard.colorTipDesc')}
+                </p>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Color Info Dialog */}
+      <Dialog open={colorInfoDialogOpen} onOpenChange={setColorInfoDialogOpen}>
+        <DialogContent className="max-w-2xl" data-testid="dialog-color-info">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Info className="w-5 h-5 text-primary" />
+              {t('housing.colorLegend')}
+            </DialogTitle>
+            <DialogDescription>
+              {t('housing.colorLegendSubtitle')}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6 py-4">
+            {/* Green - Occupied */}
+            <div className="flex gap-4">
+              <div className="w-16 h-16 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-3 h-3 bg-green-500 rounded-full" />
+                  <h3 className="font-semibold text-base">{t('housing.statusOccupied')}</h3>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {t('housing.statusOccupiedDesc')}
+                </p>
+              </div>
+            </div>
+
+            {/* Amber - Rented but Empty */}
+            <div className="flex gap-4">
+              <div className="w-16 h-16 bg-amber-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11v6m0 0l-3-3m3 3l3-3" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-3 h-3 bg-amber-500 rounded-full" />
+                  <h3 className="font-semibold text-base">{t('housing.statusOutOfService')}</h3>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {t('housing.statusOutOfServiceDesc')}
+                </p>
+              </div>
+            </div>
+
+            {/* Purple - Reserved */}
+            <div className="flex gap-4">
+              <div className="w-16 h-16 bg-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-3 h-3 bg-purple-500 rounded-full" />
+                  <h3 className="font-semibold text-base">{t('housing.statusReserved')}</h3>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {t('housing.statusReservedDesc')}
+                </p>
+              </div>
+            </div>
+
+            {/* Red - Out of Service */}
+            <div className="flex gap-4">
+              <div className="w-16 h-16 bg-red-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-3 h-3 bg-red-500 rounded-full" />
+                  <h3 className="font-semibold text-base">{t('housing.statusEmpty')}</h3>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {t('housing.statusEmptyDesc')}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t pt-4">
+            <div className="bg-muted/50 rounded-lg p-4">
+              <div className="flex gap-3">
+                <Info className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-muted-foreground">
+                  <strong className="text-foreground">{t('housing.colorTip')}</strong> {t('housing.colorTipDesc')}
                 </p>
               </div>
             </div>
