@@ -58,6 +58,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
@@ -169,6 +179,11 @@ export default function HousingDashboard() {
   // Check-in wizard state
   const [wizardStep, setWizardStep] = useState(1);
   const [workerComboboxOpen, setWorkerComboboxOpen] = useState(false);
+  const [conflictWarning, setConflictWarning] = useState<{
+    show: boolean;
+    message: string;
+    reservationDate: string;
+  } | null>(null);
   const [wizardData, setWizardData] = useState({
     // Step 1: Tarih & Filtreler
     startDate: "",
@@ -1415,7 +1430,10 @@ export default function HousingDashboard() {
                         {getAvailableRoomsAndBeds().map((option: any) => (
                           <div
                             key={`${option.houseId}-${option.roomId}-${option.bedId}`}
-                            onClick={() => {
+                            onClick={async () => {
+                              console.log('Bed clicked:', option.bedId, 'Start date:', wizardData.startDate);
+                              
+                              // Select bed first
                               setWizardData({
                                 ...wizardData,
                                 houseId: option.houseId,
@@ -1423,6 +1441,48 @@ export default function HousingDashboard() {
                                 roomId: option.roomId,
                                 bedId: option.bedId,
                               });
+                              
+                              // Then check for future reservations
+                              try {
+                                const url = `/api/beds/${option.bedId}/future-reservations?afterDate=${wizardData.startDate}`;
+                                console.log('Fetching future reservations:', url);
+                                
+                                const response = await fetch(url, {
+                                  headers: {
+                                    'Content-Type': 'application/json',
+                                  },
+                                });
+                                
+                                console.log('Future reservations response:', response.status);
+                                
+                                if (response.ok) {
+                                  const futureReservations = await response.json();
+                                  console.log('Future reservations data:', futureReservations);
+                                  
+                                  if (futureReservations && futureReservations.length > 0) {
+                                    const nextReservation = futureReservations[0];
+                                    const reservationDate = new Date(nextReservation.checkInDate).toLocaleDateString('tr-TR');
+                                    
+                                    const warningData = {
+                                      show: true,
+                                      message: `Bu yatak ${reservationDate} tarihinde başka birine rezerve edilmiş. Devam etmek istiyor musunuz?`,
+                                      reservationDate: nextReservation.checkInDate,
+                                    };
+                                    
+                                    console.log('Setting conflict warning:', warningData);
+                                    
+                                    // Show conflict warning after a brief delay to ensure state update
+                                    setTimeout(() => {
+                                      console.log('Calling setConflictWarning...');
+                                      setConflictWarning(warningData);
+                                    }, 100);
+                                  } else {
+                                    console.log('No future reservations found');
+                                  }
+                                }
+                              } catch (error) {
+                                console.error('Error checking future reservations:', error);
+                              }
                             }}
                             className={cn(
                               "p-4 cursor-pointer transition-colors hover-elevate",
@@ -1521,7 +1581,7 @@ export default function HousingDashboard() {
                         <Label htmlFor="deposit-collector">{t('checkIn.wizard.depositCollector')}</Label>
                         <Input
                           id="deposit-collector"
-                          value={user?.name || "Kullanıcı"}
+                          value={user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : "Kullanıcı"}
                           disabled
                           data-testid="input-wizard-deposit-collector"
                           className="bg-muted"
@@ -1573,6 +1633,43 @@ export default function HousingDashboard() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Conflict Warning Alert Dialog */}
+      <AlertDialog open={conflictWarning?.show || false} onOpenChange={(open) => {
+        if (!open) {
+          setConflictWarning(null);
+        }
+      }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-amber-500" />
+              Rezervasyon Çakışması Uyarısı
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-base">
+              {conflictWarning?.message}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              // Clear bed selection
+              setWizardData({
+                ...wizardData,
+                bedId: "",
+                houseId: "",
+                houseName: "",
+                roomId: "",
+              });
+              setConflictWarning(null);
+            }}>
+              Vazgeç
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={() => setConflictWarning(null)}>
+              Devam Et
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Color System Info Dialog */}
       <Dialog open={colorInfoDialogOpen} onOpenChange={setColorInfoDialogOpen}>

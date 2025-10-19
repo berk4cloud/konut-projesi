@@ -118,6 +118,7 @@ export interface IStorage {
   getReservationsByBed(bedId: string): Promise<Reservation[]>;
   getActiveReservationsByTenant(tenantId: string): Promise<Reservation[]>;
   getActiveReservationForBed(bedId: string): Promise<Reservation | undefined>;
+  getFutureReservationsForBed(bedId: string, afterDate: string): Promise<Reservation[]>;
   createReservation(reservation: InsertReservation): Promise<Reservation>;
   updateReservation(id: string, reservation: Partial<InsertReservation>): Promise<Reservation | undefined>;
   completeReservation(id: string, checkOutDate: string): Promise<Reservation | undefined>;
@@ -535,6 +536,7 @@ export class MemStorage implements IStorage {
   async getReservationsByBed(_bedId: string): Promise<Reservation[]> { throw new Error("Not implemented in MemStorage"); }
   async getActiveReservationsByTenant(_tenantId: string): Promise<Reservation[]> { throw new Error("Not implemented in MemStorage"); }
   async getActiveReservationForBed(_bedId: string): Promise<Reservation | undefined> { throw new Error("Not implemented in MemStorage"); }
+  async getFutureReservationsForBed(_bedId: string, _afterDate: string): Promise<Reservation[]> { throw new Error("Not implemented in MemStorage"); }
   async createReservation(_reservation: InsertReservation): Promise<Reservation> { throw new Error("Not implemented in MemStorage"); }
   async updateReservation(_id: string, _reservation: Partial<InsertReservation>): Promise<Reservation | undefined> { throw new Error("Not implemented in MemStorage"); }
   async completeReservation(_id: string, _checkOutDate: string): Promise<Reservation | undefined> { throw new Error("Not implemented in MemStorage"); }
@@ -568,7 +570,7 @@ import {
   reservations as reservationsTable,
   qrCodes as qrCodesTable
 } from "@shared/schema";
-import { eq, and, isNull, sql } from "drizzle-orm";
+import { eq, and, isNull, sql, gt, asc } from "drizzle-orm";
 
 export class DbStorage implements IStorage {
   private seeded = false;
@@ -978,6 +980,21 @@ export class DbStorage implements IStorage {
       )
       .limit(1);
     return result[0];
+  }
+
+  async getFutureReservationsForBed(bedId: string, afterDate: string): Promise<Reservation[]> {
+    await this.ensureSeeded();
+    // Get reservations that start after the given date and haven't been checked out
+    return await db.select()
+      .from(reservationsTable)
+      .where(
+        and(
+          eq(reservationsTable.bedId, bedId),
+          gt(reservationsTable.checkInDate, afterDate),
+          isNull(reservationsTable.checkOutDate)
+        )
+      )
+      .orderBy(asc(reservationsTable.checkInDate));
   }
 
   async createReservation(reservation: InsertReservation): Promise<Reservation> {

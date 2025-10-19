@@ -1057,6 +1057,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // GET /beds/:bedId/future-reservations - Get future reservations for a bed
+  apiRouter.get("/beds/:bedId/future-reservations", async (req, res) => {
+    try {
+      const { bedId } = req.params;
+      const { afterDate } = req.query;
+
+      if (!afterDate || typeof afterDate !== 'string') {
+        return res.status(400).json({ error: "afterDate query parameter required" });
+      }
+
+      // Verify bed exists
+      const bed = await storage.getBed(bedId);
+      if (!bed) {
+        return res.status(404).json({ error: "Bed not found" });
+      }
+
+      // Get future reservations for this bed
+      const futureReservations = await storage.getFutureReservationsForBed(bedId, afterDate);
+
+      res.json(futureReservations);
+    } catch (error) {
+      console.error("Error fetching future reservations:", error);
+      res.status(500).json({ error: "Failed to fetch future reservations" });
+    }
+  });
+
   // PATCH /reservations/:id/check-out - Check out worker from bed
   apiRouter.patch("/reservations/:id/check-out", async (req, res) => {
     try {
