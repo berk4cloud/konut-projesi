@@ -1755,6 +1755,27 @@ export default function HousingDashboard() {
                                   const isRoomSelected = wizardData.rentalType === "room" && wizardData.roomId === room.id;
                                   const isRoomAvailable = wizardData.rentalType === "room" && allBedsAvailable;
 
+                                  const handleRoomInteraction = () => {
+                                    if (wizardData.rentalType === "room") {
+                                      if (!allBedsAvailable) {
+                                        // Show toast warning for unavailable rooms
+                                        toast({
+                                          title: t('checkIn.wizard.roomUnavailable'),
+                                          description: t('checkIn.wizard.roomUnavailableDescription'),
+                                          variant: "destructive",
+                                        });
+                                        return;
+                                      }
+                                      setWizardData({
+                                        ...wizardData,
+                                        houseId: house.id,
+                                        houseName: house.name || house.address,
+                                        roomId: room.id,
+                                        bedId: "", // Clear bed selection
+                                      });
+                                    }
+                                  };
+
                                   return (
                                     <div 
                                       key={room.id} 
@@ -1763,28 +1784,18 @@ export default function HousingDashboard() {
                                         wizardData.rentalType === "room" 
                                           ? allBedsAvailable 
                                             ? "cursor-pointer hover-elevate bg-muted/30" 
-                                            : "cursor-not-allowed opacity-50 bg-muted/20"
+                                            : "cursor-pointer opacity-50 bg-muted/20"
                                           : "bg-muted/30",
                                         isRoomSelected && "border-2 border-primary bg-primary/5"
                                       )}
-                                      onClick={() => {
-                                        if (wizardData.rentalType === "room") {
-                                          if (!allBedsAvailable) {
-                                            // Show toast warning for unavailable rooms
-                                            toast({
-                                              title: t('checkIn.wizard.roomUnavailable'),
-                                              description: t('checkIn.wizard.roomUnavailableDescription'),
-                                              variant: "destructive",
-                                            });
-                                            return;
-                                          }
-                                          setWizardData({
-                                            ...wizardData,
-                                            houseId: house.id,
-                                            houseName: house.name || house.address,
-                                            roomId: room.id,
-                                            bedId: "", // Clear bed selection
-                                          });
+                                      role={wizardData.rentalType === "room" ? "button" : undefined}
+                                      tabIndex={wizardData.rentalType === "room" ? 0 : undefined}
+                                      aria-disabled={wizardData.rentalType === "room" && !allBedsAvailable}
+                                      onClick={handleRoomInteraction}
+                                      onKeyDown={(e) => {
+                                        if (wizardData.rentalType === "room" && (e.key === "Enter" || e.key === " ")) {
+                                          e.preventDefault();
+                                          handleRoomInteraction();
                                         }
                                       }}
                                       data-testid={`room-option-${room.id}`}
