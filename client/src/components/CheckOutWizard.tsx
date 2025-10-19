@@ -125,9 +125,25 @@ export default function CheckOutWizard({
     handleClose();
   };
 
-  const getTodayStr = () => {
+  const getTodayDate = () => {
     const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    now.setHours(0, 0, 0, 0);
+    return now;
+  };
+
+  const stringToDate = (dateStr: string): Date | undefined => {
+    if (!dateStr) return undefined;
+    const date = new Date(dateStr);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  };
+
+  const dateToString = (date: Date | undefined): string => {
+    if (!date) return "";
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   const formatDate = (dateString?: string) => {
@@ -370,19 +386,19 @@ export default function CheckOutWizard({
                     <div className="space-y-2">
                       <Label>{t('bedDetails.vacationStart')}</Label>
                       <ModernDatePicker
-                        date={wizardData.vacationStart}
-                        onDateChange={(date) => setWizardData({ ...wizardData, vacationStart: date || "" })}
+                        date={stringToDate(wizardData.vacationStart)}
+                        onDateChange={(date) => setWizardData({ ...wizardData, vacationStart: dateToString(date) })}
                         placeholder={t('common.selectDate')}
-                        minDate={getTodayStr()}
+                        minDate={getTodayDate()}
                       />
                     </div>
                     <div className="space-y-2">
                       <Label>{t('bedDetails.vacationEnd')}</Label>
                       <ModernDatePicker
-                        date={wizardData.vacationEnd}
-                        onDateChange={(date) => setWizardData({ ...wizardData, vacationEnd: date || "" })}
+                        date={stringToDate(wizardData.vacationEnd)}
+                        onDateChange={(date) => setWizardData({ ...wizardData, vacationEnd: dateToString(date) })}
                         placeholder={t('common.selectDate')}
-                        minDate={wizardData.vacationStart || getTodayStr()}
+                        minDate={stringToDate(wizardData.vacationStart) || getTodayDate()}
                       />
                     </div>
                   </div>

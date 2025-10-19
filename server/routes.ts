@@ -11,6 +11,7 @@ import {
 } from "@shared/schema";
 import { z } from "zod";
 import { requireTenant } from "./middleware/tenant";
+import { authenticateTenantUser } from "./middleware/auth";
 import { verifyPassword, generateTenantUserToken, generatePlatformAdminToken } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -350,6 +351,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ============================================
+  // JWT AUTHENTICATION MIDDLEWARE
+  // ============================================
+  // All routes after this point require a valid JWT token
+  // The middleware attaches req.user with { id, email, tenantId, role, type }
+  apiRouter.use(authenticateTenantUser);
+
+  // ============================================
   // FEDERATED WORKER IDENTITY ENDPOINTS
   // ============================================
 
@@ -357,7 +365,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // This creates a federated worker with all associated records
   apiRouter.post("/workers", async (req, res) => {
     try {
-      const tenantId = req.body.tenantId || "cova"; // Default tenant for now
+      if (!req.user?.tenantId) {
+        return res.status(403).json({ error: "Forbidden: No tenant context" });
+      }
+      const tenantId = req.user.tenantId;
 
       // Validate input
       const createWorkerSchema = z.object({
@@ -458,7 +469,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // GET /workers - Get all active workers for tenant
   apiRouter.get("/workers", async (req, res) => {
     try {
-      const tenantId = req.query.tenantId as string;
+      if (!req.user?.tenantId) {
+        return res.status(403).json({ error: "Forbidden: No tenant context" });
+      }
+      const tenantId = req.user.tenantId;
 
       // Get all employments for tenant
       const employments = await storage.getActiveEmploymentsByTenant(tenantId);
@@ -503,6 +517,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching workers:", error);
       res.status(500).json({ error: "Failed to fetch workers" });
+    }
+  });
+
+  // GET /workers-with-accommodation - Get all workers with their current accommodation details
+  apiRouter.get("/workers-with-accommodation", async (req, res) => {
+    try {
+      if (!req.user?.tenantId) {
+        return res.status(403).json({ error: "Forbidden: No tenant context" });
+      }
+      const tenantId = req.user.tenantId;
+
+      // Get all employments for tenant
+      const employments = await storage.getActiveEmploymentsByTenant(tenantId);
+      
+      // Get all active reservations for tenant
+      const activeReservations = await storage.getActiveReservationsByTenant(tenantId);
+
+      // Fetch worker profiles and accommodation for all employments
+      const workersWithAccommodation = await Promise.all(
+        employments.map(async (employment) => {
+          const profile = await storage.getWorkerProfile(employment.workerProfileId);
+          
+          if (!profile) {
+            return null;
+          }
+
+          // Find active reservation for this worker
+          const reservation = activeReservations.find(r => r.employmentId === employment.id);
+
+          if (!reservation) {
+            // Worker has no active accommodation
+            return null;
+          }
+
+          // Get bed, room, and house details
+          const bed = await storage.getBed(reservation.bedId);
+          if (!bed) return null;
+
+          const room = await storage.getRoom(bed.roomId);
+          if (!room) return null;
+
+          const house = await storage.getHouse(room.houseId);
+          if (!house) return null;
+
+          // Return worker with accommodation details
+          return {
+            employmentId: employment.id,
+            firstName: profile.firstName,
+            lastName: profile.lastName,
+            gender: profile.gender,
+            email: profile.email,
+            currentBedId: bed.id,
+            roomNumber: room.roomNumber,
+            bedNumber: bed.bedNumber,
+            houseName: house.name,
+            checkInDate: reservation.checkInDate,
+            status: employment.status,
+          };
+        })
+      );
+
+      // Filter out nulls (workers without accommodation)
+      const workers = workersWithAccommodation.filter((w) => w !== null);
+
+      res.json(workers);
+    } catch (error) {
+      console.error("Error fetching workers with accommodation:", error);
+      res.status(500).json({ error: "Failed to fetch workers with accommodation" });
     }
   });
 
@@ -691,12 +773,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // GET /houses - Get all houses for a tenant (with rooms, beds, and active reservations)
   apiRouter.get("/houses", async (req, res) => {
     try {
-      const tenantId = req.query.tenantId as string;
-      const selectedDate = req.query.date as string || new Date().toISOString().split('T')[0];
-      
-      if (!tenantId) {
-        return res.status(400).json({ error: "tenantId required" });
+      if (!req.user?.tenantId) {
+        return res.status(403).json({ error: "Forbidden: No tenant context" });
       }
+      const tenantId = req.user.tenantId;
+      const selectedDate = req.query.date as string || new Date().toISOString().split('T')[0];
 
       const houses = await storage.getHousesByTenant(tenantId);
       

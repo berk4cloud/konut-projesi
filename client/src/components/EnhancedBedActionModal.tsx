@@ -162,9 +162,25 @@ export default function EnhancedBedActionModal({
     setWorkerComboboxOpen(false);
   };
 
-  const getTodayStr = () => {
+  const getTodayDate = () => {
     const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    now.setHours(0, 0, 0, 0);
+    return now;
+  };
+
+  const stringToDate = (dateStr: string): Date | undefined => {
+    if (!dateStr) return undefined;
+    const date = new Date(dateStr);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  };
+
+  const dateToString = (date: Date | undefined): string => {
+    if (!date) return "";
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   return (
@@ -331,19 +347,19 @@ export default function EnhancedBedActionModal({
               <div className="space-y-2">
                 <Label>{t('bedAction.startDate')}</Label>
                 <ModernDatePicker
-                  date={assignStartDate}
-                  onDateChange={(date) => setAssignStartDate(date || "")}
+                  date={stringToDate(assignStartDate)}
+                  onDateChange={(date) => setAssignStartDate(dateToString(date))}
                   placeholder={t('common.selectDate')}
-                  minDate={getTodayStr()}
+                  minDate={getTodayDate()}
                 />
               </div>
               <div className="space-y-2">
                 <Label>{t('bedAction.endDate')} ({t('common.optional')})</Label>
                 <ModernDatePicker
-                  date={assignEndDate}
-                  onDateChange={(date) => setAssignEndDate(date || "")}
+                  date={stringToDate(assignEndDate)}
+                  onDateChange={(date) => setAssignEndDate(dateToString(date))}
                   placeholder={t('common.selectDate')}
-                  minDate={assignStartDate || getTodayStr()}
+                  minDate={stringToDate(assignStartDate) || getTodayDate()}
                 />
               </div>
             </div>
@@ -358,19 +374,19 @@ export default function EnhancedBedActionModal({
               <div className="space-y-2">
                 <Label>{t('bedAction.reserveStart')}</Label>
                 <ModernDatePicker
-                  date={reserveStartDate}
-                  onDateChange={(date) => setReserveStartDate(date || "")}
+                  date={stringToDate(reserveStartDate)}
+                  onDateChange={(date) => setReserveStartDate(dateToString(date))}
                   placeholder={t('common.selectDate')}
-                  minDate={getTodayStr()}
+                  minDate={getTodayDate()}
                 />
               </div>
               <div className="space-y-2">
                 <Label>{t('bedAction.reserveEnd')}</Label>
                 <ModernDatePicker
-                  date={reserveEndDate}
-                  onDateChange={(date) => setReserveEndDate(date || "")}
+                  date={stringToDate(reserveEndDate)}
+                  onDateChange={(date) => setReserveEndDate(dateToString(date))}
                   placeholder={t('common.selectDate')}
-                  minDate={reserveStartDate || getTodayStr()}
+                  minDate={stringToDate(reserveStartDate) || getTodayDate()}
                 />
               </div>
             </div>
@@ -394,10 +410,10 @@ export default function EnhancedBedActionModal({
               <div className="space-y-2">
                 <Label>{t('bedAction.maintenanceStart')}</Label>
                 <ModernDatePicker
-                  date={maintenanceStartDate}
-                  onDateChange={(date) => setMaintenanceStartDate(date || "")}
+                  date={stringToDate(maintenanceStartDate)}
+                  onDateChange={(date) => setMaintenanceStartDate(dateToString(date))}
                   placeholder={t('common.selectDate')}
-                  minDate={getTodayStr()}
+                  minDate={getTodayDate()}
                 />
               </div>
               <div className="space-y-2">
@@ -406,10 +422,10 @@ export default function EnhancedBedActionModal({
                   {maintenanceOpenEnded && <Badge variant="secondary" className="ml-2 bg-amber-500 text-white">{t('bedAction.openEnded')}</Badge>}
                 </Label>
                 <ModernDatePicker
-                  date={maintenanceEndDate}
-                  onDateChange={(date) => setMaintenanceEndDate(date || "")}
+                  date={stringToDate(maintenanceEndDate)}
+                  onDateChange={(date) => setMaintenanceEndDate(dateToString(date))}
                   placeholder={t('common.selectDate')}
-                  minDate={maintenanceStartDate || getTodayStr()}
+                  minDate={stringToDate(maintenanceStartDate) || getTodayDate()}
                   disabled={maintenanceOpenEnded}
                 />
               </div>

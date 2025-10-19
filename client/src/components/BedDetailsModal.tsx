@@ -115,10 +115,26 @@ export default function BedDetailsModal({
     }
   };
 
-  // Calculate today's date in local timezone
-  const getTodayStr = () => {
+  // Date conversion helpers
+  const getTodayDate = () => {
     const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    now.setHours(0, 0, 0, 0);
+    return now;
+  };
+
+  const stringToDate = (dateStr: string): Date | undefined => {
+    if (!dateStr) return undefined;
+    const date = new Date(dateStr);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  };
+
+  const dateToString = (date: Date | undefined): string => {
+    if (!date) return "";
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   return (
@@ -199,19 +215,19 @@ export default function BedDetailsModal({
                       <div className="space-y-2">
                         <Label>{t('bedDetails.vacationStart')}</Label>
                         <ModernDatePicker
-                          date={vacationStart}
-                          onDateChange={setVacationStart}
+                          date={stringToDate(vacationStart)}
+                          onDateChange={(date) => setVacationStart(dateToString(date))}
                           placeholder={t('common.selectDate')}
-                          minDate={getTodayStr()}
+                          minDate={getTodayDate()}
                         />
                       </div>
                       <div className="space-y-2">
                         <Label>{t('bedDetails.vacationEnd')}</Label>
                         <ModernDatePicker
-                          date={vacationEnd}
-                          onDateChange={setVacationEnd}
+                          date={stringToDate(vacationEnd)}
+                          onDateChange={(date) => setVacationEnd(dateToString(date))}
                           placeholder={t('common.selectDate')}
-                          minDate={vacationStart || getTodayStr()}
+                          minDate={stringToDate(vacationStart) || getTodayDate()}
                         />
                       </div>
                     </div>
