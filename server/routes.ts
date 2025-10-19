@@ -860,7 +860,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     }
                   }
                   
-                  return {
+                  const bedData = {
                     id: bed.id,
                     bedNumber: bed.bedNumber,
                     status,
@@ -874,6 +874,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     roomNumber: room.roomNumber,
                     houseName: house.name,
                   };
+                  
+                  // Debug log for Ahmet Yılmaz
+                  if (worker?.name?.includes('Ahmet')) {
+                    console.log('[BED DATA] Ahmet found:', {
+                      bed: bedData.id,
+                      status: bedData.status,
+                      checkInDate: bedData.checkInDate,
+                      checkOutDate: bedData.checkOutDate,
+                      expectedMoveOutDate: bedData.expectedMoveOutDate,
+                      worker: worker.name
+                    });
+                  }
+                  
+                  return bedData;
                 })
               );
               
