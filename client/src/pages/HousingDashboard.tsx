@@ -539,13 +539,18 @@ export default function HousingDashboard() {
     }
 
     try {
-      // Call backend API to create reservation in database
+      // Call backend API to create reservation and assignment in database
       const response = await apiRequest("POST", `/api/beds/${wizardData.bedId}/check-in`, {
         employmentId: wizardData.employmentId,
         startDate: wizardData.startDate,
         endDate: wizardData.endDate || null,
         checkInDate: wizardData.startDate, // Check in immediately
         tenantId: user.tenantId,
+        // Assignment data (for Accommodation Management)
+        monthlyRate: wizardData.monthlyRate,
+        depositAmount: wizardData.depositAmount,
+        depositCollected: wizardData.depositCollected,
+        depositCollector: wizardData.depositCollector || user.email,
       });
 
       if (!response.ok) {
@@ -554,6 +559,7 @@ export default function HousingDashboard() {
 
       // Invalidate queries to refresh data from backend
       await queryClient.invalidateQueries({ queryKey: [`/api/houses?tenantId=${user.tenantId}`] });
+      await queryClient.invalidateQueries({ queryKey: ["/api/tenants", user.tenantId, "assignments"] });
 
       toast({
         title: "Konaklama Girişi Başarılı",

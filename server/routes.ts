@@ -927,36 +927,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Update rooms and beds if provided
       if (rooms && Array.isArray(rooms)) {
-        // Delete existing rooms (cascade will delete beds)
         const existingRooms = await storage.getRoomsByHouse(id);
-        for (const room of existingRooms) {
-          // Delete beds first
+        const existingRoomIds = existingRooms.map(r => r.id);
+        const incomingRoomIds = rooms.filter(r => r.id).map(r => r.id);
+        
+        // 1. Delete rooms that are no longer in the incoming array
+        const roomsToDelete = existingRooms.filter(er => !incomingRoomIds.includes(er.id));
+        for (const room of roomsToDelete) {
           const beds = await storage.getBedsByRoom(room.id);
           await Promise.all(beds.map(bed => storage.deleteBed(bed.id)));
-          // Delete room
           await storage.deleteRoom(room.id);
         }
         
-        // Create new rooms and beds
+        // 2. Process each incoming room
         for (const roomData of rooms) {
-          // Handle beds: can be number (from form) or array (from API GET response)
-          const bedCount = Array.isArray(roomData.beds) ? roomData.beds.length : (roomData.beds || 0);
-          
-          const createdRoom = await storage.createRoom({
-            houseId: id,
-            roomNumber: roomData.roomNumber || "",
-            floor: roomData.useFloor ? roomData.floor : null,
-            bedCount: bedCount,
-            status: "active",
-          });
-          
-          // Create beds for this room
-          for (let i = 1; i <= bedCount; i++) {
-            await storage.createBed({
-              roomId: createdRoom.id,
-              bedNumber: i,
-              status: "available",
+          if (roomData.id && existingRoomIds.includes(roomData.id)) {
+            // EXISTING ROOM - Update it and handle beds
+            await storage.updateRoom(roomData.id, {
+              roomNumber: roomData.roomNumber || "",
+              floor: roomData.floor !== undefined ? roomData.floor : null,
             });
+            
+            // Handle beds for this existing room
+            const existingBeds = await storage.getBedsByRoom(roomData.id);
+            const existingBedIds = existingBeds.map(b => b.id);
+            const incomingBeds = Array.isArray(roomData.beds) ? roomData.beds : [];
+            const incomingBedIds = incomingBeds.filter(b => b.id).map(b => b.id);
+            
+            // Delete beds that are no longer in the incoming array
+            const bedsToDelete = existingBeds.filter(eb => !incomingBedIds.includes(eb.id));
+            await Promise.all(bedsToDelete.map(bed => storage.deleteBed(bed.id)));
+            
+            // Update or create beds
+            for (const bedData of incomingBeds) {
+              if (bedData.id && existingBedIds.includes(bedData.id)) {
+                // Update existing bed (status might have changed)
+                await storage.updateBed(bedData.id, {
+                  bedNumber: bedData.bedNumber,
+                  status: bedData.status || "available",
+                });
+              } else {
+                // Create new bed
+                await storage.createBed({
+                  roomId: roomData.id,
+                  bedNumber: bedData.bedNumber || incomingBeds.length + 1,
+                  status: bedData.status || "available",
+                });
+              }
+            }
+          } else {
+            // NEW ROOM - Create it
+            const bedCount = Array.isArray(roomData.beds) ? roomData.beds.length : (roomData.beds || 0);
+            
+            const createdRoom = await storage.createRoom({
+              houseId: id,
+              roomNumber: roomData.roomNumber || "",
+              floor: roomData.useFloor ? roomData.floor : null,
+              bedCount: bedCount,
+              status: "active",
+            });
+            
+            // Create beds for this new room
+            for (let i = 1; i <= bedCount; i++) {
+              await storage.createBed({
+                roomId: createdRoom.id,
+                bedNumber: i,
+                status: "available",
+              });
+            }
           }
         }
       }
@@ -1020,11 +1058,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // RESERVATIONS / CHECK-IN/OUT ENDPOINTS
   // ============================================
 
-  // POST /beds/:bedId/check-in - Check in worker to bed
+  // POST /beds/:bedId/check-in - Check in worker to bed (creates both reservation and assignment)
   apiRouter.post("/beds/:bedId/check-in", async (req, res) => {
     try {
       const { bedId } = req.params;
-      const { employmentId, startDate, endDate, checkInDate, tenantId } = req.body;
+      const { 
+        employmentId, 
+        startDate, 
+        endDate, 
+        checkInDate, 
+        tenantId,
+        monthlyRate,
+        depositAmount,
+        depositCollected,
+        depositCollector
+      } = req.body;
 
       if (!employmentId || !startDate || !tenantId) {
         return res.status(400).json({ error: "employmentId, startDate, and tenantId required" });
@@ -1072,7 +1120,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: "checked_in", // Use correct enum value
       });
 
-      res.json(reservation);
+      // Create assignment for Accommodation Management tracking
+      const assignment = await storage.createAssignment({
+        tenantId,
+        employmentId,
+        houseId: house.id,
+        roomId: room.id,
+        bedId,
+        startDate: new Date(startDate),
+        endDate: endDate ? new Date(endDate) : null,
+        monthlyRate: monthlyRate || 600, // Default if not provided
+        status: "active",
+        depositCollected: depositCollected || false,
+        depositAmount: depositAmount ? String(depositAmount) : "0",
+        depositCollector: depositCollector || null,
+        depositStatus: depositCollected ? "collected" : "pending",
+      });
+
+      res.json({ reservation, assignment });
     } catch (error) {
       console.error("Error checking in:", error);
       res.status(500).json({ error: "Failed to check in" });
