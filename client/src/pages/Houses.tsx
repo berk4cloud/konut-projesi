@@ -2137,8 +2137,12 @@ export default function Houses() {
               >
                 {t("common.cancel")}
               </Button>
-              <Button onClick={handleSave} data-testid="button-save-house">
-                {editingHouse ? t("common.update") : t("common.save")}
+              <Button 
+                onClick={handleSave} 
+                disabled={createHouseMutation.isPending || updateHouseMutation.isPending}
+                data-testid="button-save-house"
+              >
+                {(createHouseMutation.isPending || updateHouseMutation.isPending) ? t("common.saving") : (editingHouse ? t("common.update") : t("common.save"))}
               </Button>
             </div>
           </div>

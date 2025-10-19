@@ -782,9 +782,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // POST /houses - Create a new house (with rooms)
   apiRouter.post("/houses", async (req, res) => {
     try {
+      console.log("[CREATE HOUSE] Request body:", JSON.stringify(req.body, null, 2));
       const { tenantId, name, address, city, country, ownershipType, rooms } = req.body;
 
       if (!tenantId || !address) {
+        console.error("[CREATE HOUSE] Missing tenantId or address");
         return res.status(400).json({ error: "tenantId and address required" });
       }
 
@@ -793,6 +795,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ownershipType === "Kiralık" ? "rent" :
         ownershipType === "Mülk" ? "owned" :
         ownershipType || "rent";
+
+      console.log("[CREATE HOUSE] Creating house with data:", { tenantId, name: name || address, address, city, country, ownershipType: mappedOwnershipType });
 
       // Create house
       const house = await storage.createHouse({
@@ -804,13 +808,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ownershipType: mappedOwnershipType,
         status: "active",
       });
+      
+      console.log("[CREATE HOUSE] House created:", house.id);
 
       // Create rooms and beds if provided
       if (rooms && Array.isArray(rooms)) {
-        for (const roomData of rooms) {
+        console.log(`[CREATE HOUSE] Creating ${rooms.length} rooms`);
+        for (let idx = 0; idx < rooms.length; idx++) {
+          const roomData = rooms[idx];
+          console.log(`[CREATE HOUSE] Processing room ${idx + 1}:`, roomData);
+          
           // Create room
           // Handle beds: can be number (from form) or array (from API GET response)
           const bedCount = Array.isArray(roomData.beds) ? roomData.beds.length : (roomData.beds || 0);
+          console.log(`[CREATE HOUSE] Bed count for room ${idx + 1}: ${bedCount}`);
           
           const createdRoom = await storage.createRoom({
             houseId: house.id,
@@ -819,6 +830,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             bedCount: bedCount,
             status: "active",
           });
+          console.log(`[CREATE HOUSE] Room ${idx + 1} created:`, createdRoom.id);
           
           // Create beds for this room
           for (let i = 1; i <= bedCount; i++) {
@@ -828,6 +840,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               status: "available",
             });
           }
+          console.log(`[CREATE HOUSE] Created ${bedCount} beds for room ${idx + 1}`);
         }
       }
 
@@ -856,9 +869,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         occupiedBeds: 0,
       };
 
+      console.log("[CREATE HOUSE] Success! House created with", roomsWithBeds.length, "rooms");
       res.json(response);
     } catch (error) {
-      console.error("Error creating house:", error);
+      console.error("[CREATE HOUSE] ERROR:", error);
+      console.error("[CREATE HOUSE] ERROR Stack:", error instanceof Error ? error.stack : "No stack trace");
       res.status(500).json({ error: "Failed to create house" });
     }
   });
