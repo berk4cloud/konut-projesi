@@ -1425,7 +1425,7 @@ export default function HousingDashboard() {
           </div>
           
           <div className="space-y-4">
-            {/* Step 1: Tarih & Filtreler */}
+            {/* Step 1: Tarih, Şehir & İşçi */}
             {wizardStep === 1 && (
               <div className="space-y-4">
                 <div className="space-y-2">
@@ -1465,32 +1465,6 @@ export default function HousingDashboard() {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label>{t('checkIn.wizard.whatLookingFor')}</Label>
-                  <SearchCombobox
-                    options={[
-                      { value: "any", label: t('checkIn.wizard.doesntMatter') },
-                      { value: "room", label: t('checkIn.wizard.wholeRoom') },
-                      { value: "bed", label: t('checkIn.wizard.singleBed') }
-                    ]}
-                    value={wizardData.searchType}
-                    onValueChange={(value) => setWizardData({ ...wizardData, searchType: value as "room" | "bed" | "any" })}
-                    placeholder={t('common.search')}
-                    searchPlaceholder={t('common.search')}
-                    emptyText={t('filters.noHouseFound')}
-                    data-testid="select-wizard-search-type"
-                    className="w-full"
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    {t('checkIn.wizard.lookingForRoomOrBed')}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Step 2: Worker Selection */}
-            {wizardStep === 2 && (
-              <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="worker-select">{t('checkIn.wizard.selectWorker')}</Label>
                   <Popover open={workerComboboxOpen} onOpenChange={setWorkerComboboxOpen}>
@@ -1635,8 +1609,8 @@ export default function HousingDashboard() {
               </div>
             )}
 
-            {/* Step 3: Room/Bed Selection - Improved UI */}
-            {wizardStep === 3 && (() => {
+            {/* Step 2: Room/Bed Selection with Tabs */}
+            {wizardStep === 2 && (() => {
               // Get selected worker's gender
               const selectedWorker = workers.find(w => w.employmentId === wizardData.employmentId);
               const selectedGender = selectedWorker?.gender;
