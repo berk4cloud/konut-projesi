@@ -286,7 +286,9 @@
       "wholeRoom": "Cały Pokój",
       "singleBed": "Pojedyncze Łóżko",
       "firstDayStaying": "Pierwszy dzień pobytu pracownika",
-      "lookingForRoomOrBed": "Czy szukają całego pokoju czy tylko łóżka?"
+      "lookingForRoomOrBed": "Czy szukają całego pokoju czy tylko łóżka?",
+      "roomUnavailable": "Ten pokój nie może być wybrany",
+      "roomUnavailableDescription": "Wszystkie łóżka muszą być puste do wynajmu pokoju."
     },
     "newWorker": {
       "title": "Nowa rejestracja pracownika",

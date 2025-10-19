@@ -286,7 +286,9 @@
       "wholeRoom": "Chambre Complète",
       "singleBed": "Lit Simple",
       "firstDayStaying": "Premier jour de séjour du travailleur",
-      "lookingForRoomOrBed": "Cherchent-ils une chambre entière ou juste un lit ?"
+      "lookingForRoomOrBed": "Cherchent-ils une chambre entière ou juste un lit ?",
+      "roomUnavailable": "Cette chambre ne peut pas être sélectionnée",
+      "roomUnavailableDescription": "Tous les lits doivent être vides pour la location de chambre."
     },
     "newWorker": {
       "title": "Nouvel enregistrement de collaborateur",

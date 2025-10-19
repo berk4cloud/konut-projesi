@@ -286,7 +286,9 @@
       "wholeRoom": "Hele Kamer",
       "singleBed": "Enkel Bed",
       "firstDayStaying": "Eerste dag van verblijf van de werknemer",
-      "lookingForRoomOrBed": "Zijn ze op zoek naar een hele kamer of slechts een bed?"
+      "lookingForRoomOrBed": "Zijn ze op zoek naar een hele kamer of slechts een bed?",
+      "roomUnavailable": "Deze kamer kan niet worden geselecteerd",
+      "roomUnavailableDescription": "Alle bedden moeten leeg zijn voor kamerverhuur."
     },
     "newWorker": {
       "title": "Nieuwe Werknemersregistratie",

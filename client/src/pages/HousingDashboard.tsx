@@ -1772,8 +1772,8 @@ export default function HousingDashboard() {
                                           if (!allBedsAvailable) {
                                             // Show toast warning for unavailable rooms
                                             toast({
-                                              title: "Bu oda seçilemez",
-                                              description: "Oda kiralaması için bütün yataklar boş olmalıdır.",
+                                              title: t('checkIn.wizard.roomUnavailable'),
+                                              description: t('checkIn.wizard.roomUnavailableDescription'),
                                               variant: "destructive",
                                             });
                                             return;

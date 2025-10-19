@@ -286,7 +286,9 @@
       "wholeRoom": "Цяла Стая",
       "singleBed": "Единично Легло",
       "firstDayStaying": "Първи ден на престой на работника",
-      "lookingForRoomOrBed": "Търсят ли цяла стая или само легло?"
+      "lookingForRoomOrBed": "Търсят ли цяла стая или само легло?",
+      "roomUnavailable": "Тази стая не може да бъде избрана",
+      "roomUnavailableDescription": "Всички легла трябва да са празни за наемане на стая."
     },
     "newWorker": {
       "title": "Нова регистрация на служител",

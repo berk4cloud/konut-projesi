@@ -318,7 +318,9 @@
       "room": "Oda {{number}}",
       "daysLater": "{{days}} gün sonra",
       "noAvailableBeds": "Şu anda müsait yatak bulunmamaktadır",
-      "loading": "Yükleniyor..."
+      "loading": "Yükleniyor...",
+      "roomUnavailable": "Bu oda seçilemez",
+      "roomUnavailableDescription": "Oda kiralaması için bütün yataklar boş olmalıdır."
     },
     "newWorker": {
       "title": "Yeni İşçi Kaydı",

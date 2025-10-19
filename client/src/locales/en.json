@@ -299,7 +299,9 @@
       "room": "Room {{number}}",
       "daysLater": "in {{days}} days",
       "noAvailableBeds": "No beds available at this time",
-      "loading": "Loading..."
+      "loading": "Loading...",
+      "roomUnavailable": "This room cannot be selected",
+      "roomUnavailableDescription": "All beds must be empty for room rental."
     },
     "newWorker": {
       "title": "New Worker Registration",
