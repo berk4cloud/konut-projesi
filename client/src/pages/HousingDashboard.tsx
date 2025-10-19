@@ -73,6 +73,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -1631,39 +1637,46 @@ export default function HousingDashboard() {
 
               return (
                 <div className="space-y-4">
-                  <div className="space-y-3">
-                    {/* Rental Type Selection */}
-                    <div className="space-y-2">
-                      <Label>Kiralama Türü</Label>
-                      <div className="flex gap-2">
-                        <Button
-                          type="button"
-                          variant={wizardData.rentalType === "bed" ? "default" : "outline"}
-                          onClick={() => setWizardData({ ...wizardData, rentalType: "bed", roomId: "", bedId: "" })}
-                          className="flex-1"
-                          data-testid="button-rental-type-bed"
-                        >
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          Yatak Kirala
-                        </Button>
-                        <Button
-                          type="button"
-                          variant={wizardData.rentalType === "room" ? "default" : "outline"}
-                          onClick={() => setWizardData({ ...wizardData, rentalType: "room", roomId: "", bedId: "" })}
-                          className="flex-1"
-                          data-testid="button-rental-type-room"
-                        >
-                          <Home className="w-4 h-4 mr-2" />
-                          Oda Kirala
-                        </Button>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        {wizardData.rentalType === "bed" 
-                          ? "Tek bir yatak seçerek işçinizi kaydedin" 
-                          : "Tüm odayı kiralayarak odadaki tüm yatakları rezerve edin"}
-                      </p>
+                  {/* Rental Type Selection - Tab-style buttons */}
+                  <div className="space-y-2">
+                    <div className="inline-flex items-center justify-center rounded-lg bg-muted p-1 w-full">
+                      <button
+                        type="button"
+                        onClick={() => setWizardData({ ...wizardData, rentalType: "bed", roomId: "", bedId: "" })}
+                        className={cn(
+                          "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-all flex-1",
+                          wizardData.rentalType === "bed"
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                        data-testid="tab-rental-bed"
+                      >
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        Yatak Kirala
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setWizardData({ ...wizardData, rentalType: "room", roomId: "", bedId: "" })}
+                        className={cn(
+                          "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-all flex-1",
+                          wizardData.rentalType === "room"
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                        data-testid="tab-rental-room"
+                      >
+                        <Home className="w-4 h-4 mr-2" />
+                        Oda Kirala
+                      </button>
                     </div>
-                    
+                    <p className="text-xs text-muted-foreground">
+                      {wizardData.rentalType === "bed" 
+                        ? "Tek bir yatak seçerek işçinizi kaydedin" 
+                        : "Tüm odayı kiralayarak odadaki tüm yatakları rezerve edin"}
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
                     <Label>{wizardData.rentalType === "bed" ? t('checkIn.wizard.selectSuitableRoomAndBed') : "Uygun Oda Seçin"}</Label>
                     {selectedGender && (
                       <div className="text-sm text-muted-foreground">
