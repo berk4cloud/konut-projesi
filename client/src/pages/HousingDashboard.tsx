@@ -191,15 +191,13 @@ export default function HousingDashboard() {
   // State for houses (synced from API)
   const [houses, setHouses] = useState<House[]>([]);
 
-  // Get today's date in YYYY-MM-DD format for API
+  // Selected date state - default to today (this is the "zero point" for all date calculations)
   const todayStr = new Date().toISOString().split('T')[0];
+  const [selectedDate, setSelectedDate] = useState<string>(todayStr);
   
-  // Determine reference date: wizard's start date if in wizard and selected, otherwise today
-  const referenceDate = checkInWizardOpen && wizardData.startDate ? wizardData.startDate : todayStr;
-  
-  // Fetch houses from API with reference date (wizard start date or today)
+  // Fetch houses from API with selected date as reference
   const { data: apiHouses, isLoading: housesLoading } = useQuery<House[]>({
-    queryKey: [`/api/houses?tenantId=${user.tenantId}&date=${referenceDate}`],
+    queryKey: [`/api/houses?tenantId=${user.tenantId}&date=${selectedDate}`],
     enabled: !!user.tenantId,
   });
 
@@ -355,8 +353,7 @@ export default function HousingDashboard() {
     });
   };
 
-  // Filter states
-  const [dateString, setDateString] = useState(new Date().toISOString().split("T")[0]);
+  // Filter states (date is now in selectedDate state above)
   const [selectedHouse, setSelectedHouse] = useState("all");
   const [selectedCity, setSelectedCity] = useState("all");
   const [selectedCountry, setSelectedCountry] = useState("all");
@@ -404,18 +401,18 @@ export default function HousingDashboard() {
   const occupiedBeds = filteredHouses.reduce((sum, house) => sum + house.occupiedBeds, 0);
   const emptyBeds = totalBeds - occupiedBeds;
 
-  // Helper: Calculate upcoming check-outs (within 30 days)
-  const getUpcomingVacancies = (house: House) => {
+  // Helper: Calculate upcoming check-outs (within 30 days from selectedDate)
+  const getUpcomingVacancies = (house: House, referenceDate: string) => {
     const vacancies: { bedNumber: number; roomNumber: string; daysUntil: number; workerName: string }[] = [];
-    const today = new Date();
-    const thirtyDaysLater = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const refDate = new Date(referenceDate);
+    const thirtyDaysLater = new Date(refDate.getTime() + 30 * 24 * 60 * 60 * 1000);
 
     house.rooms.forEach((room) => {
       room.beds.forEach((bed: any) => {
         if (bed.expectedMoveOutDate) {
           const moveOutDate = new Date(bed.expectedMoveOutDate);
-          if (moveOutDate >= today && moveOutDate <= thirtyDaysLater) {
-            const daysUntil = Math.ceil((moveOutDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+          if (moveOutDate >= refDate && moveOutDate <= thirtyDaysLater) {
+            const daysUntil = Math.ceil((moveOutDate.getTime() - refDate.getTime()) / (1000 * 60 * 60 * 24));
             vacancies.push({
               bedNumber: bed.bedNumber,
               roomNumber: room.roomNumber,
@@ -430,18 +427,18 @@ export default function HousingDashboard() {
     return vacancies.sort((a, b) => a.daysUntil - b.daysUntil);
   };
 
-  // Helper: Calculate upcoming check-ins (within 30 days)
-  const getUpcomingCheckIns = (house: House) => {
+  // Helper: Calculate upcoming check-ins (within 30 days from selectedDate)
+  const getUpcomingCheckIns = (house: House, referenceDate: string) => {
     const checkIns: { bedNumber: number; roomNumber: string; daysUntil: number; workerName: string }[] = [];
-    const today = new Date();
-    const thirtyDaysLater = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const refDate = new Date(referenceDate);
+    const thirtyDaysLater = new Date(refDate.getTime() + 30 * 24 * 60 * 60 * 1000);
 
     house.rooms.forEach((room) => {
       room.beds.forEach((bed: any) => {
         if (bed.expectedMoveInDate) {
           const moveInDate = new Date(bed.expectedMoveInDate);
-          if (moveInDate >= today && moveInDate <= thirtyDaysLater) {
-            const daysUntil = Math.ceil((moveInDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+          if (moveInDate >= refDate && moveInDate <= thirtyDaysLater) {
+            const daysUntil = Math.ceil((moveInDate.getTime() - refDate.getTime()) / (1000 * 60 * 60 * 24));
             checkIns.push({
               bedNumber: bed.bedNumber,
               roomNumber: room.roomNumber,
@@ -666,6 +663,43 @@ export default function HousingDashboard() {
         onAddNote={handleAddNoteToReminder}
       />
 
+      {/* Date Control Bar - Always visible, acts as "zero point" for all date calculations */}
+      <div className="sticky top-16 z-20 bg-background border-b">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg font-semibold">{t('dashboard.title')}</h2>
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-muted-foreground" />
+              <ModernDatePicker
+                value={selectedDate}
+                onChange={(newDate) => setSelectedDate(newDate || todayStr)}
+                placeholder={t('filters.selectDate')}
+                data-testid="datepicker-reference-date"
+              />
+              {selectedDate !== todayStr && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedDate(todayStr)}
+                  data-testid="button-reset-to-today"
+                  className="text-xs"
+                >
+                  {t('common.today')}
+                </Button>
+              )}
+            </div>
+          </div>
+          <Button
+            onClick={() => setCheckInWizardOpen(true)}
+            className="gap-2"
+            data-testid="button-new-checkin"
+          >
+            <Plus className="w-4 h-4" />
+            {t('checkIn.newCheckIn')}
+          </Button>
+        </div>
+      </div>
+
       {/* Mobile-first responsive layout */}
       <div className="lg:grid lg:grid-cols-[320px_1fr]">
         {/* Left Sidebar - Desktop only, sticky */}
@@ -678,8 +712,6 @@ export default function HousingDashboard() {
               oosBeds={1}
             />
             <FilterPanel
-              dateString={dateString}
-              setDateString={setDateString}
               selectedHouse={selectedHouse}
               setSelectedHouse={setSelectedHouse}
               selectedCity={selectedCity}
@@ -723,8 +755,6 @@ export default function HousingDashboard() {
                 </CollapsibleTrigger>
                 <CollapsibleContent className="pt-3">
                   <FilterPanel
-                    dateString={dateString}
-                    setDateString={setDateString}
                     selectedHouse={selectedHouse}
                     setSelectedHouse={setSelectedHouse}
                     selectedCity={selectedCity}
@@ -774,8 +804,8 @@ export default function HousingDashboard() {
                 {filteredHouses.length > 0 ? (
                   <Accordion type="multiple" className="space-y-3">
                     {filteredHouses.map((house) => {
-                      const upcomingVacancies = getUpcomingVacancies(house);
-                      const upcomingCheckIns = getUpcomingCheckIns(house);
+                      const upcomingVacancies = getUpcomingVacancies(house, selectedDate);
+                      const upcomingCheckIns = getUpcomingCheckIns(house, selectedDate);
                       return (
                         <AccordionItem
                           key={house.id}
@@ -883,6 +913,7 @@ export default function HousingDashboard() {
                               setSelectedHouseForLease(house);
                               setIsLeaseDialogOpen(true);
                             }}
+                            referenceDate={selectedDate}
                           />
                           
                           <div className="flex gap-2 mt-3">

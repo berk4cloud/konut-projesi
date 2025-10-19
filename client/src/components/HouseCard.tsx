@@ -10,8 +10,10 @@ interface Worker {
 interface Bed {
   id: string;
   bedNumber: number;
-  status: "available" | "occupied" | "reserved" | "oos";
+  status: "available" | "occupied" | "reserved" | "out_of_service";
   worker?: Worker;
+  hasFutureReservation?: boolean;
+  expectedMoveInDate?: string;
 }
 
 interface Room {
@@ -30,6 +32,7 @@ interface HouseCardProps {
   ownershipType?: string;
   onBedClick?: (bed: Bed) => void;
   onLeaseClick?: () => void;
+  referenceDate?: string; // The "zero point" for date calculations
 }
 
 export default function HouseCard({
@@ -41,6 +44,7 @@ export default function HouseCard({
   ownershipType,
   onBedClick,
   onLeaseClick,
+  referenceDate,
 }: HouseCardProps) {
   const { t } = useTranslation();
   const emptyBeds = totalBeds - occupiedBeds;
@@ -55,6 +59,7 @@ export default function HouseCard({
             floor={room.floor}
             beds={room.beds}
             onBedClick={onBedClick}
+            referenceDate={referenceDate}
           />
         ))}
       </div>

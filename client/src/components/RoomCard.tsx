@@ -21,9 +21,10 @@ interface RoomCardProps {
   floor?: number;
   beds: Bed[];
   onBedClick?: (bed: Bed) => void;
+  referenceDate?: string; // The "zero point" for date calculations
 }
 
-export default function RoomCard({ roomNumber, floor, beds, onBedClick }: RoomCardProps) {
+export default function RoomCard({ roomNumber, floor, beds, onBedClick, referenceDate }: RoomCardProps) {
   const { t } = useTranslation();
   
   return (
@@ -47,6 +48,7 @@ export default function RoomCard({ roomNumber, floor, beds, onBedClick }: RoomCa
             hasFutureReservation={bed.hasFutureReservation}
             expectedMoveInDate={bed.expectedMoveInDate}
             onClick={() => onBedClick?.(bed)}
+            referenceDate={referenceDate}
           />
         ))}
       </div>

@@ -21,9 +21,10 @@ interface BedCardProps {
   hasFutureReservation?: boolean;
   expectedMoveInDate?: string;
   onClick?: () => void;
+  referenceDate?: string; // The "zero point" for date calculations (selected date from dashboard)
 }
 
-export default function BedCard({ bedNumber, status, worker, hasFutureReservation, expectedMoveInDate, onClick }: BedCardProps) {
+export default function BedCard({ bedNumber, status, worker, hasFutureReservation, expectedMoveInDate, onClick, referenceDate }: BedCardProps) {
   const { t } = useTranslation();
   const statusColors = {
     available: "bg-status-empty/10 dark:bg-status-empty/20 border-status-empty",
@@ -75,12 +76,16 @@ export default function BedCard({ bedNumber, status, worker, hasFutureReservatio
   );
 
   if (worker || hasFutureReservation) {
-    // Calculate days until check-in for future reservations
+    // Calculate days until check-in for future reservations using referenceDate as "zero point"
     let daysUntil = 0;
+    let absoluteDateStr = "";
     if (hasFutureReservation && expectedMoveInDate) {
-      const today = new Date();
+      const refDate = referenceDate ? new Date(referenceDate) : new Date();
       const checkInDate = new Date(expectedMoveInDate);
-      daysUntil = Math.ceil((checkInDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      daysUntil = Math.ceil((checkInDate.getTime() - refDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      // Format absolute date (e.g., "30 Eki")
+      absoluteDateStr = checkInDate.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
     }
 
     return (
@@ -90,19 +95,22 @@ export default function BedCard({ bedNumber, status, worker, hasFutureReservatio
             {bedContent}
           </TooltipTrigger>
           <TooltipContent>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-1">
               {hasFutureReservation ? (
                 <>
-                  <Clock className="w-3 h-3" />
-                  <span className="font-medium">
-                    {worker?.name} ({t('bedCard.daysUntil', { days: daysUntil })})
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-3 h-3" />
+                    <span className="font-medium">{worker?.name}</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {t('bedCard.daysUntil', { days: daysUntil })} ({absoluteDateStr})
+                  </div>
                 </>
               ) : (
-                <>
+                <div className="flex items-center gap-2">
                   <User className="w-3 h-3" />
                   <span className="font-medium">{worker?.name}</span>
-                </>
+                </div>
               )}
             </div>
           </TooltipContent>

@@ -1,10 +1,8 @@
-import { useState, useEffect } from "react";
-import { Calendar as CalendarIcon, Building2, MapPin, Globe, Filter, Check, ChevronsUpDown } from "lucide-react";
+import { useState } from "react";
+import { Building2, MapPin, Globe, Filter, Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Command,
   CommandEmpty,
@@ -19,8 +17,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { tr, enUS, de, nl, fr, pl, bg } from "date-fns/locale";
 import { useTranslation } from "react-i18next";
 
 const countryLabels: Record<string, string> = {
@@ -32,8 +28,6 @@ const countryLabels: Record<string, string> = {
 };
 
 interface FilterPanelProps {
-  dateString: string;
-  setDateString: (date: string) => void;
   selectedHouse: string;
   setSelectedHouse: (house: string) => void;
   selectedCity: string;
@@ -46,8 +40,6 @@ interface FilterPanelProps {
 }
 
 export default function FilterPanel({
-  dateString,
-  setDateString,
   selectedHouse,
   setSelectedHouse,
   selectedCity,
@@ -58,33 +50,11 @@ export default function FilterPanel({
   setShowEmptyOnly,
   houses: allHouses,
 }: FilterPanelProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   
   const [houseOpen, setHouseOpen] = useState(false);
   const [cityOpen, setCityOpen] = useState(false);
   const [countryOpen, setCountryOpen] = useState(false);
-  const [dateOpen, setDateOpen] = useState(false);
-  const [calendarMonths, setCalendarMonths] = useState(2);
-
-  const selectedDate = dateString ? new Date(dateString) : undefined;
-  
-  // Get date-fns locale based on current language
-  const dateLocales: Record<string, typeof tr> = { tr, en: enUS, de, nl, fr, pl, bg };
-  const currentLocale = dateLocales[i18n.resolvedLanguage || 'tr'] || tr;
-
-  // Responsive calendar months: 1 for mobile, 2 for desktop
-  useEffect(() => {
-    const updateCalendarMonths = () => {
-      setCalendarMonths(window.innerWidth < 768 ? 1 : 2);
-    };
-
-    // Set initial value
-    updateCalendarMonths();
-
-    // Listen for window resize
-    window.addEventListener('resize', updateCalendarMonths);
-    return () => window.removeEventListener('resize', updateCalendarMonths);
-  }, []);
 
   // Extract unique values from houses
   const houses = [
@@ -118,55 +88,8 @@ export default function FilterPanel({
       </div>
 
       <div className="space-y-4">
-        <div className="space-y-2">
-          <Label className="flex items-center gap-2">
-            <CalendarIcon className="w-4 h-4" />
-            {t('filters.date')}
-          </Label>
-          <Popover open={dateOpen} onOpenChange={setDateOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !selectedDate && "text-muted-foreground"
-                )}
-                data-testid="button-filter-date"
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {selectedDate ? format(selectedDate, "PPP", { locale: currentLocale }) : t('filters.selectDate')}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <div className="p-3 border-b flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setDateString(new Date().toISOString().split("T")[0]);
-                    setDateOpen(false);
-                  }}
-                  data-testid="button-today"
-                >
-                  {t('common.today')}
-                </Button>
-              </div>
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={(newDate) => {
-                  if (newDate) {
-                    setDateString(newDate.toISOString().split("T")[0]);
-                    setDateOpen(false);
-                  }
-                }}
-                numberOfMonths={calendarMonths}
-                locale={currentLocale}
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-
+        {/* Date filter moved to page header - it's now the "zero point" for all date calculations */}
+        
         <div className="space-y-2">
           <Label className="flex items-center gap-2">
             <Building2 className="w-4 h-4" />
@@ -339,7 +262,6 @@ export default function FilterPanel({
           variant="outline"
           className="w-full"
           onClick={() => {
-            setDateString(new Date().toISOString().split("T")[0]);
             setSelectedHouse("all");
             setSelectedCity("all");
             setSelectedCountry("all");
