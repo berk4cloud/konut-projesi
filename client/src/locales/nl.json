@@ -34,7 +34,8 @@
     "pending": "In behandeling",
     "all": "Alle",
     "undefined": "Ongedefinieerd",
-    "none": "Geen"
+    "none": "Geen",
+    "unknown": "Onbekend"
   },
   "auth": {
     "login": "Inloggen",
@@ -161,6 +162,7 @@
       "step3Description": "Geschikte kamer en bed selecteren",
       "step4": "Prijs",
       "step4Description": "Prijs- en borginformatie invoeren",
+      "reservationStartDate": "Reservering Startdatum",
       "selectCheckInDate": "Incheckdatum Selecteren",
       "selectCheckInTime": "Inchecktijd Selecteren",
       "startDate": "Startdatum",

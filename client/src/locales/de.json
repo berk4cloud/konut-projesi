@@ -34,7 +34,8 @@
     "pending": "Ausstehend",
     "all": "Alle",
     "undefined": "Nicht definiert",
-    "none": "Keine"
+    "none": "Keine",
+    "unknown": "Unbekannt"
   },
   "auth": {
     "login": "Anmelden",
@@ -161,6 +162,7 @@
       "step3Description": "Geeignetes Zimmer und Bett auswählen",
       "step4": "Preis",
       "step4Description": "Preis- und Kautionsinformationen eingeben",
+      "reservationStartDate": "Reservierung Startdatum",
       "selectCheckInDate": "Check-in-Datum auswählen",
       "selectCheckInTime": "Check-in-Zeit auswählen",
       "startDate": "Startdatum",

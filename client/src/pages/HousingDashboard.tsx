@@ -135,7 +135,7 @@ type House = {
 
 
 export default function HousingDashboard() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
@@ -417,7 +417,7 @@ export default function HousingDashboard() {
               bedNumber: bed.bedNumber,
               roomNumber: room.roomNumber,
               daysUntil,
-              workerName: bed.worker?.name || "Bilinmiyor",
+              workerName: bed.worker?.name || t('common.unknown'),
             });
           }
         }
@@ -443,7 +443,7 @@ export default function HousingDashboard() {
               bedNumber: bed.bedNumber,
               roomNumber: room.roomNumber,
               daysUntil,
-              workerName: bed.reservedForWorkerName || "Yeni işçi",
+              workerName: bed.worker?.name || t('common.unknown'),
             });
           }
         }
@@ -1180,6 +1180,26 @@ export default function HousingDashboard() {
               {wizardStep === 4 && t('checkIn.wizard.step4Description')}
             </DialogDescription>
           </DialogHeader>
+
+          {/* Selected Date Banner - Shown after step 1 */}
+          {wizardStep > 1 && wizardData.startDate && (
+            <div className="bg-primary/10 dark:bg-primary/20 border border-primary/20 rounded-lg px-4 py-3 mb-2">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium">
+                  {t('checkIn.wizard.reservationStartDate')}:{" "}
+                  <span className="font-semibold">
+                    {new Date(wizardData.startDate + 'T00:00:00').toLocaleDateString(i18n.language, { 
+                      day: 'numeric', 
+                      month: 'long', 
+                      year: 'numeric',
+                      weekday: 'long'
+                    })}
+                  </span>
+                </span>
+              </div>
+            </div>
+          )}
 
           {/* Horizontal Stepper - 4 Steps */}
           <div className="flex items-center justify-center gap-2 py-6">

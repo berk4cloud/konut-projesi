@@ -34,7 +34,8 @@
     "pending": "Oczekujące",
     "all": "Wszystkie",
     "undefined": "Nieokreślone",
-    "none": "Brak"
+    "none": "Brak",
+    "unknown": "Nieznany"
   },
   "auth": {
     "login": "Zaloguj się",
@@ -161,6 +162,7 @@
       "step3Description": "Wybierz odpowiedni pokój i łóżko",
       "step4": "Cena",
       "step4Description": "Wprowadź informacje o cenie i kaucji",
+      "reservationStartDate": "Data rozpoczęcia rezerwacji",
       "selectCheckInDate": "Wybierz datę zameldowania",
       "selectCheckInTime": "Wybierz godzinę zameldowania",
       "startDate": "Data rozpoczęcia",

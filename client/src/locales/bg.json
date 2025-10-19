@@ -34,7 +34,8 @@
     "pending": "Чакащ",
     "all": "Всички",
     "undefined": "Недефиниран",
-    "none": "Няма"
+    "none": "Няма",
+    "unknown": "Неизвестен"
   },
   "auth": {
     "login": "Вход",
@@ -161,6 +162,7 @@
       "step3Description": "Изберете подходяща стая и легло",
       "step4": "Цена",
       "step4Description": "Въведете информация за цена и депозит",
+      "reservationStartDate": "Начална дата на резервацията",
       "selectCheckInDate": "Изберете дата на настаняване",
       "selectCheckInTime": "Изберете час на настаняване",
       "startDate": "Начална дата",

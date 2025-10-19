@@ -34,7 +34,8 @@
     "pending": "Pending",
     "all": "All",
     "undefined": "Undefined",
-    "none": "None"
+    "none": "None",
+    "unknown": "Unknown"
   },
   "auth": {
     "login": "Login",
@@ -165,6 +166,7 @@
       "step3Description": "Select suitable room and bed",
       "step4": "Price",
       "step4Description": "Enter pricing and deposit information",
+      "reservationStartDate": "Reservation Start Date",
       "selectCheckInDate": "Select Check-In Date",
       "selectCheckInTime": "Select Check-In Time",
       "startDate": "Start Date",

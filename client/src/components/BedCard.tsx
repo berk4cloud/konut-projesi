@@ -52,7 +52,7 @@ export default function BedCard({ bedNumber, status, worker, hasFutureReservatio
         <span className="text-xs font-semibold">{bedNumber}</span>
       </div>
 
-      {worker && !hasFutureReservation && (
+      {worker && (
         <div
           className={cn(
             "absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-background",
@@ -62,7 +62,7 @@ export default function BedCard({ bedNumber, status, worker, hasFutureReservatio
       )}
 
       {hasFutureReservation && (
-        <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-background bg-amber-500 flex items-center justify-center">
+        <div className="absolute -top-1 -left-1 w-4 h-4 rounded-full border-2 border-background bg-amber-500 flex items-center justify-center">
           <Clock className="w-2.5 h-2.5 text-white" />
         </div>
       )}

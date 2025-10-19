@@ -36,7 +36,8 @@
     "pending": "Beklemede",
     "all": "Tümü",
     "undefined": "Belirsiz",
-    "none": "Yok"
+    "none": "Yok",
+    "unknown": "Bilinmiyor"
   },
   "auth": {
     "login": "Giriş Yap",
@@ -167,6 +168,7 @@
       "step3Description": "Uygun oda ve yatak seçin",
       "step4": "Fiyat",
       "step4Description": "Fiyat ve depozito bilgilerini girin",
+      "reservationStartDate": "Rezervasyon Başlangıç Tarihi",
       "selectCheckInDate": "Giriş Tarihi Seçin",
       "selectCheckInTime": "Giriş Saati Seçin",
       "startDate": "Başlangıç Tarihi",

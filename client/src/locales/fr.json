@@ -34,7 +34,8 @@
     "pending": "En attente",
     "all": "Tous",
     "undefined": "Non défini",
-    "none": "Aucun"
+    "none": "Aucun",
+    "unknown": "Inconnu"
   },
   "auth": {
     "login": "Se connecter",
@@ -161,6 +162,7 @@
       "step3Description": "Sélectionner la chambre et le lit appropriés",
       "step4": "Prix",
       "step4Description": "Saisir les informations de prix et de caution",
+      "reservationStartDate": "Date de début de réservation",
       "selectCheckInDate": "Sélectionner la date d'arrivée",
       "selectCheckInTime": "Sélectionner l'heure d'arrivée",
       "startDate": "Date de début",
