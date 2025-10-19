@@ -1860,33 +1860,54 @@ export default function HousingDashboard() {
                     </div>
 
                     {/* Multi-Occupant Management - Only for room rentals */}
-                    {wizardData.rentalType === "room" && wizardData.roomId && (
-                      <div className="space-y-3 border-t pt-4">
-                        <div className="flex items-center justify-between">
-                          <Label>Odada Kalacak Kişiler</Label>
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              const newOccupant = {
-                                id: `occ-${Date.now()}`,
-                                employmentId: "",
-                                workerName: "",
-                                guestName: "",
-                                guestGender: undefined as "male" | "female" | undefined,
-                              };
-                              setWizardData({
-                                ...wizardData,
-                                occupants: [...wizardData.occupants, newOccupant]
-                              });
-                            }}
-                            data-testid="button-add-occupant"
-                          >
-                            <Plus className="w-4 h-4 mr-1" />
-                            Kişi Ekle
-                          </Button>
-                        </div>
+                    {wizardData.rentalType === "room" && wizardData.roomId && (() => {
+                      // Find selected room to get bed count
+                      const selectedRoom = houses
+                        .flatMap(h => h.rooms || [])
+                        .find(r => r.id === wizardData.roomId);
+                      const maxOccupants = selectedRoom?.beds?.length || 4;
+                      const canAddMore = wizardData.occupants.length < maxOccupants;
+                      
+                      return (
+                        <div className="space-y-3 border-t pt-4">
+                          <div className="flex items-center justify-between">
+                            <Label>Odada Kalacak Kişiler ({wizardData.occupants.length}/{maxOccupants})</Label>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              disabled={!canAddMore}
+                              onClick={() => {
+                                if (!canAddMore) {
+                                  toast({
+                                    title: "Maksimum Kişi Sayısına Ulaşıldı",
+                                    description: `Bu odada maksimum ${maxOccupants} kişi kalabilir.`,
+                                    variant: "destructive",
+                                  });
+                                  return;
+                                }
+                                const newOccupant = {
+                                  id: `occ-${Date.now()}`,
+                                  employmentId: "",
+                                  workerName: "",
+                                  guestName: "",
+                                  guestGender: undefined as "male" | "female" | undefined,
+                                };
+                                setWizardData({
+                                  ...wizardData,
+                                  occupants: [...wizardData.occupants, newOccupant]
+                                });
+                                toast({
+                                  title: "Kişi Eklendi",
+                                  description: "Yeni kişi için bilgileri doldurun.",
+                                });
+                              }}
+                              data-testid="button-add-occupant"
+                            >
+                              <Plus className="w-4 h-4 mr-1" />
+                              Kişi Ekle
+                            </Button>
+                          </div>
                         
                         {wizardData.occupants.length === 0 ? (
                           <p className="text-sm text-muted-foreground text-center py-4">
@@ -2050,7 +2071,8 @@ export default function HousingDashboard() {
                           </div>
                         )}
                       </div>
-                    )}
+                      );
+                    })()}
                   </div>
                 </div>
               );
