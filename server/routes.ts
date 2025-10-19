@@ -1616,6 +1616,137 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ============================================
+  // RESERVATION ENDPOINTS
+  // ============================================
+
+  // PATCH /reservations/:id/check-out - Update reservation checkout date
+  apiRouter.patch("/reservations/:id/check-out", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { checkOutDate, checkOutType, notes, vacationStart, vacationEnd } = req.body;
+
+      // Get existing reservation
+      const reservation = await storage.getReservation(id);
+      if (!reservation) {
+        return res.status(404).json({ error: "Reservation not found" });
+      }
+
+      // Check for overlapping reservations if changing checkout date
+      if (checkOutDate && checkOutDate !== reservation.checkOutDate) {
+        const futureReservations = await storage.getFutureReservationsForBed(
+          reservation.bedId,
+          reservation.checkInDate || new Date().toISOString().split('T')[0]
+        );
+        
+        // Filter out current reservation and check for conflicts
+        const conflicts = futureReservations.filter(r => {
+          if (r.id === id) return false; // Skip current reservation
+          
+          const conflictStart = r.checkInDate || r.startDate;
+          const conflictEnd = r.checkOutDate || r.endDate;
+          
+          if (!conflictStart) return false;
+          
+          // Check if new checkout date falls within another reservation
+          return checkOutDate >= conflictStart && 
+                 (!conflictEnd || checkOutDate <= conflictEnd);
+        });
+
+        if (conflicts.length > 0) {
+          return res.status(409).json({ 
+            error: "Checkout date conflicts with another reservation",
+            conflicts 
+          });
+        }
+      }
+
+      // Update reservation
+      const updates: Partial<InsertReservation> = {
+        checkOutDate,
+      };
+
+      // Add note if provided
+      if (notes) {
+        const existingNotes = reservation.notes || [];
+        updates.notes = [...existingNotes, `[${checkOutType}] ${notes}`];
+      }
+
+      // Handle vacation type
+      if (checkOutType === 'vacation' && vacationStart && vacationEnd) {
+        const existingNotes = updates.notes || reservation.notes || [];
+        updates.notes = [
+          ...existingNotes,
+          `Vacation: ${vacationStart} to ${vacationEnd}`
+        ];
+      }
+
+      const updated = await storage.updateReservation(id, updates);
+      
+      if (!updated) {
+        return res.status(500).json({ error: "Failed to update reservation" });
+      }
+
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating reservation checkout:", error);
+      res.status(500).json({ error: "Failed to update checkout date" });
+    }
+  });
+
+  // POST /reservations/:id/notes - Add note to reservation
+  apiRouter.post("/reservations/:id/notes", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { note } = req.body;
+
+      if (!note || !note.trim()) {
+        return res.status(400).json({ error: "Note is required" });
+      }
+
+      // Get existing reservation
+      const reservation = await storage.getReservation(id);
+      if (!reservation) {
+        return res.status(404).json({ error: "Reservation not found" });
+      }
+
+      // Append note with timestamp
+      const timestamp = new Date().toISOString();
+      const existingNotes = reservation.notes || [];
+      const newNote = `[${timestamp}] ${note}`;
+      
+      const updated = await storage.updateReservation(id, {
+        notes: [...existingNotes, newNote]
+      });
+
+      if (!updated) {
+        return res.status(500).json({ error: "Failed to add note" });
+      }
+
+      res.json(updated);
+    } catch (error) {
+      console.error("Error adding reservation note:", error);
+      res.status(500).json({ error: "Failed to add note" });
+    }
+  });
+
+  // GET /reservations/:id/notes - Get reservation notes
+  apiRouter.get("/reservations/:id/notes", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const reservation = await storage.getReservation(id);
+      if (!reservation) {
+        return res.status(404).json({ error: "Reservation not found" });
+      }
+
+      res.json({ notes: reservation.notes || [] });
+    } catch (error) {
+      console.error("Error fetching reservation notes:", error);
+      res.status(500).json({ error: "Failed to fetch notes" });
+    }
+  });
+
+  // ============================================
   // ASSIGNMENT NOTES ROUTES
   // ============================================
 

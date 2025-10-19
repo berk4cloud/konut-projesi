@@ -70,8 +70,23 @@ export default function BedDetailsModal({
       if (bed.checkOutDate) {
         setFutureCheckOutDate(bed.checkOutDate);
       }
-      // TODO: Fetch reservation notes from API
-      setReservationNotes([]);
+      
+      // Fetch reservation notes if we have a reservationId
+      if (bed.reservationId) {
+        fetch(`/api/reservations/${bed.reservationId}/notes`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.notes) {
+              setReservationNotes(data.notes);
+            }
+          })
+          .catch(err => {
+            console.error('Failed to fetch notes:', err);
+            setReservationNotes([]);
+          });
+      } else {
+        setReservationNotes([]);
+      }
     }
   }, [open, bed]);
 
