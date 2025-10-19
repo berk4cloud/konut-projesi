@@ -1222,6 +1222,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "House not found or access denied" });
       }
 
+      // CHECK: Room must not have an active room reservation (blocks individual bed rentals)
+      const roomReservation = await storage.getActiveRoomReservationForRoom(room.id);
+      if (roomReservation) {
+        return res.status(400).json({ 
+          error: "Bu oda tümüyle kiralanmış - yatak olarak kiraya verilemez"
+        });
+      }
+
       // Check if bed has active reservation
       const activeReservation = await storage.getActiveReservationForBed(bedId);
       if (activeReservation) {
@@ -1266,12 +1274,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // POST /rooms/:roomId/check-in - Check in worker to entire room (all beds)
+  // POST /rooms/:roomId/check-in - Check in to entire room (whole room rental)
   apiRouter.post("/rooms/:roomId/check-in", async (req, res) => {
     try {
       const { roomId } = req.params;
       const { 
-        employmentId, 
+        leadEmploymentId,  // Primary worker/contact (optional for non-worker rentals)
+        occupants,         // Array of {employmentId?, guestName?, guestGender?}
         startDate, 
         endDate, 
         checkInDate, 
@@ -1282,20 +1291,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         depositCollector
       } = req.body;
 
-      if (!employmentId || !startDate || !tenantId) {
-        return res.status(400).json({ error: "employmentId, startDate, and tenantId required" });
+      if (!startDate || !tenantId) {
+        return res.status(400).json({ error: "startDate and tenantId required" });
       }
 
-      // Verify employment exists and belongs to tenant
-      const employment = await storage.getEmployment(employmentId);
-      if (!employment || employment.tenantId !== tenantId) {
-        return res.status(404).json({ error: "Employment not found or access denied" });
+      if (!occupants || !Array.isArray(occupants) || occupants.length === 0) {
+        return res.status(400).json({ error: "At least one occupant required" });
       }
 
       // Verify room exists
       const room = await storage.getRoom(roomId);
       if (!room) {
         return res.status(404).json({ error: "Room not found" });
+      }
+
+      // CHECK: Room must be available for room rental
+      if (!room.availableForRoomRental) {
+        return res.status(400).json({ 
+          error: "This room is not available for whole-room rental"
+        });
       }
 
       // Verify room belongs to tenant (check house)
@@ -1310,7 +1324,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "No beds found in this room" });
       }
 
-      // Check if any bed has active reservation
+      // CHECK: ALL beds must be empty
       const bedsWithActiveReservations = await Promise.all(
         beds.map(async (bed) => ({
           bed,
@@ -1321,53 +1335,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const occupiedBed = bedsWithActiveReservations.find(b => b.reservation !== null);
       if (occupiedBed) {
         return res.status(400).json({ 
-          error: `Bed ${occupiedBed.bed.bedNumber} already has an active reservation`
+          error: `Yatak ${occupiedBed.bed.bedNumber} dolu - oda kiralama için tüm yatakların boş olması gerekiyor`
         });
       }
 
-      // Create reservations and assignments for ALL beds in the room
-      const reservations = [];
-      const assignments = [];
+      // CHECK: Room must not already have a room reservation
+      const existingRoomReservation = await storage.getActiveRoomReservationForRoom(roomId);
+      if (existingRoomReservation) {
+        return res.status(400).json({ 
+          error: "Bu oda zaten oda olarak kiralanmış"
+        });
+      }
 
+      // Verify lead employment if provided
+      if (leadEmploymentId) {
+        const employment = await storage.getEmployment(leadEmploymentId);
+        if (!employment || employment.tenantId !== tenantId) {
+          return res.status(404).json({ error: "Lead employment not found or access denied" });
+        }
+      }
+
+      // Create room reservation
+      const roomReservation = await storage.createRoomReservation({
+        tenantId,
+        houseId: house.id,
+        roomId: room.id,
+        leadEmploymentId: leadEmploymentId || null,
+        startDate,
+        endDate: endDate || null,
+        checkInDate: checkInDate || startDate,
+        checkOutDate: null,
+        status: "active",
+        monthlyRate: monthlyRate ? String(monthlyRate) : null,
+        depositAmount: depositAmount ? String(depositAmount) : null,
+        depositCollected: depositCollected || false,
+        depositDate: depositCollected ? startDate : null,
+      });
+
+      // Create occupant records
+      const occupantRecords = [];
+      for (const occupant of occupants) {
+        const occupantRecord = await storage.createRoomReservationOccupant({
+          roomReservationId: roomReservation.id,
+          employmentId: occupant.employmentId || null,
+          guestName: occupant.guestName || null,
+          guestGender: occupant.guestGender || null,
+          notes: occupant.notes || null,
+        });
+        occupantRecords.push(occupantRecord);
+      }
+
+      // Link all beds to this room reservation
       for (const bed of beds) {
-        // Create reservation for each bed
-        const reservation = await storage.createReservation({
-          employmentId,
-          houseId: house.id,
-          roomId: room.id,
-          bedId: bed.id,
-          tenantId,
-          startDate: startDate,
-          endDate: endDate || null,
-          checkInDate: checkInDate || startDate,
-          checkOutDate: null,
-          status: "checked_in",
+        await storage.updateBed(bed.id, {
+          roomReservationId: roomReservation.id,
+          status: "occupied"
         });
-        reservations.push(reservation);
-
-        // Create assignment for each bed
-        const assignment = await storage.createAssignment({
-          tenantId,
-          employmentId,
-          houseId: house.id,
-          roomId: room.id,
-          bedId: bed.id,
-          startDate: startDate,
-          endDate: endDate || null,
-          monthlyRate: monthlyRate || 600,
-          status: "active",
-          depositCollected: depositCollected || false,
-          depositAmount: depositAmount ? String(depositAmount) : "0",
-          depositCollector: depositCollector || null,
-          depositStatus: depositCollected ? "collected" : "pending",
-        });
-        assignments.push(assignment);
       }
 
       res.json({ 
-        reservations, 
-        assignments,
-        message: `Successfully checked in to ${beds.length} beds in room ${room.roomNumber}`
+        roomReservation,
+        occupants: occupantRecords,
+        bedsUpdated: beds.length,
+        message: `Oda başarıyla kiralandı - ${beds.length} yatak ${occupantRecords.length} kişi için rezerve edildi`
       });
     } catch (error) {
       console.error("Error checking in to room:", error);

@@ -306,6 +306,8 @@ export class MemStorage implements IStorage {
       status: insertTenant.status ?? "trial",
       plan: insertTenant.plan ?? "professional",
       currency: insertTenant.currency ?? "EUR",
+      timezone: insertTenant.timezone ?? "Europe/Amsterdam",
+      pricingSettings: insertTenant.pricingSettings ?? '{"dailyRentalEnabled":false,"standardPricing":{"bedDailyPrice":25,"bedMonthlyPrice":600,"roomDailyPrice":70,"roomMonthlyPrice":1700}}',
       favoriteCountries: insertTenant.favoriteCountries ?? null,
       defaultCountry: insertTenant.defaultCountry ?? null,
       contactEmail: insertTenant.contactEmail ?? null,
@@ -559,6 +561,19 @@ export class MemStorage implements IStorage {
   async updateReservation(_id: string, _reservation: Partial<InsertReservation>): Promise<Reservation | undefined> { throw new Error("Not implemented in MemStorage"); }
   async completeReservation(_id: string, _checkOutDate: string): Promise<Reservation | undefined> { throw new Error("Not implemented in MemStorage"); }
   
+  // Room Reservations stubs
+  async getRoomReservation(_id: string): Promise<RoomReservation | undefined> { throw new Error("Not implemented in MemStorage"); }
+  async getRoomReservationsByTenant(_tenantId: string): Promise<RoomReservation[]> { throw new Error("Not implemented in MemStorage"); }
+  async getActiveRoomReservationForRoom(_roomId: string): Promise<RoomReservation | undefined> { throw new Error("Not implemented in MemStorage"); }
+  async createRoomReservation(_reservation: InsertRoomReservation): Promise<RoomReservation> { throw new Error("Not implemented in MemStorage"); }
+  async updateRoomReservation(_id: string, _reservation: Partial<InsertRoomReservation>): Promise<RoomReservation | undefined> { throw new Error("Not implemented in MemStorage"); }
+  async completeRoomReservation(_id: string, _checkOutDate: string): Promise<RoomReservation | undefined> { throw new Error("Not implemented in MemStorage"); }
+  
+  // Room Reservation Occupants stubs
+  async getRoomReservationOccupants(_roomReservationId: string): Promise<RoomReservationOccupant[]> { throw new Error("Not implemented in MemStorage"); }
+  async createRoomReservationOccupant(_occupant: InsertRoomReservationOccupant): Promise<RoomReservationOccupant> { throw new Error("Not implemented in MemStorage"); }
+  async deleteRoomReservationOccupant(_id: string): Promise<boolean> { throw new Error("Not implemented in MemStorage"); }
+  
   // QR Codes stubs
   async getQRCode(_id: string): Promise<QRCode | undefined> { throw new Error("Not implemented in MemStorage"); }
   async getQRCodeByCode(_code: string): Promise<QRCode | undefined> { throw new Error("Not implemented in MemStorage"); }
@@ -586,6 +601,8 @@ import {
   rooms as roomsTable,
   beds as bedsTable,
   reservations as reservationsTable,
+  roomReservations as roomReservationsTable,
+  roomReservationOccupants as roomReservationOccupantsTable,
   qrCodes as qrCodesTable
 } from "@shared/schema";
 import { eq, and, isNull, sql, gt, gte, or, asc, desc } from "drizzle-orm";
@@ -1076,6 +1093,78 @@ export class DbStorage implements IStorage {
       .where(eq(reservationsTable.id, id))
       .returning();
     return result[0];
+  }
+
+  // ============================================
+  // Room Reservations Implementation
+  // ============================================
+
+  async getRoomReservation(id: string): Promise<RoomReservation | undefined> {
+    const result = await db.select().from(roomReservationsTable).where(eq(roomReservationsTable.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getRoomReservationsByTenant(tenantId: string): Promise<RoomReservation[]> {
+    return db.select().from(roomReservationsTable).where(eq(roomReservationsTable.tenantId, tenantId));
+  }
+
+  async getActiveRoomReservationForRoom(roomId: string): Promise<RoomReservation | undefined> {
+    const result = await db.select()
+      .from(roomReservationsTable)
+      .where(
+        and(
+          eq(roomReservationsTable.roomId, roomId),
+          eq(roomReservationsTable.status, "active"),
+          isNull(roomReservationsTable.checkOutDate)
+        )
+      )
+      .limit(1);
+    return result[0];
+  }
+
+  async createRoomReservation(reservation: InsertRoomReservation): Promise<RoomReservation> {
+    const result = await db.insert(roomReservationsTable).values(reservation).returning();
+    return result[0];
+  }
+
+  async updateRoomReservation(id: string, reservation: Partial<InsertRoomReservation>): Promise<RoomReservation | undefined> {
+    const result = await db.update(roomReservationsTable)
+      .set({ ...reservation, updatedAt: new Date() })
+      .where(eq(roomReservationsTable.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async completeRoomReservation(id: string, checkOutDate: string): Promise<RoomReservation | undefined> {
+    const result = await db.update(roomReservationsTable)
+      .set({ 
+        checkOutDate,
+        status: "checked_out",
+        updatedAt: new Date() 
+      })
+      .where(eq(roomReservationsTable.id, id))
+      .returning();
+    return result[0];
+  }
+
+  // ============================================
+  // Room Reservation Occupants Implementation
+  // ============================================
+
+  async getRoomReservationOccupants(roomReservationId: string): Promise<RoomReservationOccupant[]> {
+    return db.select()
+      .from(roomReservationOccupantsTable)
+      .where(eq(roomReservationOccupantsTable.roomReservationId, roomReservationId));
+  }
+
+  async createRoomReservationOccupant(occupant: InsertRoomReservationOccupant): Promise<RoomReservationOccupant> {
+    const result = await db.insert(roomReservationOccupantsTable).values(occupant).returning();
+    return result[0];
+  }
+
+  async deleteRoomReservationOccupant(id: string): Promise<boolean> {
+    const result = await db.delete(roomReservationOccupantsTable).where(eq(roomReservationOccupantsTable.id, id)).returning();
+    return result.length > 0;
   }
 
   // ============================================
