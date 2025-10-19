@@ -2040,6 +2040,7 @@ export default function HousingDashboard() {
                                           }}
                                           className="flex-1"
                                           data-testid={`button-gender-male-${index}`}
+                                          aria-pressed={occupant.guestGender === "male"}
                                         >
                                           Erkek
                                         </Button>
@@ -2060,6 +2061,7 @@ export default function HousingDashboard() {
                                           }}
                                           className="flex-1"
                                           data-testid={`button-gender-female-${index}`}
+                                          aria-pressed={occupant.guestGender === "female"}
                                         >
                                           Kadın
                                         </Button>
