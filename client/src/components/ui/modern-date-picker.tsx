@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { format } from "date-fns";
-import { tr } from "date-fns/locale";
+import { tr, enUS, de, nl, fr, pl, bg, type Locale } from "date-fns/locale";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useTranslation } from "react-i18next";
 
 interface ModernDatePickerProps {
   date: Date | undefined;
@@ -22,6 +23,17 @@ interface ModernDatePickerProps {
   maxDate?: Date;
 }
 
+// Locale mapping for date-fns
+const localeMap: Record<string, Locale> = {
+  tr: tr,
+  en: enUS,
+  de: de,
+  nl: nl,
+  fr: fr,
+  pl: pl,
+  bg: bg,
+};
+
 export function ModernDatePicker({
   date,
   onDateChange,
@@ -33,6 +45,10 @@ export function ModernDatePicker({
   maxDate,
 }: ModernDatePickerProps) {
   const [open, setOpen] = useState(false);
+  const { t, i18n } = useTranslation();
+  
+  // Get current locale from i18n
+  const currentLocale = localeMap[i18n.language] || tr;
 
   const handleTodayClick = () => {
     const today = new Date();
@@ -55,7 +71,7 @@ export function ModernDatePicker({
           data-testid={dataTestId}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {date ? format(date, "d MMMM yyyy", { locale: tr }) : placeholder}
+          {date ? format(date, "d MMMM yyyy", { locale: currentLocale }) : placeholder}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
@@ -67,7 +83,7 @@ export function ModernDatePicker({
             className="w-full"
             data-testid={`${dataTestId}-today-button`}
           >
-            Bugün
+            {t('common.today')}
           </Button>
         </div>
         <Calendar
@@ -83,7 +99,7 @@ export function ModernDatePicker({
             return false;
           }}
           initialFocus
-          locale={tr}
+          locale={currentLocale}
         />
       </PopoverContent>
     </Popover>

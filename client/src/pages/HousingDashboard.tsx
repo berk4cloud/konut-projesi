@@ -1429,11 +1429,18 @@ export default function HousingDashboard() {
               const selectedWorker = workers.find(w => w.employmentId === wizardData.employmentId);
               const selectedGender = selectedWorker?.gender;
               
-              // Filter houses with available beds
+              // Filter houses with available beds AND by selected city
               const availableHouses = houses.filter(house => {
-                return house.rooms?.some(room =>
+                // Check if house has available beds
+                const hasAvailableBeds = house.rooms?.some(room =>
                   room.beds?.some(bed => bed.status === "available")
                 );
+                
+                // Check city filter
+                const matchesCity = wizardData.searchCity === "all" || 
+                                   house.city.toLowerCase() === wizardData.searchCity.toLowerCase();
+                
+                return hasAvailableBeds && matchesCity;
               });
 
               return (
