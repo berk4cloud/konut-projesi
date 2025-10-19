@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Globe, Star, Save, DollarSign, Languages, Check } from "lucide-react";
+import { Plus, Trash2, Globe, Star, Save, DollarSign, Languages, Check, Clock } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -40,6 +40,7 @@ interface Tenant {
   name: string;
   slug: string;
   currency: CurrencyType;
+  timezone?: string;
   pricingSettings: {
     dailyRentalEnabled: boolean;
     standardPricing: {
@@ -88,6 +89,26 @@ const languageOptions = [
   { value: "bg", label: "Български" },
 ];
 
+const timezoneOptions = [
+  { value: "Europe/Amsterdam", label: "Amsterdam (UTC+1/+2)", region: "Avrupa" },
+  { value: "Europe/Berlin", label: "Berlin (UTC+1/+2)", region: "Avrupa" },
+  { value: "Europe/Istanbul", label: "İstanbul (UTC+3)", region: "Avrupa" },
+  { value: "Europe/London", label: "Londra (UTC+0/+1)", region: "Avrupa" },
+  { value: "Europe/Paris", label: "Paris (UTC+1/+2)", region: "Avrupa" },
+  { value: "Europe/Warsaw", label: "Varşova (UTC+1/+2)", region: "Avrupa" },
+  { value: "Europe/Athens", label: "Atina (UTC+2/+3)", region: "Avrupa" },
+  { value: "Europe/Sofia", label: "Sofya (UTC+2/+3)", region: "Avrupa" },
+  { value: "America/New_York", label: "New York (UTC-5/-4)", region: "Amerika" },
+  { value: "America/Los_Angeles", label: "Los Angeles (UTC-8/-7)", region: "Amerika" },
+  { value: "America/Chicago", label: "Chicago (UTC-6/-5)", region: "Amerika" },
+  { value: "America/Toronto", label: "Toronto (UTC-5/-4)", region: "Amerika" },
+  { value: "Asia/Dubai", label: "Dubai (UTC+4)", region: "Asya" },
+  { value: "Asia/Tokyo", label: "Tokyo (UTC+9)", region: "Asya" },
+  { value: "Asia/Singapore", label: "Singapur (UTC+8)", region: "Asya" },
+  { value: "Asia/Shanghai", label: "Şangay (UTC+8)", region: "Asya" },
+  { value: "Australia/Sydney", label: "Sidney (UTC+10/+11)", region: "Okyanusya" },
+];
+
 export default function Settings() {
   const { toast } = useToast();
   const { t, i18n } = useTranslation();
@@ -106,6 +127,9 @@ export default function Settings() {
   // State for settings
   const [currency, setCurrency] = useState<CurrencyType>("EUR");
   const [hasCurrencyChanges, setHasCurrencyChanges] = useState(false);
+  
+  const [timezone, setTimezone] = useState<string>("Europe/Amsterdam");
+  const [hasTimezoneChanges, setHasTimezoneChanges] = useState(false);
   
   const [favoriteCountries, setFavoriteCountries] = useState<string[]>([]);
   const [defaultCountry, setDefaultCountry] = useState<string | null>(null);
@@ -132,6 +156,7 @@ export default function Settings() {
   useEffect(() => {
     if (tenantData && tenantData.pricingSettings) {
       setCurrency(tenantData.currency);
+      setTimezone(tenantData.timezone || "Europe/Amsterdam");
       setFavoriteCountries(tenantData.favoriteCountries || []);
       setDefaultCountry(tenantData.defaultCountry || null);
       setDailyRentalEnabled(tenantData.pricingSettings.dailyRentalEnabled);
@@ -226,6 +251,16 @@ export default function Settings() {
   const handleSaveCurrency = () => {
     updateTenantMutation.mutate({ currency });
     setHasCurrencyChanges(false);
+  };
+  
+  const handleTimezoneChange = (value: string) => {
+    setTimezone(value);
+    setHasTimezoneChanges(true);
+  };
+  
+  const handleSaveTimezone = () => {
+    updateTenantMutation.mutate({ timezone });
+    setHasTimezoneChanges(false);
   };
   
   const handleSavePricing = () => {
@@ -396,6 +431,64 @@ export default function Settings() {
                   onClick={handleSaveCurrency}
                   disabled={!hasCurrencyChanges}
                   data-testid="button-save-currency"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  {t("common.save")}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Timezone Settings Card */}
+          <Card data-testid="card-timezone-settings">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="w-5 h-5" />
+                Saat Dilimi
+              </CardTitle>
+              <CardDescription>
+                Tüm tarih ve saat hesaplamaları için kullanılacak saat dilimini seçin
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="timezone-select">Saat Dilimi Seçin</Label>
+                <Select value={timezone} onValueChange={handleTimezoneChange}>
+                  <SelectTrigger id="timezone-select" data-testid="select-timezone" className="w-full sm:w-[360px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[300px]">
+                    {timezoneOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value} data-testid={`option-timezone-${option.value}`}>
+                        <div className="flex items-center gap-3">
+                          <Clock className="w-4 h-4" />
+                          <span className="font-medium">{option.label}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Current Selection Display */}
+              <div className="rounded-lg border bg-muted/50 p-4">
+                <div className="flex items-center gap-3">
+                  <Clock className="w-6 h-6 text-primary" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-muted-foreground">Seçili Saat Dilimi</p>
+                    <p className="text-2xl font-bold" data-testid="text-selected-timezone">
+                      {timezoneOptions.find(o => o.value === timezone)?.label}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Save Button */}
+              <div className="flex justify-end pt-2">
+                <Button
+                  onClick={handleSaveTimezone}
+                  disabled={!hasTimezoneChanges}
+                  data-testid="button-save-timezone"
                 >
                   <Save className="w-4 h-4 mr-2" />
                   {t("common.save")}

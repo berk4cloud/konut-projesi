@@ -118,7 +118,7 @@ export const tenants = pgTable("tenants", {
   
   // Settings
   currency: currencyEnum("currency").default("EUR").notNull(),
-  timezone: text("timezone").default("UTC").notNull(), // IANA timezone string, e.g., "Europe/Amsterdam", "America/New_York"
+  timezone: text("timezone").default("Europe/Amsterdam").notNull(), // IANA timezone string, e.g., "Europe/Amsterdam", "America/New_York"
   pricingSettings: jsonb("pricing_settings").default(sql`'{"dailyRentalEnabled":false,"standardPricing":{"bedDailyPrice":25,"bedMonthlyPrice":600,"roomDailyPrice":70,"roomMonthlyPrice":1700}}'::jsonb`).notNull(),
   
   // Country Management
@@ -147,7 +147,7 @@ export const insertTenantSchema = createInsertSchema(tenants)
   .refine(
     (data) => {
       // If timezone is provided, validate it's a valid IANA timezone
-      if (!data.timezone || typeof data.timezone !== 'string') return true; // Will use default "UTC"
+      if (!data.timezone || typeof data.timezone !== 'string') return true; // Will use default "Europe/Amsterdam"
       // Already trimmed by transform, validate as-is
       return DateTime.now().setZone(data.timezone).isValid;
     },
