@@ -187,6 +187,14 @@ export default function HousingDashboard() {
     houseName: "",
     roomId: "",
     bedId: "",
+    // Room occupants (for room rentals)
+    occupants: [] as Array<{
+      id: string;
+      employmentId?: string;
+      workerName?: string;
+      guestName?: string;
+      guestGender?: "male" | "female";
+    }>,
     // Step 4: Fiyat
     monthlyRate: 600,
     depositAmount: 500,
@@ -531,6 +539,22 @@ export default function HousingDashboard() {
         return;
       }
     }
+
+    // When moving from Step 2 to Step 3 in room rental mode, pre-populate occupants with lead worker
+    if (wizardStep === 2 && wizardData.rentalType === "room" && wizardData.employmentId && wizardData.workerName) {
+      // Only add if not already present
+      const alreadyAdded = wizardData.occupants.some(occ => occ.employmentId === wizardData.employmentId);
+      if (!alreadyAdded) {
+        setWizardData({
+          ...wizardData,
+          occupants: [{
+            id: `lead-${Date.now()}`,
+            employmentId: wizardData.employmentId,
+            workerName: wizardData.workerName,
+          }]
+        });
+      }
+    }
     
     if (wizardStep < 4) setWizardStep(wizardStep + 1);
   };
@@ -567,6 +591,35 @@ export default function HousingDashboard() {
       });
       return;
     }
+
+    // Validate room rental occupants
+    if (wizardData.rentalType === "room") {
+      // Must have at least one occupant
+      if (wizardData.occupants.length === 0) {
+        toast({
+          title: "Odada Kalacak Kişi Gerekli",
+          description: "Oda kiralarken en az bir kişi eklemelisiniz.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Each occupant must have either employmentId OR (guestName + guestGender)
+      const invalidOccupants = wizardData.occupants.filter(occ => {
+        const hasWorker = !!occ.employmentId;
+        const hasGuest = !!(occ.guestName && occ.guestName.trim() && occ.guestGender);
+        return !hasWorker && !hasGuest;
+      });
+
+      if (invalidOccupants.length > 0) {
+        toast({
+          title: "Eksik Kişi Bilgileri",
+          description: "Her kişi için ya bir işçi seçin ya da misafir ismi ve cinsiyeti girin.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
     
     // Find selected worker
     const selectedWorker = workers.find(w => w.employmentId === wizardData.employmentId);
@@ -598,8 +651,16 @@ export default function HousingDashboard() {
         });
       } else {
         // Call backend API for room-level check-in (all beds in room)
+        // Build occupants array
+        const occupants = wizardData.occupants.map(occ => ({
+          employmentId: occ.employmentId || undefined,
+          guestName: occ.guestName || undefined,
+          guestGender: occ.guestGender || undefined,
+        }));
+
         response = await apiRequest("POST", `/api/rooms/${wizardData.roomId}/check-in`, {
-          employmentId: wizardData.employmentId,
+          leadEmploymentId: wizardData.employmentId,
+          occupants,
           startDate: wizardData.startDate,
           endDate: wizardData.endDate || null,
           checkInDate: wizardData.startDate, // Check in immediately
@@ -1821,6 +1882,197 @@ export default function HousingDashboard() {
                         </div>
                       )}
                     </div>
+
+                    {/* Multi-Occupant Management - Only for room rentals */}
+                    {wizardData.rentalType === "room" && wizardData.roomId && (
+                      <div className="space-y-3 border-t pt-4">
+                        <div className="flex items-center justify-between">
+                          <Label>Odada Kalacak Kişiler</Label>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              const newOccupant = {
+                                id: `occ-${Date.now()}`,
+                                employmentId: "",
+                                workerName: "",
+                                guestName: "",
+                                guestGender: undefined as "male" | "female" | undefined,
+                              };
+                              setWizardData({
+                                ...wizardData,
+                                occupants: [...wizardData.occupants, newOccupant]
+                              });
+                            }}
+                            data-testid="button-add-occupant"
+                          >
+                            <Plus className="w-4 h-4 mr-1" />
+                            Kişi Ekle
+                          </Button>
+                        </div>
+                        
+                        {wizardData.occupants.length === 0 ? (
+                          <p className="text-sm text-muted-foreground text-center py-4">
+                            Henüz kimse eklenmedi. "Kişi Ekle" butonuna tıklayarak odada kalacak kişileri ekleyin.
+                          </p>
+                        ) : (
+                          <div className="space-y-2">
+                            {wizardData.occupants.map((occupant, index) => (
+                              <div key={occupant.id} className="border rounded-lg p-3 space-y-2 bg-muted/30">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm font-medium">Kişi {index + 1}</span>
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => {
+                                      setWizardData({
+                                        ...wizardData,
+                                        occupants: wizardData.occupants.filter(o => o.id !== occupant.id)
+                                      });
+                                    }}
+                                    data-testid={`button-remove-occupant-${index}`}
+                                  >
+                                    <Check className="w-4 h-4" />
+                                    Kaldır
+                                  </Button>
+                                </div>
+                                
+                                {/* Worker Selector */}
+                                <div className="space-y-2">
+                                  <Label className="text-xs">İşçi Seç (İsteğe Bağlı)</Label>
+                                  <Popover>
+                                    <PopoverTrigger asChild>
+                                      <Button
+                                        variant="outline"
+                                        role="combobox"
+                                        className="w-full justify-between text-left font-normal"
+                                        data-testid={`button-select-worker-${index}`}
+                                      >
+                                        {occupant.employmentId && occupant.workerName ? (
+                                          <span>{occupant.workerName}</span>
+                                        ) : (
+                                          <span className="text-muted-foreground">İşçi seç...</span>
+                                        )}
+                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                      </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-[300px] p-0">
+                                      <Command>
+                                        <CommandInput placeholder="İşçi ara..." />
+                                        <CommandList>
+                                          <CommandEmpty>İşçi bulunamadı</CommandEmpty>
+                                          <CommandGroup>
+                                            {workers.map((worker) => (
+                                              <CommandItem
+                                                key={worker.employmentId}
+                                                onSelect={() => {
+                                                  const updatedOccupants = [...wizardData.occupants];
+                                                  updatedOccupants[index] = {
+                                                    ...occupant,
+                                                    employmentId: worker.employmentId,
+                                                    workerName: `${worker.firstName} ${worker.lastName}`,
+                                                    guestName: "",
+                                                    guestGender: undefined,
+                                                  };
+                                                  setWizardData({
+                                                    ...wizardData,
+                                                    occupants: updatedOccupants
+                                                  });
+                                                }}
+                                              >
+                                                <Check
+                                                  className={cn(
+                                                    "mr-2 h-4 w-4",
+                                                    occupant.employmentId === worker.employmentId ? "opacity-100" : "opacity-0"
+                                                  )}
+                                                />
+                                                {worker.firstName} {worker.lastName}
+                                              </CommandItem>
+                                            ))}
+                                          </CommandGroup>
+                                        </CommandList>
+                                      </Command>
+                                    </PopoverContent>
+                                  </Popover>
+                                </div>
+
+                                {/* Manual Guest Entry - Only show if no worker selected */}
+                                {!occupant.employmentId && (
+                                  <>
+                                    <div className="space-y-2">
+                                      <Label className="text-xs">Misafir İsmi</Label>
+                                      <Input
+                                        value={occupant.guestName || ""}
+                                        onChange={(e) => {
+                                          const updatedOccupants = [...wizardData.occupants];
+                                          updatedOccupants[index] = {
+                                            ...occupant,
+                                            guestName: e.target.value
+                                          };
+                                          setWizardData({
+                                            ...wizardData,
+                                            occupants: updatedOccupants
+                                          });
+                                        }}
+                                        placeholder="İsim girin..."
+                                        data-testid={`input-guest-name-${index}`}
+                                      />
+                                    </div>
+                                    <div className="space-y-2">
+                                      <Label className="text-xs">Cinsiyet</Label>
+                                      <div className="flex gap-2">
+                                        <Button
+                                          type="button"
+                                          size="sm"
+                                          variant={occupant.guestGender === "male" ? "default" : "outline"}
+                                          onClick={() => {
+                                            const updatedOccupants = [...wizardData.occupants];
+                                            updatedOccupants[index] = {
+                                              ...occupant,
+                                              guestGender: "male"
+                                            };
+                                            setWizardData({
+                                              ...wizardData,
+                                              occupants: updatedOccupants
+                                            });
+                                          }}
+                                          className="flex-1"
+                                          data-testid={`button-gender-male-${index}`}
+                                        >
+                                          Erkek
+                                        </Button>
+                                        <Button
+                                          type="button"
+                                          size="sm"
+                                          variant={occupant.guestGender === "female" ? "default" : "outline"}
+                                          onClick={() => {
+                                            const updatedOccupants = [...wizardData.occupants];
+                                            updatedOccupants[index] = {
+                                              ...occupant,
+                                              guestGender: "female"
+                                            };
+                                            setWizardData({
+                                              ...wizardData,
+                                              occupants: updatedOccupants
+                                            });
+                                          }}
+                                          className="flex-1"
+                                          data-testid={`button-gender-female-${index}`}
+                                        >
+                                          Kadın
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  </>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               );

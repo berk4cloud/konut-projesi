@@ -1299,6 +1299,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "At least one occupant required" });
       }
 
+      // Validate each occupant has either employmentId OR (guestName + guestGender)
+      for (let i = 0; i < occupants.length; i++) {
+        const occ = occupants[i];
+        const hasWorker = !!occ.employmentId;
+        const hasGuest = !!(occ.guestName && occ.guestName.trim() && occ.guestGender);
+        
+        if (!hasWorker && !hasGuest) {
+          return res.status(400).json({ 
+            error: `Occupant ${i + 1} must have either employmentId or both guestName and guestGender` 
+          });
+        }
+      }
+
       // Verify room exists
       const room = await storage.getRoom(roomId);
       if (!room) {
