@@ -1411,7 +1411,11 @@ export default function HousingDashboard() {
                 <div className="space-y-3">
                   <Label>{t('housing.selectAvailableRoomAndBed')}</Label>
                   <div className="border rounded-lg max-h-[400px] overflow-y-auto">
-                    {getAvailableRoomsAndBeds().length > 0 ? (
+                    {housesLoading ? (
+                      <div className="p-8 text-center text-muted-foreground">
+                        Yükleniyor...
+                      </div>
+                    ) : getAvailableRoomsAndBeds().length > 0 ? (
                       <div className="divide-y">
                         {getAvailableRoomsAndBeds().map((option: any) => (
                           <div
