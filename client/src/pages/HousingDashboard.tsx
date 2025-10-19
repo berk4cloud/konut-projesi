@@ -844,7 +844,10 @@ export default function HousingDashboard() {
                                 </div>
                               </div>
                               <div className="flex items-center gap-2">
-                                <Badge variant={house.occupiedBeds === house.totalBeds ? "destructive" : "secondary"}>
+                                <Badge 
+                                  variant="secondary"
+                                  className={house.occupiedBeds === house.totalBeds ? "bg-amber-500 text-white hover:bg-amber-600 border-amber-600" : ""}
+                                >
                                   {house.occupiedBeds}/{house.totalBeds} • %{Math.round((house.occupiedBeds / house.totalBeds) * 100)}
                                 </Badge>
                               </div>
