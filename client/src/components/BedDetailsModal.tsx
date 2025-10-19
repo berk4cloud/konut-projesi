@@ -1,5 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -34,13 +37,15 @@ interface BedDetailsModalProps {
       gender: "male" | "female";
     };
     checkInDate?: string;
+    checkOutDate?: string;
     expectedMoveOutDate?: string;
+    reservationId?: string;
     roomNumber?: string;
     houseName?: string;
   } | null;
 }
 
-type CheckOutAction = 'immediate' | 'vacation' | 'unnotified' | null;
+type CheckOutAction = 'immediate' | 'vacation' | 'unnotified' | 'future' | 'modify' | null;
 
 export default function BedDetailsModal({
   open,
@@ -48,16 +53,33 @@ export default function BedDetailsModal({
   bed,
 }: BedDetailsModalProps) {
   const { t } = useTranslation();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
   const [selectedAction, setSelectedAction] = useState<CheckOutAction>(null);
+  const [futureCheckOutDate, setFutureCheckOutDate] = useState("");
   const [vacationStart, setVacationStart] = useState("");
   const [vacationEnd, setVacationEnd] = useState("");
   const [notes, setNotes] = useState("");
   const [isAddingNote, setIsAddingNote] = useState(false);
+  const [reservationNotes, setReservationNotes] = useState<string[]>([]);
+
+  // Load existing checkout date and notes when modal opens
+  useEffect(() => {
+    if (open && bed) {
+      if (bed.checkOutDate) {
+        setFutureCheckOutDate(bed.checkOutDate);
+      }
+      // TODO: Fetch reservation notes from API
+      setReservationNotes([]);
+    }
+  }, [open, bed]);
 
   if (!bed) return null;
 
   const handleClose = () => {
     setSelectedAction(null);
+    setFutureCheckOutDate("");
     setVacationStart("");
     setVacationEnd("");
     setNotes("");
@@ -69,17 +91,125 @@ export default function BedDetailsModal({
     setSelectedAction(action);
   };
 
+  // Checkout mutation
+  const checkoutMutation = useMutation({
+    mutationFn: async (data: any) => {
+      if (!bed.reservationId) {
+        throw new Error("No reservation ID");
+      }
+      return apiRequest(`/reservations/${bed.reservationId}/check-out`, {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: t('common.success'),
+        description: t('bedDetails.checkOutSuccess'),
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/houses'] });
+      handleClose();
+    },
+    onError: (error: any) => {
+      toast({
+        title: t('common.error'),
+        description: error.message || t('bedDetails.checkOutError'),
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Add note mutation
+  const addNoteMutation = useMutation({
+    mutationFn: async (note: string) => {
+      if (!bed.reservationId) {
+        throw new Error("No reservation ID");
+      }
+      return apiRequest(`/reservations/${bed.reservationId}/notes`, {
+        method: "POST",
+        body: JSON.stringify({ note }),
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: t('common.success'),
+        description: t('bedDetails.noteAdded'),
+      });
+      setIsAddingNote(false);
+      setNotes("");
+      // Refresh notes
+      // TODO: Fetch updated notes
+    },
+    onError: (error: any) => {
+      toast({
+        title: t('common.error'),
+        description: error.message || t('bedDetails.noteError'),
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleConfirmCheckOut = () => {
-    // TODO: API call based on selectedAction
-    console.log('Check-out action:', selectedAction, { vacationStart, vacationEnd, notes });
-    handleClose();
+    if (!bed.reservationId) {
+      toast({
+        title: t('common.error'),
+        description: "No reservation found",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    let checkOutDate = new Date().toISOString().split('T')[0];
+    let checkOutType = selectedAction;
+
+    // Validate inputs based on action type
+    if (selectedAction === 'future' || selectedAction === 'modify') {
+      if (!futureCheckOutDate) {
+        toast({
+          title: t('common.error'),
+          description: t('bedDetails.selectCheckOutDate'),
+          variant: "destructive",
+        });
+        return;
+      }
+      checkOutDate = futureCheckOutDate;
+    } else if (selectedAction === 'vacation') {
+      if (!vacationStart || !vacationEnd) {
+        toast({
+          title: t('common.error'),
+          description: t('bedDetails.selectVacationDates'),
+          variant: "destructive",
+        });
+        return;
+      }
+      checkOutType = 'vacation';
+    }
+
+    const data: any = {
+      checkOutDate,
+      checkOutType,
+      notes: notes || undefined,
+    };
+
+    if (selectedAction === 'vacation') {
+      data.vacationStart = vacationStart;
+      data.vacationEnd = vacationEnd;
+    }
+
+    checkoutMutation.mutate(data);
   };
 
   const handleAddNote = () => {
-    // TODO: API call to add note
-    console.log('Adding note:', notes);
-    setIsAddingNote(false);
-    setNotes("");
+    if (!notes.trim()) {
+      toast({
+        title: t('common.error'),
+        description: t('bedDetails.emptyNote'),
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    addNoteMutation.mutate(notes);
   };
 
   const getStatusBadge = (status: string) => {
@@ -137,9 +267,12 @@ export default function BedDetailsModal({
     return `${year}-${month}-${day}`;
   };
 
+  // Check if we can modify checkout date
+  const hasScheduledCheckOut = bed.checkOutDate && new Date(bed.checkOutDate) > new Date();
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl" data-testid="dialog-bed-details">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="dialog-bed-details">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
             <Home className="w-6 h-6 text-primary" />
@@ -190,26 +323,80 @@ export default function BedDetailsModal({
                 <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
                   <Clock className="w-5 h-5 text-amber-600 mt-0.5" />
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">{t('bedDetails.expectedCheckOut')}</p>
-                    <p className="font-medium">{formatDate(bed.expectedMoveOutDate)}</p>
+                    <p className="text-xs text-muted-foreground mb-1">
+                      {bed.checkOutDate ? t('bedDetails.scheduledCheckOut') : t('bedDetails.expectedCheckOut')}
+                    </p>
+                    <p className="font-medium">{formatDate(bed.checkOutDate || bed.expectedMoveOutDate)}</p>
                   </div>
                 </div>
               </div>
+
+              {/* Show scheduled checkout notice */}
+              {hasScheduledCheckOut && !selectedAction && (
+                <div className="p-4 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <CalendarIcon className="w-5 h-5 text-blue-600 mt-0.5" />
+                    <div className="flex-1">
+                      <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-1">
+                        {t('bedDetails.scheduledCheckOutTitle')}
+                      </h4>
+                      <p className="text-sm text-blue-800 dark:text-blue-200">
+                        {t('bedDetails.scheduledCheckOutDescription', { date: formatDate(bed.checkOutDate) })}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Reservation Notes */}
+              {reservationNotes.length > 0 && !selectedAction && !isAddingNote && (
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    {t('bedDetails.notes')}
+                  </h4>
+                  <div className="space-y-2">
+                    {reservationNotes.map((note, idx) => (
+                      <div key={idx} className="p-3 bg-muted/50 rounded-lg text-sm">
+                        {note}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Check-out Action Form */}
               {selectedAction && (
                 <div className="p-4 bg-muted/30 border rounded-lg space-y-4">
                   <div className="flex items-center gap-2">
                     {selectedAction === 'immediate' && <DoorOpen className="w-5 h-5 text-green-600" />}
+                    {selectedAction === 'future' && <CalendarIcon className="w-5 h-5 text-blue-600" />}
+                    {selectedAction === 'modify' && <CalendarIcon className="w-5 h-5 text-orange-600" />}
                     {selectedAction === 'vacation' && <Plane className="w-5 h-5 text-blue-600" />}
                     {selectedAction === 'unnotified' && <AlertTriangle className="w-5 h-5 text-amber-600" />}
                     <h4 className="font-semibold">
                       {selectedAction === 'immediate' && t('bedDetails.immediateCheckOut')}
+                      {selectedAction === 'future' && t('bedDetails.futureCheckOut')}
+                      {selectedAction === 'modify' && t('bedDetails.modifyCheckOut')}
                       {selectedAction === 'vacation' && t('bedDetails.vacationHold')}
                       {selectedAction === 'unnotified' && t('bedDetails.unnotifiedDeparture')}
                     </h4>
                   </div>
 
+                  {/* Future checkout date picker */}
+                  {(selectedAction === 'future' || selectedAction === 'modify') && (
+                    <div className="space-y-2">
+                      <Label>{t('bedDetails.checkOutDate')}</Label>
+                      <ModernDatePicker
+                        date={stringToDate(futureCheckOutDate)}
+                        onDateChange={(date) => setFutureCheckOutDate(dateToString(date))}
+                        placeholder={t('common.selectDate')}
+                        minDate={getTodayDate()}
+                      />
+                    </div>
+                  )}
+
+                  {/* Vacation date pickers */}
                   {selectedAction === 'vacation' && (
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
@@ -233,6 +420,7 @@ export default function BedDetailsModal({
                     </div>
                   )}
 
+                  {/* Notes */}
                   <div className="space-y-2">
                     <Label>{t('bedDetails.notesOptional')}</Label>
                     <Textarea
@@ -243,11 +431,20 @@ export default function BedDetailsModal({
                     />
                   </div>
 
+                  {/* Action buttons */}
                   <div className="flex gap-2">
-                    <Button onClick={handleConfirmCheckOut} className="flex-1">
-                      {t('common.confirm')}
+                    <Button 
+                      onClick={handleConfirmCheckOut} 
+                      className="flex-1"
+                      disabled={checkoutMutation.isPending}
+                    >
+                      {checkoutMutation.isPending ? t('common.saving') : t('common.confirm')}
                     </Button>
-                    <Button variant="outline" onClick={() => setSelectedAction(null)}>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setSelectedAction(null)}
+                      disabled={checkoutMutation.isPending}
+                    >
                       {t('common.cancel')}
                     </Button>
                   </div>
@@ -271,13 +468,21 @@ export default function BedDetailsModal({
                     />
                   </div>
                   <div className="flex gap-2">
-                    <Button onClick={handleAddNote} className="flex-1">
-                      {t('common.save')}
+                    <Button 
+                      onClick={handleAddNote} 
+                      className="flex-1"
+                      disabled={addNoteMutation.isPending}
+                    >
+                      {addNoteMutation.isPending ? t('common.saving') : t('common.save')}
                     </Button>
-                    <Button variant="outline" onClick={() => {
-                      setIsAddingNote(false);
-                      setNotes("");
-                    }}>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        setIsAddingNote(false);
+                        setNotes("");
+                      }}
+                      disabled={addNoteMutation.isPending}
+                    >
                       {t('common.cancel')}
                     </Button>
                   </div>
@@ -338,6 +543,16 @@ export default function BedDetailsModal({
                     <DoorOpen className="w-4 h-4 mr-2" />
                     {t('bedDetails.immediateCheckOut')}
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleCheckOutAction('future')} data-testid="menu-checkout-future">
+                    <CalendarIcon className="w-4 h-4 mr-2" />
+                    {t('bedDetails.futureCheckOut')}
+                  </DropdownMenuItem>
+                  {hasScheduledCheckOut && (
+                    <DropdownMenuItem onClick={() => handleCheckOutAction('modify')} data-testid="menu-checkout-modify">
+                      <CalendarIcon className="w-4 h-4 mr-2" />
+                      {t('bedDetails.modifyCheckOut')}
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={() => handleCheckOutAction('vacation')} data-testid="menu-checkout-vacation">
                     <Plane className="w-4 h-4 mr-2" />
                     {t('bedDetails.vacationHold')}

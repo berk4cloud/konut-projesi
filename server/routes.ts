@@ -844,8 +844,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     status,
                     worker: hasFutureReservation ? worker : (status === "occupied" ? worker : undefined),
                     hasFutureReservation,
+                    checkInDate: reservation?.checkInDate || undefined,
+                    checkOutDate: reservation?.checkOutDate || undefined,
                     expectedMoveOutDate: reservation?.endDate || undefined,
                     expectedMoveInDate: reservation?.startDate || undefined,
+                    reservationId: reservation?.id || undefined,
+                    roomNumber: room.roomNumber,
+                    houseName: house.name,
                   };
                 })
               );
