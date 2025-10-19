@@ -21,6 +21,10 @@ import {
   type InsertBed,
   type Reservation,
   type InsertReservation,
+  type RoomReservation,
+  type InsertRoomReservation,
+  type RoomReservationOccupant,
+  type InsertRoomReservationOccupant,
   type QRCode,
   type InsertQRCode,
   type Assignment,
@@ -123,6 +127,19 @@ export interface IStorage {
   createReservation(reservation: InsertReservation): Promise<Reservation>;
   updateReservation(id: string, reservation: Partial<InsertReservation>): Promise<Reservation | undefined>;
   completeReservation(id: string, checkOutDate: string): Promise<Reservation | undefined>;
+  
+  // Room Reservations (Whole room rentals)
+  getRoomReservation(id: string): Promise<RoomReservation | undefined>;
+  getRoomReservationsByTenant(tenantId: string): Promise<RoomReservation[]>;
+  getActiveRoomReservationForRoom(roomId: string): Promise<RoomReservation | undefined>;
+  createRoomReservation(reservation: InsertRoomReservation): Promise<RoomReservation>;
+  updateRoomReservation(id: string, reservation: Partial<InsertRoomReservation>): Promise<RoomReservation | undefined>;
+  completeRoomReservation(id: string, checkOutDate: string): Promise<RoomReservation | undefined>;
+  
+  // Room Reservation Occupants
+  getRoomReservationOccupants(roomReservationId: string): Promise<RoomReservationOccupant[]>;
+  createRoomReservationOccupant(occupant: InsertRoomReservationOccupant): Promise<RoomReservationOccupant>;
+  deleteRoomReservationOccupant(id: string): Promise<boolean>;
   
   // QR Codes (Task Delegation System)
   getQRCode(id: string): Promise<QRCode | undefined>;

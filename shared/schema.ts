@@ -9,6 +9,7 @@ export const bedStatusEnum = pgEnum("bed_status", ["available", "occupied", "res
 export const ownershipTypeEnum = pgEnum("ownership_type", ["rent", "owned"]);
 export const houseStatusEnum = pgEnum("house_status", ["active", "inactive", "maintenance"]);
 export const reservationStatusEnum = pgEnum("reservation_status", ["pending", "confirmed", "checked_in", "checked_out", "cancelled"]);
+export const roomReservationStatusEnum = pgEnum("room_reservation_status", ["active", "checked_out", "cancelled"]);
 export const roomTypeEnum = pgEnum("room_type", ["single", "double", "triple", "quad", "dormitory"]);
 export const genderRestrictionEnum = pgEnum("gender_restriction", ["male", "female", "mixed", "none"]);
 export const workerGenderEnum = pgEnum("worker_gender", ["male", "female"]);
@@ -362,6 +363,7 @@ export const rooms = pgTable("rooms", {
   bedCount: integer("bed_count").default(0),
   genderRestriction: genderRestrictionEnum("gender_restriction").default("none"),
   isFamilyRoom: boolean("is_family_room").default(false),
+  availableForRoomRental: boolean("available_for_room_rental").default(false).notNull(),
   status: text("status").default("active"),
   costPerDay: numeric("cost_per_day"),
   createdAt: timestamp("created_at").defaultNow(),
@@ -382,6 +384,7 @@ export const beds = pgTable("beds", {
   roomId: varchar("room_id").notNull(),
   bedNumber: integer("bed_number").notNull(),
   status: bedStatusEnum("status").default("available"),
+  roomReservationId: varchar("room_reservation_id"), // Nullable - set when bed is part of a room rental
   lastOccupiedBy: varchar("last_occupied_by"), // References employmentId
   lastOccupiedAt: timestamp("last_occupied_at"),
   createdAt: timestamp("created_at").defaultNow(),
@@ -432,6 +435,57 @@ export const insertReservationSchema = createInsertSchema(reservations).omit({
 export type InsertReservation = z.infer<typeof insertReservationSchema>;
 export type Reservation = typeof reservations.$inferSelect;
 
+// Room Reservations table - For whole room rentals
+export const roomReservations = pgTable("room_reservations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id").notNull(),
+  houseId: varchar("house_id").notNull(),
+  roomId: varchar("room_id").notNull(),
+  leadEmploymentId: varchar("lead_employment_id"), // Primary contact/lead worker (nullable for non-worker rentals)
+  startDate: date("start_date").notNull(),
+  endDate: date("end_date"),
+  checkInDate: date("check_in_date"),
+  checkOutDate: date("check_out_date"),
+  status: roomReservationStatusEnum("status").default("active").notNull(),
+  monthlyRate: numeric("monthly_rate"),
+  dailyRate: numeric("daily_rate"),
+  totalCost: numeric("total_cost"),
+  depositAmount: numeric("deposit_amount"),
+  depositCollected: boolean("deposit_collected").default(false).notNull(),
+  depositDate: date("deposit_date"),
+  description: text("description"),
+  internalNotes: text("internal_notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  createdBy: varchar("created_by"),
+});
+
+export const insertRoomReservationSchema = createInsertSchema(roomReservations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertRoomReservation = z.infer<typeof insertRoomReservationSchema>;
+export type RoomReservation = typeof roomReservations.$inferSelect;
+
+// Room Reservation Occupants - Who's staying in the room
+export const roomReservationOccupants = pgTable("room_reservation_occupants", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  roomReservationId: varchar("room_reservation_id").notNull(),
+  employmentId: varchar("employment_id"), // If occupant is a worker
+  guestName: text("guest_name"), // For non-worker guests
+  guestGender: workerGenderEnum("guest_gender"), // For non-worker guests
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertRoomReservationOccupantSchema = createInsertSchema(roomReservationOccupants).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertRoomReservationOccupant = z.infer<typeof insertRoomReservationOccupantSchema>;
+export type RoomReservationOccupant = typeof roomReservationOccupants.$inferSelect;
+
 // QR Codes table for task delegation system
 export const qrCodes = pgTable("qr_codes", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -469,18 +523,18 @@ export const assignments = pgTable("assignments", {
   bedId: varchar("bed_id").notNull(),
   startDate: date("start_date").notNull(),
   endDate: date("end_date"),
-  monthlyRate: numeric("monthly_rate", { mode: "number" }).notNull(),
+  monthlyRate: numeric("monthly_rate").notNull(),
   status: assignmentStatusEnum("status").notNull().default("active"),
   
   // Deposit tracking
   depositCollected: boolean("deposit_collected").default(false).notNull(),
-  depositAmount: numeric("deposit_amount", { mode: "number" }).default("0"),
+  depositAmount: numeric("deposit_amount").default("0"),
   depositDate: date("deposit_date"),
   depositCollector: varchar("deposit_collector"),
   depositStatus: depositStatusEnum("deposit_status").default("pending").notNull(),
   depositRefundDate: date("deposit_refund_date"),
-  depositRefundAmount: numeric("deposit_refund_amount", { mode: "number" }),
-  damageAmount: numeric("damage_amount", { mode: "number" }),
+  depositRefundAmount: numeric("deposit_refund_amount"),
+  damageAmount: numeric("damage_amount"),
   damageNote: text("damage_note"),
   
   // Agreement notes
@@ -505,9 +559,9 @@ export const charges = pgTable("charges", {
   tenantId: varchar("tenant_id").notNull(),
   assignmentId: varchar("assignment_id").notNull(),
   month: varchar("month", { length: 7 }).notNull(), // "2025-11" format
-  amount: numeric("amount", { mode: "number" }).notNull(), // Total charge
-  expectedAmount: numeric("expected_amount", { mode: "number" }).notNull(),
-  remainingAmount: numeric("remaining_amount", { mode: "number" }).notNull(),
+  amount: numeric("amount").notNull(), // Total charge
+  expectedAmount: numeric("expected_amount").notNull(),
+  remainingAmount: numeric("remaining_amount").notNull(),
   days: integer("days").notNull(), // Number of days in charge period
   calculationType: chargeCalculationTypeEnum("calculation_type").notNull(),
   dueDate: date("due_date").notNull(),
@@ -530,7 +584,7 @@ export const payments = pgTable("payments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   tenantId: varchar("tenant_id").notNull(),
   chargeId: varchar("charge_id").notNull(),
-  amount: numeric("amount", { mode: "number" }).notNull(),
+  amount: numeric("amount").notNull(),
   paymentDate: date("payment_date").notNull(),
   paymentMethod: paymentMethodEnum("payment_method").notNull(),
   collectorName: varchar("collector_name"),
