@@ -524,25 +524,9 @@ export default function HousingDashboard() {
         });
         return;
       }
-      
-      // When moving from Step 1 to Step 2 in room rental mode, pre-populate occupants with lead worker
-      if (wizardData.rentalType === "room" && wizardData.employmentId && wizardData.workerName) {
-        // Only add if not already present
-        const alreadyAdded = wizardData.occupants.some(occ => occ.employmentId === wizardData.employmentId);
-        if (!alreadyAdded) {
-          setWizardData({
-            ...wizardData,
-            occupants: [...wizardData.occupants, {
-              id: `lead-${Date.now()}`,
-              employmentId: wizardData.employmentId,
-              workerName: wizardData.workerName,
-            }]
-          });
-        }
-      }
     }
     
-    // Step 2: Oda/Yatak validation
+    // Step 2: Oda/Yatak validation & auto-fill
     if (wizardStep === 2) {
       if (wizardData.rentalType === "bed" && !wizardData.bedId) {
         toast({
@@ -559,6 +543,22 @@ export default function HousingDashboard() {
           variant: "destructive",
         });
         return;
+      }
+      
+      // When moving from Step 2 to Step 3 in room rental mode, pre-populate occupants with lead worker
+      if (wizardData.rentalType === "room" && wizardData.employmentId && wizardData.workerName) {
+        // Only add if not already present
+        const alreadyAdded = wizardData.occupants.some(occ => occ.employmentId === wizardData.employmentId);
+        if (!alreadyAdded) {
+          setWizardData({
+            ...wizardData,
+            occupants: [...wizardData.occupants, {
+              id: `lead-${Date.now()}`,
+              employmentId: wizardData.employmentId,
+              workerName: wizardData.workerName,
+            }]
+          });
+        }
       }
     }
     
