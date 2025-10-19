@@ -39,7 +39,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { useToast } from "@/hooks/use-toast";
-import { FileText, Bell, Calendar, AlertCircle, Plus, ChevronDown, ChevronUp, MapPin, Clock, CheckCircle, Check, ChevronsUpDown, UserPlus, Info, DoorOpen } from "lucide-react";
+import { FileText, Bell, Calendar, AlertCircle, Plus, ChevronDown, ChevronUp, MapPin, Clock, CheckCircle, Check, ChevronsUpDown, UserPlus, Info, DoorOpen, DoorClosed, Home } from "lucide-react";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { dateToString, stringToDate } from "@/utils/dateHelpers";
 import { useMutation } from "@tanstack/react-query";
@@ -182,6 +182,7 @@ export default function HousingDashboard() {
     employmentId: "",
     workerName: "",
     // Step 3: Oda/Yatak
+    rentalType: "bed" as "bed" | "room", // Yatak mı, oda mı kiralıyor
     houseId: "",
     houseName: "",
     roomId: "",
@@ -512,13 +513,23 @@ export default function HousingDashboard() {
     }
     
     // Step 3: Oda/Yatak validation
-    if (wizardStep === 3 && !wizardData.bedId) {
-      toast({
-        title: "Oda/Yatak Seçimi Gerekli",
-        description: "Devam etmek için bir yatak seçmelisiniz.",
-        variant: "destructive",
-      });
-      return;
+    if (wizardStep === 3) {
+      if (wizardData.rentalType === "bed" && !wizardData.bedId) {
+        toast({
+          title: "Yatak Seçimi Gerekli",
+          description: "Devam etmek için bir yatak seçmelisiniz.",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (wizardData.rentalType === "room" && !wizardData.roomId) {
+        toast({
+          title: "Oda Seçimi Gerekli",
+          description: "Devam etmek için bir oda seçmelisiniz.",
+          variant: "destructive",
+        });
+        return;
+      }
     }
     
     if (wizardStep < 4) setWizardStep(wizardStep + 1);
@@ -530,10 +541,28 @@ export default function HousingDashboard() {
 
   const handleWizardComplete = async () => {
     // Final validation
-    if (!wizardData.employmentId || !wizardData.bedId || !wizardData.startDate) {
+    if (!wizardData.employmentId || !wizardData.startDate) {
       toast({
         title: "Eksik Bilgiler",
-        description: "İşçi, yatak ve başlangıç tarihi seçimi zorunludur.",
+        description: "İşçi ve başlangıç tarihi seçimi zorunludur.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (wizardData.rentalType === "bed" && !wizardData.bedId) {
+      toast({
+        title: "Yatak Seçimi Gerekli",
+        description: "Yatak kiralama için bir yatak seçmelisiniz.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (wizardData.rentalType === "room" && !wizardData.roomId) {
+      toast({
+        title: "Oda Seçimi Gerekli",
+        description: "Oda kiralama için bir oda seçmelisiniz.",
         variant: "destructive",
       });
       return;
@@ -551,19 +580,37 @@ export default function HousingDashboard() {
     }
 
     try {
-      // Call backend API to create reservation and assignment in database
-      const response = await apiRequest("POST", `/api/beds/${wizardData.bedId}/check-in`, {
-        employmentId: wizardData.employmentId,
-        startDate: wizardData.startDate,
-        endDate: wizardData.endDate || null,
-        checkInDate: wizardData.startDate, // Check in immediately
-        tenantId: user.tenantId,
-        // Assignment data (for Accommodation Management)
-        monthlyRate: wizardData.monthlyRate,
-        depositAmount: wizardData.depositAmount,
-        depositCollected: wizardData.depositCollected,
-        depositCollector: wizardData.depositCollector || user.email,
-      });
+      let response;
+      
+      if (wizardData.rentalType === "bed") {
+        // Call backend API for single bed check-in
+        response = await apiRequest("POST", `/api/beds/${wizardData.bedId}/check-in`, {
+          employmentId: wizardData.employmentId,
+          startDate: wizardData.startDate,
+          endDate: wizardData.endDate || null,
+          checkInDate: wizardData.startDate, // Check in immediately
+          tenantId: user.tenantId,
+          // Assignment data (for Accommodation Management)
+          monthlyRate: wizardData.monthlyRate,
+          depositAmount: wizardData.depositAmount,
+          depositCollected: wizardData.depositCollected,
+          depositCollector: wizardData.depositCollector || user.email,
+        });
+      } else {
+        // Call backend API for room-level check-in (all beds in room)
+        response = await apiRequest("POST", `/api/rooms/${wizardData.roomId}/check-in`, {
+          employmentId: wizardData.employmentId,
+          startDate: wizardData.startDate,
+          endDate: wizardData.endDate || null,
+          checkInDate: wizardData.startDate, // Check in immediately
+          tenantId: user.tenantId,
+          // Assignment data (for Accommodation Management)
+          monthlyRate: wizardData.monthlyRate,
+          depositAmount: wizardData.depositAmount,
+          depositCollected: wizardData.depositCollected,
+          depositCollector: wizardData.depositCollector || user.email,
+        });
+      }
 
       if (!response.ok) {
         throw new Error("Failed to create reservation");
@@ -588,6 +635,7 @@ export default function HousingDashboard() {
         searchType: "any",
         employmentId: "",
         workerName: "",
+        rentalType: "bed",
         houseId: "",
         houseName: "",
         roomId: "",
@@ -1201,6 +1249,7 @@ export default function HousingDashboard() {
             searchType: "any",
             employmentId: "",
             workerName: "",
+            rentalType: "bed",
             houseId: "",
             houseName: "",
             roomId: "",
@@ -1546,7 +1595,39 @@ export default function HousingDashboard() {
               return (
                 <div className="space-y-4">
                   <div className="space-y-3">
-                    <Label>{t('checkIn.wizard.selectSuitableRoomAndBed')}</Label>
+                    {/* Rental Type Selection */}
+                    <div className="space-y-2">
+                      <Label>Kiralama Türü</Label>
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant={wizardData.rentalType === "bed" ? "default" : "outline"}
+                          onClick={() => setWizardData({ ...wizardData, rentalType: "bed", roomId: "", bedId: "" })}
+                          className="flex-1"
+                          data-testid="button-rental-type-bed"
+                        >
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Yatak Kirala
+                        </Button>
+                        <Button
+                          type="button"
+                          variant={wizardData.rentalType === "room" ? "default" : "outline"}
+                          onClick={() => setWizardData({ ...wizardData, rentalType: "room", roomId: "", bedId: "" })}
+                          className="flex-1"
+                          data-testid="button-rental-type-room"
+                        >
+                          <Home className="w-4 h-4 mr-2" />
+                          Oda Kirala
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {wizardData.rentalType === "bed" 
+                          ? "Tek bir yatak seçerek işçinizi kaydedin" 
+                          : "Tüm odayı kiralayarak odadaki tüm yatakları rezerve edin"}
+                      </p>
+                    </div>
+                    
+                    <Label>{wizardData.rentalType === "bed" ? t('checkIn.wizard.selectSuitableRoomAndBed') : "Uygun Oda Seçin"}</Label>
                     {selectedGender && (
                       <div className="text-sm text-muted-foreground">
                         {t('checkIn.wizard.selectedWorker')} <span className="font-medium">{selectedWorker?.firstName} {selectedWorker?.lastName}</span> 
@@ -1596,26 +1677,78 @@ export default function HousingDashboard() {
                                   const availableBeds = room.beds?.filter(b => b.status === "available") || [];
                                   const occupiedBeds = room.beds?.filter(b => b.status === "occupied") || [];
                                   const futureReservations = room.beds?.filter(b => b.hasFutureReservation) || [];
+                                  const totalBeds = room.beds?.length || 0;
+                                  const allBedsAvailable = availableBeds.length === totalBeds;
                                   
                                   // Room-level gender conflict check
                                   const roomHasConflict = room.beds?.some(bed =>
                                     bed.worker && selectedGender && bed.worker.gender !== selectedGender
                                   );
 
-                                  if (availableBeds.length === 0) return null;
+                                  // For bed rental: skip rooms with no available beds
+                                  // For room rental: show all rooms
+                                  if (wizardData.rentalType === "bed" && availableBeds.length === 0) return null;
+                                  
+                                  const isRoomSelected = wizardData.rentalType === "room" && wizardData.roomId === room.id;
 
                                   return (
-                                    <div key={room.id} className="border rounded-lg p-3 space-y-2 bg-muted/30">
+                                    <div 
+                                      key={room.id} 
+                                      className={cn(
+                                        "border rounded-lg p-3 space-y-2 transition-all",
+                                        wizardData.rentalType === "room" 
+                                          ? "cursor-pointer hover-elevate bg-muted/30" 
+                                          : "bg-muted/30",
+                                        isRoomSelected && "border-2 border-primary bg-primary/5"
+                                      )}
+                                      onClick={() => {
+                                        if (wizardData.rentalType === "room") {
+                                          setWizardData({
+                                            ...wizardData,
+                                            houseId: house.id,
+                                            houseName: house.name || house.address,
+                                            roomId: room.id,
+                                            bedId: "", // Clear bed selection
+                                          });
+                                        }
+                                      }}
+                                      data-testid={`room-option-${room.id}`}
+                                    >
                                       {/* Room Header */}
                                       <div className="flex items-center justify-between">
                                         <h4 className="font-medium text-sm">{t('checkIn.wizard.room', { number: room.roomNumber })}</h4>
-                                        <span className="text-xs text-muted-foreground">
-                                          {t('checkIn.wizard.availableBeds', { count: availableBeds.length })}
-                                        </span>
+                                        <div className="flex items-center gap-2">
+                                          {wizardData.rentalType === "room" && isRoomSelected && (
+                                            <CheckCircle className="w-4 h-4 text-primary" />
+                                          )}
+                                          <span className="text-xs text-muted-foreground">
+                                            {wizardData.rentalType === "room" 
+                                              ? `${totalBeds} yatak` 
+                                              : t('checkIn.wizard.availableBeds', { count: availableBeds.length })}
+                                          </span>
+                                        </div>
                                       </div>
 
-                                      {/* Show occupied/future beds info */}
-                                      {(occupiedBeds.length > 0 || futureReservations.length > 0) && (
+                                      {/* Room stats for room rental */}
+                                      {wizardData.rentalType === "room" && (
+                                        <div className="grid grid-cols-3 gap-2 text-xs">
+                                          <div className="text-center p-2 bg-green-50 dark:bg-green-950/30 rounded">
+                                            <div className="font-semibold text-green-700 dark:text-green-400">{availableBeds.length}</div>
+                                            <div className="text-muted-foreground">Boş</div>
+                                          </div>
+                                          <div className="text-center p-2 bg-blue-50 dark:bg-blue-950/30 rounded">
+                                            <div className="font-semibold text-blue-700 dark:text-blue-400">{occupiedBeds.length}</div>
+                                            <div className="text-muted-foreground">Dolu</div>
+                                          </div>
+                                          <div className="text-center p-2 bg-purple-50 dark:bg-purple-950/30 rounded">
+                                            <div className="font-semibold text-purple-700 dark:text-purple-400">{futureReservations.length}</div>
+                                            <div className="text-muted-foreground">Rezerve</div>
+                                          </div>
+                                        </div>
+                                      )}
+                                      
+                                      {/* Show occupied/future beds info only for bed rental */}
+                                      {wizardData.rentalType === "bed" && (occupiedBeds.length > 0 || futureReservations.length > 0) && (
                                         <div className="text-xs space-y-1 bg-background/50 rounded p-2">
                                           {occupiedBeds.map(bed => (
                                             <div key={bed.id} className="flex items-center gap-2">
@@ -1641,38 +1774,40 @@ export default function HousingDashboard() {
                                         </div>
                                       )}
 
-                                      {/* Available Beds */}
-                                      <div className="flex flex-wrap gap-2">
-                                        {availableBeds.map(bed => {
-                                          const isSelected = wizardData.bedId === bed.id;
-                                          return (
-                                            <button
-                                              key={bed.id}
-                                              onClick={() => {
-                                                setWizardData({
-                                                  ...wizardData,
-                                                  houseId: house.id,
-                                                  houseName: house.name || house.address,
-                                                  roomId: room.id,
-                                                  bedId: bed.id,
-                                                });
-                                              }}
-                                              className={cn(
-                                                "px-3 py-2 rounded-md border-2 text-sm font-medium transition-all",
-                                                isSelected
-                                                  ? "bg-primary text-primary-foreground border-primary"
-                                                  : "bg-background border-border hover-elevate"
-                                              )}
-                                              data-testid={`bed-option-${bed.id}`}
-                                            >
-                                              {t('checkIn.wizard.bed', { number: bed.bedNumber })}
-                                              {roomHasConflict && (
-                                                <AlertCircle className="w-3 h-3 ml-1 inline text-amber-500" />
-                                              )}
-                                            </button>
-                                          );
-                                        })}
-                                      </div>
+                                      {/* Available Beds - Only show for bed rental */}
+                                      {wizardData.rentalType === "bed" && (
+                                        <div className="flex flex-wrap gap-2">
+                                          {availableBeds.map(bed => {
+                                            const isSelected = wizardData.bedId === bed.id;
+                                            return (
+                                              <button
+                                                key={bed.id}
+                                                onClick={() => {
+                                                  setWizardData({
+                                                    ...wizardData,
+                                                    houseId: house.id,
+                                                    houseName: house.name || house.address,
+                                                    roomId: room.id,
+                                                    bedId: bed.id,
+                                                  });
+                                                }}
+                                                className={cn(
+                                                  "px-3 py-2 rounded-md border-2 text-sm font-medium transition-all",
+                                                  isSelected
+                                                    ? "bg-primary text-primary-foreground border-primary"
+                                                    : "bg-background border-border hover-elevate"
+                                                )}
+                                                data-testid={`bed-option-${bed.id}`}
+                                              >
+                                                {t('checkIn.wizard.bed', { number: bed.bedNumber })}
+                                                {roomHasConflict && (
+                                                  <AlertCircle className="w-3 h-3 ml-1 inline text-amber-500" />
+                                                )}
+                                              </button>
+                                            );
+                                          })}
+                                        </div>
+                                      )}
                                     </div>
                                   );
                                 })}
@@ -1784,7 +1919,10 @@ export default function HousingDashboard() {
                   disabled={
                     (wizardStep === 1 && !wizardData.startDate) ||
                     (wizardStep === 2 && !wizardData.employmentId) ||
-                    (wizardStep === 3 && !wizardData.bedId)
+                    (wizardStep === 3 && (
+                      (wizardData.rentalType === "bed" && !wizardData.bedId) ||
+                      (wizardData.rentalType === "room" && !wizardData.roomId)
+                    ))
                   }
                   data-testid="button-wizard-next"
                 >

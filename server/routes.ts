@@ -1235,9 +1235,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         roomId: room.id,
         bedId,
         tenantId,
-        startDate: new Date(startDate),
-        endDate: endDate ? new Date(endDate) : null,
-        checkInDate: checkInDate ? new Date(checkInDate) : new Date(),
+        startDate: startDate,
+        endDate: endDate || null,
+        checkInDate: checkInDate || startDate,
         checkOutDate: null,
         status: "checked_in", // Use correct enum value
       });
@@ -1249,8 +1249,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         houseId: house.id,
         roomId: room.id,
         bedId,
-        startDate: new Date(startDate),
-        endDate: endDate ? new Date(endDate) : null,
+        startDate: startDate,
+        endDate: endDate || null,
         monthlyRate: monthlyRate || 600, // Default if not provided
         status: "active",
         depositCollected: depositCollected || false,
@@ -1263,6 +1263,115 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error checking in:", error);
       res.status(500).json({ error: "Failed to check in" });
+    }
+  });
+
+  // POST /rooms/:roomId/check-in - Check in worker to entire room (all beds)
+  apiRouter.post("/rooms/:roomId/check-in", async (req, res) => {
+    try {
+      const { roomId } = req.params;
+      const { 
+        employmentId, 
+        startDate, 
+        endDate, 
+        checkInDate, 
+        tenantId,
+        monthlyRate,
+        depositAmount,
+        depositCollected,
+        depositCollector
+      } = req.body;
+
+      if (!employmentId || !startDate || !tenantId) {
+        return res.status(400).json({ error: "employmentId, startDate, and tenantId required" });
+      }
+
+      // Verify employment exists and belongs to tenant
+      const employment = await storage.getEmployment(employmentId);
+      if (!employment || employment.tenantId !== tenantId) {
+        return res.status(404).json({ error: "Employment not found or access denied" });
+      }
+
+      // Verify room exists
+      const room = await storage.getRoom(roomId);
+      if (!room) {
+        return res.status(404).json({ error: "Room not found" });
+      }
+
+      // Verify room belongs to tenant (check house)
+      const house = await storage.getHouse(room.houseId);
+      if (!house || house.tenantId !== tenantId) {
+        return res.status(404).json({ error: "House not found or access denied" });
+      }
+
+      // Get all beds in this room
+      const beds = await storage.getBedsByRoom(roomId);
+      if (!beds || beds.length === 0) {
+        return res.status(404).json({ error: "No beds found in this room" });
+      }
+
+      // Check if any bed has active reservation
+      const bedsWithActiveReservations = await Promise.all(
+        beds.map(async (bed) => ({
+          bed,
+          reservation: await storage.getActiveReservationForBed(bed.id)
+        }))
+      );
+      
+      const occupiedBed = bedsWithActiveReservations.find(b => b.reservation !== null);
+      if (occupiedBed) {
+        return res.status(400).json({ 
+          error: `Bed ${occupiedBed.bed.bedNumber} already has an active reservation`
+        });
+      }
+
+      // Create reservations and assignments for ALL beds in the room
+      const reservations = [];
+      const assignments = [];
+
+      for (const bed of beds) {
+        // Create reservation for each bed
+        const reservation = await storage.createReservation({
+          employmentId,
+          houseId: house.id,
+          roomId: room.id,
+          bedId: bed.id,
+          tenantId,
+          startDate: startDate,
+          endDate: endDate || null,
+          checkInDate: checkInDate || startDate,
+          checkOutDate: null,
+          status: "checked_in",
+        });
+        reservations.push(reservation);
+
+        // Create assignment for each bed
+        const assignment = await storage.createAssignment({
+          tenantId,
+          employmentId,
+          houseId: house.id,
+          roomId: room.id,
+          bedId: bed.id,
+          startDate: startDate,
+          endDate: endDate || null,
+          monthlyRate: monthlyRate || 600,
+          status: "active",
+          depositCollected: depositCollected || false,
+          depositAmount: depositAmount ? String(depositAmount) : "0",
+          depositCollector: depositCollector || null,
+          depositStatus: depositCollected ? "collected" : "pending",
+        });
+        assignments.push(assignment);
+      }
+
+      res.json({ 
+        reservations, 
+        assignments,
+        message: `Successfully checked in to ${beds.length} beds in room ${room.roomNumber}`
+      });
+    } catch (error) {
+      console.error("Error checking in to room:", error);
+      res.status(500).json({ error: "Failed to check in to room" });
     }
   });
 
