@@ -723,9 +723,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Map snake_case to camelCase for frontend compatibility
       const response = {
-        id: tenant.id,
-        name: tenant.name,
-        slug: tenant.slug,
+        ...tenant,
         favoriteCountries: (tenant as any).favorite_countries || tenant.favoriteCountries || [],
         defaultCountry: (tenant as any).default_country || tenant.defaultCountry || null,
       };
