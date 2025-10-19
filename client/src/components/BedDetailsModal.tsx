@@ -23,6 +23,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar, User, Home, DoorOpen, Clock, FileText, ChevronDown, Plane, AlertTriangle, Calendar as CalendarIcon } from "lucide-react";
 import { ModernDatePicker } from "@/components/ui/modern-date-picker";
 import { format } from "date-fns";
+import { getTodayString } from "@/utils/dateHelpers";
 
 interface BedDetailsModalProps {
   open: boolean;
@@ -177,7 +178,8 @@ export default function BedDetailsModal({
       return;
     }
 
-    let checkOutDate = new Date().toISOString().split('T')[0];
+    // Use local date to avoid UTC timezone issues
+    let checkOutDate = getTodayString();
     let checkOutType = selectedAction;
 
     // Validate inputs based on action type
@@ -272,13 +274,16 @@ export default function BedDetailsModal({
 
   const stringToDate = (dateStr: string): Date | undefined => {
     if (!dateStr) return undefined;
-    const date = new Date(dateStr);
+    // Parse date as local time to avoid UTC conversion issues
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
     date.setHours(0, 0, 0, 0);
     return date;
   };
 
   const dateToString = (date: Date | undefined): string => {
     if (!date) return "";
+    // Use local date values to avoid timezone shifts
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');

@@ -394,6 +394,7 @@ export const reservations = pgTable("reservations", {
   belongingsInRoom: boolean("belongings_in_room").default(false),
   description: text("description"),
   internalNotes: text("internal_notes"),
+  notes: text("notes").array().default(sql`ARRAY[]::text[]`), // Array of checkout/reservation notes
   confirmedBy: varchar("confirmed_by"),
   confirmedAt: timestamp("confirmed_at"),
   createdAt: timestamp("created_at").defaultNow(),

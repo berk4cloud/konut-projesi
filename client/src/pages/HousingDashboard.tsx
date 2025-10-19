@@ -41,6 +41,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { FileText, Bell, Calendar, AlertCircle, Plus, ChevronDown, ChevronUp, MapPin, Clock, CheckCircle, Check, ChevronsUpDown, UserPlus, Info, DoorOpen } from "lucide-react";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import { dateToString, stringToDate } from "@/utils/dateHelpers";
 import { useMutation } from "@tanstack/react-query";
 import {
   Accordion,
@@ -1318,9 +1319,9 @@ export default function HousingDashboard() {
                 <div className="space-y-2">
                   <Label htmlFor="wizard-start-date">{t('checkIn.wizard.startDateRequired')}</Label>
                   <ModernDatePicker
-                    date={wizardData.startDate ? new Date(wizardData.startDate) : undefined}
+                    date={wizardData.startDate ? stringToDate(wizardData.startDate) : undefined}
                     onDateChange={(date) => {
-                      const dateString = date ? date.toISOString().split('T')[0] : "";
+                      const dateString = date ? dateToString(date) : "";
                       setWizardData({ ...wizardData, startDate: dateString });
                     }}
                     placeholder={t('checkIn.wizard.selectDate')}
