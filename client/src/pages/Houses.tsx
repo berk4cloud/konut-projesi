@@ -486,13 +486,7 @@ export default function Houses() {
 
   // Fetch houses from API with fallback to initialMockHouses
   const { data: apiHouses, isLoading: isLoadingHouses, error: housesError } = useQuery({
-    queryKey: ["/api/houses", user.tenantId],
-    queryFn: async () => {
-      if (!user.tenantId) return [];
-      const response = await fetch(`/api/houses?tenantId=${user.tenantId}`);
-      if (!response.ok) throw new Error("Failed to fetch houses");
-      return response.json();
-    },
+    queryKey: [`/api/houses?tenantId=${user.tenantId}`],
     enabled: !!user.tenantId,
   });
 
