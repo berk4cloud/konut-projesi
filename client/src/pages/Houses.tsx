@@ -954,8 +954,8 @@ export default function Houses() {
     prevRoomsLength.current = formData.rooms.length;
   }, [formData.rooms.length]);
 
-  const filteredHouses = houses.filter(
-    (house) => {
+  const filteredHouses = houses
+    .filter((house) => {
       // Filter by search query
       const matchesSearch = 
         house.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -966,8 +966,8 @@ export default function Houses() {
       const matchesArchiveFilter = showArchived ? true : !house.archived;
       
       return matchesSearch && matchesArchiveFilter;
-    }
-  );
+    })
+    .sort((a, b) => a.name.localeCompare(b.name, 'tr-TR')); // Sort alphabetically by name
 
   const handleAddNew = () => {
     setEditingHouse(null);
