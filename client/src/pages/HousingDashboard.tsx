@@ -1747,8 +1747,9 @@ export default function HousingDashboard() {
                                   );
 
                                   // For bed rental: skip rooms with no available beds
-                                  // For room rental: show all rooms
+                                  // For room rental: only show rooms where ALL beds are empty
                                   if (wizardData.rentalType === "bed" && availableBeds.length === 0) return null;
+                                  if (wizardData.rentalType === "room" && !allBedsAvailable) return null;
                                   
                                   const isRoomSelected = wizardData.rentalType === "room" && wizardData.roomId === room.id;
 
@@ -1777,36 +1778,16 @@ export default function HousingDashboard() {
                                     >
                                       {/* Room Header */}
                                       <div className="flex items-center justify-between">
-                                        <h4 className="font-medium text-sm">{t('checkIn.wizard.room', { number: room.roomNumber })}</h4>
+                                        <h4 className="font-medium">{t('checkIn.wizard.room', { number: room.roomNumber })}</h4>
                                         <div className="flex items-center gap-2">
                                           {wizardData.rentalType === "room" && isRoomSelected && (
                                             <CheckCircle className="w-4 h-4 text-primary" />
                                           )}
-                                          <span className="text-xs text-muted-foreground">
-                                            {wizardData.rentalType === "room" 
-                                              ? `${totalBeds} yatak` 
-                                              : t('checkIn.wizard.availableBeds', { count: availableBeds.length })}
+                                          <span className="text-sm text-muted-foreground">
+                                            {totalBeds} yatak
                                           </span>
                                         </div>
                                       </div>
-
-                                      {/* Room stats for room rental */}
-                                      {wizardData.rentalType === "room" && (
-                                        <div className="grid grid-cols-3 gap-2 text-xs">
-                                          <div className="text-center p-2 bg-green-50 dark:bg-green-950/30 rounded">
-                                            <div className="font-semibold text-green-700 dark:text-green-400">{availableBeds.length}</div>
-                                            <div className="text-muted-foreground">Boş</div>
-                                          </div>
-                                          <div className="text-center p-2 bg-blue-50 dark:bg-blue-950/30 rounded">
-                                            <div className="font-semibold text-blue-700 dark:text-blue-400">{occupiedBeds.length}</div>
-                                            <div className="text-muted-foreground">Dolu</div>
-                                          </div>
-                                          <div className="text-center p-2 bg-purple-50 dark:bg-purple-950/30 rounded">
-                                            <div className="font-semibold text-purple-700 dark:text-purple-400">{futureReservations.length}</div>
-                                            <div className="text-muted-foreground">Rezerve</div>
-                                          </div>
-                                        </div>
-                                      )}
                                       
                                       {/* Show occupied/future beds info only for bed rental */}
                                       {wizardData.rentalType === "bed" && (occupiedBeds.length > 0 || futureReservations.length > 0) && (
