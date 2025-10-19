@@ -39,7 +39,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { useToast } from "@/hooks/use-toast";
-import { FileText, Bell, Calendar, AlertCircle, Plus, ChevronDown, ChevronUp, MapPin, Clock, CheckCircle, Check, ChevronsUpDown, UserPlus, Info, DoorOpen, DoorClosed, Home } from "lucide-react";
+import { FileText, Bell, Calendar, AlertCircle, Plus, ChevronDown, ChevronUp, MapPin, Clock, CheckCircle, Check, ChevronsUpDown, UserPlus, Info, DoorOpen, DoorClosed, Home, X } from "lucide-react";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { dateToString, stringToDate } from "@/utils/dateHelpers";
 import { useMutation } from "@tanstack/react-query";
