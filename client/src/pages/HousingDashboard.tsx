@@ -506,28 +506,44 @@ export default function HousingDashboard() {
 
   // Wizard handlers
   const handleWizardNext = () => {
-    // Step 1: Tarih validation
-    if (wizardStep === 1 && !wizardData.startDate) {
-      toast({
-        title: "Başlangıç Tarihi Gerekli",
-        description: "Devam etmek için başlangıç tarihini seçmelisiniz.",
-        variant: "destructive",
-      });
-      return;
+    // Step 1: Tarih & İşçi validation
+    if (wizardStep === 1) {
+      if (!wizardData.startDate) {
+        toast({
+          title: "Başlangıç Tarihi Gerekli",
+          description: "Devam etmek için başlangıç tarihini seçmelisiniz.",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (!wizardData.employmentId) {
+        toast({
+          title: "İşçi Seçimi Gerekli",
+          description: "Devam etmek için bir işçi seçmelisiniz.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // When moving from Step 1 to Step 2 in room rental mode, pre-populate occupants with lead worker
+      if (wizardData.rentalType === "room" && wizardData.employmentId && wizardData.workerName) {
+        // Only add if not already present
+        const alreadyAdded = wizardData.occupants.some(occ => occ.employmentId === wizardData.employmentId);
+        if (!alreadyAdded) {
+          setWizardData({
+            ...wizardData,
+            occupants: [...wizardData.occupants, {
+              id: `lead-${Date.now()}`,
+              employmentId: wizardData.employmentId,
+              workerName: wizardData.workerName,
+            }]
+          });
+        }
+      }
     }
     
-    // Step 2: İşçi validation
-    if (wizardStep === 2 && !wizardData.employmentId) {
-      toast({
-        title: "İşçi Seçimi Gerekli",
-        description: "Devam etmek için bir işçi seçmelisiniz.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Step 3: Oda/Yatak validation
-    if (wizardStep === 3) {
+    // Step 2: Oda/Yatak validation
+    if (wizardStep === 2) {
       if (wizardData.rentalType === "bed" && !wizardData.bedId) {
         toast({
           title: "Yatak Seçimi Gerekli",
@@ -545,24 +561,8 @@ export default function HousingDashboard() {
         return;
       }
     }
-
-    // When moving from Step 2 to Step 3 in room rental mode, pre-populate occupants with lead worker
-    if (wizardStep === 2 && wizardData.rentalType === "room" && wizardData.employmentId && wizardData.workerName) {
-      // Only add if not already present
-      const alreadyAdded = wizardData.occupants.some(occ => occ.employmentId === wizardData.employmentId);
-      if (!alreadyAdded) {
-        setWizardData({
-          ...wizardData,
-          occupants: [...wizardData.occupants, {
-            id: `lead-${Date.now()}`,
-            employmentId: wizardData.employmentId,
-            workerName: wizardData.workerName,
-          }]
-        });
-      }
-    }
     
-    if (wizardStep < 4) setWizardStep(wizardStep + 1);
+    if (wizardStep < 3) setWizardStep(wizardStep + 1);
   };
 
   const handleWizardBack = () => {
@@ -1335,9 +1335,8 @@ export default function HousingDashboard() {
             <DialogTitle>{t('checkIn.wizard.title')}</DialogTitle>
             <DialogDescription>
               {wizardStep === 1 && t('checkIn.wizard.step1Description')}
-              {wizardStep === 2 && t('checkIn.wizard.step2Description')}
-              {wizardStep === 3 && t('checkIn.wizard.step3Description')}
-              {wizardStep === 4 && t('checkIn.wizard.step4Description')}
+              {wizardStep === 2 && t('checkIn.wizard.step3Description')}
+              {wizardStep === 3 && t('checkIn.wizard.step4Description')}
             </DialogDescription>
           </DialogHeader>
 
@@ -1361,9 +1360,9 @@ export default function HousingDashboard() {
             </div>
           )}
 
-          {/* Horizontal Stepper - 4 Steps */}
+          {/* Horizontal Stepper - 3 Steps */}
           <div className="flex items-center justify-center gap-2 py-6">
-            {/* Step 1: Tarih & Filtreler */}
+            {/* Step 1: Tarih, Şehir & İşçi */}
             <div className="flex flex-col items-center gap-2">
               <div className={cn(
                 "w-12 h-12 rounded-full flex items-center justify-center font-semibold transition-colors",
@@ -1372,7 +1371,7 @@ export default function HousingDashboard() {
                 {wizardStep > 1 ? <Check className="w-6 h-6" /> : "1"}
               </div>
               <span className="text-xs text-muted-foreground text-center">
-                {t('checkIn.wizard.step1Line1')}<br/>{t('checkIn.wizard.step1Line2')}
+                Tarih, Şehir<br/>& İşçi
               </span>
             </div>
 
@@ -1382,7 +1381,7 @@ export default function HousingDashboard() {
               wizardStep > 1 ? "bg-green-500" : "bg-muted"
             )} />
 
-            {/* Step 2: İşçi */}
+            {/* Step 2: Oda/Yatak */}
             <div className="flex flex-col items-center gap-2">
               <div className={cn(
                 "w-12 h-12 rounded-full flex items-center justify-center font-semibold transition-colors",
@@ -1390,7 +1389,9 @@ export default function HousingDashboard() {
               )}>
                 {wizardStep > 2 ? <Check className="w-6 h-6" /> : "2"}
               </div>
-              <span className="text-xs text-muted-foreground">{t('checkIn.wizard.step2')}</span>
+              <span className="text-xs text-muted-foreground text-center">
+                Yatak/Oda<br/>Seçimi
+              </span>
             </div>
 
             {/* Connector 2-3 */}
@@ -1399,32 +1400,13 @@ export default function HousingDashboard() {
               wizardStep > 2 ? "bg-green-500" : "bg-muted"
             )} />
 
-            {/* Step 3: Oda/Yatak */}
+            {/* Step 3: Fiyat */}
             <div className="flex flex-col items-center gap-2">
               <div className={cn(
                 "w-12 h-12 rounded-full flex items-center justify-center font-semibold transition-colors",
-                wizardStep > 3 ? "bg-green-500 text-white" : wizardStep === 3 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                wizardStep === 3 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
               )}>
-                {wizardStep > 3 ? <Check className="w-6 h-6" /> : "3"}
-              </div>
-              <span className="text-xs text-muted-foreground text-center">
-                {t('checkIn.wizard.step3Line1')}<br/>{t('checkIn.wizard.step3Line2')}
-              </span>
-            </div>
-
-            {/* Connector 3-4 */}
-            <div className={cn(
-              "w-16 h-1 rounded-full transition-colors",
-              wizardStep > 3 ? "bg-green-500" : "bg-muted"
-            )} />
-
-            {/* Step 4: Fiyat */}
-            <div className="flex flex-col items-center gap-2">
-              <div className={cn(
-                "w-12 h-12 rounded-full flex items-center justify-center font-semibold transition-colors",
-                wizardStep === 4 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-              )}>
-                4
+                3
               </div>
               <span className="text-xs text-muted-foreground">{t('checkIn.wizard.step4')}</span>
             </div>
@@ -2074,8 +2056,8 @@ export default function HousingDashboard() {
               );
             })()}
 
-            {/* Step 4: Pricing & Deposit */}
-            {wizardStep === 4 && (
+            {/* Step 3: Pricing & Deposit */}
+            {wizardStep === 3 && (
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="monthly-rate">{t('checkIn.wizard.monthlyFee')}</Label>
@@ -2161,13 +2143,12 @@ export default function HousingDashboard() {
             </Button>
             
             <div className="flex gap-2">
-              {wizardStep < 4 ? (
+              {wizardStep < 3 ? (
                 <Button
                   onClick={handleWizardNext}
                   disabled={
-                    (wizardStep === 1 && !wizardData.startDate) ||
-                    (wizardStep === 2 && !wizardData.employmentId) ||
-                    (wizardStep === 3 && (
+                    (wizardStep === 1 && (!wizardData.startDate || !wizardData.employmentId)) ||
+                    (wizardStep === 2 && (
                       (wizardData.rentalType === "bed" && !wizardData.bedId) ||
                       (wizardData.rentalType === "room" && !wizardData.roomId)
                     ))
