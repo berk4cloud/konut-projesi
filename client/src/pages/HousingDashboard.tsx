@@ -151,28 +151,7 @@ export default function HousingDashboard() {
     return null;
   }
 
-  // State for houses (synced from API)
-  const [houses, setHouses] = useState<House[]>([]);
-
-  // Get today's date in YYYY-MM-DD format for API
-  const todayStr = new Date().toISOString().split('T')[0];
-  
-  // Fetch houses from API with selected date
-  const { data: apiHouses, isLoading: housesLoading } = useQuery<House[]>({
-    queryKey: [`/api/houses?tenantId=${user.tenantId}&date=${todayStr}`],
-    enabled: !!user.tenantId,
-  });
-
-  // Sync houses from API and default empty reminders/leaseContract
-  useEffect(() => {
-    if (apiHouses) {
-      setHouses(apiHouses.map(house => ({
-        ...house,
-        reminders: house.reminders || [],
-        leaseContract: house.leaseContract || undefined,
-      })));
-    }
-  }, [apiHouses]);
+  // UI state
   const [assignmentModalOpen, setAssignmentModalOpen] = useState(false);
   const [warningModalOpen, setWarningModalOpen] = useState(false);
   const [selectedBed, setSelectedBed] = useState<any>(null);
@@ -207,6 +186,32 @@ export default function HousingDashboard() {
     depositCollected: false,
     depositCollector: "",
   });
+
+  // State for houses (synced from API)
+  const [houses, setHouses] = useState<House[]>([]);
+
+  // Get today's date in YYYY-MM-DD format for API
+  const todayStr = new Date().toISOString().split('T')[0];
+  
+  // Determine reference date: wizard's start date if in wizard and selected, otherwise today
+  const referenceDate = checkInWizardOpen && wizardData.startDate ? wizardData.startDate : todayStr;
+  
+  // Fetch houses from API with reference date (wizard start date or today)
+  const { data: apiHouses, isLoading: housesLoading } = useQuery<House[]>({
+    queryKey: [`/api/houses?tenantId=${user.tenantId}&date=${referenceDate}`],
+    enabled: !!user.tenantId,
+  });
+
+  // Sync houses from API and default empty reminders/leaseContract
+  useEffect(() => {
+    if (apiHouses) {
+      setHouses(apiHouses.map(house => ({
+        ...house,
+        reminders: house.reminders || [],
+        leaseContract: house.leaseContract || undefined,
+      })));
+    }
+  }, [apiHouses]);
 
   // Fetch workers from API (federated model)
   type Worker = {
@@ -1418,111 +1423,165 @@ export default function HousingDashboard() {
               </div>
             )}
 
-            {/* Step 3: Room/Bed Selection */}
-            {wizardStep === 3 && (
-              <div className="space-y-4">
-                <div className="space-y-3">
-                  <Label>{t('housing.selectAvailableRoomAndBed')}</Label>
-                  <div className="border rounded-lg max-h-[400px] overflow-y-auto">
-                    {housesLoading ? (
-                      <div className="p-8 text-center text-muted-foreground">
-                        Yükleniyor...
-                      </div>
-                    ) : getAvailableRoomsAndBeds().length > 0 ? (
-                      <div className="divide-y">
-                        {getAvailableRoomsAndBeds().map((option: any) => (
-                          <div
-                            key={`${option.houseId}-${option.roomId}-${option.bedId}`}
-                            onClick={async () => {
-                              console.log('Bed clicked:', option.bedId, 'Start date:', wizardData.startDate);
-                              
-                              // Select bed first
-                              setWizardData({
-                                ...wizardData,
-                                houseId: option.houseId,
-                                houseName: option.houseName,
-                                roomId: option.roomId,
-                                bedId: option.bedId,
-                              });
-                              
-                              // Then check for future reservations
-                              try {
-                                const url = `/api/beds/${option.bedId}/future-reservations?afterDate=${wizardData.startDate}`;
-                                console.log('Fetching future reservations:', url);
-                                
-                                const response = await fetch(url, {
-                                  headers: {
-                                    'Content-Type': 'application/json',
-                                  },
-                                });
-                                
-                                console.log('Future reservations response:', response.status);
-                                
-                                if (response.ok) {
-                                  const futureReservations = await response.json();
-                                  console.log('Future reservations data:', futureReservations);
-                                  
-                                  if (futureReservations && futureReservations.length > 0) {
-                                    const nextReservation = futureReservations[0];
-                                    const reservationDate = new Date(nextReservation.checkInDate).toLocaleDateString('tr-TR');
-                                    
-                                    const warningData = {
-                                      show: true,
-                                      message: `Bu yatak ${reservationDate} tarihinde başka birine rezerve edilmiş. Devam etmek istiyor musunuz?`,
-                                      reservationDate: nextReservation.checkInDate,
-                                    };
-                                    
-                                    console.log('Setting conflict warning:', warningData);
-                                    
-                                    // Show conflict warning after a brief delay to ensure state update
-                                    setTimeout(() => {
-                                      console.log('Calling setConflictWarning...');
-                                      setConflictWarning(warningData);
-                                    }, 100);
-                                  } else {
-                                    console.log('No future reservations found');
-                                  }
-                                }
-                              } catch (error) {
-                                console.error('Error checking future reservations:', error);
-                              }
-                            }}
-                            className={cn(
-                              "p-4 cursor-pointer transition-colors hover-elevate",
-                              wizardData.bedId === option.bedId
-                                ? "bg-primary/10 border-l-4 border-l-primary"
-                                : ""
-                            )}
-                            data-testid={`bed-option-${option.bedId}`}
-                          >
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <p className="font-medium">{option.houseName}</p>
-                                  <Badge variant="outline" className="text-xs">
-                                    {option.houseCity}
-                                  </Badge>
-                                </div>
-                                <p className="text-sm text-muted-foreground">
-                                  Oda {option.roomNumber} • Yatak {option.bedNumber}
-                                </p>
-                              </div>
-                              {wizardData.bedId === option.bedId && (
-                                <CheckCircle className="w-5 h-5 text-primary" />
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="p-8 text-center text-muted-foreground">
-                        Şu anda müsait yatak bulunmamaktadır
+            {/* Step 3: Room/Bed Selection - Improved UI */}
+            {wizardStep === 3 && (() => {
+              // Get selected worker's gender
+              const selectedWorker = workers.find(w => w.employmentId === wizardData.employmentId);
+              const selectedGender = selectedWorker?.gender;
+              
+              // Filter houses with available beds
+              const availableHouses = houses.filter(house => {
+                return house.rooms?.some(room =>
+                  room.beds?.some(bed => bed.status === "available")
+                );
+              });
+
+              return (
+                <div className="space-y-4">
+                  <div className="space-y-3">
+                    <Label>Uygun Oda ve Yatak Seçin</Label>
+                    {selectedGender && (
+                      <div className="text-sm text-muted-foreground">
+                        Seçilen işçi: <span className="font-medium">{selectedWorker?.firstName} {selectedWorker?.lastName}</span> 
+                        {" "}({selectedGender === "male" ? "Erkek" : "Kadın"})
                       </div>
                     )}
+                    
+                    <div className="border rounded-lg max-h-[500px] overflow-y-auto space-y-4 p-4">
+                      {housesLoading ? (
+                        <div className="p-8 text-center text-muted-foreground">
+                          Yükleniyor...
+                        </div>
+                      ) : availableHouses.length > 0 ? (
+                        availableHouses.map(house => {
+                          // Check for gender conflicts in this house
+                          const hasGenderConflict = house.rooms?.some(room =>
+                            room.beds?.some(bed => {
+                              if (bed.worker && selectedGender && bed.worker.gender !== selectedGender) {
+                                return true;
+                              }
+                              return false;
+                            })
+                          );
+
+                          return (
+                            <div key={house.id} className="border rounded-lg p-4 space-y-3 bg-card">
+                              {/* House Header */}
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <h3 className="font-semibold text-lg">{house.name || house.address}</h3>
+                                  <p className="text-sm text-muted-foreground flex items-center gap-1">
+                                    <MapPin className="w-3 h-3" />
+                                    {house.city}
+                                  </p>
+                                </div>
+                                {hasGenderConflict && (
+                                  <Badge variant="outline" className="bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800">
+                                    <AlertCircle className="w-3 h-3 mr-1" />
+                                    Cinsiyet Karışık
+                                  </Badge>
+                                )}
+                              </div>
+
+                              {/* Rooms Grid */}
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                {house.rooms?.map(room => {
+                                  const availableBeds = room.beds?.filter(b => b.status === "available") || [];
+                                  const occupiedBeds = room.beds?.filter(b => b.status === "occupied") || [];
+                                  const futureReservations = room.beds?.filter(b => b.hasFutureReservation) || [];
+                                  
+                                  // Room-level gender conflict check
+                                  const roomHasConflict = room.beds?.some(bed =>
+                                    bed.worker && selectedGender && bed.worker.gender !== selectedGender
+                                  );
+
+                                  if (availableBeds.length === 0) return null;
+
+                                  return (
+                                    <div key={room.id} className="border rounded-lg p-3 space-y-2 bg-muted/30">
+                                      {/* Room Header */}
+                                      <div className="flex items-center justify-between">
+                                        <h4 className="font-medium text-sm">Oda {room.roomNumber}</h4>
+                                        <span className="text-xs text-muted-foreground">
+                                          {availableBeds.length} boş
+                                        </span>
+                                      </div>
+
+                                      {/* Show occupied/future beds info */}
+                                      {(occupiedBeds.length > 0 || futureReservations.length > 0) && (
+                                        <div className="text-xs space-y-1 bg-background/50 rounded p-2">
+                                          {occupiedBeds.map(bed => (
+                                            <div key={bed.id} className="flex items-center gap-2">
+                                              <div className={cn(
+                                                "w-3 h-3 rounded-full",
+                                                bed.worker?.gender === "male" ? "bg-gender-male" : "bg-gender-female"
+                                              )} />
+                                              <span>Yatak {bed.bedNumber}: {bed.worker?.name}</span>
+                                            </div>
+                                          ))}
+                                          {futureReservations.map(bed => {
+                                            const daysUntil = bed.expectedMoveInDate 
+                                              ? Math.ceil((new Date(bed.expectedMoveInDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+                                              : 0;
+                                            return (
+                                              <div key={bed.id} className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                                                <Clock className="w-3 h-3" />
+                                                <span>Yatak {bed.bedNumber}: {bed.worker?.name} ({daysUntil} gün sonra)</span>
+                                              </div>
+                                            );
+                                          })}
+                                        </div>
+                                      )}
+
+                                      {/* Available Beds */}
+                                      <div className="flex flex-wrap gap-2">
+                                        {availableBeds.map(bed => {
+                                          const isSelected = wizardData.bedId === bed.id;
+                                          return (
+                                            <button
+                                              key={bed.id}
+                                              onClick={() => {
+                                                setWizardData({
+                                                  ...wizardData,
+                                                  houseId: house.id,
+                                                  houseName: house.name || house.address,
+                                                  roomId: room.id,
+                                                  bedId: bed.id,
+                                                });
+                                              }}
+                                              className={cn(
+                                                "px-3 py-2 rounded-md border-2 text-sm font-medium transition-all",
+                                                isSelected
+                                                  ? "bg-primary text-primary-foreground border-primary"
+                                                  : "bg-background border-border hover-elevate"
+                                              )}
+                                              data-testid={`bed-option-${bed.id}`}
+                                            >
+                                              Yatak {bed.bedNumber}
+                                              {roomHasConflict && (
+                                                <AlertCircle className="w-3 h-3 ml-1 inline text-amber-500" />
+                                              )}
+                                            </button>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <div className="p-8 text-center text-muted-foreground">
+                          Şu anda müsait yatak bulunmamaktadır
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Step 4: Pricing & Deposit */}
             {wizardStep === 4 && (
