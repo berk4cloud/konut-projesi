@@ -350,29 +350,31 @@ export default function HousingDashboard() {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
   // Filter houses based on selected filters
-  const filteredHouses = houses.filter((house) => {
-    // Filter by house
-    if (selectedHouse !== "all" && house.id !== selectedHouse) {
-      return false;
-    }
+  const filteredHouses = houses
+    .filter((house) => {
+      // Filter by house
+      if (selectedHouse !== "all" && house.id !== selectedHouse) {
+        return false;
+      }
 
-    // Filter by city
-    if (selectedCity !== "all" && house.city.toLowerCase() !== selectedCity) {
-      return false;
-    }
+      // Filter by city
+      if (selectedCity !== "all" && house.city.toLowerCase() !== selectedCity) {
+        return false;
+      }
 
-    // Filter by country
-    if (selectedCountry !== "all" && house.country !== selectedCountry) {
-      return false;
-    }
+      // Filter by country
+      if (selectedCountry !== "all" && house.country !== selectedCountry) {
+        return false;
+      }
 
-    // Filter by empty beds only (has at least one empty bed)
-    if (showEmptyOnly && house.totalBeds === house.occupiedBeds) {
-      return false;
-    }
+      // Filter by empty beds only (has at least one empty bed)
+      if (showEmptyOnly && house.totalBeds === house.occupiedBeds) {
+        return false;
+      }
 
-    return true;
-  });
+      return true;
+    })
+    .sort((a, b) => a.name.localeCompare(b.name, 'tr-TR')); // Sort alphabetically by name
 
   const totalBeds = filteredHouses.reduce((sum, house) => sum + house.totalBeds, 0);
   const occupiedBeds = filteredHouses.reduce((sum, house) => sum + house.occupiedBeds, 0);
