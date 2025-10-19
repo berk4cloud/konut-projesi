@@ -41,7 +41,7 @@ The API includes endpoints for authentication, managing houses, workers, and res
 
 ### Business Logic
 
-Key logic includes gender conflict detection, real-time bed occupancy calculations, and date-based filtering for reservations.
+Key logic includes gender conflict detection, real-time bed occupancy calculations, tenant-aware timezone handling for accurate date calculations, and date-based filtering for reservations.
 
 ### State Management
 
@@ -51,6 +51,7 @@ TanStack Query manages server state (caching, refetching). React's `useState` an
 
 -   **Workers Management (Federated Model)**: Displays workers with employment details, allowing creation, editing (of employment-specific fields), search, and filtering. Supports configurable pagination and status badges.
 -   **Currency Settings**: Tenant admins can configure system-wide currency from a list of 20 major currencies.
+-   **Tenant Timezone Support**: Multi-timezone architecture with IANA timezone configuration per tenant. All date calculations (reservations, checkouts, availability) respect tenant's local timezone using Luxon. Features include automatic normalization (whitespace trimming), strict validation (create + update), runtime UTC fallback, and shared timezone helpers for consistent date handling across the system.
 -   **Accommodation Billing & Assignment Management**: Manages worker-bed assignments, calculates prorated monthly charges, tracks deposits, and monitors payment statuses with advanced filtering for overdue categories. Features enhanced dashboard statistics with 3 new cards: Upcoming Due Dates (today/3-day/7-day breakdown with mutually exclusive date buckets), Overdue Breakdown (4 color-coded severity levels: 1-7, 8-14, 15-30, 30+ days), and Deposits to Refund (7-day checkout tracking). Full i18n support across 7 languages.
 -   **Multi-Level Pricing System**: Supports a 3-level pricing hierarchy (Room > House > System) with a global daily rental mode toggle.
 -   **House Archiving System**: Implements soft-delete for houses with visual indicators and a toggle to show/hide archived houses.
@@ -64,6 +65,7 @@ TanStack Query manages server state (caching, refetching). React's `useState` an
 
 -   **Database**: Neon Database (Serverless PostgreSQL).
 -   **Authentication**: `jsonwebtoken`, `bcryptjs`.
+-   **Timezone Handling**: `luxon` for IANA timezone validation and date calculations.
 
 ### UI Component Libraries
 
