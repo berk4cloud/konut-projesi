@@ -745,6 +745,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log("PATCH /tenants/:id - Request body:", updates);
       
+      // Normalize and validate timezone if provided (IANA validation)
+      if (updates.timezone !== undefined && updates.timezone !== null) {
+        const { DateTime } = await import('luxon');
+        if (typeof updates.timezone !== 'string') {
+          return res.status(400).json({ 
+            error: "Timezone must be a string" 
+          });
+        }
+        // Normalize: trim whitespace, convert empty string to undefined (use default)
+        const trimmedTimezone = updates.timezone.trim();
+        if (trimmedTimezone.length === 0) {
+          updates.timezone = undefined; // Use default "UTC"
+        } else {
+          // Validate IANA timezone
+          if (!DateTime.now().setZone(trimmedTimezone).isValid) {
+            return res.status(400).json({ 
+              error: "Invalid IANA timezone string. Use format like 'Europe/Amsterdam' or 'America/New_York'" 
+            });
+          }
+          updates.timezone = trimmedTimezone; // Store trimmed value
+        }
+      }
+      
       const tenant = await storage.updateTenant(id, updates);
       
       if (!tenant) {

@@ -36,6 +36,7 @@ import {
   type InsertAssignmentNote
 } from "@shared/schema";
 import { randomUUID } from "crypto";
+import { getTodayInTimezone } from "./utils/timezoneHelpers";
 import { 
   demoPlatformAdmins,
   demoTenants,
@@ -629,6 +630,7 @@ export class DbStorage implements IStorage {
     }
   }
 
+
   // ============================================
   // Countries
   // ============================================
@@ -957,9 +959,12 @@ export class DbStorage implements IStorage {
   async getActiveReservationsByTenant(tenantId: string): Promise<Reservation[]> {
     await this.ensureSeeded();
     // Active = checked in and (not checked out OR checkout date is in the future, not today)
-    // Use local date components to avoid UTC timezone conversion bugs
-    const now = new Date();
-    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    // Use tenant timezone to determine "today" for accurate multi-timezone support
+    const tenant = await this.getTenant(tenantId);
+    if (!tenant) {
+      throw new Error(`Tenant not found: ${tenantId}`);
+    }
+    const today = getTodayInTimezone(tenant.timezone);
     return await db.select()
       .from(reservationsTable)
       .where(
@@ -976,9 +981,31 @@ export class DbStorage implements IStorage {
   async getActiveReservationForBed(bedId: string): Promise<Reservation | undefined> {
     await this.ensureSeeded();
     // Active = checked in and (not checked out OR checkout date is in the future, not today)
-    // Use local date components to avoid UTC timezone conversion bugs
-    const now = new Date();
-    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    // Use tenant timezone to determine "today" for accurate multi-timezone support
+    
+    // Get tenant timezone by joining bed → room → house
+    const bedWithHouse = await db.select({ 
+      bed: bedsTable, 
+      room: roomsTable, 
+      house: housesTable 
+    })
+      .from(bedsTable)
+      .innerJoin(roomsTable, eq(bedsTable.roomId, roomsTable.id))
+      .innerJoin(housesTable, eq(roomsTable.houseId, housesTable.id))
+      .where(eq(bedsTable.id, bedId))
+      .limit(1);
+    
+    if (!bedWithHouse[0]) {
+      return undefined; // Bed not found
+    }
+    
+    const tenantId = bedWithHouse[0].house.tenantId;
+    const tenant = await this.getTenant(tenantId);
+    if (!tenant) {
+      throw new Error(`Tenant not found: ${tenantId}`);
+    }
+    
+    const today = getTodayInTimezone(tenant.timezone);
     const result = await db.select()
       .from(reservationsTable)
       .where(

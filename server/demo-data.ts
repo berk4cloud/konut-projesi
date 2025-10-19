@@ -105,6 +105,8 @@ export const demoTenants: Tenant[] = [
     subscriptionStartsAt: new Date("2024-01-15"),
     modules: '{"workers":true,"planning":true,"accommodation":true,"transport":false,"finance":false}',
     currency: "EUR",
+    timezone: "Europe/Amsterdam", // Netherlands timezone (UTC+1/+2)
+    pricingSettings: '{"dailyRentalEnabled":false,"standardPricing":{"bedDailyPrice":25,"bedMonthlyPrice":600,"roomDailyPrice":70,"roomMonthlyPrice":1700}}',
     favoriteCountries: ["DE", "NL", "TR", "PL", "BE"],
     defaultCountry: "NL",
     createdAt: new Date("2024-01-15"),
@@ -126,6 +128,8 @@ export const demoTenants: Tenant[] = [
     subscriptionStartsAt: null,
     modules: '{"workers":true,"planning":true,"accommodation":false,"transport":true,"finance":true}',
     currency: "EUR",
+    timezone: "Europe/Amsterdam", // Netherlands timezone (UTC+1/+2)
+    pricingSettings: '{"dailyRentalEnabled":false,"standardPricing":{"bedDailyPrice":25,"bedMonthlyPrice":600,"roomDailyPrice":70,"roomMonthlyPrice":1700}}',
     favoriteCountries: ["NL", "GB", "US"],
     defaultCountry: "NL",
     createdAt: new Date("2024-10-01"),
@@ -147,6 +151,8 @@ export const demoTenants: Tenant[] = [
     subscriptionStartsAt: new Date("2024-06-01"),
     modules: '{"workers":true,"planning":true,"accommodation":true,"transport":true,"finance":false}',
     currency: "EUR",
+    timezone: "Europe/Amsterdam", // Netherlands timezone (UTC+1/+2)
+    pricingSettings: '{"dailyRentalEnabled":false,"standardPricing":{"bedDailyPrice":25,"bedMonthlyPrice":600,"roomDailyPrice":70,"roomMonthlyPrice":1700}}',
     favoriteCountries: ["NL", "DE", "BE"],
     defaultCountry: "NL",
     createdAt: new Date("2024-06-01"),

@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import { pgTable, text, varchar, timestamp, numeric, integer, date, boolean, pgEnum, jsonb, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { DateTime } from "luxon";
 
 // Enums
 export const bedStatusEnum = pgEnum("bed_status", ["available", "occupied", "reserved", "out_of_service"]);
@@ -117,6 +118,7 @@ export const tenants = pgTable("tenants", {
   
   // Settings
   currency: currencyEnum("currency").default("EUR").notNull(),
+  timezone: text("timezone").default("UTC").notNull(), // IANA timezone string, e.g., "Europe/Amsterdam", "America/New_York"
   pricingSettings: jsonb("pricing_settings").default(sql`'{"dailyRentalEnabled":false,"standardPricing":{"bedDailyPrice":25,"bedMonthlyPrice":600,"roomDailyPrice":70,"roomMonthlyPrice":1700}}'::jsonb`).notNull(),
   
   // Country Management
@@ -129,11 +131,31 @@ export const tenants = pgTable("tenants", {
   createdBy: varchar("created_by"), // Platform admin who created this tenant
 });
 
-export const insertTenantSchema = createInsertSchema(tenants).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertTenantSchema = createInsertSchema(tenants)
+  .omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+  })
+  .transform((data) => ({
+    ...data,
+    // Normalize timezone: trim whitespace, convert empty string to undefined
+    timezone: data.timezone && typeof data.timezone === 'string' 
+      ? (data.timezone.trim() || undefined)
+      : data.timezone
+  }))
+  .refine(
+    (data) => {
+      // If timezone is provided, validate it's a valid IANA timezone
+      if (!data.timezone || typeof data.timezone !== 'string') return true; // Will use default "UTC"
+      // Already trimmed by transform, validate as-is
+      return DateTime.now().setZone(data.timezone).isValid;
+    },
+    {
+      message: "Invalid IANA timezone string. Use format like 'Europe/Amsterdam' or 'America/New_York'",
+      path: ["timezone"],
+    }
+  );
 export type InsertTenant = z.infer<typeof insertTenantSchema>;
 export type Tenant = typeof tenants.$inferSelect;
 
