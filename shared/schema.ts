@@ -140,7 +140,7 @@ export const insertTenantSchema = createInsertSchema(tenants)
   .transform((data) => ({
     ...data,
     // Normalize timezone: trim whitespace, convert empty string to undefined
-    timezone: data.timezone && typeof data.timezone === 'string' 
+    timezone: typeof data.timezone === 'string'
       ? (data.timezone.trim() || undefined)
       : data.timezone
   }))
