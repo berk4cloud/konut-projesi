@@ -38,7 +38,8 @@ import {
 } from "@/components/ui/command";
 import { useToast } from "@/hooks/use-toast";
 import { FileText, Bell, Calendar, AlertCircle, Plus, ChevronDown, ChevronUp, MapPin, Clock, CheckCircle, Check, ChevronsUpDown, UserPlus, Info } from "lucide-react";
-import { getActiveWorkersForTenant, createWorker } from "@/utils/employment-adapter";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useMutation } from "@tanstack/react-query";
 import {
   Accordion,
   AccordionContent,
@@ -189,9 +190,21 @@ export default function HousingDashboard() {
     depositCollector: "",
   });
 
-  // Workers state - using federated model adapter
-  // Note: worker.id is actually employmentId (not worker profile id)
-  const [workers, setWorkers] = useState(() => getActiveWorkersForTenant("cova"));
+  // Fetch workers from API (federated model)
+  type Worker = {
+    id: string;
+    employmentId: string;
+    firstName: string;
+    lastName: string;
+    gender: string;
+    dateOfBirth: string;
+    status: string;
+  };
+  
+  const { data: workers = [] } = useQuery<Worker[]>({
+    queryKey: [`/api/workers?tenantId=${user?.tenantId}`],
+    enabled: !!user?.tenantId,
+  });
 
   // Quick worker registration state
   const [quickRegisterOpen, setQuickRegisterOpen] = useState(false);
@@ -200,6 +213,45 @@ export default function HousingDashboard() {
     lastName: "",
     dateOfBirth: "",
     gender: "" as "male" | "female" | "",
+  });
+
+  // Quick worker registration mutation
+  const createWorkerMutation = useMutation({
+    mutationFn: async (data: typeof quickRegisterData) => {
+      const res = await apiRequest("POST", "/api/workers", {
+        email: `${data.firstName.toLowerCase()}.${data.lastName.toLowerCase()}@worker.com`,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        gender: data.gender,
+        dateOfBirth: data.dateOfBirth,
+        phone: "+31 6 0000 0000",
+        nationality: "Türkiye",
+        tenantId: user?.tenantId || "tenant-cova",
+      });
+      return res.json();
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: [`/api/workers?tenantId=${user?.tenantId}`] });
+      const fullName = `${quickRegisterData.firstName} ${quickRegisterData.lastName}`;
+      setWizardData({
+        ...wizardData,
+        employmentId: result.employmentId,
+        workerName: fullName,
+      });
+      setQuickRegisterData({ firstName: "", lastName: "", dateOfBirth: "", gender: "" });
+      setQuickRegisterOpen(false);
+      toast({
+        title: "İşçi Eklendi",
+        description: `${fullName} başarıyla eklendi ve seçildi.`,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Hata",
+        description: "İşçi eklenirken bir hata oluştu.",
+        variant: "destructive",
+      });
+    },
   });
 
   // Prepare upcoming reminders for notifications dialog
@@ -396,32 +448,7 @@ export default function HousingDashboard() {
       return;
     }
 
-    // Use adapter to create worker (creates profile + employment)
-    const result = createWorker({
-      email: `${quickRegisterData.firstName.toLowerCase()}.${quickRegisterData.lastName.toLowerCase()}@worker.com`,
-      firstName: quickRegisterData.firstName,
-      lastName: quickRegisterData.lastName,
-      gender: quickRegisterData.gender,
-      dateOfBirth: quickRegisterData.dateOfBirth,
-      tenantId: "cova",
-      startDate: new Date().toISOString().split('T')[0], // Today
-    });
-
-    const fullName = `${result.legacyWorker.firstName} ${result.legacyWorker.lastName}`;
-
-    setWorkers([...workers, result.legacyWorker]);
-    setWizardData({
-      ...wizardData,
-      employmentId: result.employmentId, // This is the employment ID
-      workerName: fullName,
-    });
-    setQuickRegisterData({ firstName: "", lastName: "", dateOfBirth: "", gender: "" });
-    setQuickRegisterOpen(false);
-
-    toast({
-      title: "İşçi Eklendi",
-      description: `${fullName} başarıyla eklendi ve seçildi.`,
-    });
+    createWorkerMutation.mutate(quickRegisterData);
   };
 
   // Wizard handlers
