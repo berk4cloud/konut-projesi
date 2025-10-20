@@ -182,6 +182,7 @@ export default function HousingDashboard() {
     // Step 1: Tarih & Filtreler
     startDate: "",
     endDate: "",
+    isOpenEnded: false, // Ucu açık mı?
     searchCity: "all",
     searchType: "any" as "room" | "bed" | "any", // Oda mı, yatak mı arıyor
     // Step 2: İşçi
@@ -698,6 +699,7 @@ export default function HousingDashboard() {
       setWizardData({
         startDate: "",
         endDate: "",
+        isOpenEnded: false,
         searchCity: "all",
         searchType: "any",
         employmentId: "",
@@ -1313,6 +1315,7 @@ export default function HousingDashboard() {
           setWizardData({
             startDate: "",
             endDate: "",
+            isOpenEnded: false,
             searchCity: "all",
             searchType: "any",
             employmentId: "",
@@ -1431,6 +1434,46 @@ export default function HousingDashboard() {
                   <p className="text-sm text-muted-foreground">
                     {t('checkIn.wizard.firstDayStaying')}
                   </p>
+                </div>
+
+                <div className="space-y-3 border-t pt-3">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="open-ended"
+                      checked={wizardData.isOpenEnded}
+                      onCheckedChange={(checked) => {
+                        setWizardData({ 
+                          ...wizardData, 
+                          isOpenEnded: checked as boolean,
+                          endDate: checked ? "" : wizardData.endDate // Clear end date if open-ended
+                        });
+                      }}
+                      data-testid="checkbox-open-ended"
+                    />
+                    <Label htmlFor="open-ended" className="cursor-pointer font-normal">
+                      Ucu Açık (Bitiş tarihi belirsiz)
+                    </Label>
+                  </div>
+
+                  {!wizardData.isOpenEnded && (
+                    <div className="space-y-2">
+                      <Label htmlFor="wizard-end-date">{t('checkIn.wizard.endDate')} (Opsiyonel)</Label>
+                      <ModernDatePicker
+                        date={wizardData.endDate ? stringToDate(wizardData.endDate) : undefined}
+                        onDateChange={(date) => {
+                          const dateString = date ? dateToString(date) : "";
+                          setWizardData({ ...wizardData, endDate: dateString });
+                        }}
+                        placeholder={t('checkIn.wizard.selectDate')}
+                        data-testid="input-wizard-end-date"
+                        className="w-full"
+                        minDate={wizardData.startDate ? stringToDate(wizardData.startDate) : undefined}
+                      />
+                      <p className="text-sm text-muted-foreground">
+                        Bitiş tarihi biliyorsanız seçin - müsait oda/yatak bulmayı kolaylaştırır
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -2091,21 +2134,6 @@ export default function HousingDashboard() {
                     value={wizardData.monthlyRate}
                     onChange={(e) => setWizardData({ ...wizardData, monthlyRate: Number(e.target.value) })}
                     data-testid="input-wizard-monthly-rate"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="end-date">{t('checkIn.wizard.endDate')}</Label>
-                  <ModernDatePicker
-                    date={wizardData.endDate ? new Date(wizardData.endDate) : undefined}
-                    onDateChange={(date) => {
-                      const dateString = date ? date.toISOString().split('T')[0] : "";
-                      setWizardData({ ...wizardData, endDate: dateString });
-                    }}
-                    placeholder="Tarih seçin"
-                    data-testid="input-wizard-end-date"
-                    className="w-full"
-                    minDate={wizardData.startDate ? new Date(wizardData.startDate) : undefined}
                   />
                 </div>
 
