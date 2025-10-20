@@ -1408,7 +1408,7 @@ export class DbStorage implements IStorage {
         isLeadTenant,
         leadTenantName: record.leadProfile 
           ? `${record.leadProfile.firstName} ${record.leadProfile.lastName}`
-          : null,
+          : undefined,
         monthlyRate: record.roomReservation.monthlyRate,
       };
     }
@@ -1444,9 +1444,9 @@ export class DbStorage implements IStorage {
         roomId: record.room.id,
         roomNumber: record.room.roomNumber,
         bedId: record.bed.id,
-        bedNumber: record.bed.bedNumber,
+        bedNumber: String(record.bed.bedNumber),
         isLeadTenant: true, // bed-level rentals are always "lead" (they pay for bed)
-        monthlyRate: record.reservation.monthlyRate,
+        monthlyRate: undefined, // bed-level reservations don't have monthly rate in current schema
       };
     }
 

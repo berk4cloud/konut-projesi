@@ -78,6 +78,19 @@ type Worker = {
   house?: string;
   room?: string;
   bed?: string;
+  // Housing info (room-first architecture)
+  housing?: {
+    type: 'room' | 'bed' | null;
+    houseId?: string;
+    houseName?: string;
+    roomId?: string;
+    roomNumber?: string;
+    bedId?: string;
+    bedNumber?: string;
+    isLeadTenant?: boolean;
+    leadTenantName?: string;
+    monthlyRate?: number;
+  } | null;
 };
 
 export default function Workers() {
@@ -226,6 +239,52 @@ export default function Workers() {
       default:
         return null;
     }
+  };
+
+  // Accommodation display helper (room-first architecture)
+  const getAccommodationDisplay = (worker: Worker) => {
+    if (!worker.housing) {
+      // Fallback to legacy format if housing info not available
+      if (worker.house) {
+        return (
+          <div className="flex flex-col gap-0.5">
+            <span className="text-foreground">{worker.house}</span>
+            <span className="text-muted-foreground text-xs">
+              {t('workers.table.room')} {worker.room} • {t('workers.table.bed')} {worker.bed}
+            </span>
+          </div>
+        );
+      }
+      return <span className="text-muted-foreground">-</span>;
+    }
+
+    if (worker.housing.type === 'room') {
+      // Room rental
+      return (
+        <div className="flex flex-col gap-0.5">
+          <span className="text-foreground">Oda {worker.housing.roomNumber}, {worker.housing.houseName}</span>
+          <span className="text-muted-foreground text-xs">
+            {worker.housing.isLeadTenant 
+              ? "Ödüyor" 
+              : `${worker.housing.leadTenantName} ödüyor`}
+          </span>
+        </div>
+      );
+    }
+
+    if (worker.housing.type === 'bed') {
+      // Bed rental
+      return (
+        <div className="flex flex-col gap-0.5">
+          <span className="text-foreground">{worker.housing.houseName}</span>
+          <span className="text-muted-foreground text-xs">
+            Oda {worker.housing.roomNumber} • Yatak {worker.housing.bedNumber}
+          </span>
+        </div>
+      );
+    }
+
+    return <span className="text-muted-foreground">-</span>;
   };
   
   // Dialog states
@@ -449,17 +508,8 @@ export default function Workers() {
                     </TableCell>
                     <TableCell>{getGenderDisplay(worker.gender)}</TableCell>
                     <TableCell>{worker.nationality || "-"}</TableCell>
-                    <TableCell className="text-sm">
-                      {worker.house ? (
-                        <div className="flex flex-col gap-0.5">
-                          <span className="text-foreground">{worker.house}</span>
-                          <span className="text-muted-foreground text-xs">
-                            {t('workers.table.room')} {worker.room} • {t('workers.table.bed')} {worker.bed}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground">{t('workers.table.unassigned')}</span>
-                      )}
+                    <TableCell className="text-sm" data-testid={`cell-accommodation-${worker.employmentId}`}>
+                      {getAccommodationDisplay(worker)}
                     </TableCell>
                     <TableCell>
                       <Button 
