@@ -182,7 +182,6 @@ export default function HousingDashboard() {
     // Step 1: Tarih & Filtreler
     startDate: "",
     endDate: "",
-    isOpenEnded: false, // Ucu açık mı?
     searchCity: "all",
     searchType: "any" as "room" | "bed" | "any", // Oda mı, yatak mı arıyor
     // Step 2: İşçi
@@ -699,7 +698,6 @@ export default function HousingDashboard() {
       setWizardData({
         startDate: "",
         endDate: "",
-        isOpenEnded: false,
         searchCity: "all",
         searchType: "any",
         employmentId: "",
@@ -1315,7 +1313,6 @@ export default function HousingDashboard() {
           setWizardData({
             startDate: "",
             endDate: "",
-            isOpenEnded: false,
             searchCity: "all",
             searchType: "any",
             employmentId: "",
@@ -1436,53 +1433,21 @@ export default function HousingDashboard() {
                   </p>
                 </div>
 
-                <div className="border-t pt-3 space-y-3">
-                  <div className="flex flex-col gap-4 md:flex-row md:items-start md:gap-6">
-                    {/* Left: Open-ended checkbox */}
-                    <div className="flex items-center space-x-2 pt-2">
-                      <Checkbox
-                        id="open-ended"
-                        checked={wizardData.isOpenEnded}
-                        onCheckedChange={(checked) => {
-                          setWizardData({ 
-                            ...wizardData, 
-                            isOpenEnded: checked as boolean,
-                            endDate: checked ? "" : wizardData.endDate
-                          });
-                        }}
-                        data-testid="checkbox-open-ended"
-                      />
-                      <Label htmlFor="open-ended" className="cursor-pointer font-normal whitespace-nowrap">
-                        Ucu Açık
-                      </Label>
-                    </div>
-
-                    {/* Right: End date field */}
-                    <div className={cn(
-                      "space-y-2 md:flex-1 transition-opacity",
-                      wizardData.isOpenEnded ? "opacity-60 pointer-events-none" : "opacity-100 pointer-events-auto"
-                    )}>
-                      <Label htmlFor="wizard-end-date">
-                        {t('checkIn.wizard.endDate')}{!wizardData.isOpenEnded && ' (Opsiyonel)'}
-                      </Label>
-                      <ModernDatePicker
-                        date={wizardData.endDate ? stringToDate(wizardData.endDate) : undefined}
-                        onDateChange={(date) => {
-                          const dateString = date ? dateToString(date) : "";
-                          setWizardData({ ...wizardData, endDate: dateString });
-                        }}
-                        placeholder={t('checkIn.wizard.selectDate')}
-                        data-testid="input-wizard-end-date"
-                        className="w-full"
-                        minDate={wizardData.startDate ? stringToDate(wizardData.startDate) : undefined}
-                        disabled={wizardData.isOpenEnded}
-                      />
-                    </div>
-                  </div>
+                <div className="space-y-2 border-t pt-3">
+                  <Label htmlFor="wizard-end-date">Bitiş Tarihi (Opsiyonel)</Label>
+                  <ModernDatePicker
+                    date={wizardData.endDate ? stringToDate(wizardData.endDate) : undefined}
+                    onDateChange={(date) => {
+                      const dateString = date ? dateToString(date) : "";
+                      setWizardData({ ...wizardData, endDate: dateString });
+                    }}
+                    placeholder={t('checkIn.wizard.selectDate')}
+                    data-testid="input-wizard-end-date"
+                    className="w-full"
+                    minDate={wizardData.startDate ? stringToDate(wizardData.startDate) : undefined}
+                  />
                   <p className="text-sm text-muted-foreground">
-                    {wizardData.isOpenEnded 
-                      ? "Bitiş tarihi belirsiz - istediğiniz zaman sonlandırabilirsiniz" 
-                      : "Bitiş tarihi biliyorsanız seçin - müsait oda/yatak bulmayı kolaylaştırır"}
+                    Bitiş tarihi biliyorsanız seçin - müsait oda/yatak bulmayı kolaylaştırır
                   </p>
                 </div>
 
