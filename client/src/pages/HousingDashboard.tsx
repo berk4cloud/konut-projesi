@@ -1436,8 +1436,8 @@ export default function HousingDashboard() {
                   </p>
                 </div>
 
-                <div className="border-t pt-3">
-                  <div className="grid grid-cols-2 gap-4 items-start">
+                <div className="border-t pt-3 space-y-3">
+                  <div className="flex flex-col gap-4 md:flex-row md:items-start md:gap-6">
                     {/* Left: Open-ended checkbox */}
                     <div className="flex items-center space-x-2 pt-2">
                       <Checkbox
@@ -1452,14 +1452,19 @@ export default function HousingDashboard() {
                         }}
                         data-testid="checkbox-open-ended"
                       />
-                      <Label htmlFor="open-ended" className="cursor-pointer font-normal">
+                      <Label htmlFor="open-ended" className="cursor-pointer font-normal whitespace-nowrap">
                         Ucu Açık
                       </Label>
                     </div>
 
                     {/* Right: End date field */}
-                    <div className="space-y-2">
-                      <Label htmlFor="wizard-end-date">{t('checkIn.wizard.endDate')} (Opsiyonel)</Label>
+                    <div className={cn(
+                      "space-y-2 md:flex-1 transition-opacity",
+                      wizardData.isOpenEnded ? "opacity-60 pointer-events-none" : "opacity-100 pointer-events-auto"
+                    )}>
+                      <Label htmlFor="wizard-end-date">
+                        {t('checkIn.wizard.endDate')}{!wizardData.isOpenEnded && ' (Opsiyonel)'}
+                      </Label>
                       <ModernDatePicker
                         date={wizardData.endDate ? stringToDate(wizardData.endDate) : undefined}
                         onDateChange={(date) => {
@@ -1474,7 +1479,7 @@ export default function HousingDashboard() {
                       />
                     </div>
                   </div>
-                  <p className="text-sm text-muted-foreground mt-2">
+                  <p className="text-sm text-muted-foreground">
                     {wizardData.isOpenEnded 
                       ? "Bitiş tarihi belirsiz - istediğiniz zaman sonlandırabilirsiniz" 
                       : "Bitiş tarihi biliyorsanız seçin - müsait oda/yatak bulmayı kolaylaştırır"}
