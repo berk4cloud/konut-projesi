@@ -1,7 +1,13 @@
 import BedCard from "./BedCard";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
-import { Home, Users } from "lucide-react";
+import { Home } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface Worker {
   employmentId: string; // Federated model - unique per employment
@@ -44,42 +50,26 @@ export default function RoomCard({ roomNumber, floor, beds, roomReservation, onB
           <h4 className="font-semibold" data-testid={`room-${roomNumber}`}>
             {t('housing.room')} {roomNumber}
           </h4>
-          {roomReservation && (
-            <Badge variant="outline" className="text-xs gap-1" data-testid={`room-rental-badge-${roomNumber}`}>
-              <Home className="w-3 h-3" />
-              Oda Kiralandı
-            </Badge>
+          {roomReservation && roomReservation.leadTenant && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge variant="outline" className="text-xs gap-1 cursor-help" data-testid={`room-rental-badge-${roomNumber}`}>
+                    <Home className="w-3 h-3" />
+                    Oda Kiralandı
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-sm">{roomReservation.leadTenant.name} tarafından kiralandı</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
         </div>
         {floor !== undefined && (
           <span className="text-xs text-muted-foreground">{t('housing.floor')} {floor}</span>
         )}
       </div>
-
-      {roomReservation && roomReservation.leadTenant && (
-        <div className="bg-card rounded border p-2 space-y-1 text-xs">
-          <div className="flex items-center gap-1 font-medium">
-            <Users className="w-3 h-3" />
-            <span>Ödeme Yapan:</span>
-            <span className="text-foreground">{roomReservation.leadTenant.name}</span>
-          </div>
-          {roomReservation.occupants.length > 1 && (
-            <div className="text-muted-foreground pl-4">
-              <span>Sakinler: </span>
-              {roomReservation.occupants.map((occ, idx) => (
-                <span key={idx} data-testid={`occupant-name-${idx}`}>
-                  {occ.name}{idx < roomReservation.occupants.length - 1 ? ', ' : ''}
-                </span>
-              ))}
-            </div>
-          )}
-          {roomReservation.monthlyRate && (
-            <div className="text-muted-foreground pl-4">
-              Aylık Kira: €{roomReservation.monthlyRate}
-            </div>
-          )}
-        </div>
-      )}
 
       <div className="flex flex-wrap gap-2">
         {beds.map((bed) => (
