@@ -10,6 +10,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useTranslation } from "react-i18next";
 
 interface ModernDatePickerProps {
@@ -59,15 +66,99 @@ export function ModernDatePicker({
     setOpen(false);
   };
 
-  // Birth date mode: defaults to show dates from ~30 years ago, with year/month dropdowns
-  const currentYear = new Date().getFullYear();
-  const birthDateDefaults = birthDateMode ? {
-    captionLayout: "dropdown-buttons" as const,
-    fromYear: 1940,
-    toYear: currentYear - 16, // Minimum 16 years old
-    defaultMonth: new Date(currentYear - 30, 0), // Default to 30 years ago
-  } : {};
+  // Birth date mode: use compact dropdowns instead of calendar
+  if (birthDateMode) {
+    const currentYear = new Date().getFullYear();
+    const selectedDay = date ? date.getDate() : undefined;
+    const selectedMonth = date ? date.getMonth() : undefined;
+    const selectedYear = date ? date.getFullYear() : undefined;
 
+    const days = Array.from({ length: 31 }, (_, i) => i + 1);
+    const months = [
+      { value: 0, label: t('months.january') || 'Ocak' },
+      { value: 1, label: t('months.february') || 'Şubat' },
+      { value: 2, label: t('months.march') || 'Mart' },
+      { value: 3, label: t('months.april') || 'Nisan' },
+      { value: 4, label: t('months.may') || 'Mayıs' },
+      { value: 5, label: t('months.june') || 'Haziran' },
+      { value: 6, label: t('months.july') || 'Temmuz' },
+      { value: 7, label: t('months.august') || 'Ağustos' },
+      { value: 8, label: t('months.september') || 'Eylül' },
+      { value: 9, label: t('months.october') || 'Ekim' },
+      { value: 10, label: t('months.november') || 'Kasım' },
+      { value: 11, label: t('months.december') || 'Aralık' },
+    ];
+    const years = Array.from({ length: currentYear - 1940 + 1 }, (_, i) => currentYear - i).filter(y => y <= currentYear - 16);
+
+    const updateDate = (day?: number, month?: number, year?: number) => {
+      const newDay = day ?? selectedDay ?? 1;
+      const newMonth = month ?? selectedMonth ?? 0;
+      const newYear = year ?? selectedYear ?? currentYear - 30;
+      
+      const newDate = new Date(newYear, newMonth, newDay);
+      onDateChange(newDate);
+    };
+
+    return (
+      <div className={cn("flex gap-2", className)} data-testid={dataTestId}>
+        {/* Day */}
+        <Select
+          value={selectedDay?.toString()}
+          onValueChange={(value) => updateDate(parseInt(value), selectedMonth, selectedYear)}
+          disabled={disabled}
+        >
+          <SelectTrigger className="w-20">
+            <SelectValue placeholder="Gün" />
+          </SelectTrigger>
+          <SelectContent>
+            {days.map((day) => (
+              <SelectItem key={day} value={day.toString()}>
+                {day}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Month */}
+        <Select
+          value={selectedMonth?.toString()}
+          onValueChange={(value) => updateDate(selectedDay, parseInt(value), selectedYear)}
+          disabled={disabled}
+        >
+          <SelectTrigger className="flex-1">
+            <SelectValue placeholder="Ay" />
+          </SelectTrigger>
+          <SelectContent>
+            {months.map((month) => (
+              <SelectItem key={month.value} value={month.value.toString()}>
+                {month.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Year */}
+        <Select
+          value={selectedYear?.toString()}
+          onValueChange={(value) => updateDate(selectedDay, selectedMonth, parseInt(value))}
+          disabled={disabled}
+        >
+          <SelectTrigger className="w-24">
+            <SelectValue placeholder="Yıl" />
+          </SelectTrigger>
+          <SelectContent>
+            {years.map((year) => (
+              <SelectItem key={year} value={year.toString()}>
+                {year}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    );
+  }
+
+  // Normal calendar mode
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -86,19 +177,17 @@ export function ModernDatePicker({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
-        {!birthDateMode && (
-          <div className="p-3 border-b">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleTodayClick}
-              className="w-full"
-              data-testid={`${dataTestId}-today-button`}
-            >
-              {t('common.today')}
-            </Button>
-          </div>
-        )}
+        <div className="p-3 border-b">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleTodayClick}
+            className="w-full"
+            data-testid={`${dataTestId}-today-button`}
+          >
+            {t('common.today')}
+          </Button>
+        </div>
         <Calendar
           mode="single"
           selected={date}
@@ -113,7 +202,6 @@ export function ModernDatePicker({
           }}
           initialFocus
           locale={currentLocale}
-          {...birthDateDefaults}
         />
       </PopoverContent>
     </Popover>
