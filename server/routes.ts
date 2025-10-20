@@ -1413,37 +1413,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "No beds found in this room" });
       }
 
-      // CHECK: ALL beds must be empty
-      console.log(`[ROOM CHECK-IN] Checking ${beds.length} beds for room ${roomId}`);
-      const bedsWithActiveReservations = await Promise.all(
+      // CHECK: Room must not already have a room reservation (room-first architecture)
+      // This single check makes all beds unavailable if room is rented
+      const existingRoomReservation = await storage.getActiveRoomReservationForRoom(roomId);
+      if (existingRoomReservation) {
+        console.log("[ROOM CHECK-IN] Room already has active room reservation:", existingRoomReservation.id);
+        return res.status(400).json({ 
+          error: "Bu oda zaten oda olarak kiralanmış"
+        });
+      }
+
+      // CHECK: No individual bed-level reservations should exist
+      // Note: checkBedAvailability() now checks room reservations first (room-first architecture)
+      console.log(`[ROOM CHECK-IN] Checking ${beds.length} beds for conflicts using room-first validation`);
+      const bedConflicts = await Promise.all(
         beds.map(async (bed) => {
-          const reservation = await storage.getActiveReservationForBed(bed.id);
+          const availability = await storage.checkBedAvailability(bed.id, startDate, endDate || null);
           console.log(`[ROOM CHECK-IN] Bed ${bed.bedNumber} (${bed.id}):`, {
-            hasReservation: !!reservation,
-            reservationId: reservation?.id,
-            checkInDate: reservation?.checkInDate,
-            checkOutDate: reservation?.checkOutDate
+            available: availability.available,
+            conflictType: availability.conflictType,
+            conflictsCount: availability.conflicts.length
           });
           return {
             bed,
-            reservation
+            available: availability.available,
+            conflicts: availability.conflicts
           };
         })
       );
       
-      const occupiedBed = bedsWithActiveReservations.find(b => b.reservation !== null);
-      if (occupiedBed) {
-        console.error(`[ROOM CHECK-IN] Bed ${occupiedBed.bed.bedNumber} is occupied:`, occupiedBed.reservation);
+      const unavailableBed = bedConflicts.find(b => !b.available);
+      if (unavailableBed) {
+        console.error(`[ROOM CHECK-IN] Bed ${unavailableBed.bed.bedNumber} is unavailable:`, unavailableBed.conflicts);
         return res.status(400).json({ 
-          error: `Yatak ${occupiedBed.bed.bedNumber} dolu - oda kiralama için tüm yatakların boş olması gerekiyor`
-        });
-      }
-
-      // CHECK: Room must not already have a room reservation
-      const existingRoomReservation = await storage.getActiveRoomReservationForRoom(roomId);
-      if (existingRoomReservation) {
-        return res.status(400).json({ 
-          error: "Bu oda zaten oda olarak kiralanmış"
+          error: `Yatak ${unavailableBed.bed.bedNumber} müsait değil - oda kiralama için tüm yatakların boş olması gerekiyor`,
+          conflicts: unavailableBed.conflicts
         });
       }
 
