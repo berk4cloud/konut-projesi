@@ -16,11 +16,19 @@ interface Bed {
   expectedMoveInDate?: string;
 }
 
+interface RoomReservation {
+  leadTenant: { employmentId: string; name: string } | null;
+  occupants: Array<{ employmentId: string | null; name: string; guestName: string | null }>;
+  monthlyRate: string | null;
+  checkInDate: string | null;
+}
+
 interface Room {
   id: string;
   roomNumber: string;
   floor?: number;
   beds: Bed[];
+  roomReservation?: RoomReservation | null;
 }
 
 interface HouseCardProps {
@@ -58,6 +66,7 @@ export default function HouseCard({
             roomNumber={room.roomNumber}
             floor={room.floor}
             beds={room.beds}
+            roomReservation={room.roomReservation}
             onBedClick={onBedClick}
             referenceDate={referenceDate}
           />
