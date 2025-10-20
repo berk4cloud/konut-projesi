@@ -128,6 +128,19 @@ export interface IStorage {
   updateReservation(id: string, reservation: Partial<InsertReservation>): Promise<Reservation | undefined>;
   completeReservation(id: string, checkOutDate: string): Promise<Reservation | undefined>;
   
+  // Conflict Detection - Check if a bed has reservation conflicts in a date range
+  checkBedAvailability(bedId: string, startDate: string, endDate: string | null): Promise<{
+    available: boolean;
+    conflictType: 'none' | 'partial' | 'full';
+    conflicts: Array<{
+      reservationId: string;
+      checkInDate: string;
+      checkOutDate: string | null;
+      employmentId: string;
+      workerName: string;
+    }>;
+  }>;
+  
   // Room Reservations (Whole room rentals)
   getRoomReservation(id: string): Promise<RoomReservation | undefined>;
   getRoomReservationsByTenant(tenantId: string): Promise<RoomReservation[]>;
@@ -1093,6 +1106,101 @@ export class DbStorage implements IStorage {
       .where(eq(reservationsTable.id, id))
       .returning();
     return result[0];
+  }
+
+  async checkBedAvailability(bedId: string, startDate: string, endDate: string | null): Promise<{
+    available: boolean;
+    conflictType: 'none' | 'partial' | 'full';
+    conflicts: Array<{
+      reservationId: string;
+      checkInDate: string;
+      checkOutDate: string | null;
+      employmentId: string;
+      workerName: string;
+    }>;
+  }> {
+    await this.ensureSeeded();
+    
+    // Get all active/future reservations for this bed
+    const reservations = await db.select({
+      reservation: reservationsTable,
+      employment: employmentsTable,
+      profile: workerProfilesTable
+    })
+      .from(reservationsTable)
+      .innerJoin(employmentsTable, eq(reservationsTable.employmentId, employmentsTable.id))
+      .innerJoin(workerProfilesTable, eq(employmentsTable.workerProfileId, workerProfilesTable.id))
+      .where(
+        and(
+          eq(reservationsTable.bedId, bedId),
+          // Only consider reservations that haven't been checked out yet
+          or(
+            isNull(reservationsTable.checkOutDate),
+            // Or checked out after our start date
+            gte(reservationsTable.checkOutDate, startDate)
+          )
+        )
+      );
+
+    if (reservations.length === 0) {
+      return {
+        available: true,
+        conflictType: 'none',
+        conflicts: []
+      };
+    }
+
+    // Check for conflicts
+    const conflicts = reservations
+      .filter(r => {
+        const resStart = r.reservation.checkInDate;
+        const resEnd = r.reservation.checkOutDate;
+        
+        // Check if there's an overlap
+        // Reservation overlaps if:
+        // 1. It starts before our end date (or we have no end date)
+        // 2. It ends after our start date (or it has no end date)
+        
+        const startsBeforeOurEnd = endDate === null || resStart < endDate;
+        const endsAfterOurStart = resEnd === null || resEnd > startDate;
+        
+        return startsBeforeOurEnd && endsAfterOurStart;
+      })
+      .map(r => ({
+        reservationId: r.reservation.id,
+        checkInDate: r.reservation.checkInDate,
+        checkOutDate: r.reservation.checkOutDate,
+        employmentId: r.employment.id,
+        workerName: `${r.profile.firstName} ${r.profile.lastName}`
+      }));
+
+    if (conflicts.length === 0) {
+      return {
+        available: true,
+        conflictType: 'none',
+        conflicts: []
+      };
+    }
+
+    // Determine conflict type
+    let conflictType: 'none' | 'partial' | 'full' = 'partial';
+    
+    // Check if there's a conflict that starts on or before our start date
+    const hasConflictAtStart = conflicts.some(c => c.checkInDate <= startDate);
+    
+    if (hasConflictAtStart) {
+      // Full conflict - bed is occupied from the beginning
+      conflictType = 'full';
+    } else {
+      // Partial conflict - bed is available at the start but becomes occupied later
+      conflictType = 'partial';
+    }
+
+    return {
+      available: false,
+      conflictType,
+      conflicts
+    };
   }
 
   // ============================================
