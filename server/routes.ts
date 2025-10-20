@@ -1879,6 +1879,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Reservation not found" });
       }
 
+      // Room reservation checkout validation (prevent orphaning occupants)
+      const checkoutValidation = await storage.checkRoomReservationForCheckout(
+        reservation.employmentId,
+        reservation.bedId
+      );
+
+      if (!checkoutValidation.canCheckout) {
+        return res.status(400).json({
+          error: checkoutValidation.reason || "Cannot checkout due to room reservation constraints",
+          otherOccupants: checkoutValidation.otherOccupants,
+          isLeadTenant: checkoutValidation.isLeadTenant
+        });
+      }
+
       // Check for overlapping reservations if changing checkout date
       if (checkOutDate && checkOutDate !== reservation.checkOutDate) {
         const futureReservations = await storage.getFutureReservationsForBed(

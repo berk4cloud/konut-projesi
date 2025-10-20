@@ -1419,7 +1419,7 @@ export class DbStorage implements IStorage {
         leadTenantName: record.leadProfile 
           ? `${record.leadProfile.firstName} ${record.leadProfile.lastName}`
           : undefined,
-        monthlyRate: record.roomReservation.monthlyRate,
+        monthlyRate: record.roomReservation.monthlyRate ?? undefined,
       };
     }
 
