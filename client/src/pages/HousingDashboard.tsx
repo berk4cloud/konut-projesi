@@ -1899,18 +1899,91 @@ export default function HousingDashboard() {
                                         <div className="flex flex-wrap gap-2">
                                           {availableBeds.map(bed => {
                                             const isSelected = wizardData.bedId === bed.id;
+                                            
+                                            const handleBedSelect = async () => {
+                                              // Check for date conflicts if dates are selected
+                                              if (wizardData.startDate) {
+                                                try {
+                                                  const params = new URLSearchParams({
+                                                    startDate: wizardData.startDate,
+                                                    ...(wizardData.endDate && { endDate: wizardData.endDate })
+                                                  });
+                                                  
+                                                  const response = await fetch(
+                                                    `/api/houses/${house.id}/availability-conflicts?${params}`,
+                                                    { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }
+                                                  );
+                                                  
+                                                  if (!response.ok) {
+                                                    console.error("Failed to check conflicts:", response.status);
+                                                    toast({
+                                                      title: "Hata",
+                                                      description: "Müsaitlik kontrolü yapılamadı. Lütfen tekrar deneyin.",
+                                                      variant: "destructive",
+                                                    });
+                                                    return; // Don't proceed if API fails
+                                                  }
+                                                  
+                                                  const conflictData = await response.json();
+                                                  
+                                                  // Find this bed's conflict info
+                                                  let bedConflict = null;
+                                                  for (const conflictRoom of conflictData.rooms || []) {
+                                                    const foundBed = conflictRoom.beds?.find((b: any) => b.id === bed.id);
+                                                    if (foundBed) {
+                                                      bedConflict = foundBed.availability;
+                                                      break;
+                                                    }
+                                                  }
+                                                  
+                                                  // If conflict exists, warn user and prevent selection
+                                                  if (bedConflict && !bedConflict.available) {
+                                                    const conflict = bedConflict.conflicts?.[0];
+                                                    if (conflict) {
+                                                      const conflictMessage = bedConflict.conflictType === 'partial'
+                                                        ? `Bu yatak ${conflict.checkInDate} tarihinden itibaren ${conflict.workerName} tarafından rezerve edilmiş. Seçtiğiniz tarih aralığı (${wizardData.startDate} - ${wizardData.endDate || 'ucu açık'}) ile çakışıyor.`
+                                                        : `Bu yatak seçilen tarih aralığında müsait değil. ${conflict.workerName} tarafından ${conflict.checkInDate} tarihinden itibaren rezerve edilmiş.`;
+                                                      
+                                                      toast({
+                                                        title: "⚠️ Tarih Çakışması",
+                                                        description: conflictMessage,
+                                                        variant: "destructive",
+                                                      });
+                                                    } else {
+                                                      // Conflict exists but no details - show generic message
+                                                      toast({
+                                                        title: "⚠️ Tarih Çakışması",
+                                                        description: "Bu yatak seçilen tarih aralığında müsait değil.",
+                                                        variant: "destructive",
+                                                      });
+                                                    }
+                                                    return; // Don't select the bed - conflict exists
+                                                  }
+                                                } catch (error) {
+                                                  console.error("Conflict check error:", error);
+                                                  toast({
+                                                    title: "Hata",
+                                                    description: "Müsaitlik kontrolü sırasında bir hata oluştu.",
+                                                    variant: "destructive",
+                                                  });
+                                                  return; // Don't proceed if error occurs
+                                                }
+                                              }
+                                              
+                                              // No conflict, proceed with selection (use functional updater to preserve concurrent edits)
+                                              setWizardData(prev => ({
+                                                ...prev,
+                                                houseId: house.id,
+                                                houseName: house.name || house.address,
+                                                roomId: room.id,
+                                                bedId: bed.id,
+                                              }));
+                                            };
+                                            
                                             return (
                                               <button
                                                 key={bed.id}
-                                                onClick={() => {
-                                                  setWizardData({
-                                                    ...wizardData,
-                                                    houseId: house.id,
-                                                    houseName: house.name || house.address,
-                                                    roomId: room.id,
-                                                    bedId: bed.id,
-                                                  });
-                                                }}
+                                                onClick={handleBedSelect}
                                                 className={cn(
                                                   "px-3 py-2 rounded-md border-2 text-sm font-medium transition-all",
                                                   isSelected
