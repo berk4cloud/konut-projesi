@@ -1438,7 +1438,7 @@ export class DbStorage implements IStorage {
       .where(
         and(
           eq(reservationsTable.employmentId, employmentId),
-          eq(reservationsTable.status, "active"),
+          eq(reservationsTable.status, "checked_in"),  // bed reservations use "checked_in" not "active"
           isNull(reservationsTable.checkOutDate)
         )
       )
