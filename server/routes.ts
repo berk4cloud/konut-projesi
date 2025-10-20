@@ -1354,11 +1354,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         depositCollector
       } = req.body;
 
+      console.log("[ROOM CHECK-IN] Request body:", JSON.stringify(req.body, null, 2));
+
       if (!startDate || !tenantId) {
+        console.error("[ROOM CHECK-IN] Missing startDate or tenantId");
         return res.status(400).json({ error: "startDate and tenantId required" });
       }
 
       if (!occupants || !Array.isArray(occupants) || occupants.length === 0) {
+        console.error("[ROOM CHECK-IN] No occupants provided:", occupants);
         return res.status(400).json({ error: "At least one occupant required" });
       }
 
@@ -1368,7 +1372,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const hasWorker = !!occ.employmentId;
         const hasGuest = !!(occ.guestName && occ.guestName.trim() && occ.guestGender);
         
+        console.log(`[ROOM CHECK-IN] Validating occupant ${i + 1}:`, { 
+          hasWorker, 
+          hasGuest, 
+          employmentId: occ.employmentId,
+          guestName: occ.guestName,
+          guestGender: occ.guestGender
+        });
+        
         if (!hasWorker && !hasGuest) {
+          console.error(`[ROOM CHECK-IN] Invalid occupant ${i + 1}:`, occ);
           return res.status(400).json({ 
             error: `Occupant ${i + 1} must have either employmentId or both guestName and guestGender` 
           });
@@ -1476,8 +1489,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: `Oda başarıyla kiralandı - ${beds.length} yatak ${occupantRecords.length} kişi için rezerve edildi`
       });
     } catch (error) {
-      console.error("Error checking in to room:", error);
-      res.status(500).json({ error: "Failed to check in to room" });
+      console.error("[ROOM CHECK-IN] Error checking in to room:", error);
+      console.error("[ROOM CHECK-IN] Error stack:", error instanceof Error ? error.stack : 'No stack');
+      res.status(500).json({ 
+        error: "Failed to check in to room",
+        details: error instanceof Error ? error.message : String(error)
+      });
     }
   });
 
