@@ -986,6 +986,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             floor: roomData.useFloor ? roomData.floor : null,
             bedCount: bedCount,
             status: "active",
+            availableForRoomRental: roomData.canRentAsRoom !== undefined ? roomData.canRentAsRoom : false,
           });
           console.log(`[CREATE HOUSE] Room ${idx + 1} created:`, createdRoom.id);
           
@@ -1081,6 +1082,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             await storage.updateRoom(roomData.id, {
               roomNumber: roomData.roomNumber || "",
               floor: roomData.floor !== undefined ? roomData.floor : null,
+              availableForRoomRental: roomData.canRentAsRoom !== undefined ? roomData.canRentAsRoom : false,
             });
             
             // Handle beds for this existing room
@@ -1120,6 +1122,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               floor: roomData.useFloor ? roomData.floor : null,
               bedCount: bedCount,
               status: "active",
+              availableForRoomRental: roomData.canRentAsRoom !== undefined ? roomData.canRentAsRoom : false,
             });
             
             // Create beds for this new room
