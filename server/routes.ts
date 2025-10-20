@@ -488,7 +488,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             return null;
           }
 
-          // Return in legacy format for compatibility
+          // Get housing info (room-first architecture)
+          const housingInfo = await storage.getWorkerHousingInfo(employment.id);
+
+          // Return in legacy format for compatibility + housing info
           return {
             id: employment.id, // employmentId is the "worker id"
             employmentId: employment.id,
@@ -507,6 +510,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             department: employment.department,
             startDate: employment.startDate,
             endDate: employment.endDate,
+            housing: housingInfo,
           };
         })
       );
