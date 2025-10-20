@@ -1436,26 +1436,28 @@ export default function HousingDashboard() {
                   </p>
                 </div>
 
-                <div className="space-y-3 border-t pt-3">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="open-ended"
-                      checked={wizardData.isOpenEnded}
-                      onCheckedChange={(checked) => {
-                        setWizardData({ 
-                          ...wizardData, 
-                          isOpenEnded: checked as boolean,
-                          endDate: checked ? "" : wizardData.endDate // Clear end date if open-ended
-                        });
-                      }}
-                      data-testid="checkbox-open-ended"
-                    />
-                    <Label htmlFor="open-ended" className="cursor-pointer font-normal">
-                      Ucu Açık (Bitiş tarihi belirsiz)
-                    </Label>
-                  </div>
+                <div className="border-t pt-3">
+                  <div className="grid grid-cols-2 gap-4 items-start">
+                    {/* Left: Open-ended checkbox */}
+                    <div className="flex items-center space-x-2 pt-2">
+                      <Checkbox
+                        id="open-ended"
+                        checked={wizardData.isOpenEnded}
+                        onCheckedChange={(checked) => {
+                          setWizardData({ 
+                            ...wizardData, 
+                            isOpenEnded: checked as boolean,
+                            endDate: checked ? "" : wizardData.endDate
+                          });
+                        }}
+                        data-testid="checkbox-open-ended"
+                      />
+                      <Label htmlFor="open-ended" className="cursor-pointer font-normal">
+                        Ucu Açık
+                      </Label>
+                    </div>
 
-                  {!wizardData.isOpenEnded && (
+                    {/* Right: End date field */}
                     <div className="space-y-2">
                       <Label htmlFor="wizard-end-date">{t('checkIn.wizard.endDate')} (Opsiyonel)</Label>
                       <ModernDatePicker
@@ -1468,12 +1470,15 @@ export default function HousingDashboard() {
                         data-testid="input-wizard-end-date"
                         className="w-full"
                         minDate={wizardData.startDate ? stringToDate(wizardData.startDate) : undefined}
+                        disabled={wizardData.isOpenEnded}
                       />
-                      <p className="text-sm text-muted-foreground">
-                        Bitiş tarihi biliyorsanız seçin - müsait oda/yatak bulmayı kolaylaştırır
-                      </p>
                     </div>
-                  )}
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    {wizardData.isOpenEnded 
+                      ? "Bitiş tarihi belirsiz - istediğiniz zaman sonlandırabilirsiniz" 
+                      : "Bitiş tarihi biliyorsanız seçin - müsait oda/yatak bulmayı kolaylaştırır"}
+                  </p>
                 </div>
 
                 <div className="space-y-2">
