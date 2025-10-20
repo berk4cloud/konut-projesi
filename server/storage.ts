@@ -1121,7 +1121,72 @@ export class DbStorage implements IStorage {
   }> {
     await this.ensureSeeded();
     
-    // Get all active/future reservations for this bed
+    // CRITICAL: Check room-level reservation FIRST (room-first architecture)
+    // If room is rented, all beds in that room are unavailable
+    const bed = await this.getBed(bedId);
+    if (!bed) {
+      return {
+        available: false,
+        conflictType: 'full',
+        conflicts: []
+      };
+    }
+    
+    // Check if room has an active room reservation
+    const roomReservations = await db.select({
+      reservation: roomReservationsTable,
+      employment: employmentsTable,
+      profile: workerProfilesTable
+    })
+      .from(roomReservationsTable)
+      .leftJoin(employmentsTable, eq(roomReservationsTable.leadEmploymentId, employmentsTable.id))
+      .leftJoin(workerProfilesTable, eq(employmentsTable.workerProfileId, workerProfilesTable.id))
+      .where(
+        and(
+          eq(roomReservationsTable.roomId, bed.roomId),
+          eq(roomReservationsTable.status, "active"),
+          // Only consider room reservations that haven't been checked out yet
+          or(
+            isNull(roomReservationsTable.checkOutDate),
+            // Or checked out after our start date
+            gte(roomReservationsTable.checkOutDate, startDate)
+          )
+        )
+      );
+    
+    // Check for room reservation conflicts
+    const roomConflicts = roomReservations
+      .filter(r => {
+        const resStart = r.reservation.checkInDate;
+        const resEnd = r.reservation.checkOutDate;
+        
+        if (!resStart) return false;
+        
+        // Check if there's an overlap
+        const startsBeforeOurEnd = endDate === null || resStart < endDate;
+        const endsAfterOurStart = resEnd === null || resEnd > startDate;
+        
+        return startsBeforeOurEnd && endsAfterOurStart;
+      })
+      .map(r => ({
+        reservationId: r.reservation.id,
+        checkInDate: r.reservation.checkInDate!,
+        checkOutDate: r.reservation.checkOutDate,
+        employmentId: r.reservation.leadEmploymentId || 'room-rental',
+        workerName: r.profile ? `${r.profile.firstName} ${r.profile.lastName} (Whole Room)` : 'Room Rental'
+      }));
+    
+    // If room is rented during this period, bed is unavailable
+    if (roomConflicts.length > 0) {
+      const hasConflictAtStart = roomConflicts.some(c => c.checkInDate && c.checkInDate <= startDate);
+      return {
+        available: false,
+        conflictType: hasConflictAtStart ? 'full' : 'partial',
+        conflicts: roomConflicts
+      };
+    }
+    
+    // No room-level conflict, check bed-level reservations
     const reservations = await db.select({
       reservation: reservationsTable,
       employment: employmentsTable,
