@@ -1673,7 +1673,9 @@ export class DbStorage implements IStorage {
       workerProfiles: workerProfilesTable,
       houses: housesTable,
       rooms: roomsTable,
-      beds: bedsTable
+      beds: bedsTable,
+      roomReservations: roomReservationsTable,
+      roomReservationOccupants: roomReservationOccupantsTable
     } = await import("@shared/schema");
     
     // Fetch assignments with JOINs for computed fields
@@ -1684,6 +1686,7 @@ export class DbStorage implements IStorage {
       house: housesTable,
       room: roomsTable,
       bed: bedsTable,
+      roomReservation: roomReservationsTable,
     })
       .from(assignmentsTable)
       .leftJoin(employmentsTable, eq(assignmentsTable.employmentId, employmentsTable.id))
@@ -1691,17 +1694,56 @@ export class DbStorage implements IStorage {
       .leftJoin(housesTable, eq(assignmentsTable.houseId, housesTable.id))
       .leftJoin(roomsTable, eq(assignmentsTable.roomId, roomsTable.id))
       .leftJoin(bedsTable, eq(assignmentsTable.bedId, bedsTable.id))
+      .leftJoin(roomReservationsTable, and(
+        eq(roomReservationsTable.roomId, assignmentsTable.roomId),
+        eq(roomReservationsTable.status, 'active')
+      ))
       .where(eq(assignmentsTable.tenantId, tenantId))
       .orderBy(desc(assignmentsTable.startDate));
     
-    // Map to AssignmentWithDetails
-    return results.map(r => ({
-      ...r.assignment,
-      workerName: r.workerProfile ? `${r.workerProfile.firstName} ${r.workerProfile.lastName}` : 'Unknown',
-      houseName: r.house?.address || 'Unknown',
-      roomNumber: r.room?.roomNumber || 'Unknown',
-      bedNumber: r.bed?.bedNumber || 0,
+    // For each assignment with a room reservation, fetch occupants
+    const assignmentsWithDetails = await Promise.all(results.map(async r => {
+      const base = {
+        ...r.assignment,
+        workerName: r.workerProfile ? `${r.workerProfile.firstName} ${r.workerProfile.lastName}` : 'Unknown',
+        houseName: r.house?.address || 'Unknown',
+        roomNumber: r.room?.roomNumber || 'Unknown',
+        bedNumber: r.bed?.bedNumber || 0,
+      };
+      
+      // If this assignment's room has an active room reservation, fetch occupants
+      if (r.roomReservation) {
+        const occupantsData = await db.select({
+          occupant: roomReservationOccupantsTable,
+          employment: employmentsTable,
+          workerProfile: workerProfilesTable,
+        })
+          .from(roomReservationOccupantsTable)
+          .leftJoin(employmentsTable, eq(roomReservationOccupantsTable.employmentId, employmentsTable.id))
+          .leftJoin(workerProfilesTable, eq(employmentsTable.workerProfileId, workerProfilesTable.id))
+          .where(eq(roomReservationOccupantsTable.roomReservationId, r.roomReservation.id));
+        
+        return {
+          ...base,
+          isRoomReservation: true,
+          roomReservationId: r.roomReservation.id,
+          occupants: occupantsData.map(o => ({
+            employmentId: o.occupant.employmentId,
+            name: o.workerProfile ? `${o.workerProfile.firstName} ${o.workerProfile.lastName}` : 'Unknown',
+            guestName: o.occupant.guestName,
+          })),
+        };
+      }
+      
+      return {
+        ...base,
+        isRoomReservation: false,
+        roomReservationId: null,
+        occupants: [],
+      };
     }));
+    
+    return assignmentsWithDetails;
   }
 
   async getAssignmentsByEmployment(employmentId: string): Promise<Assignment[]> {

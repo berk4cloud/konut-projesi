@@ -609,6 +609,14 @@ export type AssignmentWithDetails = Assignment & {
   houseName: string;
   roomNumber: string;
   bedNumber: number;
+  // Room reservation info (if this assignment is part of a room rental)
+  isRoomReservation?: boolean;
+  roomReservationId?: string | null;
+  occupants?: Array<{
+    employmentId: string | null;
+    name: string;
+    guestName: string | null;
+  }>;
 };
 
 export type ChargeWithWorker = Charge & {
