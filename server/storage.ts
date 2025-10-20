@@ -168,6 +168,15 @@ export interface IStorage {
     monthlyRate?: number;
   } | null>;
   
+  // Check if worker can checkout (prevents orphaning room occupants)
+  checkRoomReservationForCheckout(employmentId: string, bedId: string): Promise<{
+    canCheckout: boolean;
+    reason?: string;
+    roomReservation?: RoomReservation;
+    otherOccupants?: Array<{ employmentId: string; workerName: string | null }>;
+    isLeadTenant?: boolean;
+  }>;
+  
   // QR Codes (Task Delegation System)
   getQRCode(id: string): Promise<QRCode | undefined>;
   getQRCodeByCode(code: string): Promise<QRCode | undefined>;
@@ -601,6 +610,7 @@ export class MemStorage implements IStorage {
   async createRoomReservationOccupant(_occupant: InsertRoomReservationOccupant): Promise<RoomReservationOccupant> { throw new Error("Not implemented in MemStorage"); }
   async deleteRoomReservationOccupant(_id: string): Promise<boolean> { throw new Error("Not implemented in MemStorage"); }
   async getWorkerHousingInfo(_employmentId: string): Promise<any> { throw new Error("Not implemented in MemStorage"); }
+  async checkRoomReservationForCheckout(_employmentId: string, _bedId: string): Promise<any> { throw new Error("Not implemented in MemStorage"); }
   
   // QR Codes stubs
   async getQRCode(_id: string): Promise<QRCode | undefined> { throw new Error("Not implemented in MemStorage"); }
@@ -1452,6 +1462,82 @@ export class DbStorage implements IStorage {
 
     // Worker has no active housing
     return null;
+  }
+
+  async checkRoomReservationForCheckout(employmentId: string, bedId: string): Promise<{
+    canCheckout: boolean;
+    reason?: string;
+    roomReservation?: RoomReservation;
+    otherOccupants?: Array<{ employmentId: string; workerName: string | null }>;
+    isLeadTenant?: boolean;
+  }> {
+    // 1. Check if this bed is part of a room reservation
+    const bed = await this.getBed(bedId);
+    if (!bed || !bed.roomReservationId) {
+      // Not a room reservation, can checkout freely (bed-level reservation)
+      return { canCheckout: true };
+    }
+
+    // 2. Get room reservation details
+    const roomReservation = await this.getRoomReservation(bed.roomReservationId);
+    if (!roomReservation) {
+      // Room reservation not found, can checkout
+      return { canCheckout: true };
+    }
+
+    // 3. Check if this worker is lead tenant
+    const isLeadTenant = roomReservation.leadEmploymentId === employmentId;
+
+    // 4. Get all occupants in this room reservation
+    const allOccupants = await this.getRoomReservationOccupants(roomReservation.id);
+    
+    // 5. Get other occupants (excluding current worker)
+    const otherOccupantsData = await Promise.all(
+      allOccupants
+        .filter(occ => occ.employmentId !== employmentId && occ.employmentId !== null)
+        .map(async (occ) => {
+          if (!occ.employmentId) {
+            return { employmentId: occ.id, workerName: occ.guestName };
+          }
+          const employment = await this.getEmployment(occ.employmentId);
+          if (!employment) {
+            return { employmentId: occ.employmentId, workerName: null };
+          }
+          const profile = await this.getWorkerProfile(employment.workerProfileId);
+          return {
+            employmentId: occ.employmentId,
+            workerName: profile ? `${profile.firstName} ${profile.lastName}` : null
+          };
+        })
+    );
+
+    // 6. Determine if checkout is allowed
+    if (isLeadTenant && otherOccupantsData.length > 0) {
+      // Lead tenant can't checkout if there are other occupants (would orphan them)
+      return {
+        canCheckout: false,
+        reason: "Lead tenant cannot checkout while other occupants remain in the room",
+        roomReservation,
+        otherOccupants: otherOccupantsData,
+        isLeadTenant: true
+      };
+    }
+
+    if (!isLeadTenant) {
+      // Non-lead occupant can checkout freely
+      return {
+        canCheckout: true,
+        roomReservation,
+        isLeadTenant: false
+      };
+    }
+
+    // Lead tenant with no other occupants can checkout
+    return {
+      canCheckout: true,
+      roomReservation,
+      isLeadTenant: true
+    };
   }
 
   // ============================================
