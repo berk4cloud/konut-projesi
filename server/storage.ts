@@ -154,6 +154,20 @@ export interface IStorage {
   createRoomReservationOccupant(occupant: InsertRoomReservationOccupant): Promise<RoomReservationOccupant>;
   deleteRoomReservationOccupant(id: string): Promise<boolean>;
   
+  // Worker Housing Info (for displaying where workers live)
+  getWorkerHousingInfo(employmentId: string): Promise<{
+    type: 'room' | 'bed' | null;
+    houseId?: string;
+    houseName?: string;
+    roomId?: string;
+    roomNumber?: string;
+    bedId?: string;
+    bedNumber?: string;
+    isLeadTenant?: boolean;
+    leadTenantName?: string;
+    monthlyRate?: number;
+  } | null>;
+  
   // QR Codes (Task Delegation System)
   getQRCode(id: string): Promise<QRCode | undefined>;
   getQRCodeByCode(code: string): Promise<QRCode | undefined>;
@@ -586,6 +600,7 @@ export class MemStorage implements IStorage {
   async getRoomReservationOccupants(_roomReservationId: string): Promise<RoomReservationOccupant[]> { throw new Error("Not implemented in MemStorage"); }
   async createRoomReservationOccupant(_occupant: InsertRoomReservationOccupant): Promise<RoomReservationOccupant> { throw new Error("Not implemented in MemStorage"); }
   async deleteRoomReservationOccupant(_id: string): Promise<boolean> { throw new Error("Not implemented in MemStorage"); }
+  async getWorkerHousingInfo(_employmentId: string): Promise<any> { throw new Error("Not implemented in MemStorage"); }
   
   // QR Codes stubs
   async getQRCode(_id: string): Promise<QRCode | undefined> { throw new Error("Not implemented in MemStorage"); }
@@ -1341,6 +1356,102 @@ export class DbStorage implements IStorage {
   async deleteRoomReservationOccupant(id: string): Promise<boolean> {
     const result = await db.delete(roomReservationOccupantsTable).where(eq(roomReservationOccupantsTable.id, id)).returning();
     return result.length > 0;
+  }
+
+  async getWorkerHousingInfo(employmentId: string): Promise<{
+    type: 'room' | 'bed' | null;
+    houseId?: string;
+    houseName?: string;
+    roomId?: string;
+    roomNumber?: string;
+    bedId?: string;
+    bedNumber?: string;
+    isLeadTenant?: boolean;
+    leadTenantName?: string;
+    monthlyRate?: number;
+  } | null> {
+    // Check if worker is occupant in a room rental (room-first architecture)
+    const occupantRecords = await db
+      .select({
+        roomReservation: roomReservationsTable,
+        occupant: roomReservationOccupantsTable,
+        room: roomsTable,
+        house: housesTable,
+        leadEmployment: employmentsTable,
+        leadProfile: workerProfilesTable
+      })
+      .from(roomReservationOccupantsTable)
+      .innerJoin(roomReservationsTable, eq(roomReservationOccupantsTable.roomReservationId, roomReservationsTable.id))
+      .innerJoin(roomsTable, eq(roomReservationsTable.roomId, roomsTable.id))
+      .innerJoin(housesTable, eq(roomsTable.houseId, housesTable.id))
+      .leftJoin(employmentsTable, eq(roomReservationsTable.leadEmploymentId, employmentsTable.id))
+      .leftJoin(workerProfilesTable, eq(employmentsTable.workerProfileId, workerProfilesTable.id))
+      .where(
+        and(
+          eq(roomReservationOccupantsTable.employmentId, employmentId),
+          eq(roomReservationsTable.status, "active"),
+          isNull(roomReservationsTable.checkOutDate)
+        )
+      )
+      .limit(1);
+    
+    if (occupantRecords.length > 0) {
+      const record = occupantRecords[0];
+      const isLeadTenant = record.roomReservation.leadEmploymentId === employmentId;
+      
+      return {
+        type: 'room',
+        houseId: record.house.id,
+        houseName: record.house.name,
+        roomId: record.room.id,
+        roomNumber: record.room.roomNumber,
+        isLeadTenant,
+        leadTenantName: record.leadProfile 
+          ? `${record.leadProfile.firstName} ${record.leadProfile.lastName}`
+          : null,
+        monthlyRate: record.roomReservation.monthlyRate,
+      };
+    }
+
+    // If not in room rental, check if they have a bed reservation (legacy bed-level)
+    const bedRecords = await db
+      .select({
+        reservation: reservationsTable,
+        bed: bedsTable,
+        room: roomsTable,
+        house: housesTable,
+      })
+      .from(reservationsTable)
+      .innerJoin(bedsTable, eq(reservationsTable.bedId, bedsTable.id))
+      .innerJoin(roomsTable, eq(bedsTable.roomId, roomsTable.id))
+      .innerJoin(housesTable, eq(roomsTable.houseId, housesTable.id))
+      .where(
+        and(
+          eq(reservationsTable.employmentId, employmentId),
+          eq(reservationsTable.status, "active"),
+          isNull(reservationsTable.checkOutDate)
+        )
+      )
+      .limit(1);
+    
+    if (bedRecords.length > 0) {
+      const record = bedRecords[0];
+      
+      return {
+        type: 'bed',
+        houseId: record.house.id,
+        houseName: record.house.name,
+        roomId: record.room.id,
+        roomNumber: record.room.roomNumber,
+        bedId: record.bed.id,
+        bedNumber: record.bed.bedNumber,
+        isLeadTenant: true, // bed-level rentals are always "lead" (they pay for bed)
+        monthlyRate: record.reservation.monthlyRate,
+      };
+    }
+
+    // Worker has no active housing
+    return null;
   }
 
   // ============================================
