@@ -154,6 +154,13 @@ export interface IStorage {
   createRoomReservationOccupant(occupant: InsertRoomReservationOccupant): Promise<RoomReservationOccupant>;
   deleteRoomReservationOccupant(id: string): Promise<boolean>;
   
+  // Room Reservation Details (for UI display)
+  getActiveRoomReservationWithOccupants(roomId: string): Promise<{
+    roomReservation: RoomReservation;
+    leadTenant: { employmentId: string; name: string } | null;
+    occupants: Array<{ employmentId: string | null; name: string; guestName: string | null }>;
+  } | null>;
+  
   // Worker Housing Info (for displaying where workers live)
   getWorkerHousingInfo(employmentId: string): Promise<{
     type: 'room' | 'bed' | null;
@@ -609,6 +616,7 @@ export class MemStorage implements IStorage {
   async getRoomReservationOccupants(_roomReservationId: string): Promise<RoomReservationOccupant[]> { throw new Error("Not implemented in MemStorage"); }
   async createRoomReservationOccupant(_occupant: InsertRoomReservationOccupant): Promise<RoomReservationOccupant> { throw new Error("Not implemented in MemStorage"); }
   async deleteRoomReservationOccupant(_id: string): Promise<boolean> { throw new Error("Not implemented in MemStorage"); }
+  async getActiveRoomReservationWithOccupants(_roomId: string): Promise<any> { throw new Error("Not implemented in MemStorage"); }
   async getWorkerHousingInfo(_employmentId: string): Promise<any> { throw new Error("Not implemented in MemStorage"); }
   async checkRoomReservationForCheckout(_employmentId: string, _bedId: string): Promise<any> { throw new Error("Not implemented in MemStorage"); }
   
@@ -1366,6 +1374,65 @@ export class DbStorage implements IStorage {
   async deleteRoomReservationOccupant(id: string): Promise<boolean> {
     const result = await db.delete(roomReservationOccupantsTable).where(eq(roomReservationOccupantsTable.id, id)).returning();
     return result.length > 0;
+  }
+
+  async getActiveRoomReservationWithOccupants(roomId: string): Promise<{
+    roomReservation: RoomReservation;
+    leadTenant: { employmentId: string; name: string } | null;
+    occupants: Array<{ employmentId: string | null; name: string; guestName: string | null }>;
+  } | null> {
+    // Get active room reservation for this room
+    const roomReservation = await this.getActiveRoomReservationForRoom(roomId);
+    if (!roomReservation) {
+      return null;
+    }
+
+    // Get lead tenant info (if exists)
+    let leadTenant: { employmentId: string; name: string } | null = null;
+    if (roomReservation.leadEmploymentId) {
+      const employment = await this.getEmployment(roomReservation.leadEmploymentId);
+      if (employment) {
+        const profile = await this.getWorkerProfile(employment.workerProfileId);
+        if (profile) {
+          leadTenant = {
+            employmentId: employment.id,
+            name: `${profile.firstName} ${profile.lastName}`
+          };
+        }
+      }
+    }
+
+    // Get all occupants
+    const occupantsRaw = await this.getRoomReservationOccupants(roomReservation.id);
+    const occupants = await Promise.all(
+      occupantsRaw.map(async (occ) => {
+        if (occ.employmentId) {
+          const employment = await this.getEmployment(occ.employmentId);
+          if (employment) {
+            const profile = await this.getWorkerProfile(employment.workerProfileId);
+            if (profile) {
+              return {
+                employmentId: occ.employmentId,
+                name: `${profile.firstName} ${profile.lastName}`,
+                guestName: null
+              };
+            }
+          }
+        }
+        // Guest (no employment)
+        return {
+          employmentId: null,
+          name: occ.guestName || "Unknown Guest",
+          guestName: occ.guestName
+        };
+      })
+    );
+
+    return {
+      roomReservation,
+      leadTenant,
+      occupants
+    };
   }
 
   async getWorkerHousingInfo(employmentId: string): Promise<{
