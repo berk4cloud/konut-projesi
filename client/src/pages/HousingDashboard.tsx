@@ -651,9 +651,9 @@ export default function HousingDashboard() {
           tenantId: user.tenantId,
           // Assignment data (for Accommodation Management)
           monthlyRate: wizardData.monthlyRate,
-          depositAmount: wizardData.depositAmount,
+          depositAmount: wizardData.depositCollected ? wizardData.depositAmount : 0,
           depositCollected: wizardData.depositCollected,
-          depositCollector: wizardData.depositCollector || user.email,
+          depositCollector: wizardData.depositCollected ? (wizardData.depositCollector || user.email) : null,
         });
       } else {
         // Call backend API for room-level check-in (all beds in room)
@@ -673,9 +673,9 @@ export default function HousingDashboard() {
           tenantId: user.tenantId,
           // Assignment data (for Accommodation Management)
           monthlyRate: wizardData.monthlyRate,
-          depositAmount: wizardData.depositAmount,
+          depositAmount: wizardData.depositCollected ? wizardData.depositAmount : 0,
           depositCollected: wizardData.depositCollected,
-          depositCollector: wizardData.depositCollector || user.email,
+          depositCollector: wizardData.depositCollected ? (wizardData.depositCollector || user.email) : null,
         });
       }
 

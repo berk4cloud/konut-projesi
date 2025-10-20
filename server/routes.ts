@@ -1414,15 +1414,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // CHECK: ALL beds must be empty
+      console.log(`[ROOM CHECK-IN] Checking ${beds.length} beds for room ${roomId}`);
       const bedsWithActiveReservations = await Promise.all(
-        beds.map(async (bed) => ({
-          bed,
-          reservation: await storage.getActiveReservationForBed(bed.id)
-        }))
+        beds.map(async (bed) => {
+          const reservation = await storage.getActiveReservationForBed(bed.id);
+          console.log(`[ROOM CHECK-IN] Bed ${bed.bedNumber} (${bed.id}):`, {
+            hasReservation: !!reservation,
+            reservationId: reservation?.id,
+            checkInDate: reservation?.checkInDate,
+            checkOutDate: reservation?.checkOutDate
+          });
+          return {
+            bed,
+            reservation
+          };
+        })
       );
       
       const occupiedBed = bedsWithActiveReservations.find(b => b.reservation !== null);
       if (occupiedBed) {
+        console.error(`[ROOM CHECK-IN] Bed ${occupiedBed.bed.bedNumber} is occupied:`, occupiedBed.reservation);
         return res.status(400).json({ 
           error: `Yatak ${occupiedBed.bed.bedNumber} dolu - oda kiralama için tüm yatakların boş olması gerekiyor`
         });
