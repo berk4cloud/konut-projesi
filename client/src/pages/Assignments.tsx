@@ -719,10 +719,33 @@ export default function Assignments() {
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div className="space-y-1">
-                          <CardTitle className="text-lg">{assignment.workerName}</CardTitle>
+                          <div className="flex items-center gap-2">
+                            <CardTitle className="text-lg">{assignment.workerName}</CardTitle>
+                            {assignment.isRoomReservation ? (
+                              <Badge variant="outline" className="text-xs gap-1">
+                                <Home className="w-3 h-3" />
+                                Oda Kiralaması
+                              </Badge>
+                            ) : (
+                              <Badge variant="secondary" className="text-xs">
+                                Yatak Kiralaması
+                              </Badge>
+                            )}
+                          </div>
                           <CardDescription>
                             {assignment.houseName} • {t('assignments.detailsDialog.room')} {assignment.roomNumber} • {t('assignments.detailsDialog.bed')} {assignment.bedNumber}
                           </CardDescription>
+                          {assignment.isRoomReservation && assignment.occupants && assignment.occupants.length > 0 && (
+                            <div className="text-xs text-muted-foreground pt-1">
+                              <span className="font-medium">Sakinler:</span>{' '}
+                              {assignment.occupants.map((occ, idx) => (
+                                <span key={idx}>
+                                  {occ.guestName || occ.name}
+                                  {idx < assignment.occupants.length - 1 ? ', ' : ''}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
                         <Badge className={getStatusColor(assignment.status)}>
                           {getStatusLabel(assignment.status)}
@@ -1163,10 +1186,33 @@ export default function Assignments() {
             <DialogTitle>{t('assignments.detailsDialog.title')}</DialogTitle>
             {selectedAssignment && (
               <div className="space-y-2 mt-2">
-                <p className="font-medium text-foreground text-base">{selectedAssignment.workerName}</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-foreground text-base">{selectedAssignment.workerName}</p>
+                  {selectedAssignment.isRoomReservation ? (
+                    <Badge variant="outline" className="text-xs gap-1">
+                      <Home className="w-3 h-3" />
+                      Oda Kiralaması
+                    </Badge>
+                  ) : (
+                    <Badge variant="secondary" className="text-xs">
+                      Yatak Kiralaması
+                    </Badge>
+                  )}
+                </div>
                 <DialogDescription className="text-sm">
                   {selectedAssignment.houseName} • {t('assignments.detailsDialog.room')} {selectedAssignment.roomNumber} • {t('assignments.detailsDialog.bed')} {selectedAssignment.bedNumber}
                 </DialogDescription>
+                {selectedAssignment.isRoomReservation && selectedAssignment.occupants && selectedAssignment.occupants.length > 0 && (
+                  <div className="text-xs text-muted-foreground">
+                    <span className="font-medium">Sakinler:</span>{' '}
+                    {selectedAssignment.occupants.map((occ, idx) => (
+                      <span key={idx}>
+                        {occ.guestName || occ.name}
+                        {idx < selectedAssignment.occupants.length - 1 ? ', ' : ''}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <div className="flex gap-4 text-sm items-center">
                   <span>{t('assignments.detailsDialog.startDate')}: {new Date(selectedAssignment.startDate).toLocaleDateString(getLocale())}</span>
                   <span>{t('assignments.detailsDialog.monthlyRate')}: €{selectedAssignment.monthlyRate}</span>
