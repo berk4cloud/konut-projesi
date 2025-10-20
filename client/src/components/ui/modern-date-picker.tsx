@@ -21,6 +21,7 @@ interface ModernDatePickerProps {
   "data-testid"?: string;
   minDate?: Date;
   maxDate?: Date;
+  birthDateMode?: boolean; // Enable year/month dropdowns for easier birth date selection
 }
 
 // Locale mapping for date-fns
@@ -43,6 +44,7 @@ export function ModernDatePicker({
   "data-testid": dataTestId,
   minDate,
   maxDate,
+  birthDateMode = false,
 }: ModernDatePickerProps) {
   const [open, setOpen] = useState(false);
   const { t, i18n } = useTranslation();
@@ -56,6 +58,15 @@ export function ModernDatePicker({
     onDateChange(today);
     setOpen(false);
   };
+
+  // Birth date mode: defaults to show dates from ~30 years ago, with year/month dropdowns
+  const currentYear = new Date().getFullYear();
+  const birthDateDefaults = birthDateMode ? {
+    captionLayout: "dropdown-buttons" as const,
+    fromYear: 1940,
+    toYear: currentYear - 16, // Minimum 16 years old
+    defaultMonth: new Date(currentYear - 30, 0), // Default to 30 years ago
+  } : {};
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -75,17 +86,19 @@ export function ModernDatePicker({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
-        <div className="p-3 border-b">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleTodayClick}
-            className="w-full"
-            data-testid={`${dataTestId}-today-button`}
-          >
-            {t('common.today')}
-          </Button>
-        </div>
+        {!birthDateMode && (
+          <div className="p-3 border-b">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleTodayClick}
+              className="w-full"
+              data-testid={`${dataTestId}-today-button`}
+            >
+              {t('common.today')}
+            </Button>
+          </div>
+        )}
         <Calendar
           mode="single"
           selected={date}
@@ -100,6 +113,7 @@ export function ModernDatePicker({
           }}
           initialFocus
           locale={currentLocale}
+          {...birthDateDefaults}
         />
       </PopoverContent>
     </Popover>

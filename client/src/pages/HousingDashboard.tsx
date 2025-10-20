@@ -1564,6 +1564,8 @@ export default function HousingDashboard() {
                           placeholder={t('checkIn.wizard.selectDate')}
                           className="w-full"
                           data-testid="input-quick-dob"
+                          birthDateMode={true}
+                          maxDate={new Date(new Date().getFullYear() - 16, 11, 31)}
                         />
                       </div>
 
