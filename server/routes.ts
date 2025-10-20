@@ -815,6 +815,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // For each room, fetch beds with their active reservations
           const roomsWithBeds = await Promise.all(
             rooms.map(async (room) => {
+              // Get room reservation info (if exists)
+              const roomReservationDetails = await storage.getActiveRoomReservationWithOccupants(room.id);
+              
               const beds = await storage.getBedsByRoom(room.id);
               
               // For each bed, fetch active reservation and enrich with worker data
@@ -900,6 +903,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 roomNumber: room.roomNumber,
                 floor: room.floor,
                 beds: bedsWithWorkers,
+                roomReservation: roomReservationDetails ? {
+                  leadTenant: roomReservationDetails.leadTenant,
+                  occupants: roomReservationDetails.occupants,
+                  monthlyRate: roomReservationDetails.roomReservation.monthlyRate,
+                  checkInDate: roomReservationDetails.roomReservation.checkInDate,
+                } : null,
               };
             })
           );
