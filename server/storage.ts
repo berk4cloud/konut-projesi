@@ -1694,10 +1694,9 @@ export class DbStorage implements IStorage {
       .leftJoin(housesTable, eq(assignmentsTable.houseId, housesTable.id))
       .leftJoin(roomsTable, eq(assignmentsTable.roomId, roomsTable.id))
       .leftJoin(bedsTable, eq(assignmentsTable.bedId, bedsTable.id))
-      .leftJoin(roomReservationsTable, and(
-        eq(roomReservationsTable.roomId, assignmentsTable.roomId),
-        eq(roomReservationsTable.status, 'active')
-      ))
+      .leftJoin(roomReservationsTable, 
+        eq(roomReservationsTable.roomId, assignmentsTable.roomId)
+      )
       .where(eq(assignmentsTable.tenantId, tenantId))
       .orderBy(desc(assignmentsTable.startDate));
     
@@ -1712,7 +1711,7 @@ export class DbStorage implements IStorage {
       };
       
       // If this assignment's room has an active room reservation, fetch occupants
-      if (r.roomReservation) {
+      if (r.roomReservation && r.roomReservation.status === 'active') {
         const occupantsData = await db.select({
           occupant: roomReservationOccupantsTable,
           employment: employmentsTable,

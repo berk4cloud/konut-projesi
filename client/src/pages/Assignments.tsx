@@ -738,10 +738,10 @@ export default function Assignments() {
                           {assignment.isRoomReservation && assignment.occupants && assignment.occupants.length > 0 && (
                             <div className="text-xs text-muted-foreground pt-1">
                               <span className="font-medium">Sakinler:</span>{' '}
-                              {assignment.occupants.map((occ, idx) => (
+                              {assignment.occupants?.map((occ, idx) => (
                                 <span key={idx}>
                                   {occ.guestName || occ.name}
-                                  {idx < assignment.occupants.length - 1 ? ', ' : ''}
+                                  {idx < (assignment.occupants?.length || 0) - 1 ? ', ' : ''}
                                 </span>
                               ))}
                             </div>
@@ -1205,10 +1205,10 @@ export default function Assignments() {
                 {selectedAssignment.isRoomReservation && selectedAssignment.occupants && selectedAssignment.occupants.length > 0 && (
                   <div className="text-xs text-muted-foreground">
                     <span className="font-medium">Sakinler:</span>{' '}
-                    {selectedAssignment.occupants.map((occ, idx) => (
+                    {selectedAssignment.occupants?.map((occ, idx) => (
                       <span key={idx}>
                         {occ.guestName || occ.name}
-                        {idx < selectedAssignment.occupants.length - 1 ? ', ' : ''}
+                        {idx < (selectedAssignment.occupants?.length || 0) - 1 ? ', ' : ''}
                       </span>
                     ))}
                   </div>
