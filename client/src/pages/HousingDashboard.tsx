@@ -796,69 +796,132 @@ export default function HousingDashboard() {
 
       {/* Date Control Bar - Always visible, acts as "zero point" for all date calculations */}
       <div className="sticky top-16 z-20 bg-background border-b">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold">{t('dashboard.title')}</h2>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6"
-                onClick={() => setColorInfoDialogOpen(true)}
-                data-testid="button-color-info"
-              >
-                <Info className="w-4 h-4 text-muted-foreground" />
-              </Button>
-            </div>
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-muted-foreground" />
-              <ModernDatePicker
-                date={selectedDate ? new Date(selectedDate + 'T00:00:00') : undefined}
-                onDateChange={(date) => {
-                  if (date) {
-                    // Convert to YYYY-MM-DD in local timezone (NOT UTC)
-                    const year = date.getFullYear();
-                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                    const day = String(date.getDate()).padStart(2, '0');
-                    setSelectedDate(`${year}-${month}-${day}`);
-                  } else {
-                    setSelectedDate(todayStr);
-                  }
-                }}
-                placeholder={t('filters.selectDate')}
-                data-testid="datepicker-reference-date"
-              />
-              {selectedDate !== todayStr && (
+        <div className="container mx-auto px-4 py-3">
+          {/* Mobile Layout */}
+          <div className="flex flex-col gap-3 md:hidden">
+            {/* Title + Info + Date Row */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <h2 className="text-base font-semibold truncate">{t('dashboard.title')}</h2>
                 <Button
                   variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedDate(todayStr)}
-                  data-testid="button-reset-to-today"
-                  className="text-xs"
+                  size="icon"
+                  className="h-6 w-6 shrink-0"
+                  onClick={() => setColorInfoDialogOpen(true)}
+                  data-testid="button-color-info"
                 >
-                  {t('common.today')}
+                  <Info className="w-4 h-4 text-muted-foreground" />
                 </Button>
-              )}
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <Calendar className="w-4 h-4 text-muted-foreground" />
+                <ModernDatePicker
+                  date={selectedDate ? new Date(selectedDate + 'T00:00:00') : undefined}
+                  onDateChange={(date) => {
+                    if (date) {
+                      const year = date.getFullYear();
+                      const month = String(date.getMonth() + 1).padStart(2, '0');
+                      const day = String(date.getDate()).padStart(2, '0');
+                      setSelectedDate(`${year}-${month}-${day}`);
+                    } else {
+                      setSelectedDate(todayStr);
+                    }
+                  }}
+                  placeholder={t('filters.selectDate')}
+                  data-testid="datepicker-reference-date"
+                />
+              </div>
+            </div>
+            {/* Buttons Row */}
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setCheckInWizardOpen(true)}
+                className="gap-2 flex-1"
+                size="sm"
+                data-testid="button-new-checkin"
+              >
+                <Plus className="w-4 h-4" />
+                <span className="hidden xs:inline">{t('checkIn.newCheckIn')}</span>
+                <span className="xs:hidden">Giriş</span>
+              </Button>
+              <Button
+                onClick={() => setCheckOutWizardOpen(true)}
+                variant="outline"
+                className="gap-2 flex-1"
+                size="sm"
+                data-testid="button-new-checkout"
+              >
+                <DoorOpen className="w-4 h-4" />
+                <span className="hidden xs:inline">{t('bedDetails.checkOut')}</span>
+                <span className="xs:hidden">Çıkış</span>
+              </Button>
             </div>
           </div>
-          <div className="flex gap-2">
-            <Button
-              onClick={() => setCheckInWizardOpen(true)}
-              className="gap-2"
-              data-testid="button-new-checkin"
-            >
-              <Plus className="w-4 h-4" />
-              {t('checkIn.newCheckIn')}
-            </Button>
-            <Button
-              onClick={() => setCheckOutWizardOpen(true)}
-              variant="outline"
-              className="gap-2"
-              data-testid="button-new-checkout"
-            >
-              <DoorOpen className="w-4 h-4" />
-              {t('bedDetails.checkOut')}
-            </Button>
+
+          {/* Desktop Layout */}
+          <div className="hidden md:flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-semibold">{t('dashboard.title')}</h2>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={() => setColorInfoDialogOpen(true)}
+                  data-testid="button-color-info"
+                >
+                  <Info className="w-4 h-4 text-muted-foreground" />
+                </Button>
+              </div>
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-muted-foreground" />
+                <ModernDatePicker
+                  date={selectedDate ? new Date(selectedDate + 'T00:00:00') : undefined}
+                  onDateChange={(date) => {
+                    if (date) {
+                      const year = date.getFullYear();
+                      const month = String(date.getMonth() + 1).padStart(2, '0');
+                      const day = String(date.getDate()).padStart(2, '0');
+                      setSelectedDate(`${year}-${month}-${day}`);
+                    } else {
+                      setSelectedDate(todayStr);
+                    }
+                  }}
+                  placeholder={t('filters.selectDate')}
+                  data-testid="datepicker-reference-date"
+                />
+                {selectedDate !== todayStr && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedDate(todayStr)}
+                    data-testid="button-reset-to-today"
+                    className="text-xs"
+                  >
+                    {t('common.today')}
+                  </Button>
+                )}
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setCheckInWizardOpen(true)}
+                className="gap-2"
+                data-testid="button-new-checkin"
+              >
+                <Plus className="w-4 h-4" />
+                {t('checkIn.newCheckIn')}
+              </Button>
+              <Button
+                onClick={() => setCheckOutWizardOpen(true)}
+                variant="outline"
+                className="gap-2"
+                data-testid="button-new-checkout"
+              >
+                <DoorOpen className="w-4 h-4" />
+                {t('bedDetails.checkOut')}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
