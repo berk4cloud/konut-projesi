@@ -1176,6 +1176,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // GET /houses/:houseId/availability-conflicts - Check for bed availability conflicts
+  apiRouter.get("/houses/:houseId/availability-conflicts", async (req, res) => {
+    try {
+      const { houseId } = req.params;
+      const { startDate, endDate } = req.query;
+
+      if (!startDate || typeof startDate !== 'string') {
+        return res.status(400).json({ error: "startDate required" });
+      }
+
+      // Verify house exists
+      const house = await storage.getHouse(houseId);
+      if (!house) {
+        return res.status(404).json({ error: "House not found" });
+      }
+
+      // Get all rooms and beds for this house
+      const rooms = await storage.getRoomsByHouse(houseId);
+      
+      // Check availability for each bed
+      const roomsWithConflicts = await Promise.all(
+        rooms.map(async (room) => {
+          const beds = await storage.getBedsByRoom(room.id);
+          
+          const bedsWithConflicts = await Promise.all(
+            beds.map(async (bed) => {
+              const availability = await storage.checkBedAvailability(
+                bed.id, 
+                startDate, 
+                endDate as string | null || null
+              );
+              
+              return {
+                id: bed.id,
+                bedNumber: bed.bedNumber,
+                status: bed.status,
+                availability
+              };
+            })
+          );
+          
+          return {
+            id: room.id,
+            roomNumber: room.roomNumber,
+            floor: room.floor,
+            beds: bedsWithConflicts
+          };
+        })
+      );
+
+      res.json({
+        houseId,
+        houseName: house.name,
+        startDate,
+        endDate: endDate || null,
+        rooms: roomsWithConflicts
+      });
+    } catch (error) {
+      console.error("Error checking availability conflicts:", error);
+      res.status(500).json({ error: "Failed to check availability" });
+    }
+  });
+
   // ============================================
   // RESERVATIONS / CHECK-IN/OUT ENDPOINTS
   // ============================================

@@ -1156,6 +1156,9 @@ export class DbStorage implements IStorage {
         const resStart = r.reservation.checkInDate;
         const resEnd = r.reservation.checkOutDate;
         
+        // Skip reservations without valid check-in date
+        if (!resStart) return false;
+        
         // Check if there's an overlap
         // Reservation overlaps if:
         // 1. It starts before our end date (or we have no end date)
@@ -1168,7 +1171,7 @@ export class DbStorage implements IStorage {
       })
       .map(r => ({
         reservationId: r.reservation.id,
-        checkInDate: r.reservation.checkInDate,
+        checkInDate: r.reservation.checkInDate!, // Safe because we filtered null values above
         checkOutDate: r.reservation.checkOutDate,
         employmentId: r.employment.id,
         workerName: `${r.profile.firstName} ${r.profile.lastName}`
@@ -1186,7 +1189,7 @@ export class DbStorage implements IStorage {
     let conflictType: 'none' | 'partial' | 'full' = 'partial';
     
     // Check if there's a conflict that starts on or before our start date
-    const hasConflictAtStart = conflicts.some(c => c.checkInDate <= startDate);
+    const hasConflictAtStart = conflicts.some(c => c.checkInDate && c.checkInDate <= startDate);
     
     if (hasConflictAtStart) {
       // Full conflict - bed is occupied from the beginning
