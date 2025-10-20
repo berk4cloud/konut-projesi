@@ -1940,9 +1940,16 @@ export default function HousingDashboard() {
                                                   if (bedConflict && !bedConflict.available) {
                                                     const conflict = bedConflict.conflicts?.[0];
                                                     if (conflict) {
-                                                      const conflictMessage = bedConflict.conflictType === 'partial'
-                                                        ? `Bu yatak ${conflict.checkInDate} tarihinden itibaren ${conflict.workerName} tarafından rezerve edilmiş. Seçtiğiniz tarih aralığı (${wizardData.startDate} - ${wizardData.endDate || 'ucu açık'}) ile çakışıyor.`
-                                                        : `Bu yatak seçilen tarih aralığında müsait değil. ${conflict.workerName} tarafından ${conflict.checkInDate} tarihinden itibaren rezerve edilmiş.`;
+                                                      let conflictMessage: string;
+                                                      
+                                                      // Special message for open-ended reservations (no end date)
+                                                      if (!wizardData.endDate) {
+                                                        conflictMessage = `Bu yatak ${conflict.checkInDate} tarihinde ${conflict.workerName} tarafından rezerve edilmiş. Lütfen çıkış tarihinizi ${conflict.checkInDate} tarihinden önce belirleyin.`;
+                                                      } else if (bedConflict.conflictType === 'partial') {
+                                                        conflictMessage = `Bu yatak ${conflict.checkInDate} tarihinden itibaren ${conflict.workerName} tarafından rezerve edilmiş. Seçtiğiniz tarih aralığı (${wizardData.startDate} - ${wizardData.endDate}) ile çakışıyor.`;
+                                                      } else {
+                                                        conflictMessage = `Bu yatak seçilen tarih aralığında müsait değil. ${conflict.workerName} tarafından ${conflict.checkInDate} tarihinden itibaren rezerve edilmiş.`;
+                                                      }
                                                       
                                                       toast({
                                                         title: "⚠️ Tarih Çakışması",
