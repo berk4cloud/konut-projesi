@@ -366,6 +366,7 @@ export const rooms = pgTable("rooms", {
   availableForRoomRental: boolean("available_for_room_rental").default(false).notNull(),
   status: text("status").default("active"),
   costPerDay: numeric("cost_per_day"),
+  costPerMonth: numeric("cost_per_month"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

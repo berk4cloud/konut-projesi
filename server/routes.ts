@@ -904,6 +904,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 floor: room.floor,
                 canRentAsRoom: room.availableForRoomRental || false,
                 useFloor: room.floor !== null && room.floor !== undefined,
+                pricing: {
+                  useCustomPricing: (room.costPerDay !== null && room.costPerDay !== undefined) || (room.costPerMonth !== null && room.costPerMonth !== undefined),
+                  roomDailyPrice: room.costPerDay ? parseFloat(room.costPerDay) : null,
+                  roomMonthlyPrice: room.costPerMonth ? parseFloat(room.costPerMonth) : null,
+                },
                 beds: bedsWithWorkers,
                 roomReservation: roomReservationDetails ? {
                   leadTenant: roomReservationDetails.leadTenant,
@@ -989,6 +994,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             bedCount: bedCount,
             status: "active",
             availableForRoomRental: roomData.canRentAsRoom !== undefined ? roomData.canRentAsRoom : false,
+            costPerDay: roomData.pricing?.useCustomPricing ? roomData.pricing.roomDailyPrice?.toString() : null,
+            costPerMonth: roomData.pricing?.useCustomPricing ? roomData.pricing.roomMonthlyPrice?.toString() : null,
           });
           console.log(`[CREATE HOUSE] Room ${idx + 1} created:`, createdRoom.id);
           
@@ -1015,6 +1022,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             floor: room.floor,
             canRentAsRoom: room.availableForRoomRental || false,
             useFloor: room.floor !== null && room.floor !== undefined,
+            pricing: {
+              useCustomPricing: (room.costPerDay !== null && room.costPerDay !== undefined) || (room.costPerMonth !== null && room.costPerMonth !== undefined),
+              roomDailyPrice: room.costPerDay ? parseFloat(room.costPerDay) : null,
+              roomMonthlyPrice: room.costPerMonth ? parseFloat(room.costPerMonth) : null,
+            },
             beds: beds.map(bed => ({
               id: bed.id,
               bedNumber: bed.bedNumber,
@@ -1087,6 +1099,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               roomNumber: roomData.roomNumber || "",
               floor: roomData.floor !== undefined ? roomData.floor : null,
               availableForRoomRental: roomData.canRentAsRoom !== undefined ? roomData.canRentAsRoom : false,
+              costPerDay: roomData.pricing?.useCustomPricing ? roomData.pricing.roomDailyPrice?.toString() : null,
+              costPerMonth: roomData.pricing?.useCustomPricing ? roomData.pricing.roomMonthlyPrice?.toString() : null,
             });
             
             // Handle beds for this existing room
@@ -1127,6 +1141,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               bedCount: bedCount,
               status: "active",
               availableForRoomRental: roomData.canRentAsRoom !== undefined ? roomData.canRentAsRoom : false,
+              costPerDay: roomData.pricing?.useCustomPricing ? roomData.pricing.roomDailyPrice?.toString() : null,
+              costPerMonth: roomData.pricing?.useCustomPricing ? roomData.pricing.roomMonthlyPrice?.toString() : null,
             });
             
             // Create beds for this new room
@@ -1152,6 +1168,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             floor: room.floor,
             canRentAsRoom: room.availableForRoomRental || false,
             useFloor: room.floor !== null && room.floor !== undefined,
+            pricing: {
+              useCustomPricing: (room.costPerDay !== null && room.costPerDay !== undefined) || (room.costPerMonth !== null && room.costPerMonth !== undefined),
+              roomDailyPrice: room.costPerDay ? parseFloat(room.costPerDay) : null,
+              roomMonthlyPrice: room.costPerMonth ? parseFloat(room.costPerMonth) : null,
+            },
             beds: beds.map(bed => ({
               id: bed.id,
               bedNumber: bed.bedNumber,
