@@ -1192,8 +1192,6 @@ export default function Houses() {
       }
     }
     
-    console.log("Saving house:", formData);
-    
     // Prepare house data for API
     const houseData = {
       name: getDisplayName(formData.customName, formData.address, formData.useCustomName),
