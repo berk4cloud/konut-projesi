@@ -1166,9 +1166,7 @@ export default function Houses() {
     // Validate each room
     for (let i = 0; i < formData.rooms.length; i++) {
       const room = formData.rooms[i];
-      console.log(`Validating room ${i}:`, room);
       if (!room.roomNumber.trim()) {
-        console.error(`Validation failed: Room ${i} missing room number`);
         toast({
           title: "Hata",
           description: `Oda ${i + 1}: Oda numarası zorunludur`,
@@ -1177,7 +1175,6 @@ export default function Houses() {
         return;
       }
       if (!room.beds || room.beds < 1) {
-        console.error(`Validation failed: Room ${i} beds invalid:`, room.beds);
         toast({
           title: "Hata",
           description: `Oda ${i + 1}: Yatak sayısı en az 1 olmalıdır`,
@@ -1186,7 +1183,6 @@ export default function Houses() {
         return;
       }
       if (room.useFloor && (room.floor === undefined || room.floor === null)) {
-        console.error(`Validation failed: Room ${i} useFloor=true but floor is:`, room.floor);
         toast({
           title: "Hata",
           description: `Oda ${i + 1}: Kat bilgisi girmelisiniz`,
@@ -1973,12 +1969,15 @@ export default function Houses() {
                                   placeholder={`€${getApplicablePrice(room, formData as any, 'bedDaily')}`}
                                   value={room.pricing?.bedDailyPrice ?? ""}
                                   onChange={(e) => {
+                                    const value = e.target.value ? parseFloat(e.target.value) : undefined;
                                     const newRooms = [...formData.rooms];
+                                    const existingPricing = newRooms[index].pricing || {};
                                     newRooms[index] = {
                                       ...newRooms[index],
                                       pricing: {
-                                        ...newRooms[index].pricing!,
-                                        bedDailyPrice: e.target.value ? parseFloat(e.target.value) : undefined
+                                        ...existingPricing,
+                                        useCustomPricing: value !== undefined ? true : (existingPricing.useCustomPricing || false),
+                                        bedDailyPrice: value
                                       }
                                     };
                                     setFormData({ ...formData, rooms: newRooms });
@@ -1997,12 +1996,15 @@ export default function Houses() {
                                 placeholder={`€${getApplicablePrice(room, formData as any, 'bedMonthly')}`}
                                 value={room.pricing?.bedMonthlyPrice ?? ""}
                                 onChange={(e) => {
+                                  const value = e.target.value ? parseFloat(e.target.value) : undefined;
                                   const newRooms = [...formData.rooms];
+                                  const existingPricing = newRooms[index].pricing || {};
                                   newRooms[index] = {
                                     ...newRooms[index],
                                     pricing: {
-                                      ...newRooms[index].pricing!,
-                                      bedMonthlyPrice: e.target.value ? parseFloat(e.target.value) : undefined
+                                      ...existingPricing,
+                                      useCustomPricing: value !== undefined ? true : (existingPricing.useCustomPricing || false),
+                                      bedMonthlyPrice: value
                                     }
                                   };
                                   setFormData({ ...formData, rooms: newRooms });
@@ -2025,12 +2027,15 @@ export default function Houses() {
                                     placeholder={`€${getApplicablePrice(room, formData as any, 'roomDaily')}`}
                                     value={room.pricing?.roomDailyPrice ?? ""}
                                     onChange={(e) => {
+                                      const value = e.target.value ? parseFloat(e.target.value) : undefined;
                                       const newRooms = [...formData.rooms];
+                                      const existingPricing = newRooms[index].pricing || {};
                                       newRooms[index] = {
                                         ...newRooms[index],
                                         pricing: {
-                                          ...newRooms[index].pricing!,
-                                          roomDailyPrice: e.target.value ? parseFloat(e.target.value) : undefined
+                                          ...existingPricing,
+                                          useCustomPricing: value !== undefined ? true : (existingPricing.useCustomPricing || false),
+                                          roomDailyPrice: value
                                         }
                                       };
                                       setFormData({ ...formData, rooms: newRooms });
@@ -2049,12 +2054,15 @@ export default function Houses() {
                                   placeholder={`€${getApplicablePrice(room, formData as any, 'roomMonthly')}`}
                                   value={room.pricing?.roomMonthlyPrice ?? ""}
                                   onChange={(e) => {
+                                    const value = e.target.value ? parseFloat(e.target.value) : undefined;
                                     const newRooms = [...formData.rooms];
+                                    const existingPricing = newRooms[index].pricing || {};
                                     newRooms[index] = {
                                       ...newRooms[index],
                                       pricing: {
-                                        ...newRooms[index].pricing!,
-                                        roomMonthlyPrice: e.target.value ? parseFloat(e.target.value) : undefined
+                                        ...existingPricing,
+                                        useCustomPricing: value !== undefined ? true : (existingPricing.useCustomPricing || false),
+                                        roomMonthlyPrice: value
                                       }
                                     };
                                     setFormData({ ...formData, rooms: newRooms });
