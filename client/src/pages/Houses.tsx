@@ -1000,7 +1000,17 @@ export default function Houses() {
       address: house.address,
       city: house.city,
       country: house.country,
-      rooms: [...house.rooms],
+      rooms: house.rooms.map(room => ({
+        id: room.id,
+        roomNumber: room.roomNumber,
+        floor: room.floor,
+        beds: Array.isArray(room.beds) ? room.beds.length : (room.beds || 0),
+        canRentAsRoom: room.canRentAsRoom || false,
+        useFloor: room.useFloor !== undefined ? room.useFloor : (room.floor !== null && room.floor !== undefined),
+        pricing: room.pricing || {
+          useCustomPricing: false,
+        },
+      })),
       ownershipType: house.ownershipType,
       pricing: house.pricing || {
         useCustomPricing: false,
@@ -1156,7 +1166,9 @@ export default function Houses() {
     // Validate each room
     for (let i = 0; i < formData.rooms.length; i++) {
       const room = formData.rooms[i];
+      console.log(`Validating room ${i}:`, room);
       if (!room.roomNumber.trim()) {
+        console.error(`Validation failed: Room ${i} missing room number`);
         toast({
           title: "Hata",
           description: `Oda ${i + 1}: Oda numarası zorunludur`,
@@ -1165,6 +1177,7 @@ export default function Houses() {
         return;
       }
       if (!room.beds || room.beds < 1) {
+        console.error(`Validation failed: Room ${i} beds invalid:`, room.beds);
         toast({
           title: "Hata",
           description: `Oda ${i + 1}: Yatak sayısı en az 1 olmalıdır`,
@@ -1173,6 +1186,7 @@ export default function Houses() {
         return;
       }
       if (room.useFloor && (room.floor === undefined || room.floor === null)) {
+        console.error(`Validation failed: Room ${i} useFloor=true but floor is:`, room.floor);
         toast({
           title: "Hata",
           description: `Oda ${i + 1}: Kat bilgisi girmelisiniz`,

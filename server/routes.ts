@@ -902,6 +902,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 id: room.id,
                 roomNumber: room.roomNumber,
                 floor: room.floor,
+                canRentAsRoom: room.availableForRoomRental || false,
+                useFloor: room.floor !== null && room.floor !== undefined,
                 beds: bedsWithWorkers,
                 roomReservation: roomReservationDetails ? {
                   leadTenant: roomReservationDetails.leadTenant,
@@ -1011,6 +1013,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             id: room.id,
             roomNumber: room.roomNumber,
             floor: room.floor,
+            canRentAsRoom: room.availableForRoomRental || false,
+            useFloor: room.floor !== null && room.floor !== undefined,
             beds: beds.map(bed => ({
               id: bed.id,
               bedNumber: bed.bedNumber,
@@ -1146,6 +1150,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             id: room.id,
             roomNumber: room.roomNumber,
             floor: room.floor,
+            canRentAsRoom: room.availableForRoomRental || false,
+            useFloor: room.floor !== null && room.floor !== undefined,
             beds: beds.map(bed => ({
               id: bed.id,
               bedNumber: bed.bedNumber,
