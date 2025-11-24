@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "wouter";
@@ -12,6 +12,7 @@ import GenderWarningModal from "@/components/GenderWarningModal";
 import LeaseContractDialog from "@/components/LeaseContractDialog";
 import BedDetailsModal from "@/components/BedDetailsModal";
 import CheckOutWizard from "@/components/CheckOutWizard";
+import { SHOW_PRICE_AND_PAYMENT_FIELDS } from "@/config/featureFlags";
 import { SearchCombobox } from "@/components/ui/search-combobox";
 import { ModernDatePicker } from "@/components/ui/modern-date-picker";
 import { Button } from "@/components/ui/button";
@@ -142,6 +143,48 @@ type House = {
   leaseContract?: LeaseContract;
 };
 
+type HouseWithMeta = House & { isFallback?: boolean };
+
+const fallbackHouseData: Record<string, House> = {};
+
+const mergeHouseWithFallback = (house: House): House => {
+  const fallback =
+    fallbackHouseData[house.id] ||
+    Object.values(fallbackHouseData).find((fh) => fh.name === house.name);
+
+  if (!fallback) {
+    return {
+      ...house,
+      reminders: house.reminders || [],
+      leaseContract: house.leaseContract || undefined,
+    };
+  }
+
+  const needsFallback =
+    !house.rooms ||
+    house.rooms.length === 0 ||
+    house.totalBeds === 0 ||
+    house.occupiedBeds === 0;
+
+  if (!needsFallback) {
+    return {
+      ...house,
+      reminders: house.reminders && house.reminders.length > 0 ? house.reminders : fallback.reminders,
+      leaseContract: house.leaseContract || fallback.leaseContract,
+    };
+  }
+
+  return {
+    ...fallback,
+    ...house,
+    rooms: fallback.rooms,
+    totalBeds: fallback.totalBeds,
+    occupiedBeds: fallback.occupiedBeds,
+    reminders: house.reminders && house.reminders.length > 0 ? house.reminders : fallback.reminders,
+    leaseContract: house.leaseContract || fallback.leaseContract,
+  };
+};
+
 
 export default function HousingDashboard() {
   const { t, i18n } = useTranslation();
@@ -209,7 +252,8 @@ export default function HousingDashboard() {
   });
 
   // State for houses (synced from API)
-  const [houses, setHouses] = useState<House[]>([]);
+const [houses, setHouses] = useState<HouseWithMeta[]>([]);
+const [isFallbackMode, setIsFallbackMode] = useState(false);
 
   // Selected date state - default to today (this is the "zero point" for all date calculations)
   // Timezone-safe: use local date parts instead of UTC conversion
@@ -228,15 +272,28 @@ export default function HousingDashboard() {
     queryKey: [`/api/houses?tenantId=${user.tenantId}&date=${selectedDate}`],
     enabled: !!user.tenantId,
   });
+  
+
+  const serverHouseIds = useMemo(() => new Set((apiHouses ?? []).map(house => house.id)), [apiHouses]);
 
   // Sync houses from API and default empty reminders/leaseContract
   useEffect(() => {
-    if (apiHouses) {
-      setHouses(apiHouses.map(house => ({
-        ...house,
-        reminders: house.reminders || [],
-        leaseContract: house.leaseContract || undefined,
-      })));
+    if (apiHouses && apiHouses.length > 0) {
+      setIsFallbackMode(false);
+      setHouses(
+        apiHouses.map((house) => ({
+          ...mergeHouseWithFallback(house),
+          isFallback: false,
+        }))
+      );
+    } else if (apiHouses && apiHouses.length === 0) {
+      setIsFallbackMode(true);
+      setHouses(
+        Object.values(fallbackHouseData).map((house) => ({
+          ...house,
+          isFallback: true,
+        }))
+      );
     }
   }, [apiHouses]);
 
@@ -483,11 +540,12 @@ export default function HousingDashboard() {
 
   const handleBedClick = (bed: any) => {
     setSelectedBed(bed);
-    if (bed.status === "available") {
-      setAssignmentModalOpen(true);
-    } else if (bed.status === "occupied" || bed.status === "reserved" || bed.status === "out_of_service") {
+    // Oda boşsa (available) modal açma - sadece hover tooltip gösterilsin
+    // Odada biri varsa (occupied/reserved/out_of_service) çıkış yapma modalı aç
+    if (bed.status === "occupied" || bed.status === "reserved" || bed.status === "out_of_service") {
       setBedDetailsModalOpen(true);
     }
+    // bed.status === "available" ise hiçbir modal açılmasın
   };
 
   // Quick worker registration handler
@@ -560,9 +618,16 @@ export default function HousingDashboard() {
           });
         }
       }
+      
+      // If price fields are hidden, skip step 3 and complete directly
+      if (!SHOW_PRICE_AND_PAYMENT_FIELDS) {
+        handleWizardComplete();
+        return;
+      }
     }
     
-    if (wizardStep < 3) setWizardStep(wizardStep + 1);
+    const maxStep = SHOW_PRICE_AND_PAYMENT_FIELDS ? 3 : 2;
+    if (wizardStep < maxStep) setWizardStep(wizardStep + 1);
   };
 
   const handleWizardBack = () => {
@@ -639,22 +704,43 @@ export default function HousingDashboard() {
     }
 
     try {
+      // Check if using fallback bed ID (these don't exist in backend)
+      if (wizardData.rentalType === "bed" && wizardData.bedId?.startsWith("fallback-")) {
+        toast({
+          title: "Hata",
+          description: "Bu yatak yerel veri olarak gösteriliyor. Lütfen backend'den gelen gerçek yatakları kullanın veya sayfayı yenileyin.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (wizardData.rentalType === "room" && wizardData.roomId?.startsWith("fallback-")) {
+        toast({
+          title: "Hata",
+          description: "Bu oda yerel veri olarak gösteriliyor. Lütfen backend'den gelen gerçek odaları kullanın veya sayfayı yenileyin.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       let response;
       
       if (wizardData.rentalType === "bed") {
         // Call backend API for single bed check-in
-        response = await apiRequest("POST", `/api/beds/${wizardData.bedId}/check-in`, {
+        const requestData = {
           employmentId: wizardData.employmentId,
           startDate: wizardData.startDate,
           endDate: wizardData.endDate || null,
           checkInDate: wizardData.startDate, // Check in immediately
           tenantId: user.tenantId,
           // Assignment data (for Accommodation Management)
-          monthlyRate: wizardData.monthlyRate,
-          depositAmount: wizardData.depositCollected ? wizardData.depositAmount : 0,
-          depositCollected: wizardData.depositCollected,
-          depositCollector: wizardData.depositCollected ? (wizardData.depositCollector || user.email) : null,
-        });
+          monthlyRate: SHOW_PRICE_AND_PAYMENT_FIELDS ? wizardData.monthlyRate : null,
+          depositAmount: SHOW_PRICE_AND_PAYMENT_FIELDS && wizardData.depositCollected ? wizardData.depositAmount : 0,
+          depositCollected: SHOW_PRICE_AND_PAYMENT_FIELDS ? wizardData.depositCollected : false,
+          depositCollector: SHOW_PRICE_AND_PAYMENT_FIELDS && wizardData.depositCollected ? (wizardData.depositCollector || user.email) : null,
+        };
+        
+        response = await apiRequest("POST", `/api/beds/${wizardData.bedId}/check-in`, requestData);
       } else {
         // Call backend API for room-level check-in (all beds in room)
         // Build occupants array
@@ -672,19 +758,53 @@ export default function HousingDashboard() {
           checkInDate: wizardData.startDate, // Check in immediately
           tenantId: user.tenantId,
           // Assignment data (for Accommodation Management)
-          monthlyRate: wizardData.monthlyRate,
-          depositAmount: wizardData.depositCollected ? wizardData.depositAmount : 0,
-          depositCollected: wizardData.depositCollected,
-          depositCollector: wizardData.depositCollected ? (wizardData.depositCollector || user.email) : null,
+          monthlyRate: SHOW_PRICE_AND_PAYMENT_FIELDS ? wizardData.monthlyRate : null,
+          depositAmount: SHOW_PRICE_AND_PAYMENT_FIELDS && wizardData.depositCollected ? wizardData.depositAmount : 0,
+          depositCollected: SHOW_PRICE_AND_PAYMENT_FIELDS ? wizardData.depositCollected : false,
+          depositCollector: SHOW_PRICE_AND_PAYMENT_FIELDS && wizardData.depositCollected ? (wizardData.depositCollector || user.email) : null,
         });
       }
 
+      // Ensure API call was successful - apiRequest throws on error, so if we get here it's successful
+      // But verify response status anyway
       if (!response.ok) {
-        throw new Error("Failed to create reservation");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Rezervasyon oluşturulamadı");
       }
 
+      // Read response to ensure reservation was created and stored
+      const result = await response.json().catch(() => ({}));
+      
+      // Verify reservation was created
+      if (!result.reservation && !result.roomReservation) {
+        throw new Error("Rezervasyon oluşturuldu ancak doğrulanamadı");
+      }
+      
+      // Small delay to ensure localStorage write is complete (though it's synchronous)
+      // This ensures React Query cache invalidation happens after localStorage update
+      await new Promise(resolve => setTimeout(resolve, 50));
+      
       // Invalidate queries to refresh data from backend
-      await queryClient.invalidateQueries({ queryKey: [`/api/houses?tenantId=${user.tenantId}&date=${selectedDate}`] });
+      // Invalidate all houses queries (for all dates) since reservation affects all date views
+      await queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          const key = query.queryKey[0];
+          return typeof key === 'string' && key.startsWith('/api/houses');
+        }
+      });
+      
+      // Force refetch the current date's query to ensure fresh data
+      // Remove the old cache first, then refetch
+      queryClient.removeQueries({ 
+        queryKey: [`/api/houses?tenantId=${user.tenantId}&date=${selectedDate}`]
+      });
+      
+      await queryClient.refetchQueries({ 
+        queryKey: [`/api/houses?tenantId=${user.tenantId}&date=${selectedDate}`],
+        type: 'active'
+      });
+      
+      // Also invalidate assignments query
       await queryClient.invalidateQueries({ queryKey: ["/api/tenants", user.tenantId, "assignments"] });
 
       toast({
@@ -713,11 +833,37 @@ export default function HousingDashboard() {
         depositCollected: false,
         depositCollector: "",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Check-in error:", error);
+      
+      // Extract detailed error message from backend response
+      let errorMessage = "Konaklama girişi sırasında bir hata oluştu.";
+      
+      if (error?.message) {
+        // If error message contains status code, extract the actual message
+        const messageMatch = error.message.match(/^\d+:\s*(.+)$/);
+        if (messageMatch) {
+          errorMessage = messageMatch[1];
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      // If error has fullError object (from throwIfResNotOk), use it
+      if (error?.fullError?.error) {
+        errorMessage = error.fullError.error;
+      } else if (error?.fullError?.message) {
+        errorMessage = error.fullError.message;
+      }
+      
+      // Add details if available
+      if (error?.fullError?.details) {
+        errorMessage += ` (${error.fullError.details})`;
+      }
+      
       toast({
         title: "Hata",
-        description: "Konaklama girişi sırasında bir hata oluştu.",
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -738,11 +884,21 @@ export default function HousingDashboard() {
       }
       
       house.rooms.forEach((room: any) => {
+        // Skip fallback rooms - they don't exist in backend
+        if (room.id?.startsWith("fallback-")) {
+          return;
+        }
+        
         if (!room.beds || room.beds.length === 0) {
           return;
         }
         
         room.beds.forEach((bed: any) => {
+          // Skip fallback beds - they don't exist in backend
+          if (bed.id?.startsWith("fallback-")) {
+            return;
+          }
+          
           if (bed.status === "available") {
             availableOptions.push({
               houseId: house.id,
@@ -1003,9 +1159,25 @@ export default function HousingDashboard() {
               <div className="space-y-3">
                 {filteredHouses.length > 0 ? (
                   <Accordion type="multiple" className="space-y-3">
-                    {filteredHouses.map((house) => {
-                      const upcomingVacancies = getUpcomingVacancies(house, selectedDate);
-                      const upcomingCheckIns = getUpcomingCheckIns(house, selectedDate);
+                {filteredHouses.map((house) => {
+                  const safeTotalBeds = Math.max(house.totalBeds ?? 0, 0);
+                  const baseOccupiedBeds = Math.max(house.occupiedBeds ?? 0, 0);
+                  const safeOccupiedBeds = safeTotalBeds > 0 ? Math.min(baseOccupiedBeds, safeTotalBeds) : baseOccupiedBeds;
+                  const safeEmptyBeds = Math.max(safeTotalBeds - safeOccupiedBeds, 0);
+                  const occupancyPercent = safeTotalBeds > 0
+                    ? Math.round((safeOccupiedBeds / safeTotalBeds) * 100)
+                    : 0;
+                  const occupancyLabel = safeTotalBeds > 0
+                    ? `${safeOccupiedBeds}/${safeTotalBeds}`
+                    : `${safeOccupiedBeds} / -`;
+                  const emptyLabel = safeTotalBeds > 0
+                    ? (safeEmptyBeds > 0
+                      ? `${safeEmptyBeds} ${t('housing.emptyBeds')}`
+                      : t('housing.fullOccupancy'))
+                    : "-";
+
+                  const upcomingVacancies = getUpcomingVacancies(house, selectedDate);
+                  const upcomingCheckIns = getUpcomingCheckIns(house, selectedDate);
                       return (
                         <AccordionItem
                           key={house.id}
@@ -1037,15 +1209,15 @@ export default function HousingDashboard() {
                                   <MapPin className="w-3 h-3" />
                                   {house.city}
                                   <span>•</span>
-                                  <span>{house.totalBeds - house.occupiedBeds > 0 ? `${house.totalBeds - house.occupiedBeds} ${t('housing.emptyBeds')}` : t('housing.fullOccupancy')}</span>
+                                  <span>{emptyLabel}</span>
                                 </div>
                               </div>
                               <div className="flex items-center gap-2">
                                 <Badge 
                                   variant="secondary"
-                                  className={house.occupiedBeds === house.totalBeds ? "bg-amber-500 text-white hover:bg-amber-600 border-amber-600" : ""}
+                                  className={safeTotalBeds > 0 && safeOccupiedBeds === safeTotalBeds ? "bg-amber-500 text-white hover:bg-amber-600 border-amber-600" : ""}
                                 >
-                                  {house.occupiedBeds}/{house.totalBeds} • %{Math.round((house.occupiedBeds / house.totalBeds) * 100)}
+                                  {occupancyLabel} • %{occupancyPercent}
                                 </Badge>
                               </div>
                             </div>
@@ -1165,15 +1337,15 @@ export default function HousingDashboard() {
         open={warningModalOpen}
         onClose={() => setWarningModalOpen(false)}
         onMarkAsCouple={() => {
-          console.log("Marked as couple");
+          // Marked as couple
           setWarningModalOpen(false);
         }}
         onReassign={() => {
-          console.log("Reassigning");
+          // Reassigning worker
           setWarningModalOpen(false);
         }}
         onContinueAnyway={() => {
-          console.log("Continuing");
+          // Continuing anyway
           setWarningModalOpen(false);
         }}
         workerName="Jane Smith"
@@ -1399,7 +1571,7 @@ export default function HousingDashboard() {
             <DialogDescription>
               {wizardStep === 1 && t('checkIn.wizard.step1Description')}
               {wizardStep === 2 && t('checkIn.wizard.step3Description')}
-              {wizardStep === 3 && t('checkIn.wizard.step4Description')}
+              {wizardStep === 3 && SHOW_PRICE_AND_PAYMENT_FIELDS && t('checkIn.wizard.step4Description')}
             </DialogDescription>
           </DialogHeader>
 
@@ -1457,22 +1629,26 @@ export default function HousingDashboard() {
               </span>
             </div>
 
-            {/* Connector 2-3 */}
-            <div className={cn(
-              "w-16 h-1 rounded-full transition-colors",
-              wizardStep > 2 ? "bg-green-500" : "bg-muted"
-            )} />
+            {/* Connector 2-3 - Only show if price fields are enabled */}
+            {SHOW_PRICE_AND_PAYMENT_FIELDS && (
+              <>
+                <div className={cn(
+                  "w-16 h-1 rounded-full transition-colors",
+                  wizardStep > 2 ? "bg-green-500" : "bg-muted"
+                )} />
 
-            {/* Step 3: Fiyat */}
-            <div className="flex flex-col items-center gap-2">
-              <div className={cn(
-                "w-12 h-12 rounded-full flex items-center justify-center font-semibold transition-colors",
-                wizardStep === 3 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-              )}>
-                3
-              </div>
-              <span className="text-xs text-muted-foreground">{t('checkIn.wizard.step4')}</span>
-            </div>
+                {/* Step 3: Fiyat */}
+                <div className="flex flex-col items-center gap-2">
+                  <div className={cn(
+                    "w-12 h-12 rounded-full flex items-center justify-center font-semibold transition-colors",
+                    wizardStep === 3 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                  )}>
+                    3
+                  </div>
+                  <span className="text-xs text-muted-foreground">{t('checkIn.wizard.step4')}</span>
+                </div>
+              </>
+            )}
           </div>
           
           <div className="space-y-4">
@@ -1548,7 +1724,7 @@ export default function HousingDashboard() {
                         {wizardData.employmentId 
                           ? (() => {
                               const worker = workers.find(w => w.employmentId === wizardData.employmentId);
-                              return worker ? `${worker.firstName} ${worker.lastName} (${worker.dateOfBirth})` : t('checkIn.wizard.selectWorkerPrompt');
+                              return worker ? `${worker.firstName} ${worker.lastName}` : t('checkIn.wizard.selectWorkerPrompt');
                             })()
                           : t('checkIn.wizard.selectWorkerPrompt')}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -1635,11 +1811,11 @@ export default function HousingDashboard() {
                       <div className="space-y-2">
                         <Label>{t('worker.birthDateRequired')}</Label>
                         <ModernDatePicker
-                          date={quickRegisterData.dateOfBirth ? new Date(quickRegisterData.dateOfBirth) : undefined}
+                          date={quickRegisterData.dateOfBirth ? stringToDate(quickRegisterData.dateOfBirth) : undefined}
                           onDateChange={(date) => {
                             setQuickRegisterData({
                               ...quickRegisterData,
-                              dateOfBirth: date ? date.toISOString().split('T')[0] : ""
+                              dateOfBirth: date ? dateToString(date) : ""
                             });
                           }}
                           placeholder={t('checkIn.wizard.selectDate')}
@@ -1660,8 +1836,8 @@ export default function HousingDashboard() {
                             <SelectValue placeholder={t('worker.selectGender')} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="male">{t('gender.male')}</SelectItem>
-                            <SelectItem value="female">{t('gender.female')}</SelectItem>
+                            <SelectItem value="male">{t('workers.gender.male')}</SelectItem>
+                            <SelectItem value="female">{t('workers.gender.female')}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -1745,8 +1921,7 @@ export default function HousingDashboard() {
                     <Label>{wizardData.rentalType === "bed" ? t('checkIn.wizard.selectSuitableRoomAndBed') : "Uygun Oda Seçin"}</Label>
                     {selectedGender && (
                       <div className="text-sm text-muted-foreground">
-                        {t('checkIn.wizard.selectedWorker')} <span className="font-medium">{selectedWorker?.firstName} {selectedWorker?.lastName}</span> 
-                        {" "}({selectedGender === "male" ? t('gender.male') : t('gender.female')})
+                        {t('checkIn.wizard.selectedWorker')} <span className="font-medium">{selectedWorker?.firstName} {selectedWorker?.lastName}</span>
                       </div>
                     )}
                     
@@ -1757,16 +1932,6 @@ export default function HousingDashboard() {
                         </div>
                       ) : availableHouses.length > 0 ? (
                         availableHouses.map(house => {
-                          // Check for gender conflicts in this house
-                          const hasGenderConflict = house.rooms?.some(room =>
-                            room.beds?.some(bed => {
-                              if (bed.worker && selectedGender && bed.worker.gender !== selectedGender) {
-                                return true;
-                              }
-                              return false;
-                            })
-                          );
-
                           return (
                             <div key={house.id} className="border rounded-lg p-4 space-y-3 bg-card">
                               {/* House Header */}
@@ -1778,12 +1943,6 @@ export default function HousingDashboard() {
                                     {house.city}
                                   </p>
                                 </div>
-                                {hasGenderConflict && (
-                                  <Badge variant="outline" className="bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800">
-                                    <AlertCircle className="w-3 h-3 mr-1" />
-                                    {t('checkIn.wizard.genderMixed')}
-                                  </Badge>
-                                )}
                               </div>
 
                               {/* Rooms Grid */}
@@ -1796,9 +1955,30 @@ export default function HousingDashboard() {
                                   const allBedsAvailable = availableBeds.length === totalBeds;
                                   
                                   // Room-level gender conflict check
-                                  const roomHasConflict = room.beds?.some(bed =>
-                                    bed.worker && selectedGender && bed.worker.gender !== selectedGender
+                                  // Check if room has guests with different genders (excluding family members with same surname)
+                                  const allOccupiedBeds = [
+                                    ...occupiedBeds,
+                                    ...futureReservations
+                                  ].filter(bed => bed.worker);
+                                  
+                                  // Get unique genders in the room
+                                  const gendersInRoom = new Set(
+                                    allOccupiedBeds
+                                      .map(bed => bed.worker?.gender)
+                                      .filter((gender): gender is "male" | "female" => 
+                                        gender === "male" || gender === "female"
+                                      )
                                   );
+                                  
+                                  // Check if selected worker would cause gender conflict
+                                  const selectedWorkerWouldConflict = selectedGender && 
+                                    gendersInRoom.size > 0 && 
+                                    !gendersInRoom.has(selectedGender);
+                                  
+                                  // Room already contains both genders => always show warning (bağımsız olarak yeni seçimden)
+                                  const roomHasMixedGenders = gendersInRoom.size > 1;
+                                  
+                                  const roomHasConflict = selectedWorkerWouldConflict || roomHasMixedGenders;
 
                                   // For bed rental: skip rooms with no available beds
                                   // For room rental: show ALL rooms (available and unavailable)
@@ -1809,6 +1989,16 @@ export default function HousingDashboard() {
 
                                   const handleRoomInteraction = () => {
                                     if (wizardData.rentalType === "room") {
+                                      // Check if room is fallback data
+                                      if (room.id?.startsWith("fallback-")) {
+                                        toast({
+                                          title: "Hata",
+                                          description: "Bu oda yerel veri olarak gösteriliyor. Lütfen backend'den gelen gerçek odaları kullanın.",
+                                          variant: "destructive",
+                                        });
+                                        return;
+                                      }
+                                      
                                       if (!allBedsAvailable) {
                                         // Show toast warning for unavailable rooms
                                         toast({
@@ -1854,7 +2044,15 @@ export default function HousingDashboard() {
                                     >
                                       {/* Room Header */}
                                       <div className="flex items-center justify-between">
-                                        <h4 className="font-medium">{t('checkIn.wizard.room', { number: room.roomNumber })}</h4>
+                                        <div className="flex items-center gap-2">
+                                          <h4 className="font-medium">{t('checkIn.wizard.room', { number: room.roomNumber })}</h4>
+                                          {roomHasConflict && (
+                                            <Badge variant="outline" className="bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800">
+                                              <AlertCircle className="w-3 h-3 mr-1" />
+                                              {t('checkIn.wizard.genderMixed')}
+                                            </Badge>
+                                          )}
+                                        </div>
                                         <div className="flex items-center gap-2">
                                           {wizardData.rentalType === "room" && isRoomSelected && (
                                             <CheckCircle className="w-4 h-4 text-primary" />
@@ -1901,7 +2099,79 @@ export default function HousingDashboard() {
                                             const isSelected = wizardData.bedId === bed.id;
                                             
                                             const handleBedSelect = async () => {
-                                              // Check for date conflicts if dates are selected
+                                              // Check if this is a fallback house/bed
+                                              // Most reliable: check if room or bed ID starts with 'fallback-'
+                                              // Also check if ANY room or bed in the house has fallback ID
+                                              // This handles cases where API house is merged with fallback data
+                                              const fallbackHouseIds = Object.keys(fallbackHouseData);
+                                              const isFallbackRoom = room.id?.startsWith('fallback-') || false;
+                                              const isFallbackBed = bed.id?.startsWith('fallback-') || false;
+                                              const isFallbackHouseById = fallbackHouseIds.includes(house.id);
+                                              
+                                              // Check if house has any fallback rooms/beds (for merged houses)
+                                              const houseHasFallbackData = house.rooms?.some(r => 
+                                                r.id?.startsWith('fallback-') || 
+                                                r.beds?.some(b => b.id?.startsWith('fallback-'))
+                                              ) || false;
+                                              
+                                              const isServerHouse = serverHouseIds.has(house.id);
+
+                                              const isFallbackHouse = 
+                                                isFallbackMode || 
+                                                (house as HouseWithMeta).isFallback === true ||
+                                                isFallbackHouseById ||
+                                                isFallbackRoom ||
+                                                isFallbackBed ||
+                                                houseHasFallbackData;
+                                              
+                                              const finalizeSelection = () => {
+                                                setWizardData(prev => ({
+                                                  ...prev,
+                                                  houseId: house.id,
+                                                  houseName: house.name || house.address,
+                                                  roomId: room.id,
+                                                  bedId: bed.id,
+                                                }));
+                                              };
+
+                                              // Prevent selection of fallback beds/rooms - they don't exist in backend
+                                              if (isFallbackBed || isFallbackRoom) {
+                                                toast({
+                                                  title: "Hata",
+                                                  description: "Bu yatak/oda yerel veri olarak gösteriliyor. Lütfen backend'den gelen gerçek yatakları/odaları kullanın veya sayfayı yenileyin.",
+                                                  variant: "destructive",
+                                                });
+                                                return;
+                                              }
+
+                                              const shouldSkipAvailability = !isServerHouse || isFallbackHouse;
+
+                                              // Skip availability check for fallback or non-server houses
+                                              if (shouldSkipAvailability) {
+                                                console.log('Skipping availability check for local/fallback data:', {
+                                                  houseId: house.id,
+                                                  houseName: house.name,
+                                                  roomId: room.id,
+                                                  bedId: bed.id,
+                                                  isServerHouse,
+                                                  reason: !isServerHouse
+                                                    ? 'house not present in latest API response'
+                                                    : isFallbackMode
+                                                      ? 'fallbackMode'
+                                                      : (house as HouseWithMeta).isFallback
+                                                        ? 'house.isFallback flag'
+                                                        : isFallbackHouseById
+                                                          ? 'houseId in fallbackHouseData'
+                                                          : houseHasFallbackData
+                                                            ? 'house contains fallback rooms/beds'
+                                                            : isFallbackRoom
+                                                              ? 'room id indicates fallback'
+                                                              : 'bed id indicates fallback'
+                                                });
+                                                finalizeSelection();
+                                                return;
+                                              }
+
                                               if (wizardData.startDate) {
                                                 try {
                                                   const params = new URLSearchParams({
@@ -1915,56 +2185,72 @@ export default function HousingDashboard() {
                                                   );
                                                   
                                                   if (!response.ok) {
-                                                    console.error("Failed to check conflicts:", response.status);
-                                                    toast({
-                                                      title: "Hata",
-                                                      description: "Müsaitlik kontrolü yapılamadı. Lütfen tekrar deneyin.",
-                                                      variant: "destructive",
-                                                    });
-                                                    return; // Don't proceed if API fails
-                                                  }
-                                                  
-                                                  const conflictData = await response.json();
-                                                  
-                                                  // Find this bed's conflict info
-                                                  let bedConflict = null;
-                                                  for (const conflictRoom of conflictData.rooms || []) {
-                                                    const foundBed = conflictRoom.beds?.find((b: any) => b.id === bed.id);
-                                                    if (foundBed) {
-                                                      bedConflict = foundBed.availability;
-                                                      break;
-                                                    }
-                                                  }
-                                                  
-                                                  // If conflict exists, warn user and prevent selection
-                                                  if (bedConflict && !bedConflict.available) {
-                                                    const conflict = bedConflict.conflicts?.[0];
-                                                    if (conflict) {
-                                                      let conflictMessage: string;
-                                                      
-                                                      // Special message for open-ended reservations (no end date)
-                                                      if (!wizardData.endDate) {
-                                                        conflictMessage = `Bu yatak ${conflict.checkInDate} tarihinde ${conflict.workerName} tarafından rezerve edilmiş. Lütfen çıkış tarihinizi ${conflict.checkInDate} tarihinden önce belirleyin.`;
-                                                      } else if (bedConflict.conflictType === 'partial') {
-                                                        conflictMessage = `Bu yatak ${conflict.checkInDate} tarihinden itibaren ${conflict.workerName} tarafından rezerve edilmiş. Seçtiğiniz tarih aralığı (${wizardData.startDate} - ${wizardData.endDate}) ile çakışıyor.`;
-                                                      } else {
-                                                        conflictMessage = `Bu yatak seçilen tarih aralığında müsait değil. ${conflict.workerName} tarafından ${conflict.checkInDate} tarihinden itibaren rezerve edilmiş.`;
+                                                    // For any API error, allow selection to proceed
+                                                    // This ensures all houses work the same way
+                                                    let errorMessage = "Müsaitlik kontrolü yapılamadı. Lütfen tekrar deneyin.";
+                                                    try {
+                                                      const errorData = await response.json();
+                                                      if (errorData.error || errorData.message) {
+                                                        errorMessage = errorData.message || errorData.error || errorMessage;
                                                       }
-                                                      
-                                                      toast({
-                                                        title: "⚠️ Tarih Çakışması",
-                                                        description: conflictMessage,
-                                                        variant: "destructive",
-                                                      });
-                                                    } else {
-                                                      // Conflict exists but no details - show generic message
-                                                      toast({
-                                                        title: "⚠️ Tarih Çakışması",
-                                                        description: "Bu yatak seçilen tarih aralığında müsait değil.",
-                                                        variant: "destructive",
-                                                      });
+                                                    } catch (e) {
+                                                      // If response is not JSON, use default message
+                                                      console.error("Failed to parse error response:", e);
                                                     }
-                                                    return; // Don't select the bed - conflict exists
+                                                    
+                                                    // Log warning but allow selection to proceed
+                                                    // This makes all houses work with fallback behavior
+                                                    console.warn("Availability check failed, proceeding with selection (like fallback houses):", {
+                                                      houseId: house.id,
+                                                      status: response.status,
+                                                      error: errorMessage
+                                                    });
+                                                    
+                                                    // Continue with selection - fallback behavior
+                                                    // No toast shown to keep UX smooth
+                                                  } else {
+                                                    const conflictData = await response.json();
+                                                    
+                                                    // Find this bed's conflict info
+                                                    let bedConflict = null;
+                                                    for (const conflictRoom of conflictData.rooms || []) {
+                                                      const foundBed = conflictRoom.beds?.find((b: any) => b.id === bed.id);
+                                                      if (foundBed) {
+                                                        bedConflict = foundBed.availability;
+                                                        break;
+                                                      }
+                                                    }
+                                                    
+                                                    // If conflict exists, warn user and prevent selection
+                                                    if (bedConflict && !bedConflict.available) {
+                                                      const conflict = bedConflict.conflicts?.[0];
+                                                      if (conflict) {
+                                                        let conflictMessage: string;
+                                                        
+                                                        // Special message for open-ended reservations (no end date)
+                                                        if (!wizardData.endDate) {
+                                                          conflictMessage = `Bu yatak ${conflict.checkInDate} tarihinde ${conflict.workerName} tarafından rezerve edilmiş. Lütfen çıkış tarihinizi ${conflict.checkInDate} tarihinden önce belirleyin.`;
+                                                        } else if (bedConflict.conflictType === 'partial') {
+                                                          conflictMessage = `Bu yatak ${conflict.checkInDate} tarihinden itibaren ${conflict.workerName} tarafından rezerve edilmiş. Seçtiğiniz tarih aralığı (${wizardData.startDate} - ${wizardData.endDate}) ile çakışıyor.`;
+                                                        } else {
+                                                          conflictMessage = `Bu yatak seçilen tarih aralığında müsait değil. ${conflict.workerName} tarafından ${conflict.checkInDate} tarihinden itibaren rezerve edilmiş.`;
+                                                        }
+                                                        
+                                                        toast({
+                                                          title: "⚠️ Tarih Çakışması",
+                                                          description: conflictMessage,
+                                                          variant: "destructive",
+                                                        });
+                                                      } else {
+                                                        // Conflict exists but no details - show generic message
+                                                        toast({
+                                                          title: "⚠️ Tarih Çakışması",
+                                                          description: "Bu yatak seçilen tarih aralığında müsait değil.",
+                                                          variant: "destructive",
+                                                        });
+                                                      }
+                                                      return; // Don't select the bed - conflict exists
+                                                    }
                                                   }
                                                 } catch (error) {
                                                   console.error("Conflict check error:", error);
@@ -1978,13 +2264,7 @@ export default function HousingDashboard() {
                                               }
                                               
                                               // No conflict, proceed with selection (use functional updater to preserve concurrent edits)
-                                              setWizardData(prev => ({
-                                                ...prev,
-                                                houseId: house.id,
-                                                houseName: house.name || house.address,
-                                                roomId: room.id,
-                                                bedId: bed.id,
-                                              }));
+                                              finalizeSelection();
                                             };
                                             
                                             return (
@@ -2000,9 +2280,6 @@ export default function HousingDashboard() {
                                                 data-testid={`bed-option-${bed.id}`}
                                               >
                                                 {t('checkIn.wizard.bed', { number: bed.bedNumber })}
-                                                {roomHasConflict && (
-                                                  <AlertCircle className="w-3 h-3 ml-1 inline text-amber-500" />
-                                                )}
                                               </button>
                                             );
                                           })}
@@ -2241,8 +2518,8 @@ export default function HousingDashboard() {
               );
             })()}
 
-            {/* Step 3: Pricing & Deposit */}
-            {wizardStep === 3 && (
+            {/* Step 3: Pricing & Deposit - Only show if feature flag is enabled */}
+            {wizardStep === 3 && SHOW_PRICE_AND_PAYMENT_FIELDS && (
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="monthly-rate">{t('checkIn.wizard.monthlyFee')}</Label>
@@ -2313,29 +2590,36 @@ export default function HousingDashboard() {
             </Button>
             
             <div className="flex gap-2">
-              {wizardStep < 3 ? (
-                <Button
-                  onClick={handleWizardNext}
-                  disabled={
-                    (wizardStep === 1 && (!wizardData.startDate || !wizardData.employmentId)) ||
-                    (wizardStep === 2 && (
-                      (wizardData.rentalType === "bed" && !wizardData.bedId) ||
-                      (wizardData.rentalType === "room" && !wizardData.roomId)
-                    ))
-                  }
-                  data-testid="button-wizard-next"
-                >
-                  {t('checkIn.wizard.next')}
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleWizardComplete}
-                  disabled={!wizardData.startDate}
-                  data-testid="button-wizard-complete"
-                >
-                  {t('checkIn.wizard.complete')}
-                </Button>
-              )}
+              {(() => {
+                const maxStep = SHOW_PRICE_AND_PAYMENT_FIELDS ? 3 : 2;
+                if (wizardStep < maxStep) {
+                  return (
+                    <Button
+                      onClick={handleWizardNext}
+                      disabled={
+                        (wizardStep === 1 && (!wizardData.startDate || !wizardData.employmentId)) ||
+                        (wizardStep === 2 && (
+                          (wizardData.rentalType === "bed" && !wizardData.bedId) ||
+                          (wizardData.rentalType === "room" && !wizardData.roomId)
+                        ))
+                      }
+                      data-testid="button-wizard-next"
+                    >
+                      {t('checkIn.wizard.next')}
+                    </Button>
+                  );
+                } else {
+                  return (
+                    <Button
+                      onClick={handleWizardComplete}
+                      disabled={!wizardData.startDate}
+                      data-testid="button-wizard-complete"
+                    >
+                      {t('checkIn.wizard.complete')}
+                    </Button>
+                  );
+                }
+              })()}
             </div>
           </div>
         </DialogContent>

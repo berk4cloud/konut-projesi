@@ -140,15 +140,41 @@ export default function Workers() {
     };
   };
 
+  const getProfileUpdatePayload = (data: typeof formData) => ({
+    firstName: data.firstName,
+    lastName: data.lastName,
+    dateOfBirth: data.dateOfBirth || null,
+    gender: data.gender as "male" | "female",
+    nationality: data.nationality || null,
+    email: data.email,
+    phone: data.phone || null,
+  });
+
+  const getEmploymentUpdatePayload = (data: typeof formData) => ({
+    jobTitle: data.jobTitle || null,
+    department: data.department || null,
+    startDate: data.startDate,
+  });
+
   // Create worker mutation
   const createWorkerMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
+      if (!user?.tenantId) {
+        throw new Error(t('workers.toasts.addError.description'));
+      }
+
       const normalizedData = normalizeFormData(data);
       const res = await apiRequest('POST', '/api/workers', {
         ...normalizedData,
-        tenantId: 'cova',
+        tenantId: user.tenantId,
       });
-      return res.json();
+      const payload = await res.json();
+
+      if (!res.ok) {
+        throw new Error(payload?.error || t('workers.toasts.addError.description'));
+      }
+
+      return payload;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/workers?tenantId=${user?.tenantId}`] });
@@ -167,12 +193,25 @@ export default function Workers() {
     },
   });
 
-  // Update employment mutation
-  const updateEmploymentMutation = useMutation({
-    mutationFn: async ({ employmentId, data }: { employmentId: string; data: Partial<typeof formData> }) => {
-      const normalizedData = normalizeFormData(data as typeof formData);
-      const res = await apiRequest('PATCH', `/api/employments/${employmentId}`, normalizedData);
-      return res.json();
+  // Update worker mutation (profile + employment)
+  const updateWorkerMutation = useMutation({
+    mutationFn: async ({ worker, data }: { worker: Worker; data: typeof formData }) => {
+      const profilePayload = getProfileUpdatePayload(data);
+      const employmentPayload = getEmploymentUpdatePayload(data);
+
+      const profileRes = await apiRequest('PATCH', `/api/worker-profiles/${worker.profileId}`, profilePayload);
+      const profileJson = await profileRes.json();
+      if (!profileRes.ok) {
+        throw new Error(profileJson?.error || t('workers.toasts.updateError.description'));
+      }
+
+      const employmentRes = await apiRequest('PATCH', `/api/employments/${worker.employmentId}`, employmentPayload);
+      const employmentJson = await employmentRes.json();
+      if (!employmentRes.ok) {
+        throw new Error(employmentJson?.error || t('workers.toasts.updateError.description'));
+      }
+
+      return { profile: profileJson, employment: employmentJson };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/workers?tenantId=${user?.tenantId}`] });
@@ -392,11 +431,19 @@ export default function Workers() {
 
     if (selectedWorker) {
       // Edit mode - update employment
-      updateEmploymentMutation.mutate({ 
-        employmentId: selectedWorker.employmentId, 
+      updateWorkerMutation.mutate({ 
+        worker: selectedWorker,
         data: formData 
       });
     } else {
+      if (!user?.tenantId) {
+        toast({
+          title: t('workers.toasts.addError.title'),
+          description: t('workers.toasts.addError.description'),
+          variant: "destructive",
+        });
+        return;
+      }
       // Add mode
       createWorkerMutation.mutate(formData);
     }

@@ -42,6 +42,20 @@
     "none": "Yok",
     "unknown": "Bilinmiyor"
   },
+  "months": {
+    "january": "Ocak",
+    "february": "Şubat",
+    "march": "Mart",
+    "april": "Nisan",
+    "may": "Mayıs",
+    "june": "Haziran",
+    "july": "Temmuz",
+    "august": "Ağustos",
+    "september": "Eylül",
+    "october": "Ekim",
+    "november": "Kasım",
+    "december": "Aralık"
+  },
   "auth": {
     "login": "Giriş Yap",
     "demoLogin": "Demo Giriş (Cova B.V.)",
@@ -59,7 +73,7 @@
   },
   "dashboard": {
     "title": "Konaklama Genel Bakış",
-    "subtitle": "Tüm mülklerdeki çalışan konaklamalarını yönetin",
+    "subtitle": "Tüm mülklerdeki konaklayan konaklamalarını yönetin",
     "newCheckIn": "Yeni Konaklama Girişi",
     "filters": "Filtreler",
     "colorSystemTitle": "Renk Sistemi - LOJİK Perspektifi:",
@@ -74,11 +88,11 @@
     "colorInfoTitle": "Renk Sistemi Açıklaması",
     "colorInfoSubtitle": "LOJİK (Konaklama Satış Müdürü) bakış açısıyla yatak durumlarının anlamı",
     "greenTitle": "Yeşil: Kiraya Verilebilir (Boş)",
-    "greenDesc": "Bu yatak şu anda müsait ve yeni bir işçiye atanabilir durumda. Yatak temiz, hazır ve gelir getirmeye başlamak için bekliyor. Rezervasyon yapılabilir.",
+    "greenDesc": "Bu yatak şu anda müsait ve yeni bir konaklayana atanabilir durumda. Yatak temiz, hazır ve gelir getirmeye başlamak için bekliyor. Rezervasyon yapılabilir.",
     "orangeTitle": "Turuncu: Kiraya Verildi",
-    "orangeDesc": "Bu yatak şu anda bir işçiye kiralanmış durumda ve aylık kira geliri sağlıyor. İşçi aktif olarak konaklama yapıyor ve düzenli ödeme alınıyor. Bu en ideal durumdur - yatak gelir getiriyor.",
+    "orangeDesc": "Bu yatak şu anda bir konaklayana kiralanmış durumda ve aylık kira geliri sağlıyor. Konaklayan aktif olarak konaklama yapıyor ve düzenli ödeme alınıyor. Bu en ideal durumdur - yatak gelir getiriyor.",
     "yellowTitle": "Sarı: Rezerve Edildi (Biri Gelecek)",
-    "yellowDesc": "Bu yatak gelecek tarihli bir rezervasyon için ayrıldı. Henüz gelir getirmiyor ama yakında bir işçi gelecek ve doluluk başlayacak. Planlı ve kontrollü bir durum.",
+    "yellowDesc": "Bu yatak gelecek tarihli bir rezervasyon için ayrıldı. Henüz gelir getirmiyor ama yakında bir konaklayan gelecek ve doluluk başlayacak. Planlı ve kontrollü bir durum.",
     "redTitle": "Kırmızı: Hizmet Dışı (Sorun Var)",
     "redDesc": "Bu yatakta bir problem var ve şu anda kiralanamıyor. Bakım, onarım veya temizlik gerekiyor olabilir. Bu yatak kullanıma kapatılmış durumda - gelir getirmiyor ve rezerve edilemez.",
     "colorTip": "İpucu:",
@@ -89,8 +103,8 @@
     "checkingIn": "giriş yapıyor",
     "checkingOutBadge": "çıkış yapıyor",
     "checkingInBadge": "giriş yapıyor",
-    "upcomingCheckOuts": "Yakında Çıkış Yapacak İşçiler",
-    "upcomingCheckIns": "Yakında Giriş Yapacak İşçiler",
+    "upcomingCheckOuts": "Yakında Çıkış Yapacak Konaklayanlar",
+    "upcomingCheckIns": "Yakında Giriş Yapacak Konaklayanlar",
     "room": "Oda",
     "rooms": "Odalar",
     "bed": "Yatak",
@@ -114,7 +128,7 @@
     "statusEmpty": "Boş",
     "statusEmptyDesc": "Yatak müsait",
     "statusOccupied": "Dolu",
-    "statusOccupiedDesc": "İşçi konaklıyor",
+    "statusOccupiedDesc": "Konaklayan konaklıyor",
     "statusReserved": "Rezerve",
     "statusReservedDesc": "Gelecek tarih için rezerve",
     "statusOutOfService": "Hizmet Dışı",
@@ -138,7 +152,7 @@
     "customPricing": "Oda için özel fiyat"
   },
   "bedDetails": {
-    "workerInformation": "Çalışan ve konaklama bilgileri",
+    "workerInformation": "Konaklayan ve konaklama bilgileri",
     "bedInformation": "Yatak bilgileri",
     "checkInDate": "Giriş Tarihi",
     "checkOutDate": "Çıkış Tarihi",
@@ -162,7 +176,7 @@
     "outOfService": "Hizmet Dışı",
     "maintenanceDescription": "Bu yatak şu anda bakımda veya kullanım dışı durumdadır.",
     "scheduledCheckOutTitle": "Planlı Çıkış Mevcut",
-    "scheduledCheckOutDescription": "Bu çalışanın {{date}} tarihinde çıkış yapması planlanmıştır.",
+    "scheduledCheckOutDescription": "Bu konaklayanın {{date}} tarihinde çıkış yapması planlanmıştır.",
     "checkOutSuccess": "Çıkış işlemi başarıyla kaydedildi",
     "checkOutError": "Çıkış işlemi kaydedilemedi",
     "selectCheckOutDate": "Lütfen çıkış tarihi seçin",
@@ -173,14 +187,14 @@
   },
   "bedAction": {
     "selectAction": "Yapmak istediğiniz işlemi seçin",
-    "assignWorker": "Çalışan Ata",
+    "assignWorker": "Konaklayan Ata",
     "reserveBed": "Yatak Rezerve Et",
     "setMaintenance": "Bakıma Al",
-    "selectWorker": "Çalışan Seç",
-    "searchWorker": "Çalışan ara...",
-    "noWorkerFound": "Çalışan bulunamadı",
-    "quickRegister": "Hızlı Çalışan Kaydı",
-    "quickRegisterWorker": "Yeni Çalışan Kaydı",
+    "selectWorker": "Konaklayan Seç",
+    "searchWorker": "Konaklayan ara...",
+    "noWorkerFound": "Konaklayan bulunamadı",
+    "quickRegister": "Hızlı Konaklayan Kaydı",
+    "quickRegisterWorker": "Yeni Konaklayan Kaydı",
     "startDate": "Başlangıç Tarihi",
     "endDate": "Bitiş Tarihi",
     "assign": "Ata",
@@ -200,24 +214,24 @@
   "checkOut": {
     "wizard": {
       "title": "Çıkış İşlemi",
-      "description": "Çalışanın konaklama çıkış işlemini tamamlayın",
-      "step1": "Çalışan Seç",
-      "step1Description": "Çıkış yapacak çalışanı arayın ve seçin",
+      "description": "Konaklayanın konaklama çıkış işlemini tamamlayın",
+      "step1": "Konaklayan Seç",
+      "step1Description": "Çıkış yapacak konaklayanı arayın ve seçin",
       "step2": "Konaklama Bilgileri",
-      "step2Description": "Çalışanın mevcut konaklama bilgilerini gözden geçirin",
+      "step2Description": "Konaklayanın mevcut konaklama bilgilerini gözden geçirin",
       "step3": "Çıkış Tipi",
       "step3Description": "Çıkış tipini seçin ve detayları girin",
       "step4": "Onay",
       "step4Description": "Bilgileri kontrol edin ve çıkış işlemini tamamlayın",
-      "selectWorker": "Çalışan Seç",
-      "searchWorkerPlaceholder": "Çalışan ara...",
-      "noWorkerFound": "Çalışan bulunamadı",
-      "worker": "Çalışan",
+      "selectWorker": "Konaklayan Seç",
+      "searchWorkerPlaceholder": "Konaklayan ara...",
+      "noWorkerFound": "Konaklayan bulunamadı",
+      "worker": "Konaklayan",
       "checkOutType": "Çıkış Tipi",
       "vacationDates": "Tatil Tarihleri",
-      "immediateDescription": "Çalışan bugün ayrılıyor, yatak boşalacak",
-      "vacationDescription": "Çalışan tatile gidiyor, yatak belirli tarihe kadar rezerve kalacak",
-      "unnotifiedDescription": "Çalışan haber vermeden ayrıldı, durum güncelleniyor"
+      "immediateDescription": "Konaklayan bugün ayrılıyor, yatak boşalacak",
+      "vacationDescription": "Konaklayan tatile gidiyor, yatak belirli tarihe kadar rezerve kalacak",
+      "unnotifiedDescription": "Konaklayan haber vermeden ayrıldı, durum güncelleniyor"
     }
   },
   "filters": {
@@ -259,8 +273,8 @@
       "step1Line1": "Tarih &",
       "step1Line2": "Filtreler",
       "step1Description": "Başlangıç tarihi ve arama filtrelerini belirleyin",
-      "step2": "İşçi",
-      "step2Description": "İşçi seçin veya yeni işçi bilgilerini girin",
+      "step2": "Konaklayan",
+      "step2Description": "Konaklayan seçin veya yeni konaklayan bilgilerini girin",
       "step3": "Oda/Yatak",
       "step3Line1": "Oda/",
       "step3Line2": "Yatak",
@@ -273,11 +287,11 @@
       "startDate": "Başlangıç Tarihi",
       "startDateRequired": "Başlangıç Tarihi *",
       "selectDate": "Tarih seçin",
-      "selectWorker": "İşçi Seçin",
-      "selectWorkerPrompt": "İşçi seçin",
-      "searchWorker": "İşçi adı ile ara...",
-      "noWorkerFound": "İşçi bulunamadı",
-      "registerNewWorker": "Yeni İşçi Kaydet",
+      "selectWorker": "Konaklayan Seçin",
+      "selectWorkerPrompt": "Konaklayan seçin",
+      "searchWorker": "Konaklayan adı ile ara...",
+      "noWorkerFound": "Konaklayan bulunamadı",
+      "registerNewWorker": "Yeni Konaklayan Kaydet",
       "selectHouse": "Ev Seçin",
       "selectHousePrompt": "Bir ev seçin...",
       "selectCity": "Şehir Seçin (Opsiyonel)",
@@ -308,10 +322,10 @@
       "doesntMatter": "Farketmez (Oda veya Yatak)",
       "wholeRoom": "Tam Oda",
       "singleBed": "Tek Yatak",
-      "firstDayStaying": "İşçinin kalacağı ilk gün",
+      "firstDayStaying": "Konaklayanın kalacağı ilk gün",
       "lookingForRoomOrBed": "Odanın tamamını mı yoksa sadece bir yatak mı arıyor?",
       "selectSuitableRoomAndBed": "Uygun Oda ve Yatak Seçin",
-      "selectedWorker": "Seçilen işçi:",
+      "selectedWorker": "Seçilen konaklayan:",
       "genderMixed": "Cinsiyet Karışık",
       "availableBeds": "{{count}} boş",
       "bed": "Yatak {{number}}",
@@ -323,9 +337,9 @@
       "roomUnavailableDescription": "Oda kiralaması için bütün yataklar boş olmalıdır."
     },
     "newWorker": {
-      "title": "Yeni İşçi Kaydı",
-      "quickRegistration": "Hızlı İşçi Kaydı",
-      "quickRegistrationDescription": "Minimum bilgilerle hızlı işçi kaydı yapın",
+      "title": "Yeni Konaklayan Kaydı",
+      "quickRegistration": "Hızlı Konaklayan Kaydı",
+      "quickRegistrationDescription": "Minimum bilgilerle hızlı konaklayan kaydı yapın",
       "saveAndSelect": "Kaydet ve Seç",
       "firstName": "Ad *",
       "lastName": "Soyad *",
@@ -339,12 +353,12 @@
     }
   },
   "worker": {
-    "title": "Çalışanlar",
-    "subtitle": "Tüm çalışanları görüntüleyin ve yönetin",
-    "addNew": "Yeni Çalışan Ekle",
-    "search": "Çalışan ara...",
+    "title": "Konaklayanlar",
+    "subtitle": "Tüm konaklayanları görüntüleyin ve yönetin",
+    "addNew": "Yeni Konaklayan Ekle",
+    "search": "Konaklayan ara...",
     "searchPlaceholder": "İsim, ev, doğum tarihi veya ülke ile arama yapabilirsiniz",
-    "name": "Çalışan",
+    "name": "Konaklayan",
     "firstName": "İsim",
     "firstNameRequired": "İsim *",
     "lastName": "Soyisim",
@@ -377,13 +391,13 @@
     "departureDate": "Ayrılış Tarihi",
     "checkoutDate": "Çıkış Tarihi",
     "accommodationInfo": "Konaklama Bilgileri",
-    "noAccommodation": "Bu çalışana henüz konaklama atanmamış",
+    "noAccommodation": "Bu konaklayana henüz konaklama atanmamış",
     "updateInfo": "Lütfen bilgilerinizi güncelleyin",
-    "updated": "Çalışan bilgileri güncellendi",
-    "added": "Yeni çalışan eklendi",
+    "updated": "Konaklayan bilgileri güncellendi",
+    "added": "Yeni konaklayan eklendi",
     "fillRequired": "Lütfen tüm zorunlu alanları doldurun",
-    "editWorker": "Çalışan",
-    "updateWorkerInfo": "Çalışan bilgilerinizi güncelleyin"
+    "editWorker": "Konaklayan",
+    "updateWorkerInfo": "Konaklayan bilgilerinizi güncelleyin"
   },
   "lease": {
     "title": "Kira Sözleşmesi Bilgileri",
@@ -415,7 +429,7 @@
   "genderWarning": {
     "title": "Cinsiyet Uyuşmazlığı Tespit Edildi",
     "workerName": "isim",
-    "roomPrefix": "isimli çalışan, Oda ",
+    "roomPrefix": "isimli konaklayan, Oda ",
     "roomSuffix": "deki farklı soy isimlere sahip diğer sakinlerden farklı cinsiyete sahip.",
     "policyViolation": "Bu durum konaklama politikalarını ihlal edebilir.",
     "whatToDo": "Ne yapmak istersiniz?",
@@ -427,19 +441,19 @@
     "continueAnywayBtn": "Yine de Devam Et"
   },
   "workerAssignment": {
-    "title": "Çalışanı Yatağa Ata",
+    "title": "Konaklayanı Yatağa Ata",
     "assigningTo": "için atama yapılıyor",
-    "selectWorkerAndDate": "Bir çalışan ve tarih aralığı seçin",
-    "worker": "Çalışan",
-    "selectWorker": "Çalışan seçin",
+    "selectWorkerAndDate": "Bir konaklayan ve tarih aralığı seçin",
+    "worker": "Konaklayan",
+    "selectWorker": "Konaklayan seçin",
     "startDate": "Başlangıç Tarihi",
     "endDate": "Bitiş Tarihi",
-    "assign": "Çalışanı Ata"
+    "assign": "Konaklayanı Ata"
   },
   "nav": {
     "housingOverview": "Konaklama Genel Bakış",
     "houses": "Konutlar",
-    "workers": "Çalışanlar",
+    "workers": "Konaklayanlar",
     "accommodation": "Konaklama",
     "qrManagement": "QR Yönetimi",
     "settings": "Ayarlar",
@@ -455,7 +469,7 @@
     "completed": "Tamamlananlar",
     "noPending": "Bekleyen QR onayı bulunmuyor",
     "noUpcoming": "Yaklaşan hatırlatma bulunmuyor",
-    "workerRegistration": "Çalışan Kaydı",
+    "workerRegistration": "Konaklayan Kaydı",
     "meterReading": "Sayaç Okuma",
     "documentUpload": "Belge Yükleme",
     "maintenance": "Bakım",
@@ -492,7 +506,14 @@
     "addNotePlaceholder": "Not ekle...",
     "meterPhotoAlt": "Sayaç okuma fotoğrafı",
     "documentPhotoAlt": "Belge fotoğrafı",
-    "completedAt": "tamamlandı"
+    "completedAt": "tamamlandı",
+    "apartment": "Daire / Ünite",
+    "requestApprovedTitle": "Talep onaylandı",
+    "requestApprovedMessage": "Konaklayan kaydı onaylandı.",
+    "requestRejectedTitle": "Talep reddedildi",
+    "requestRejectedMessage": "Konaklayan kaydı reddedildi.",
+    "requestActionError": "Talep işlenemedi.",
+    "genericError": "Bir şeyler ters gitti."
   },
   "qr": {
     "title": "QR Yönetimi",
@@ -501,7 +522,7 @@
     "activeQRs": "Aktif QR Kodlar",
     "totalActive": "Toplam  QR kod •  aktif",
     "searchPlaceholder": "QR kod veya başlık ara...",
-    "typeWorker": "Çalışan Kaydı",
+    "typeWorker": "Konaklayan Kaydı",
     "typeMeter": "Sayaç Okuma",
     "typeDocument": "Döküman Upload",
     "step1": "QR Kod Tipi Seçin",
@@ -510,8 +531,8 @@
     "step1Desc": "QR kodunun hangi amaçla kullanılacağını seçin",
     "step2Desc": "Kullanım limiti ve geçerlilik süresini belirleyin",
     "step3Desc": "QR kodunuzu paylaşın veya indirin",
-    "workerRegTitle": "Çalışan Kaydı",
-    "workerRegDesc": "Çalışanlar kendi bilgilerini girebilir, siz sadece onaylarsınız",
+    "workerRegTitle": "Konaklayan Kaydı",
+    "workerRegDesc": "Konaklayanlar kendi bilgilerini girebilir, siz sadece onaylarsınız",
     "meterReadingTitle": "Sayaç Okuma",
     "meterReadingDesc": "Sayaç değeri girme ve fotoğraf yükleme",
     "documentUploadTitle": "Döküman Upload",
@@ -537,7 +558,7 @@
     "limitReached": "Bu QR kod kullanım limitine ulaşmıştır.",
     "notFound": "Bu QR kod bulunamadı veya geçersiz.",
     "contactAdmin": "Lütfen yöneticinizle iletişime geçin.",
-    "workerForm": "Çalışan Kayıt Formu",
+    "workerForm": "Konaklayan Kayıt Formu",
     "workerFormDesc": "Lütfen bilgilerinizi eksiksiz doldurun",
     "addressExample": "Örn: Geldernstrasse 13",
     "meterType": "Sayaç Tipi",
@@ -567,13 +588,51 @@
     "fileTypes": "PDF, JPG, PNG",
     "upload": "Yükle"
   },
+  "qrPublic": {
+    "formTitle": "Konaklayan Kayıt Formu",
+    "formDescription": "Lütfen ziyaret bilgilerinizi girerek devam edin.",
+    "fullNameLabel": "İsim Soyisim *",
+    "countryLabel": "Ülke *",
+    "phoneLabel": "Telefon *",
+    "emailLabel": "E-posta *",
+    "visitStartLabel": "Ziyaret başlangıç tarihi *",
+    "visitEndLabel": "Ziyaret bitiş tarihi *",
+    "apartmentLabel": "Daire / Ünite (opsiyonel)",
+    "genderLabel": "Cinsiyet (opsiyonel)",
+    "genderPlaceholder": "Cinsiyet seçin",
+    "notesLabel": "Notlar (opsiyonel)",
+    "submitButton": "Başvuruyu gönder",
+    "submitting": "Gönderiliyor...",
+    "submitSuccessTitle": "Başvurunuz alındı",
+    "submitSuccessDescription": "Bilgileriniz incelendikten sonra onay sonucu size bildirilecek.",
+    "meterSuccess": "Sayaç okuma bildiriminiz kaydedildi.",
+    "documentSuccess": "Belge yüklemeniz başarıyla alındı.",
+    "submitErrorTitle": "Başvuru gönderilemedi",
+    "submitErrorDescription": "Lütfen kısa süre sonra tekrar deneyin.",
+    "validationError": "Zorunlu alanlar eksik",
+    "invalidDateRange": "Bitiş tarihi başlangıç tarihinden sonra olmalıdır.",
+    "invalidTitle": "Link geçerli değil",
+    "contactAdmin": "Lütfen yöneticinizle iletişime geçin.",
+    "errors": {
+      "disabled": "Bu QR kod devre dışı bırakılmış.",
+      "expired": "Bu QR kodun süresi dolmuş.",
+      "limit": "Bu QR kod kullanım limitine ulaşmış.",
+      "notFound": "Bu QR kod bulunamadı veya geçersiz.",
+      "network": "QR kod doğrulaması yapılamadı. Lütfen tekrar deneyin."
+    },
+    "status": {
+      "pending": "Bu QR kod ile gönderilmiş ve onay bekleyen bir başvuru bulunuyor.",
+      "approved": "Bu QR kod daha önce kullanılmış.",
+      "rejected": "Bu QR kod için gönderilen başvuru zaten incelenmiş."
+    }
+  },
   "approvals": {
     "title": "Bekleyen Onaylar",
     "subtitle": "QR kodlarından gelen istekleri inceleyin ve onaylayın",
     "pending": "Bekleyen",
     "approved": "İstek başarıyla onaylandı",
     "rejected": "İstek reddedildi",
-    "workerReg": "Çalışan Kaydı",
+    "workerReg": "Konaklayan Kaydı",
     "name": "İsim:",
     "birthDate": "Doğum Tarihi:",
     "gender": "Cinsiyet:",
@@ -584,7 +643,7 @@
     "value": "Değer:",
     "photoAdded": "Fotoğraf eklendi",
     "documentUpload": "Döküman Upload",
-    "worker": "Çalışan:",
+    "worker": "Konaklayan:",
     "documentType": "Döküman Tipi:",
     "uploadedFile": "Yüklenen Dosya"
   },
@@ -602,7 +661,7 @@
     "tabAccommodations": "Konaklamalar",
     "tabCharges": "Ücretlendirme",
     "tabPayments": "Ödemeler",
-    "searchPlaceholder": "İşçi veya konut ara...",
+    "searchPlaceholder": "Konaklayan veya konut ara...",
     "filterStatus": "Durum filtrele",
     "statusAll": "Tümü",
     "statusActive": "Aktif",
@@ -642,7 +701,7 @@
     "selectCurrency": "Para Birimi Seçin",
     "selectCurrencyPrompt": "Para birimi seçin",
     "countryManagement": "Ülke Yönetimi",
-    "countryManagementDesc": "Filtrelerde kullanılacak ülkeleri ekleyin veya kaldırın. ⭐ Varsayılan ülke, filtrelerde otomatik seçilir ve yeni veri girişlerinde (konut, çalışan) varsayılan değer olarak kullanılır.",
+    "countryManagementDesc": "Filtrelerde kullanılacak ülkeleri ekleyin veya kaldırın. ⭐ Varsayılan ülke, filtrelerde otomatik seçilir ve yeni veri girişlerinde (konut, konaklayan) varsayılan değer olarak kullanılır.",
     "addCountry": "Yeni Ülke Ekle",
     "countryPlaceholder": "Ülke adı...",
     "existingCountries": "Mevcut Ülkeler",
@@ -887,7 +946,7 @@
       "payments": "Ödemeler"
     },
     "search": {
-      "placeholder": "İşçi veya konut ara...",
+      "placeholder": "Konaklayan veya konut ara...",
       "statusFilter": "Durum filtrele",
       "chargesFilter": "Ödeme durumu filtrele",
       "startDate": "Başlangıç:",
@@ -1034,7 +1093,7 @@
       "empty": "QR kod bulunamadı"
     },
     "types": {
-      "workerRegistration": "Çalışan Kaydı",
+      "workerRegistration": "Konaklayan Kaydı",
       "meterReading": "Sayaç Okuma",
       "documentUpload": "Döküman Upload"
     },
@@ -1051,8 +1110,8 @@
         "title": "QR Kod Tipi Seçin",
         "description": "QR kodunun hangi amaçla kullanılacağını seçin",
         "workerType": {
-          "title": "Çalışan Kaydı",
-          "description": "Çalışanlar kendi bilgilerini girebilir, siz sadece onaylarsınız"
+          "title": "Konaklayan Kaydı",
+          "description": "Konaklayanlar kendi bilgilerini girebilir, siz sadece onaylarsınız"
         },
         "meterType": {
           "title": "Sayaç Okuma",
@@ -1070,6 +1129,17 @@
         "description": "Kullanım limiti ve geçerlilik süresini belirleyin",
         "titleLabel": "Başlık (İsteğe Bağlı)",
         "titlePlaceholder": "QR kod için açıklayıcı bir başlık girin",
+        "houseLabel": "Konut",
+        "housePlaceholder": "Konut seçiniz",
+        "houseRequired": "Konut seçimi zorunludur",
+        "validationError": {
+          "title": "Doğrulama Hatası",
+          "houseRequired": "Sayaç okuma için konut seçimi zorunludur",
+          "workerRequired": "Döküman yükleme için konaklayan seçimi zorunludur"
+        },
+        "workerLabel": "Konaklayan",
+        "workerPlaceholder": "Konaklayan seçiniz",
+        "workerRequired": "Konaklayan seçimi zorunludur",
         "usageLimitLabel": "Kullanım Limiti",
         "usageLimitOptions": {
           "unlimited": "Sınırsız",
@@ -1113,7 +1183,11 @@
       "createdAt": "Oluşturulma Tarihi",
       "link": "Link",
       "copyLink": "Linki Kopyala",
-      "downloadQR": "QR İndir"
+      "downloadQR": "QR İndir",
+      "worker": "Konaklayan",
+      "house": "Konut",
+      "loading": "Yükleniyor...",
+      "notSelected": "Seçilmemiş"
     },
     "toasts": {
       "linkCopied": {
@@ -1135,15 +1209,15 @@
     }
   },
   "workers": {
-    "pageTitle": "Çalışanlar",
-    "pageSubtitle": "Tüm çalışanları görüntüleyin ve yönetin",
-    "addButton": "Yeni Çalışan Ekle",
+    "pageTitle": "Konaklayanlar",
+    "pageSubtitle": "Tüm konaklayanları görüntüleyin ve yönetin",
+    "addButton": "Yeni Konaklayan Ekle",
     "search": {
-      "placeholder": "Çalışan ara...",
+      "placeholder": "Konaklayan ara...",
       "tooltip": "İsim, ev, doğum tarihi veya ülke ile arama yapabilirsiniz"
     },
     "table": {
-      "worker": "Çalışan",
+      "worker": "Konaklayan",
       "gender": "Cinsiyet",
       "country": "Ülke",
       "accommodation": "Konaklama",
@@ -1152,7 +1226,7 @@
       "unassigned": "Atanmamış",
       "room": "Oda",
       "bed": "Yatak",
-      "empty": "Çalışan bulunamadı",
+      "empty": "Konaklayan bulunamadı",
       "edit": "Düzenle"
     },
     "gender": {
@@ -1163,17 +1237,17 @@
     "status": {
       "active": "Aktif",
       "inactive": "Pasif",
-      "former": "Eski Çalışan",
+      "former": "Eski Konaklayan",
       "invited": "Davet Edildi"
     },
     "pagination": {
-      "total": "Toplam {{count}} çalışan",
+      "total": "Toplam {{count}} konaklayan",
       "page": "Sayfa {{current}}/{{total}}",
       "perPage": "Sayfa başına:"
     },
     "addDialog": {
-      "title": "Yeni Çalışan Ekle",
-      "description": "Yeni bir çalışan kaydı oluşturun",
+      "title": "Yeni Konaklayan Ekle",
+      "description": "Yeni bir konaklayan kaydı oluşturun",
       "firstName": "İsim *",
       "lastName": "Soyisim *",
       "birthDate": "Doğum Tarihi",
@@ -1188,22 +1262,22 @@
       "save": "Kaydet"
     },
     "editDialog": {
-      "title": "Çalışan Düzenle",
+      "title": "Konaklayan Düzenle",
       "description": "{{name}} bilgilerini güncelleyin",
       "update": "Güncelle"
     },
     "toasts": {
       "workerAdded": {
         "title": "Başarılı",
-        "description": "Çalışan başarıyla eklendi"
+        "description": "Konaklayan başarıyla eklendi"
       },
       "workerUpdated": {
         "title": "Başarılı",
-        "description": "Çalışan bilgileri güncellendi"
+        "description": "Konaklayan bilgileri güncellendi"
       },
       "addError": {
         "title": "Hata",
-        "description": "Çalışan eklenemedi"
+        "description": "Konaklayan eklenemedi"
       },
       "updateError": {
         "title": "Hata",

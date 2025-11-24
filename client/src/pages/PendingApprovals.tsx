@@ -126,7 +126,7 @@ export default function PendingApprovals() {
 
   const getTypeLabel = (type: ApprovalType) => {
     const labels = {
-      worker_registration: "Çalışan Kaydı",
+      worker_registration: "Konaklayan Kaydı",
       meter_reading: "Sayaç Okuma",
       document_upload: "Döküman Upload",
     };
@@ -234,7 +234,7 @@ export default function PendingApprovals() {
         <div className="space-y-2">
           <div className="grid grid-cols-2 gap-2 text-sm">
             <div>
-              <span className="text-muted-foreground">Çalışan:</span>
+              <span className="text-muted-foreground">Konaklayan:</span>
               <span className="ml-2 font-medium">{approval.data.workerName}</span>
             </div>
             <div>
@@ -439,7 +439,7 @@ export default function PendingApprovals() {
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <p className="text-sm text-muted-foreground">Çalışan</p>
+                        <p className="text-sm text-muted-foreground">Konaklayan</p>
                         <p className="font-medium">{selectedApproval.data.workerName}</p>
                       </div>
                       <div>

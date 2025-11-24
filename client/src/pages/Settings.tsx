@@ -378,7 +378,7 @@ export default function Settings() {
           </Card>
 
           {/* Currency Settings Card */}
-          <Card data-testid="card-currency-settings">
+          <Card data-testid="card-currency-settings" className="hidden">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <DollarSign className="w-5 h-5" />
@@ -608,7 +608,7 @@ export default function Settings() {
             </CardContent>
           </Card>
 
-          <Card data-testid="card-pricing-settings">
+          <Card data-testid="card-pricing-settings" className="hidden">
             <CardHeader>
               <CardTitle>{t("settings.standardPricing")}</CardTitle>
               <CardDescription>
@@ -723,7 +723,7 @@ export default function Settings() {
           </Card>
 
           {/* Pricing Info Card */}
-          <Card data-testid="card-pricing-info">
+          <Card data-testid="card-pricing-info" className="hidden">
             <CardHeader>
               <CardTitle>{t("settings.pricingHierarchy")}</CardTitle>
             </CardHeader>

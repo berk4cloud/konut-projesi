@@ -37,6 +37,20 @@
     "none": "Няма",
     "unknown": "Неизвестен"
   },
+  "months": {
+    "january": "Януари",
+    "february": "Февруари",
+    "march": "Март",
+    "april": "Април",
+    "may": "Май",
+    "june": "Юни",
+    "july": "Юли",
+    "august": "Август",
+    "september": "Септември",
+    "october": "Октомври",
+    "november": "Ноември",
+    "december": "Декември"
+  },
   "auth": {
     "login": "Вход",
     "demoLogin": "Демо Вход (Cova B.V.)",
@@ -69,11 +83,11 @@
     "colorInfoTitle": "Обяснение на цветната система",
     "colorInfoSubtitle": "Значение на статусите на леглата от ЛОГИК гледна точка (Търговски мениджър настаняване)",
     "greenTitle": "Зелен: Налично (Свободно)",
-    "greenDesc": "Това легло в момента е свободно и може да бъде назначено на нов служител. Леглото е чисто, готово и чака да генерира приходи. Възможни са резервации.",
+    "greenDesc": "Това легло в момента е свободно и може да бъде назначено на нов гост. Леглото е чисто, готово и чака да генерира приходи. Възможни са резервации.",
     "orangeTitle": "Оранжев: Наето",
-    "orangeDesc": "Това легло в момента е наето на служител и генерира месечни приходи от наем. Служителят е активно настанен и плаща редовно. Това е оптималната ситуация - леглото генерира приходи.",
+    "orangeDesc": "Това легло в момента е наето на гост и генерира месечни приходи от наем. Гостът е активно настанен и плаща редовно. Това е оптималната ситуация - леглото генерира приходи.",
     "yellowTitle": "Жълт: Резервирано (Предстоящо)",
-    "yellowDesc": "Това легло е резервирано за бъдеща резервация. Все още не генерира приходи, но служител скоро ще се нанесе и заетостта ще започне. Планирана и контролирана ситуация.",
+    "yellowDesc": "Това легло е резервирано за бъдеща резервация. Все още не генерира приходи, но гост скоро ще се нанесе и заетостта ще започне. Планирана и контролирана ситуация.",
     "redTitle": "Червен: Извън експлоатация (Поддръжка)",
     "redDesc": "Това легло има проблем и в момента не може да бъде наето. Може да е необходима поддръжка, ремонт или почистване. Леглото е извън експлоатация - не генерира приходи и не може да бъде резервирано.",
     "colorTip": "Съвет:",
@@ -105,7 +119,7 @@
     "statusEmpty": "Свободни",
     "statusEmptyDesc": "Леглото е налично",
     "statusOccupied": "Заети",
-    "statusOccupiedDesc": "Работник пребивава",
+    "statusOccupiedDesc": "Гост пребивава",
     "statusReserved": "Резервирано",
     "statusReservedDesc": "Резервирано за бъдеща дата",
     "statusOutOfService": "Извън експлоатация",
@@ -181,14 +195,14 @@
   },
   "bedAction": {
     "selectAction": "Изберете действието, което искате да извършите",
-    "assignWorker": "Назначи Служител",
+    "assignWorker": "Назначи Гост",
     "reserveBed": "Резервирай Легло",
     "setMaintenance": "Задай Поддръжка",
-    "selectWorker": "Избери Служител",
-    "searchWorker": "Търси служител...",
-    "noWorkerFound": "Не е намерен служител",
-    "quickRegister": "Бърза Регистрация на Служител",
-    "quickRegisterWorker": "Нова Регистрация на Служител",
+    "selectWorker": "Избери Гост",
+    "searchWorker": "Търси гост...",
+    "noWorkerFound": "Не е намерен гост",
+    "quickRegister": "Бърза Регистрация на Гост",
+    "quickRegisterWorker": "Нова Регистрация на Гост",
     "startDate": "Начална Дата",
     "endDate": "Крайна Дата",
     "assign": "Назначи",
@@ -208,24 +222,24 @@
   "checkOut": {
     "wizard": {
       "title": "Процес на Напускане",
-      "description": "Завършете процеса на напускане за служителя",
-      "step1": "Изберете Служител",
-      "step1Description": "Потърсете и изберете служителя за напускане",
+      "description": "Завършете процеса на напускане за госта",
+      "step1": "Изберете Гост",
+      "step1Description": "Потърсете и изберете госта за напускане",
       "step2": "Информация за Настаняване",
-      "step2Description": "Прегледайте текущата информация за настаняването на служителя",
+      "step2Description": "Прегледайте текущата информация за настаняването на госта",
       "step3": "Тип Напускане",
       "step3Description": "Изберете тип напускане и въведете детайли",
       "step4": "Потвърждение",
       "step4Description": "Проверете информацията и завършете напускането",
-      "selectWorker": "Изберете Служител",
-      "searchWorkerPlaceholder": "Търсене на служител...",
-      "noWorkerFound": "Не е намерен служител",
-      "worker": "Служител",
+      "selectWorker": "Изберете Гост",
+      "searchWorkerPlaceholder": "Търсене на гост...",
+      "noWorkerFound": "Не е намерен гост",
+      "worker": "Гост",
       "checkOutType": "Тип Напускане",
       "vacationDates": "Дати на Ваканция",
-      "immediateDescription": "Служителят напуска днес, леглото ще бъде налично",
-      "vacationDescription": "Служителят заминава на ваканция, леглото ще остане резервирано до посочената дата",
-      "unnotifiedDescription": "Служителят напуснал без уведомление, статусът се актуализира"
+      "immediateDescription": "Гостът напуска днес, леглото ще бъде налично",
+      "vacationDescription": "Гостът заминава на ваканция, леглото ще остане резервирано до посочената дата",
+      "unnotifiedDescription": "Гостът напуснал без уведомление, статусът се актуализира"
     }
   },
   "checkIn": {
@@ -236,8 +250,8 @@
       "step1Line1": "Дата и",
       "step1Line2": "филтри",
       "step1Description": "Задайте начална дата и филтри за търсене",
-      "step2": "Служител",
-      "step2Description": "Изберете служител или въведете данни за нов служител",
+      "step2": "Гост",
+      "step2Description": "Изберете гост или въведете данни за нов гост",
       "step3": "Стая/Легло",
       "step3Line1": "Стая/",
       "step3Line2": "Легло",
@@ -291,9 +305,9 @@
       "roomUnavailableDescription": "Всички легла трябва да са празни за наемане на стая."
     },
     "newWorker": {
-      "title": "Нова регистрация на служител",
-      "quickRegistration": "Бърза Регистрация на Служител",
-      "quickRegistrationDescription": "Регистрирайте нов служител с минимална задължителна информация",
+      "title": "Нова регистрация на гост",
+      "quickRegistration": "Бърза Регистрация на Гост",
+      "quickRegistrationDescription": "Регистрирайте нов гост с минимална задължителна информация",
       "saveAndSelect": "Запази и Избери",
       "firstName": "Име *",
       "lastName": "Фамилия *",
@@ -307,12 +321,12 @@
     }
   },
   "worker": {
-    "title": "Служители",
-    "subtitle": "Преглед и управление на всички служители",
-    "addNew": "Добави нов служител",
-    "search": "Търсете служител...",
+    "title": "Гости",
+    "subtitle": "Преглед и управление на всички гости",
+    "addNew": "Добави нов гост",
+    "search": "Търсете гост...",
     "searchPlaceholder": "Можете да търсите по име, обект, дата на раждане или държава",
-    "name": "Служител",
+    "name": "Гост",
     "firstName": "Име",
     "firstNameRequired": "Име *",
     "lastName": "Фамилия",
@@ -348,10 +362,10 @@
     "noAccommodation": "На този служител все още не е назначено настаняване",
     "updateInfo": "Актуализирайте вашата информация",
     "updated": "Информацията за служителя е актуализирана",
-    "added": "Добавен е нов служител",
+    "added": "Добавен е нов гост",
     "fillRequired": "Попълнете всички задължителни полета",
-    "editWorker": "Служител",
-    "updateWorkerInfo": "Актуализирайте информацията за служителя"
+    "editWorker": "Гост",
+    "updateWorkerInfo": "Актуализирайте информацията за госта"
   },
   "lease": {
     "title": "Информация за договор за наем",
@@ -383,7 +397,7 @@
   "genderWarning": {
     "title": "Открит е полов конфликт",
     "workerName": "име",
-    "roomPrefix": "Служителят има различен пол от другите обитатели с различни фамилии в Стая ",
+    "roomPrefix": "Гостът има различен пол от другите обитатели с различни фамилии в Стая ",
     "roomSuffix": ".",
     "policyViolation": "Това може да нарушава политиките за настаняване.",
     "whatToDo": "Какво искате да направите?",
@@ -398,7 +412,7 @@
     "title": "Назначете служител на легло",
     "assigningTo": "Назначаване за",
     "selectWorkerAndDate": "Изберете служител и период",
-    "worker": "Служител",
+    "worker": "Гост",
     "selectWorker": "Изберете служител",
     "startDate": "Начална дата",
     "endDate": "Крайна дата",
@@ -412,7 +426,7 @@
     "completed": "Завършени",
     "noPending": "Няма чакащи QR одобрения",
     "noUpcoming": "Няма предстоящи напомняния",
-    "workerRegistration": "Регистрация на служител",
+    "workerRegistration": "Регистрация на гост",
     "meterReading": "Отчитане на измервателен уред",
     "documentUpload": "Качване на документи",
     "maintenance": "Поддръжка",
@@ -449,7 +463,14 @@
     "addNotePlaceholder": "Добавете бележка...",
     "meterPhotoAlt": "Снимка на отчет на измервателен уред",
     "documentPhotoAlt": "Снимка на документа",
-    "completedAt": "завършено"
+    "completedAt": "завършено",
+    "apartment": "Апартамент / Единица",
+    "requestApprovedTitle": "Заявката е одобрена",
+    "requestApprovedMessage": "Регистрацията на госта е одобрена.",
+    "requestRejectedTitle": "Заявката е отхвърлена",
+    "requestRejectedMessage": "Регистрацията на госта е отхвърлена.",
+    "requestActionError": "Заявката не може да бъде обработена.",
+    "genericError": "Възникна грешка."
   },
   "qr": {
     "title": "Управление на QR",
@@ -467,8 +488,8 @@
     "step1Desc": "Изберете целта на QR кода",
     "step2Desc": "Задайте лимит на използване и период на валидност",
     "step3Desc": "Споделете или изтеглете вашия QR код",
-    "workerRegTitle": "Регистрация на служител",
-    "workerRegDesc": "Служителите могат да въвеждат собствена информация, вие само одобрявате",
+    "workerRegTitle": "Регистрация на гост",
+    "workerRegDesc": "Гостите могат да въвеждат собствена информация, вие само одобрявате",
     "meterReadingTitle": "Отчитане на измервателен уред",
     "meterReadingDesc": "Въведете показанията на измервателния уред и качете снимка",
     "documentUploadTitle": "Качване на документи",
@@ -524,6 +545,44 @@
     "fileTypes": "PDF, JPG, PNG",
     "upload": "Качете"
   },
+  "qrPublic": {
+    "formTitle": "Guest Registration Form",
+    "formDescription": "Please provide your visit details to continue.",
+    "fullNameLabel": "Full Name *",
+    "countryLabel": "Country *",
+    "phoneLabel": "Phone *",
+    "emailLabel": "Email *",
+    "visitStartLabel": "Visit start date *",
+    "visitEndLabel": "Visit end date *",
+    "apartmentLabel": "Apartment / Unit (optional)",
+    "genderLabel": "Gender (optional)",
+    "genderPlaceholder": "Select gender",
+    "notesLabel": "Notes (optional)",
+    "submitButton": "Submit request",
+    "submitting": "Submitting...",
+    "submitSuccessTitle": "Your request has been submitted",
+    "submitSuccessDescription": "We will review your information and notify you after approval.",
+    "meterSuccess": "Meter reading submitted successfully.",
+    "documentSuccess": "Document uploaded successfully.",
+    "submitErrorTitle": "Unable to submit",
+    "submitErrorDescription": "Please try again shortly.",
+    "validationError": "Missing information",
+    "invalidDateRange": "Visit end date must be after the start date.",
+    "invalidTitle": "Link is not valid",
+    "contactAdmin": "Please contact your administrator.",
+    "errors": {
+      "disabled": "This QR code has been disabled.",
+      "expired": "This QR code has expired.",
+      "limit": "This QR code has reached its usage limit.",
+      "notFound": "This QR code was not found or is invalid.",
+      "network": "We could not validate this QR code. Please try again."
+    },
+    "status": {
+      "pending": "A request has already been submitted and is waiting for approval.",
+      "approved": "This QR code has already been used.",
+      "rejected": "This QR code has already been reviewed."
+    }
+  },
   "approvals": {
     "title": "Чакащи одобрения",
     "subtitle": "Прегледайте и одобрете заявки от QR кодове",
@@ -541,7 +600,7 @@
     "value": "Стойност:",
     "photoAdded": "Снимката е добавена",
     "documentUpload": "Качване на документи",
-    "worker": "Служител:",
+    "worker": "Гост:",
     "documentType": "Тип документ:",
     "uploadedFile": "Качен файл"
   },
@@ -642,7 +701,7 @@
   "nav": {
     "housingOverview": "Преглед на Настаняването",
     "houses": "Жилища",
-    "workers": "Работници",
+    "workers": "Гости",
     "accommodation": "Настаняване",
     "qrManagement": "Управление на QR",
     "settings": "Настройки",
@@ -1107,7 +1166,7 @@
       "tooltip": "Можете да търсите по име, къща, дата на раждане или държава"
     },
     "table": {
-      "worker": "Работник",
+      "worker": "Гост",
       "gender": "Пол",
       "country": "Държава",
       "accommodation": "Настаняване",
@@ -1159,7 +1218,7 @@
     "toasts": {
       "workerAdded": {
         "title": "Успех",
-        "description": "Работникът е добавен успешно"
+        "description": "Гостът е добавен успешно"
       },
       "workerUpdated": {
         "title": "Успех",

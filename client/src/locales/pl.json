@@ -37,6 +37,20 @@
     "none": "Brak",
     "unknown": "Nieznany"
   },
+  "months": {
+    "january": "Styczeń",
+    "february": "Luty",
+    "march": "Marzec",
+    "april": "Kwiecień",
+    "may": "Maj",
+    "june": "Czerwiec",
+    "july": "Lipiec",
+    "august": "Sierpień",
+    "september": "Wrzesień",
+    "october": "Październik",
+    "november": "Listopad",
+    "december": "Grudzień"
+  },
   "auth": {
     "login": "Zaloguj się",
     "demoLogin": "Logowanie Demo (Cova B.V.)",
@@ -69,11 +83,11 @@
     "colorInfoTitle": "Wyjaśnienie systemu kolorów",
     "colorInfoSubtitle": "Znaczenie statusów łóżek z perspektywy LOGIKI (Kierownik ds. Sprzedaży Zakwaterowania)",
     "greenTitle": "Zielony: Dostępne (Wolne)",
-    "greenDesc": "To łóżko jest obecnie dostępne i może być przypisane nowemu pracownikowi. Łóżko jest czyste, gotowe i czeka na generowanie przychodów. Możliwe są rezerwacje.",
+    "greenDesc": "To łóżko jest obecnie dostępne i może być przypisane nowemu gościowi. Łóżko jest czyste, gotowe i czeka na generowanie przychodów. Możliwe są rezerwacje.",
     "orangeTitle": "Pomarańczowy: Wynajęte",
-    "orangeDesc": "To łóżko jest obecnie wynajęte pracownikowi i generuje miesięczny przychód z najmu. Pracownik jest aktywnie zakwaterowany i regularnie płaci. To jest optymalna sytuacja - łóżko generuje przychód.",
+    "orangeDesc": "To łóżko jest obecnie wynajęte gościowi i generuje miesięczny przychód z najmu. Gość jest aktywnie zakwaterowany i regularnie płaci. To jest optymalna sytuacja - łóżko generuje przychód.",
     "yellowTitle": "Żółty: Zarezerwowane (Wkrótce)",
-    "yellowDesc": "To łóżko jest zarezerwowane na przyszłą rezerwację. Nie generuje jeszcze przychodów, ale pracownik wkrótce się wprowadzi i rozpocznie się zajętość. Planowana i kontrolowana sytuacja.",
+    "yellowDesc": "To łóżko jest zarezerwowane na przyszłą rezerwację. Nie generuje jeszcze przychodów, ale gość wkrótce się wprowadzi i rozpocznie się zajętość. Planowana i kontrolowana sytuacja.",
     "redTitle": "Czerwony: Nieczynne (Konserwacja)",
     "redDesc": "To łóżko ma problem i obecnie nie może być wynajęte. Może być potrzebna konserwacja, naprawa lub czyszczenie. Łóżko jest nieczynne - nie generuje przychodów i nie może być zarezerwowane.",
     "colorTip": "Wskazówka:",
@@ -105,7 +119,7 @@
     "statusEmpty": "Wolne",
     "statusEmptyDesc": "Łóżko jest dostępne",
     "statusOccupied": "Zajęte",
-    "statusOccupiedDesc": "Pracownik mieszka",
+    "statusOccupiedDesc": "Gość mieszka",
     "statusReserved": "Zarezerwowane",
     "statusReservedDesc": "Zarezerwowane na przyszłą datę",
     "statusOutOfService": "Nieczynne",
@@ -181,14 +195,14 @@
   },
   "bedAction": {
     "selectAction": "Wybierz akcję, którą chcesz wykonać",
-    "assignWorker": "Przypisz Pracownika",
+    "assignWorker": "Przypisz Gościa",
     "reserveBed": "Zarezerwuj Łóżko",
     "setMaintenance": "Ustaw Konserwację",
-    "selectWorker": "Wybierz Pracownika",
-    "searchWorker": "Szukaj pracownika...",
-    "noWorkerFound": "Nie znaleziono pracownika",
-    "quickRegister": "Szybka Rejestracja Pracownika",
-    "quickRegisterWorker": "Nowa Rejestracja Pracownika",
+    "selectWorker": "Wybierz Gościa",
+    "searchWorker": "Szukaj gościa...",
+    "noWorkerFound": "Nie znaleziono gościa",
+    "quickRegister": "Szybka Rejestracja Gościa",
+    "quickRegisterWorker": "Nowa Rejestracja Gościa",
     "startDate": "Data Rozpoczęcia",
     "endDate": "Data Zakończenia",
     "assign": "Przypisz",
@@ -208,24 +222,24 @@
   "checkOut": {
     "wizard": {
       "title": "Proces Wymeldowania",
-      "description": "Zakończ proces wymeldowania pracownika",
-      "step1": "Wybierz Pracownika",
-      "step1Description": "Wyszukaj i wybierz pracownika do wymeldowania",
+      "description": "Zakończ proces wymeldowania gościa",
+      "step1": "Wybierz Gościa",
+      "step1Description": "Wyszukaj i wybierz gościa do wymeldowania",
       "step2": "Info o Zakwaterowaniu",
-      "step2Description": "Przejrzyj aktualne informacje o zakwaterowaniu pracownika",
+      "step2Description": "Przejrzyj aktualne informacje o zakwaterowaniu gościa",
       "step3": "Typ Wymeldowania",
       "step3Description": "Wybierz typ wymeldowania i wprowadź szczegóły",
       "step4": "Potwierdzenie",
       "step4Description": "Sprawdź informacje i zakończ wymeldowanie",
-      "selectWorker": "Wybierz Pracownika",
-      "searchWorkerPlaceholder": "Szukaj pracownika...",
-      "noWorkerFound": "Nie znaleziono pracownika",
-      "worker": "Pracownik",
+      "selectWorker": "Wybierz Gościa",
+      "searchWorkerPlaceholder": "Szukaj gościa...",
+      "noWorkerFound": "Nie znaleziono gościa",
+      "worker": "Gość",
       "checkOutType": "Typ Wymeldowania",
       "vacationDates": "Daty Wakacji",
-      "immediateDescription": "Pracownik wyjeżdża dzisiaj, łóżko będzie dostępne",
-      "vacationDescription": "Pracownik wyjeżdża na wakacje, łóżko pozostanie zarezerwowane do określonej daty",
-      "unnotifiedDescription": "Pracownik wyjechał bez powiadomienia, status jest aktualizowany"
+      "immediateDescription": "Gość wyjeżdża dzisiaj, łóżko będzie dostępne",
+      "vacationDescription": "Gość wyjeżdża na wakacje, łóżko pozostanie zarezerwowane do określonej daty",
+      "unnotifiedDescription": "Gość wyjechał bez powiadomienia, status jest aktualizowany"
     }
   },
   "checkIn": {
@@ -236,7 +250,7 @@
       "step1Line1": "Data i",
       "step1Line2": "filtry",
       "step1Description": "Ustaw datę rozpoczęcia i filtry wyszukiwania",
-      "step2": "Pracownik",
+      "step2": "Gość",
       "step2Description": "Wybierz pracownika lub wprowadź dane nowego pracownika",
       "step3": "Pokój/Łóżko",
       "step3Line1": "Pokój/",
@@ -291,9 +305,9 @@
       "roomUnavailableDescription": "Wszystkie łóżka muszą być puste do wynajmu pokoju."
     },
     "newWorker": {
-      "title": "Nowa rejestracja pracownika",
-      "quickRegistration": "Szybka Rejestracja Pracownika",
-      "quickRegistrationDescription": "Zarejestruj nowego pracownika z minimalnymi wymaganymi informacjami",
+      "title": "Nowa rejestracja gościa",
+      "quickRegistration": "Szybka Rejestracja Gościa",
+      "quickRegistrationDescription": "Zarejestruj nowego gościa z minimalnymi wymaganymi informacjami",
       "saveAndSelect": "Zapisz i Wybierz",
       "firstName": "Imię *",
       "lastName": "Nazwisko *",
@@ -307,12 +321,12 @@
     }
   },
   "worker": {
-    "title": "Pracownicy",
-    "subtitle": "Wyświetl i zarządzaj wszystkimi pracownikami",
-    "addNew": "Dodaj nowego pracownika",
-    "search": "Szukaj pracownika...",
+    "title": "Goście",
+    "subtitle": "Wyświetl i zarządzaj wszystkimi gośćmi",
+    "addNew": "Dodaj nowego gościa",
+    "search": "Szukaj gościa...",
     "searchPlaceholder": "Możesz szukać po nazwie, obiekcie, dacie urodzenia lub kraju",
-    "name": "Pracownik",
+    "name": "Gość",
     "firstName": "Imię",
     "firstNameRequired": "Imię *",
     "lastName": "Nazwisko",
@@ -350,7 +364,7 @@
     "updated": "Zaktualizowano informacje o pracowniku",
     "added": "Dodano nowego pracownika",
     "fillRequired": "Wypełnij wszystkie wymagane pola",
-    "editWorker": "Pracownik",
+    "editWorker": "Gość",
     "updateWorkerInfo": "Zaktualizuj informacje o pracowniku"
   },
   "lease": {
@@ -383,7 +397,7 @@
   "genderWarning": {
     "title": "Wykryto konflikt płci",
     "workerName": "imię",
-    "roomPrefix": "Pracownik ma inną płeć niż inni mieszkańcy o różnych nazwiskach w Pokoju ",
+    "roomPrefix": "Gość ma inną płeć niż inni mieszkańcy o różnych nazwiskach w Pokoju ",
     "roomSuffix": ".",
     "policyViolation": "Może to naruszać zasady zakwaterowania.",
     "whatToDo": "Co chcesz zrobić?",
@@ -398,7 +412,7 @@
     "title": "Przypisz pracownika do łóżka",
     "assigningTo": "Przypisywanie dla",
     "selectWorkerAndDate": "Wybierz pracownika i okres",
-    "worker": "Pracownik",
+    "worker": "Gość",
     "selectWorker": "Wybierz pracownika",
     "startDate": "Data rozpoczęcia",
     "endDate": "Data zakończenia",
@@ -412,7 +426,7 @@
     "completed": "Zakończone",
     "noPending": "Brak oczekujących zatwierdzeń QR",
     "noUpcoming": "Brak nadchodzących przypomnień",
-    "workerRegistration": "Rejestracja pracownika",
+    "workerRegistration": "Rejestracja gościa",
     "meterReading": "Odczyt licznika",
     "documentUpload": "Przesyłanie dokumentów",
     "maintenance": "Konserwacja",
@@ -449,7 +463,14 @@
     "addNotePlaceholder": "Dodaj notatkę...",
     "meterPhotoAlt": "Zdjęcie odczytu licznika",
     "documentPhotoAlt": "Zdjęcie dokumentu",
-    "completedAt": "ukończono"
+    "completedAt": "ukończono",
+    "apartment": "Mieszkanie / Jednostka",
+    "requestApprovedTitle": "Wniosek zatwierdzony",
+    "requestApprovedMessage": "Rejestracja gościa została zatwierdzona.",
+    "requestRejectedTitle": "Wniosek odrzucony",
+    "requestRejectedMessage": "Rejestracja gościa została odrzucona.",
+    "requestActionError": "Nie można przetworzyć wniosku.",
+    "genericError": "Coś poszło nie tak."
   },
   "qr": {
     "title": "Zarządzanie QR",
@@ -524,6 +545,44 @@
     "fileTypes": "PDF, JPG, PNG",
     "upload": "Prześlij"
   },
+  "qrPublic": {
+    "formTitle": "Guest Registration Form",
+    "formDescription": "Please provide your visit details to continue.",
+    "fullNameLabel": "Full Name *",
+    "countryLabel": "Country *",
+    "phoneLabel": "Phone *",
+    "emailLabel": "Email *",
+    "visitStartLabel": "Visit start date *",
+    "visitEndLabel": "Visit end date *",
+    "apartmentLabel": "Apartment / Unit (optional)",
+    "genderLabel": "Gender (optional)",
+    "genderPlaceholder": "Select gender",
+    "notesLabel": "Notes (optional)",
+    "submitButton": "Submit request",
+    "submitting": "Submitting...",
+    "submitSuccessTitle": "Your request has been submitted",
+    "submitSuccessDescription": "We will review your information and notify you after approval.",
+    "meterSuccess": "Meter reading submitted successfully.",
+    "documentSuccess": "Document uploaded successfully.",
+    "submitErrorTitle": "Unable to submit",
+    "submitErrorDescription": "Please try again shortly.",
+    "validationError": "Missing information",
+    "invalidDateRange": "Visit end date must be after the start date.",
+    "invalidTitle": "Link is not valid",
+    "contactAdmin": "Please contact your administrator.",
+    "errors": {
+      "disabled": "This QR code has been disabled.",
+      "expired": "This QR code has expired.",
+      "limit": "This QR code has reached its usage limit.",
+      "notFound": "This QR code was not found or is invalid.",
+      "network": "We could not validate this QR code. Please try again."
+    },
+    "status": {
+      "pending": "A request has already been submitted and is waiting for approval.",
+      "approved": "This QR code has already been used.",
+      "rejected": "This QR code has already been reviewed."
+    }
+  },
   "approvals": {
     "title": "Oczekujące zatwierdzenia",
     "subtitle": "Przejrzyj i zatwierdź żądania z kodów QR",
@@ -541,7 +600,7 @@
     "value": "Wartość:",
     "photoAdded": "Dodano zdjęcie",
     "documentUpload": "Przesyłanie dokumentów",
-    "worker": "Pracownik:",
+    "worker": "Gość:",
     "documentType": "Typ dokumentu:",
     "uploadedFile": "Przesłany plik"
   },
@@ -642,7 +701,7 @@
   "nav": {
     "housingOverview": "Przegląd Zakwaterowania",
     "houses": "Nieruchomości",
-    "workers": "Pracownicy",
+    "workers": "Goście",
     "accommodation": "Zakwaterowanie",
     "qrManagement": "Zarządzanie QR",
     "settings": "Ustawienia",
@@ -998,7 +1057,7 @@
       "empty": "Nie znaleziono kodów QR"
     },
     "types": {
-      "workerRegistration": "Rejestracja pracownika",
+      "workerRegistration": "Rejestracja gościa",
       "meterReading": "Odczyt licznika",
       "documentUpload": "Przesyłanie dokumentów"
     },
@@ -1107,7 +1166,7 @@
       "tooltip": "Możesz wyszukiwać po nazwisku, domu, dacie urodzenia lub kraju"
     },
     "table": {
-      "worker": "Pracownik",
+      "worker": "Gość",
       "gender": "Płeć",
       "country": "Kraj",
       "accommodation": "Zakwaterowanie",
@@ -1159,7 +1218,7 @@
     "toasts": {
       "workerAdded": {
         "title": "Sukces",
-        "description": "Pracownik pomyślnie dodany"
+        "description": "Gość pomyślnie dodany"
       },
       "workerUpdated": {
         "title": "Sukces",

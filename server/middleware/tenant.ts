@@ -150,3 +150,40 @@ export async function optionalTenant(req: Request, res: Response, next: NextFunc
     next();
   }
 }
+
+/**
+ * Middleware: Require tenant context for authenticated tenant users
+ *
+ * For JWT-authenticated tenant users, ensures tenant data is loaded and attached
+ * to the request. Prevents platform admins or users without tenant scope from
+ * accessing tenant-only routes.
+ */
+export async function requireTenantContext(req: Request, res: Response, next: NextFunction) {
+  if (!req.user || req.user.type !== "tenant_user" || !req.user.tenantId) {
+    return res.status(403).json({
+      error: "Tenant context required",
+      message: "Bu işlem için tenant kullanıcısı olarak giriş yapmalısınız"
+    });
+  }
+
+  try {
+    const tenant = await storage.getTenant(req.user.tenantId);
+
+    if (!tenant) {
+      return res.status(404).json({
+        error: "Tenant not found",
+        message: "Bağlı olduğunuz tenant bulunamadı"
+      });
+    }
+
+    req.tenant = tenant;
+    req.tenantSlug = tenant.slug ?? req.tenantSlug;
+    next();
+  } catch (error) {
+    console.error("Error loading tenant context:", error);
+    res.status(500).json({
+      error: "Failed to load tenant context",
+      message: "Tenant bilgisi yüklenirken hata oluştu"
+    });
+  }
+}

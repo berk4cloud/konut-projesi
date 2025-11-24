@@ -6,12 +6,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Bell, CheckCircle2, Calendar, Building2, AlertCircle, StickyNote, User, FileText, CheckCircle, XCircle, Image as ImageIcon, ChevronDown, Phone, Mail, Hash, Cake, Users, Zap, Droplet, Flame } from "lucide-react";
+import { Bell, CheckCircle2, Calendar, Building2, AlertCircle, StickyNote, User, CheckCircle, XCircle, ChevronDown, Phone, Mail } from "lucide-react";
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { tr, enUS, de, nl, fr, pl, bg, type Locale } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
+import type { GuestRegistrationRequest } from "@/mocks/data/types";
 
 type Reminder = {
   id: string;
@@ -26,38 +27,11 @@ type Reminder = {
   houseName?: string; // For display
 };
 
-type QRSubmission = {
-  id: string;
-  qrCode: string;
-  taskType: "worker_registration" | "meter_reading" | "document_upload";
-  submittedAt: string;
-  data: {
-    // Worker registration fields
-    firstName?: string;
-    lastName?: string;
-    workerName?: string; // For backward compatibility
-    nationality?: string;
-    phone?: string;
-    email?: string;
-    idNumber?: string;
-    dateOfBirth?: string;
-    gender?: string;
-    // Meter reading fields
-    meterType?: "electricity" | "water" | "gas";
-    meterValue?: string;
-    houseName?: string;
-    // Document upload fields
-    documentType?: string;
-    // Photo for both meter reading and documents
-    photo?: string;
-  };
-};
-
 interface NotificationsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   pendingApprovalsCount?: number;
-  pendingApprovals?: QRSubmission[];
+  pendingApprovals?: GuestRegistrationRequest[];
   upcomingReminders: Reminder[];
   onCompleteReminder: (reminderId: string) => void;
   onAddNote: (reminderId: string, note: string) => void;
@@ -197,62 +171,37 @@ export default function NotificationsDialog({
               </div>
             ) : (
               pendingApprovals.map((submission) => {
-                const getTaskTypeLabel = () => {
-                  if (submission.taskType === "worker_registration") return t("notifications.workerRegistration");
-                  if (submission.taskType === "meter_reading") return t("notifications.meterReading");
-                  return t("notifications.documentUpload");
-                };
-                
-                const getTaskTypeColor = () => {
-                  if (submission.taskType === "worker_registration") return "bg-blue-500/10 text-blue-700 dark:text-blue-400";
-                  if (submission.taskType === "meter_reading") return "bg-green-500/10 text-green-700 dark:text-green-400";
-                  return "bg-purple-500/10 text-purple-700 dark:text-purple-400";
-                };
-
                 const isExpanded = expandedSubmissions.has(submission.id);
-                const displayName = submission.data.firstName && submission.data.lastName
-                  ? `${submission.data.firstName} ${submission.data.lastName}`
-                  : submission.data.workerName || t("notifications.unnamed");
-
                 return (
                   <Card key={submission.id} data-testid={`qr-approval-${submission.id}`}>
                     <CardContent className="p-4 space-y-3">
-                      {/* Header */}
                       <div className="flex items-start justify-between gap-3">
                         <div className="space-y-2 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <Badge className={getTaskTypeColor()}>
-                              {getTaskTypeLabel()}
+                            <Badge className="bg-blue-500/10 text-blue-700 dark:text-blue-400">
+                              {t("notifications.workerRegistration")}
                             </Badge>
                             <span className="text-xs text-muted-foreground">
-                              {formatDistanceToNow(new Date(submission.submittedAt), { addSuffix: true, locale: getDateFnsLocale() })}
+                              {formatDistanceToNow(new Date(submission.createdAt), { addSuffix: true, locale: getDateFnsLocale() })}
                             </span>
                           </div>
                           
-                          {/* Quick Preview */}
-                          <div className="space-y-1">
-                            {submission.taskType === "worker_registration" && (
-                              <div className="flex items-center gap-2">
-                                <User className="w-4 h-4 text-muted-foreground" />
-                                <span className="font-medium">{displayName}</span>
-                                {submission.data.nationality && (
-                                  <span className="text-muted-foreground">({submission.data.nationality})</span>
-                                )}
-                              </div>
-                            )}
-                            {submission.taskType === "meter_reading" && (
-                              <div className="flex items-center gap-2">
-                                {submission.data.meterType === "electricity" && <Zap className="w-4 h-4 text-amber-600" />}
-                                {submission.data.meterType === "water" && <Droplet className="w-4 h-4 text-blue-600" />}
-                                {submission.data.meterType === "gas" && <Flame className="w-4 h-4 text-orange-600" />}
-                                <span>
-                                  {submission.data.meterType === "electricity" && t("notifications.electricity")}
-                                  {submission.data.meterType === "water" && t("notifications.water")}
-                                  {submission.data.meterType === "gas" && t("notifications.gas")}
-                                  : <span className="font-medium">{submission.data.meterValue}</span>
-                                </span>
-                              </div>
-                            )}
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <User className="w-4 h-4 text-muted-foreground" />
+                              <span className="font-medium">{submission.fullName}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Building2 className="w-4 h-4" />
+                              <span>{submission.country}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Calendar className="w-4 h-4" />
+                              <span>
+                                {new Date(submission.visitStartDate).toLocaleDateString(getLocaleDateFormat())} -{" "}
+                                {new Date(submission.visitEndDate).toLocaleDateString(getLocaleDateFormat())}
+                              </span>
+                            </div>
                           </div>
                         </div>
 
@@ -266,124 +215,40 @@ export default function NotificationsDialog({
                         </Button>
                       </div>
 
-                      {/* Detailed Information (Collapsible) */}
                       <Collapsible open={isExpanded}>
                         <CollapsibleContent className="space-y-3 pt-3 border-t">
-                          {submission.taskType === "worker_registration" && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                              {submission.data.firstName && (
-                                <div className="flex items-center gap-2">
-                                  <User className="w-4 h-4 text-muted-foreground" />
-                                  <span className="text-muted-foreground">{t("notifications.firstName")}:</span>
-                                  <span className="font-medium">{submission.data.firstName}</span>
-                                </div>
-                              )}
-                              {submission.data.lastName && (
-                                <div className="flex items-center gap-2">
-                                  <User className="w-4 h-4 text-muted-foreground" />
-                                  <span className="text-muted-foreground">{t("notifications.lastName")}:</span>
-                                  <span className="font-medium">{submission.data.lastName}</span>
-                                </div>
-                              )}
-                              {submission.data.nationality && (
-                                <div className="flex items-center gap-2">
-                                  <Users className="w-4 h-4 text-muted-foreground" />
-                                  <span className="text-muted-foreground">{t("notifications.nationality")}:</span>
-                                  <span className="font-medium">{submission.data.nationality}</span>
-                                </div>
-                              )}
-                              {submission.data.phone && (
-                                <div className="flex items-center gap-2">
-                                  <Phone className="w-4 h-4 text-muted-foreground" />
-                                  <span className="text-muted-foreground">{t("notifications.phone")}:</span>
-                                  <span className="font-medium">{submission.data.phone}</span>
-                                </div>
-                              )}
-                              {submission.data.email && (
-                                <div className="flex items-center gap-2">
-                                  <Mail className="w-4 h-4 text-muted-foreground" />
-                                  <span className="text-muted-foreground">{t("notifications.email")}:</span>
-                                  <span className="font-medium">{submission.data.email}</span>
-                                </div>
-                              )}
-                              {submission.data.idNumber && (
-                                <div className="flex items-center gap-2">
-                                  <Hash className="w-4 h-4 text-muted-foreground" />
-                                  <span className="text-muted-foreground">{t("notifications.idNumber")}:</span>
-                                  <span className="font-medium">{submission.data.idNumber}</span>
-                                </div>
-                              )}
-                              {submission.data.dateOfBirth && (
-                                <div className="flex items-center gap-2">
-                                  <Cake className="w-4 h-4 text-muted-foreground" />
-                                  <span className="text-muted-foreground">{t("notifications.birthDate")}:</span>
-                                  <span className="font-medium">{new Date(submission.data.dateOfBirth).toLocaleDateString(getLocaleDateFormat())}</span>
-                                </div>
-                              )}
-                              {submission.data.gender && (
-                                <div className="flex items-center gap-2">
-                                  <Users className="w-4 h-4 text-muted-foreground" />
-                                  <span className="text-muted-foreground">{t("notifications.gender")}:</span>
-                                  <span className="font-medium">{submission.data.gender === 'male' ? t("notifications.male") : t("notifications.female")}</span>
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                          {submission.taskType === "meter_reading" && (
-                            <div className="space-y-3">
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                                {submission.data.houseName && (
-                                  <div className="flex items-center gap-2">
-                                    <Building2 className="w-4 h-4 text-muted-foreground" />
-                                    <span className="text-muted-foreground">{t("notifications.housing")}:</span>
-                                    <span className="font-medium">{submission.data.houseName}</span>
-                                  </div>
-                                )}
-                                {submission.data.meterValue && (
-                                  <div className="flex items-center gap-2">
-                                    <FileText className="w-4 h-4 text-muted-foreground" />
-                                    <span className="text-muted-foreground">{t("notifications.value")}:</span>
-                                    <span className="font-medium">{submission.data.meterValue}</span>
-                                  </div>
-                                )}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                            {submission.phone && (
+                              <div className="flex items-center gap-2">
+                                <Phone className="w-4 h-4 text-muted-foreground" />
+                                <span className="text-muted-foreground">{t("notifications.phone")}:</span>
+                                <span className="font-medium">{submission.phone}</span>
                               </div>
-                              
-                              {submission.data.photo && (
-                                <div className="space-y-2">
-                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <ImageIcon className="w-4 h-4" />
-                                    <span>{t("notifications.meterPhoto")}</span>
-                                  </div>
-                                  <img 
-                                    src={submission.data.photo} 
-                                    alt={t("notifications.meterPhotoAlt")} 
-                                    className="w-full h-48 object-cover rounded-lg border"
-                                    data-testid={`photo-preview-${submission.id}`}
-                                  />
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                          {submission.taskType === "document_upload" && submission.data.photo && (
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <ImageIcon className="w-4 h-4" />
-                                <span>{submission.data.documentType || t("notifications.document")}</span>
+                            )}
+                            {submission.email && (
+                              <div className="flex items-center gap-2">
+                                <Mail className="w-4 h-4 text-muted-foreground" />
+                                <span className="text-muted-foreground">{t("notifications.email")}:</span>
+                                <span className="font-medium break-all">{submission.email}</span>
                               </div>
-                              <img 
-                                src={submission.data.photo} 
-                                alt={t("notifications.documentPhotoAlt")} 
-                                className="w-full h-48 object-cover rounded-lg border"
-                                data-testid={`document-preview-${submission.id}`}
-                              />
-                            </div>
-                          )}
+                            )}
+                            {submission.apartment && (
+                              <div className="flex items-center gap-2">
+                                <Building2 className="w-4 h-4 text-muted-foreground" />
+                                <span className="text-muted-foreground">{t("notifications.apartment") || "Apartment"}:</span>
+                                <span className="font-medium">{submission.apartment}</span>
+                              </div>
+                            )}
+                            {submission.notes && (
+                              <div className="col-span-full flex items-start gap-2">
+                                <StickyNote className="w-4 h-4 text-muted-foreground mt-0.5" />
+                                <span className="text-sm">{submission.notes}</span>
+                              </div>
+                            )}
+                          </div>
                         </CollapsibleContent>
                       </Collapsible>
 
-                      {/* Actions */}
                       <div className="flex gap-2 pt-2">
                         <Button
                           size="sm"

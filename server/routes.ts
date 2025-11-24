@@ -11,7 +11,7 @@ import {
   type InsertReservation
 } from "@shared/schema";
 import { z } from "zod";
-import { requireTenant } from "./middleware/tenant";
+import { requireTenant, requireTenantContext } from "./middleware/tenant";
 import { authenticateTenantUser } from "./middleware/auth";
 import { verifyPassword, generateTenantUserToken, generatePlatformAdminToken } from "./auth";
 
@@ -109,8 +109,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Email ve şifre gerekli" });
       }
       
+      // Normalize email to lowercase for case-insensitive lookup
+      const normalizedEmail = email.toLowerCase().trim();
+      
       // 1. Check if platform admin
-      const admin = await storage.getPlatformAdminByEmail(email);
+      const admin = await storage.getPlatformAdminByEmail(normalizedEmail);
       if (admin && admin.password) {
         const isValid = await verifyPassword(password, admin.password);
         if (isValid) {
@@ -130,15 +133,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // 2. Get all tenant-user records for this email
-      const userRecords = await storage.getUsersByEmail(email);
+      const userRecords = await storage.getUsersByEmail(normalizedEmail);
       
       if (userRecords.length === 0) {
+        console.log(`[LOGIN] User not found: ${normalizedEmail}`);
         return res.status(401).json({ error: "Geçersiz email veya şifre" });
       }
       
       // 3. Verify password using first record (password is same across all tenants)
       const firstUser = userRecords[0];
       if (!firstUser.password) {
+        console.log(`[LOGIN] User found but no password set: ${normalizedEmail}`);
         return res.status(403).json({ 
           error: "Şifre ayarlanmamış",
           message: "Lütfen önce şifrenizi ayarlayın"
@@ -147,6 +152,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const isValid = await verifyPassword(password, firstUser.password);
       if (!isValid) {
+        console.log(`[LOGIN] Invalid password for: ${normalizedEmail}`);
         return res.status(401).json({ error: "Geçersiz email veya şifre" });
       }
       
@@ -357,6 +363,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // All routes after this point require a valid JWT token
   // The middleware attaches req.user with { id, email, tenantId, role, type }
   apiRouter.use(authenticateTenantUser);
+  apiRouter.use(requireTenantContext);
 
   // ============================================
   // FEDERATED WORKER IDENTITY ENDPOINTS
@@ -366,10 +373,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // This creates a federated worker with all associated records
   apiRouter.post("/workers", async (req, res) => {
     try {
-      if (!req.user?.tenantId) {
+      if (!req.tenant) {
         return res.status(403).json({ error: "Forbidden: No tenant context" });
       }
-      const tenantId = req.user.tenantId;
+      const tenantId = req.tenant.id;
 
       // Validate input
       const createWorkerSchema = z.object({
@@ -470,10 +477,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // GET /workers - Get all active workers for tenant
   apiRouter.get("/workers", async (req, res) => {
     try {
-      if (!req.user?.tenantId) {
+      if (!req.tenant) {
         return res.status(403).json({ error: "Forbidden: No tenant context" });
       }
-      const tenantId = req.user.tenantId;
+      const tenantId = req.tenant.id;
 
       // Get all employments for tenant
       const employments = await storage.getActiveEmploymentsByTenant(tenantId);
@@ -528,10 +535,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // GET /workers-with-accommodation - Get all workers with their current accommodation details
   apiRouter.get("/workers-with-accommodation", async (req, res) => {
     try {
-      if (!req.user?.tenantId) {
+      if (!req.tenant) {
         return res.status(403).json({ error: "Forbidden: No tenant context" });
       }
-      const tenantId = req.user.tenantId;
+      const tenantId = req.tenant.id;
 
       // Get all employments for tenant
       const employments = await storage.getActiveEmploymentsByTenant(tenantId);
@@ -597,9 +604,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.get("/workers/:employmentId", async (req, res) => {
     try {
       const { employmentId } = req.params;
+      const tenantId = req.tenant?.id;
+
+      if (!tenantId) {
+        return res.status(403).json({ error: "Tenant context required" });
+      }
 
       const employment = await storage.getEmployment(employmentId);
-      if (!employment) {
+      if (!employment || employment.tenantId !== tenantId) {
         return res.status(404).json({ error: "Worker not found" });
       }
 
@@ -640,6 +652,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.patch("/employments/:id", async (req, res) => {
     try {
       const { id } = req.params;
+      const tenantId = req.tenant?.id;
+      if (!tenantId) {
+        return res.status(403).json({ error: "Tenant context required" });
+      }
       
       const updateSchema = z.object({
         status: z.enum(["active", "inactive", "former", "invited"]).optional(),
@@ -649,6 +665,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       const updates = updateSchema.parse(req.body);
+
+      const existing = await storage.getEmployment(id);
+      if (!existing || existing.tenantId !== tenantId) {
+        return res.status(404).json({ error: "Employment not found" });
+      }
 
       const employment = await storage.updateEmployment(id, updates);
       
@@ -685,10 +706,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.get("/employments/worker/:workerProfileId", async (req, res) => {
     try {
       const { workerProfileId } = req.params;
+      const tenantId = req.tenant?.id;
+      if (!tenantId) {
+        return res.status(403).json({ error: "Tenant context required" });
+      }
       
       const employments = await storage.getEmploymentsByWorkerProfile(workerProfileId);
       
-      res.json(employments);
+      res.json(employments.filter((employment) => employment.tenantId === tenantId));
     } catch (error) {
       console.error("Error fetching employments:", error);
       res.status(500).json({ error: "Failed to fetch employments" });
@@ -718,7 +743,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.get("/tenants/:id", async (req, res) => {
     try {
       const { id } = req.params;
-      
+
+      if (!req.tenant || req.tenant.id !== id) {
+        return res.status(403).json({ error: "Bu tenant'a erişim izniniz yok" });
+      }
+
       const tenant = await storage.getTenant(id);
       
       if (!tenant) {
@@ -744,7 +773,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const updates = req.body;
-      
+
+      if (!req.tenant || req.tenant.id !== id) {
+        return res.status(403).json({ error: "Bu tenant'ı güncelleme izniniz yok" });
+      }
+
       console.log("PATCH /tenants/:id - Request body:", updates);
       
       // Normalize and validate timezone if provided (IANA validation)
@@ -799,10 +832,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // GET /houses - Get all houses for a tenant (with rooms, beds, and active reservations)
   apiRouter.get("/houses", async (req, res) => {
     try {
-      if (!req.user?.tenantId) {
+      if (!req.tenant) {
         return res.status(403).json({ error: "Forbidden: No tenant context" });
       }
-      const tenantId = req.user.tenantId;
+      const tenantId = req.tenant.id;
       const selectedDate = req.query.date as string || new Date().toISOString().split('T')[0];
 
       const houses = await storage.getHousesByTenant(tenantId);
@@ -816,14 +849,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const roomsWithBeds = await Promise.all(
             rooms.map(async (room) => {
               // Get room reservation info (if exists)
-              const roomReservationDetails = await storage.getActiveRoomReservationWithOccupants(room.id);
+              const roomReservationDetailsRaw = await storage.getActiveRoomReservationWithOccupants(room.id);
+              
+              // Filter room reservation based on selected date (similar to bed reservations)
+              let roomReservationDetails = null;
+              if (roomReservationDetailsRaw && roomReservationDetailsRaw.roomReservation) {
+                const roomRes = roomReservationDetailsRaw.roomReservation;
+                const checkInDateStr = roomRes.checkInDate 
+                  ? new Date(roomRes.checkInDate).toISOString().split('T')[0]
+                  : null;
+                const checkOutDateStr = roomRes.checkOutDate 
+                  ? new Date(roomRes.checkOutDate).toISOString().split('T')[0]
+                  : null;
+                
+                // Show room reservation only if it's active on the selected date
+                // Active = checked in on/before selected date AND (no checkout OR checkout after selected date)
+                if (checkInDateStr && checkInDateStr <= selectedDate && (!checkOutDateStr || checkOutDateStr > selectedDate)) {
+                  roomReservationDetails = roomReservationDetailsRaw;
+                }
+              }
               
               const beds = await storage.getBedsByRoom(room.id);
               
-              // For each bed, fetch active reservation and enrich with worker data
+              // For each bed, fetch all reservations and filter by selected date
               const bedsWithWorkers = await Promise.all(
                 beds.map(async (bed) => {
-                  const reservation = await storage.getActiveReservationForBed(bed.id);
+                  // Get all reservations for this bed (not just active ones)
+                  const allReservations = await storage.getReservationsByBed(bed.id);
+                  
+                  // Debug: Log reservations for this bed
+                  if (allReservations.length > 0) {
+                    console.log(`[HOUSES API] Bed ${bed.bedNumber} (${bed.id}) has ${allReservations.length} reservation(s)`, {
+                      bedId: bed.id,
+                      bedNumber: bed.bedNumber,
+                      selectedDate,
+                      reservations: allReservations.map(r => ({
+                        id: r.id,
+                        checkInDate: r.checkInDate,
+                        checkOutDate: r.checkOutDate,
+                        startDate: r.startDate,
+                        endDate: r.endDate
+                      }))
+                    });
+                  }
+                  
+                  // Find reservation that is active on the selected date
+                  let reservation = null;
+                  for (const res of allReservations) {
+                    if (res.checkInDate) {
+                      // Handle both Date objects and string dates
+                      const checkInDate = res.checkInDate instanceof Date 
+                        ? res.checkInDate 
+                        : new Date(res.checkInDate);
+                      const checkInDateStr = checkInDate.toISOString().split('T')[0];
+                      
+                      const checkOutDateStr = res.checkOutDate 
+                        ? (res.checkOutDate instanceof Date 
+                            ? res.checkOutDate 
+                            : new Date(res.checkOutDate)).toISOString().split('T')[0]
+                        : null;
+                      
+                      // Debug: Log date comparison
+                      console.log(`[HOUSES API] Checking reservation ${res.id} for bed ${bed.bedNumber}:`, {
+                        checkInDateStr,
+                        checkOutDateStr,
+                        selectedDate,
+                        checkInDateStrLessOrEqual: checkInDateStr <= selectedDate,
+                        checkOutDateStrGreater: !checkOutDateStr || checkOutDateStr > selectedDate,
+                        isActive: checkInDateStr <= selectedDate && (!checkOutDateStr || checkOutDateStr > selectedDate)
+                      });
+                      
+                      // Check if this reservation is active on the selected date
+                      // Active = checked in on/before selected date AND (no checkout OR checkout after selected date)
+                      if (checkInDateStr <= selectedDate && (!checkOutDateStr || checkOutDateStr > selectedDate)) {
+                        reservation = res;
+                        console.log(`[HOUSES API] Found active reservation ${res.id} for bed ${bed.bedNumber} on ${selectedDate}`);
+                        break; // Use the first matching reservation
+                      }
+                    }
+                  }
                   
                   // If bed has active reservation, fetch employment/worker details
                   let worker = undefined;
@@ -842,27 +946,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   }
                   
                   // Calculate bed status based on reservation and selected date
+                  // If room has active room reservation, all beds in that room are occupied
                   let status = bed.status || "available";
                   let hasFutureReservation = false;
                   
-                  if (reservation && reservation.checkInDate) {
-                    const checkInDateStr = new Date(reservation.checkInDate).toISOString().split('T')[0];
-                    const checkOutDateStr = reservation.checkOutDate 
-                      ? new Date(reservation.checkOutDate).toISOString().split('T')[0]
-                      : null;
-                    
-                    // If already checked out before or on selected date → available
-                    if (checkOutDateStr && checkOutDateStr <= selectedDate) {
-                      status = "available";
-                      worker = undefined; // Don't show worker for checked out reservations
+                  // Check if room reservation makes this bed occupied
+                  if (roomReservationDetails && roomReservationDetails.roomReservation) {
+                    status = "occupied";
+                    // Set worker info from room reservation lead tenant if available
+                    if (roomReservationDetails.leadTenant) {
+                      worker = {
+                        employmentId: roomReservationDetails.leadTenant.employmentId,
+                        name: roomReservationDetails.leadTenant.name,
+                        gender: undefined, // Room reservations don't have gender info at bed level
+                      };
                     }
-                    // If checked in on/before selected date AND (no checkout OR checkout after selected date) → occupied
-                    else if (checkInDateStr <= selectedDate && (!checkOutDateStr || checkOutDateStr > selectedDate)) {
-                      status = "occupied";
-                    }
-                    // If check-in is in future → available with future reservation
-                    else if (checkInDateStr > selectedDate) {
-                      status = "available";
+                  }
+                  // Otherwise, check individual bed reservation
+                  // Note: reservation is already filtered to be active on selectedDate
+                  else if (reservation) {
+                    status = "occupied";
+                  }
+                  
+                  // Check for future reservations (for hasFutureReservation flag)
+                  // Only check if no active reservation found for selected date
+                  if (!reservation && !roomReservationDetails && allReservations.length > 0) {
+                    const futureReservation = allReservations.find(res => {
+                      if (res.checkInDate) {
+                        const checkInDateStr = new Date(res.checkInDate).toISOString().split('T')[0];
+                        return checkInDateStr > selectedDate;
+                      }
+                      return false;
+                    });
+                    if (futureReservation) {
                       hasFutureReservation = true;
                     }
                   }
@@ -947,11 +1063,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.post("/houses", async (req, res) => {
     try {
       console.log("[CREATE HOUSE] Request body:", JSON.stringify(req.body, null, 2));
-      const { tenantId, name, address, city, country, ownershipType, rooms } = req.body;
+      const { name, address, city, country, ownershipType, rooms } = req.body;
+      const tenantId = req.tenant?.id;
 
       if (!tenantId || !address) {
-        console.error("[CREATE HOUSE] Missing tenantId or address");
-        return res.status(400).json({ error: "tenantId and address required" });
+        console.error("[CREATE HOUSE] Missing tenant context or address");
+        return res.status(400).json({ error: "Tenant context and address required" });
       }
 
       // Map Turkish ownership type to English enum
@@ -1057,12 +1174,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const { name, address, city, country, ownershipType, rooms } = req.body;
+      const tenantId = req.tenant?.id;
+
+      if (!tenantId) {
+        return res.status(403).json({ error: "Forbidden: No tenant context" });
+      }
 
       // Map Turkish ownership type to English enum
       const mappedOwnershipType = 
         ownershipType === "Kiralık" ? "rent" :
         ownershipType === "Mülk" ? "owned" :
         ownershipType;
+
+      // Ensure house belongs to tenant
+      const existingHouse = await storage.getHouse(id);
+      if (!existingHouse || existingHouse.tenantId !== tenantId) {
+        return res.status(404).json({ error: "House not found" });
+      }
 
       // Update house
       const house = await storage.updateHouse(id, {
@@ -1200,6 +1328,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.delete("/houses/:id", async (req, res) => {
     try {
       const { id } = req.params;
+      const tenantId = req.tenant?.id;
+
+      if (!tenantId) {
+        return res.status(403).json({ error: "Forbidden: No tenant context" });
+      }
+
+      const house = await storage.getHouse(id);
+      if (!house || house.tenantId !== tenantId) {
+        return res.status(404).json({ error: "House not found" });
+      }
 
       // Delete all rooms first
       const rooms = await storage.getRoomsByHouse(id);
@@ -1229,10 +1367,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "startDate required" });
       }
 
+      // Verify tenant context
+      if (!req.tenant?.id) {
+        return res.status(403).json({ error: "Tenant context required" });
+      }
+
       // Verify house exists
       const house = await storage.getHouse(houseId);
       if (!house) {
         return res.status(404).json({ error: "House not found" });
+      }
+      
+      if (house.tenantId !== req.tenant.id) {
+        return res.status(403).json({ error: "Access denied: House belongs to different tenant" });
       }
 
       // Get all rooms and beds for this house
@@ -1241,31 +1388,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check availability for each bed
       const roomsWithConflicts = await Promise.all(
         rooms.map(async (room) => {
-          const beds = await storage.getBedsByRoom(room.id);
-          
-          const bedsWithConflicts = await Promise.all(
-            beds.map(async (bed) => {
-              const availability = await storage.checkBedAvailability(
-                bed.id, 
-                startDate, 
-                endDate as string | null || null
-              );
-              
-              return {
-                id: bed.id,
-                bedNumber: bed.bedNumber,
-                status: bed.status,
-                availability
-              };
-            })
-          );
-          
-          return {
-            id: room.id,
-            roomNumber: room.roomNumber,
-            floor: room.floor,
-            beds: bedsWithConflicts
-          };
+          try {
+            const beds = await storage.getBedsByRoom(room.id);
+            
+            const bedsWithConflicts = await Promise.all(
+              beds.map(async (bed) => {
+                try {
+                  const availability = await storage.checkBedAvailability(
+                    bed.id, 
+                    startDate, 
+                    endDate as string | null || null
+                  );
+                  
+                  return {
+                    id: bed.id,
+                    bedNumber: bed.bedNumber,
+                    status: bed.status,
+                    availability
+                  };
+                } catch (bedError) {
+                  console.error(`Error checking availability for bed ${bed.id}:`, bedError);
+                  // Return unavailable status if check fails
+                  return {
+                    id: bed.id,
+                    bedNumber: bed.bedNumber,
+                    status: bed.status,
+                    availability: {
+                      available: false,
+                      conflictType: 'full' as const,
+                      conflicts: []
+                    }
+                  };
+                }
+              })
+            );
+            
+            return {
+              id: room.id,
+              roomNumber: room.roomNumber,
+              floor: room.floor,
+              beds: bedsWithConflicts
+            };
+          } catch (roomError) {
+            console.error(`Error processing room ${room.id}:`, roomError);
+            // Return empty beds array if room processing fails
+            return {
+              id: room.id,
+              roomNumber: room.roomNumber,
+              floor: room.floor,
+              beds: []
+            };
+          }
         })
       );
 
@@ -1278,7 +1451,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Error checking availability conflicts:", error);
-      res.status(500).json({ error: "Failed to check availability" });
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ 
+        error: "Failed to check availability",
+        message: errorMessage
+      });
     }
   });
 
@@ -1295,15 +1472,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         startDate, 
         endDate, 
         checkInDate, 
-        tenantId,
         monthlyRate,
         depositAmount,
         depositCollected,
         depositCollector
       } = req.body;
+      const tenantId = req.tenant?.id;
 
-      if (!employmentId || !startDate || !tenantId) {
-        return res.status(400).json({ error: "employmentId, startDate, and tenantId required" });
+      if (!tenantId || !employmentId || !startDate) {
+        return res.status(400).json({ error: "employmentId, startDate ve tenant bilgisi gerekli" });
       }
 
       // Verify employment exists and belongs to tenant
@@ -1315,17 +1492,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Verify bed exists
       const bed = await storage.getBed(bedId);
       if (!bed) {
+        console.error(`[BED CHECK-IN] Bed not found: ${bedId}`);
         return res.status(404).json({ error: "Bed not found" });
+      }
+
+      // Verify bed has valid roomId
+      if (!bed.roomId) {
+        console.error(`[BED CHECK-IN] Bed ${bedId} has no roomId`);
+        return res.status(400).json({ error: "Bed has no associated room" });
       }
 
       // Verify bed belongs to tenant (check room → house)
       const room = await storage.getRoom(bed.roomId);
       if (!room) {
-        return res.status(404).json({ error: "Room not found" });
+        console.error(`[BED CHECK-IN] Room not found for bed ${bedId}, roomId: ${bed.roomId}`);
+        return res.status(404).json({ 
+          error: "Room not found",
+          details: `Bed references room ${bed.roomId} which does not exist`
+        });
       }
+
+      // Verify room has valid houseId
+      if (!room.houseId) {
+        console.error(`[BED CHECK-IN] Room ${room.id} has no houseId`);
+        return res.status(400).json({ error: "Room has no associated house" });
+      }
+
       const house = await storage.getHouse(room.houseId);
-      if (!house || house.tenantId !== tenantId) {
-        return res.status(404).json({ error: "House not found or access denied" });
+      if (!house) {
+        console.error(`[BED CHECK-IN] House not found for room ${room.id}, houseId: ${room.houseId}`);
+        return res.status(404).json({ 
+          error: "House not found",
+          details: `Room references house ${room.houseId} which does not exist`
+        });
+      }
+
+      if (house.tenantId !== tenantId) {
+        console.error(`[BED CHECK-IN] House ${house.id} belongs to tenant ${house.tenantId}, but request is from tenant ${tenantId}`);
+        return res.status(403).json({ error: "House not found or access denied" });
       }
 
       // CHECK: Room must not have an active room reservation (blocks individual bed rentals)
@@ -1343,6 +1547,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Create reservation with house and room info
+      const finalCheckInDate = checkInDate || startDate;
+      console.log(`[BED CHECK-IN] Creating reservation for bed ${bedId}:`, {
+        employmentId,
+        bedId,
+        startDate,
+        endDate,
+        checkInDate: finalCheckInDate,
+        checkInDateParam: checkInDate,
+        startDateParam: startDate
+      });
+      
       const reservation = await storage.createReservation({
         employmentId,
         houseId: house.id,
@@ -1351,10 +1566,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         tenantId,
         startDate: startDate,
         endDate: endDate || null,
-        checkInDate: checkInDate || startDate,
+        checkInDate: finalCheckInDate,
         checkOutDate: null,
         status: "checked_in", // Use correct enum value
       });
+      
+      console.log(`[BED CHECK-IN] Reservation created:`, {
+        id: reservation.id,
+        bedId: reservation.bedId,
+        checkInDate: reservation.checkInDate,
+        startDate: reservation.startDate,
+        checkOutDate: reservation.checkOutDate,
+        status: reservation.status
+      });
+      
+      // Verify reservation was created correctly by fetching it back
+      const verifyReservations = await storage.getReservationsByBed(bedId);
+      console.log(`[BED CHECK-IN] Verification: Found ${verifyReservations.length} reservation(s) for bed ${bedId}:`, 
+        verifyReservations.map(r => ({
+          id: r.id,
+          checkInDate: r.checkInDate,
+          checkOutDate: r.checkOutDate,
+          startDate: r.startDate,
+          endDate: r.endDate
+        }))
+      );
 
       // Create assignment for Accommodation Management tracking
       const assignment = await storage.createAssignment({
@@ -1390,18 +1626,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         startDate, 
         endDate, 
         checkInDate, 
-        tenantId,
         monthlyRate,
         depositAmount,
         depositCollected,
         depositCollector
       } = req.body;
+      const tenantId = req.tenant?.id;
 
       console.log("[ROOM CHECK-IN] Request body:", JSON.stringify(req.body, null, 2));
 
       if (!startDate || !tenantId) {
-        console.error("[ROOM CHECK-IN] Missing startDate or tenantId");
-        return res.status(400).json({ error: "startDate and tenantId required" });
+        console.error("[ROOM CHECK-IN] Missing startDate or tenant context");
+        return res.status(400).json({ error: "startDate ve tenant bilgisi gerekli" });
       }
 
       if (!occupants || !Array.isArray(occupants) || occupants.length === 0) {
@@ -1434,6 +1670,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Verify room exists
       const room = await storage.getRoom(roomId);
       if (!room) {
+        console.error(`[ROOM CHECK-IN] Room not found: ${roomId}`);
         return res.status(404).json({ error: "Room not found" });
       }
 
@@ -1444,10 +1681,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Verify room has valid houseId
+      if (!room.houseId) {
+        console.error(`[ROOM CHECK-IN] Room ${room.id} has no houseId`);
+        return res.status(400).json({ error: "Room has no associated house" });
+      }
+
       // Verify room belongs to tenant (check house)
       const house = await storage.getHouse(room.houseId);
-      if (!house || house.tenantId !== tenantId) {
-        return res.status(404).json({ error: "House not found or access denied" });
+      if (!house) {
+        console.error(`[ROOM CHECK-IN] House not found for room ${room.id}, houseId: ${room.houseId}`);
+        return res.status(404).json({ 
+          error: "House not found",
+          details: `Room references house ${room.houseId} which does not exist`
+        });
+      }
+
+      if (house.tenantId !== tenantId) {
+        console.error(`[ROOM CHECK-IN] House ${house.id} belongs to tenant ${house.tenantId}, but request is from tenant ${tenantId}`);
+        return res.status(403).json({ error: "House not found or access denied" });
       }
 
       // Get all beds in this room
@@ -1561,6 +1813,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { bedId } = req.params;
       const { afterDate } = req.query;
+      const tenantId = req.tenant?.id;
 
       if (!afterDate || typeof afterDate !== 'string') {
         return res.status(400).json({ error: "afterDate query parameter required" });
@@ -1569,7 +1822,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Verify bed exists
       const bed = await storage.getBed(bedId);
       if (!bed) {
+        console.error(`[FUTURE RESERVATIONS] Bed not found: ${bedId}`);
         return res.status(404).json({ error: "Bed not found" });
+      }
+
+      if (!bed.roomId) {
+        console.error(`[FUTURE RESERVATIONS] Bed ${bedId} has no roomId`);
+        return res.status(400).json({ error: "Bed has no associated room" });
+      }
+
+      const room = await storage.getRoom(bed.roomId);
+      if (!room) {
+        console.error(`[FUTURE RESERVATIONS] Room not found for bed ${bedId}, roomId: ${bed.roomId}`);
+        return res.status(404).json({ 
+          error: "Room not found",
+          details: `Bed references room ${bed.roomId} which does not exist`
+        });
+      }
+
+      if (!room.houseId) {
+        console.error(`[FUTURE RESERVATIONS] Room ${room.id} has no houseId`);
+        return res.status(400).json({ error: "Room has no associated house" });
+      }
+
+      const house = await storage.getHouse(room.houseId);
+      if (!house) {
+        console.error(`[FUTURE RESERVATIONS] House not found for room ${room.id}, houseId: ${room.houseId}`);
+        return res.status(404).json({ 
+          error: "House not found",
+          details: `Room references house ${room.houseId} which does not exist`
+        });
+      }
+
+      if (!tenantId || house.tenantId !== tenantId) {
+        return res.status(403).json({ error: "Bu yatağın rezervasyonlarını görüntüleme izniniz yok" });
       }
 
       // Get future reservations for this bed
@@ -1585,20 +1871,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // GET /reservations - Get reservations by filters
   apiRouter.get("/reservations", async (req, res) => {
     try {
-      const { tenantId, bedId, active } = req.query;
+      const { bedId, active } = req.query;
+      const tenantId = req.tenant?.id;
 
       if (!tenantId) {
-        return res.status(400).json({ error: "tenantId required" });
+        return res.status(403).json({ error: "Tenant context required" });
       }
 
       let reservations;
 
       if (bedId) {
-        // Get reservations for specific bed
-        reservations = await storage.getReservationsByBed(bedId as string);
+        // Ensure bed belongs to tenant before returning reservations
+        const bed = await storage.getBed(bedId as string);
+        if (!bed) {
+          console.error(`[GET RESERVATIONS] Bed not found: ${bedId}`);
+          return res.status(404).json({ error: "Bed not found" });
+        }
+
+        if (!bed.roomId) {
+          console.error(`[GET RESERVATIONS] Bed ${bedId} has no roomId`);
+          return res.status(400).json({ error: "Bed has no associated room" });
+        }
+
+        const room = await storage.getRoom(bed.roomId);
+        if (!room) {
+          console.error(`[GET RESERVATIONS] Room not found for bed ${bedId}, roomId: ${bed.roomId}`);
+          return res.status(404).json({ 
+            error: "Room not found",
+            details: `Bed references room ${bed.roomId} which does not exist`
+          });
+        }
+
+        if (!room.houseId) {
+          console.error(`[GET RESERVATIONS] Room ${room.id} has no houseId`);
+          return res.status(400).json({ error: "Room has no associated house" });
+        }
+
+        const house = await storage.getHouse(room.houseId);
+        if (!house) {
+          console.error(`[GET RESERVATIONS] House not found for room ${room.id}, houseId: ${room.houseId}`);
+          return res.status(404).json({ 
+            error: "House not found",
+            details: `Room references house ${room.houseId} which does not exist`
+          });
+        }
+
+        if (house.tenantId !== tenantId) {
+          return res.status(403).json({ error: "Bu yatağı görüntüleme izniniz yok" });
+        }
+
+        // Get reservations for specific bed (filtered by tenant for safety)
+        const bedReservations = await storage.getReservationsByBed(bedId as string);
+        reservations = bedReservations.filter((reservation) => reservation.tenantId === tenantId);
       } else if (active === "true") {
         // Get active reservations for tenant
-        reservations = await storage.getActiveReservationsByTenant(tenantId as string);
+        reservations = await storage.getActiveReservationsByTenant(tenantId);
       } else {
         // Get all reservations for tenant (not implemented yet)
         return res.status(400).json({ error: "Must specify bedId or active=true" });
@@ -1618,11 +1945,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // GET /qr-codes - Get all QR codes for tenant
   apiRouter.get("/qr-codes", async (req, res) => {
     try {
-      const { tenantId } = req.query;
+      const tenantId = req.tenant?.id;
       if (!tenantId) {
-        return res.status(400).json({ error: "tenantId required" });
+        return res.status(403).json({ error: "Tenant context required" });
       }
-      const qrCodes = await storage.getQRCodesByTenant(tenantId as string);
+      const qrCodes = await storage.getQRCodesByTenant(tenantId);
       res.json(qrCodes);
     } catch (error) {
       console.error("Error fetching QR codes:", error);
@@ -1633,7 +1960,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // POST /qr-codes - Create new QR code
   apiRouter.post("/qr-codes", async (req, res) => {
     try {
-      const qrCode = await storage.createQRCode(req.body);
+      const tenantId = req.tenant?.id;
+      if (!tenantId) {
+        return res.status(403).json({ error: "Tenant context required" });
+      }
+      const qrCode = await storage.createQRCode({ ...req.body, tenantId });
       res.status(201).json(qrCode);
     } catch (error) {
       console.error("Error creating QR code:", error);
@@ -1645,7 +1976,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.patch("/qr-codes/:id", async (req, res) => {
     try {
       const { id } = req.params;
-      const updated = await storage.updateQRCode(id, req.body);
+      const tenantId = req.tenant?.id;
+      if (!tenantId) {
+        return res.status(403).json({ error: "Tenant context required" });
+      }
+      const existing = await storage.getQRCode(id);
+      if (!existing || existing.tenantId !== tenantId) {
+        return res.status(404).json({ error: "QR code not found" });
+      }
+      const { tenantId: _ignoredTenantId, ...rest } = req.body;
+      const updated = await storage.updateQRCode(id, rest);
       if (!updated) {
         return res.status(404).json({ error: "QR code not found" });
       }
@@ -1660,6 +2000,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.delete("/qr-codes/:id", async (req, res) => {
     try {
       const { id } = req.params;
+      const tenantId = req.tenant?.id;
+      if (!tenantId) {
+        return res.status(403).json({ error: "Tenant context required" });
+      }
+      const existing = await storage.getQRCode(id);
+      if (!existing || existing.tenantId !== tenantId) {
+        return res.status(404).json({ error: "QR code not found" });
+      }
       const deleted = await storage.deleteQRCode(id);
       if (!deleted) {
         return res.status(404).json({ error: "QR code not found" });
@@ -1675,8 +2023,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.post("/qr-codes/:code/use", async (req, res) => {
     try {
       const { code } = req.params;
+      const tenantId = req.tenant?.id;
+      if (!tenantId) {
+        return res.status(403).json({ error: "Tenant context required" });
+      }
       const qrCode = await storage.getQRCodeByCode(code);
-      if (!qrCode) {
+      if (!qrCode || qrCode.tenantId !== tenantId) {
         return res.status(404).json({ error: "QR code not found" });
       }
       
@@ -1706,7 +2058,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.get("/tenants/:tenantId/assignments", async (req, res) => {
     try {
       const { tenantId } = req.params;
-      const assignments = await storage.getAssignmentsByTenant(tenantId);
+      const currentTenantId = req.tenant?.id;
+      if (!currentTenantId || tenantId !== currentTenantId) {
+        return res.status(403).json({ error: "Bu tenant'a erişim izniniz yok" });
+      }
+      const assignments = await storage.getAssignmentsByTenant(currentTenantId);
       res.json(assignments);
     } catch (error) {
       console.error("Error fetching assignments:", error);
@@ -1718,8 +2074,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.get("/assignments/:id", async (req, res) => {
     try {
       const { id } = req.params;
+      const tenantId = req.tenant?.id;
+      if (!tenantId) {
+        return res.status(403).json({ error: "Tenant context required" });
+      }
       const assignment = await storage.getAssignment(id);
-      if (!assignment) {
+      if (!assignment || assignment.tenantId !== tenantId) {
         return res.status(404).json({ error: "Assignment not found" });
       }
       res.json(assignment);
@@ -1733,7 +2093,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.post("/tenants/:tenantId/assignments", async (req, res) => {
     try {
       const { tenantId } = req.params;
-      const assignment = await storage.createAssignment({ ...req.body, tenantId });
+      const currentTenantId = req.tenant?.id;
+      if (!currentTenantId || tenantId !== currentTenantId) {
+        return res.status(403).json({ error: "Bu tenant için assignment oluşturma izniniz yok" });
+      }
+      const assignment = await storage.createAssignment({ ...req.body, tenantId: currentTenantId });
       res.status(201).json(assignment);
     } catch (error) {
       console.error("Error creating assignment:", error);
@@ -1745,6 +2109,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.patch("/assignments/:id", async (req, res) => {
     try {
       const { id } = req.params;
+      const tenantId = req.tenant?.id;
+      if (!tenantId) {
+        return res.status(403).json({ error: "Tenant context required" });
+      }
+      const existing = await storage.getAssignment(id);
+      if (!existing || existing.tenantId !== tenantId) {
+        return res.status(404).json({ error: "Assignment not found" });
+      }
       const updated = await storage.updateAssignment(id, req.body);
       if (!updated) {
         return res.status(404).json({ error: "Assignment not found" });
@@ -1760,6 +2132,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.delete("/assignments/:id", async (req, res) => {
     try {
       const { id } = req.params;
+      const tenantId = req.tenant?.id;
+      if (!tenantId) {
+        return res.status(403).json({ error: "Tenant context required" });
+      }
+      const existing = await storage.getAssignment(id);
+      if (!existing || existing.tenantId !== tenantId) {
+        return res.status(404).json({ error: "Assignment not found" });
+      }
       const deleted = await storage.deleteAssignment(id);
       if (!deleted) {
         return res.status(404).json({ error: "Assignment not found" });
@@ -1779,7 +2159,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.get("/tenants/:tenantId/charges", async (req, res) => {
     try {
       const { tenantId } = req.params;
-      const charges = await storage.getChargesByTenant(tenantId);
+      const currentTenantId = req.tenant?.id;
+      if (!currentTenantId || tenantId !== currentTenantId) {
+        return res.status(403).json({ error: "Bu tenant'a erişim izniniz yok" });
+      }
+      const charges = await storage.getChargesByTenant(currentTenantId);
       res.json(charges);
     } catch (error) {
       console.error("Error fetching charges:", error);
@@ -1791,8 +2175,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.get("/charges/:id", async (req, res) => {
     try {
       const { id } = req.params;
+      const tenantId = req.tenant?.id;
+      if (!tenantId) {
+        return res.status(403).json({ error: "Tenant context required" });
+      }
       const charge = await storage.getCharge(id);
-      if (!charge) {
+      if (!charge || charge.tenantId !== tenantId) {
         return res.status(404).json({ error: "Charge not found" });
       }
       res.json(charge);
@@ -1806,7 +2194,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.post("/tenants/:tenantId/charges", async (req, res) => {
     try {
       const { tenantId } = req.params;
-      const charge = await storage.createCharge({ ...req.body, tenantId });
+      const currentTenantId = req.tenant?.id;
+      if (!currentTenantId || tenantId !== currentTenantId) {
+        return res.status(403).json({ error: "Bu tenant için charge oluşturma izniniz yok" });
+      }
+      const charge = await storage.createCharge({ ...req.body, tenantId: currentTenantId });
       res.status(201).json(charge);
     } catch (error) {
       console.error("Error creating charge:", error);
@@ -1818,6 +2210,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.patch("/charges/:id", async (req, res) => {
     try {
       const { id } = req.params;
+      const tenantId = req.tenant?.id;
+      if (!tenantId) {
+        return res.status(403).json({ error: "Tenant context required" });
+      }
+      const existing = await storage.getCharge(id);
+      if (!existing || existing.tenantId !== tenantId) {
+        return res.status(404).json({ error: "Charge not found" });
+      }
       const updated = await storage.updateCharge(id, req.body);
       if (!updated) {
         return res.status(404).json({ error: "Charge not found" });
@@ -1833,6 +2233,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.delete("/charges/:id", async (req, res) => {
     try {
       const { id } = req.params;
+      const tenantId = req.tenant?.id;
+      if (!tenantId) {
+        return res.status(403).json({ error: "Tenant context required" });
+      }
+      const existing = await storage.getCharge(id);
+      if (!existing || existing.tenantId !== tenantId) {
+        return res.status(404).json({ error: "Charge not found" });
+      }
       const deleted = await storage.deleteCharge(id);
       if (!deleted) {
         return res.status(404).json({ error: "Charge not found" });
@@ -1852,7 +2260,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.get("/tenants/:tenantId/payments", async (req, res) => {
     try {
       const { tenantId } = req.params;
-      const payments = await storage.getPaymentsByTenant(tenantId);
+      const currentTenantId = req.tenant?.id;
+      if (!currentTenantId || tenantId !== currentTenantId) {
+        return res.status(403).json({ error: "Bu tenant'a erişim izniniz yok" });
+      }
+      const payments = await storage.getPaymentsByTenant(currentTenantId);
       res.json(payments);
     } catch (error) {
       console.error("Error fetching payments:", error);
@@ -1864,8 +2276,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.get("/payments/:id", async (req, res) => {
     try {
       const { id } = req.params;
+      const tenantId = req.tenant?.id;
+      if (!tenantId) {
+        return res.status(403).json({ error: "Tenant context required" });
+      }
       const payment = await storage.getPayment(id);
-      if (!payment) {
+      if (!payment || payment.tenantId !== tenantId) {
         return res.status(404).json({ error: "Payment not found" });
       }
       res.json(payment);
@@ -1879,7 +2295,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.post("/tenants/:tenantId/payments", async (req, res) => {
     try {
       const { tenantId } = req.params;
-      const payment = await storage.createPayment({ ...req.body, tenantId });
+      const currentTenantId = req.tenant?.id;
+      if (!currentTenantId || tenantId !== currentTenantId) {
+        return res.status(403).json({ error: "Bu tenant için payment oluşturma izniniz yok" });
+      }
+      const payment = await storage.createPayment({ ...req.body, tenantId: currentTenantId });
       res.status(201).json(payment);
     } catch (error) {
       console.error("Error creating payment:", error);
@@ -1891,6 +2311,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.delete("/payments/:id", async (req, res) => {
     try {
       const { id } = req.params;
+      const tenantId = req.tenant?.id;
+      if (!tenantId) {
+        return res.status(403).json({ error: "Tenant context required" });
+      }
+      const existing = await storage.getPayment(id);
+      if (!existing || existing.tenantId !== tenantId) {
+        return res.status(404).json({ error: "Payment not found" });
+      }
       const deleted = await storage.deletePayment(id);
       if (!deleted) {
         return res.status(404).json({ error: "Payment not found" });
@@ -1911,10 +2339,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const { checkOutDate, checkOutType, notes, vacationStart, vacationEnd } = req.body;
+      const tenantId = req.tenant?.id;
+
+      if (!tenantId) {
+        return res.status(403).json({ error: "Tenant context required" });
+      }
 
       // Get existing reservation
       const reservation = await storage.getReservation(id);
-      if (!reservation) {
+      if (!reservation || reservation.tenantId !== tenantId) {
         return res.status(404).json({ error: "Reservation not found" });
       }
 
@@ -1999,6 +2432,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const { note } = req.body;
+      const tenantId = req.tenant?.id;
+
+      if (!tenantId) {
+        return res.status(403).json({ error: "Tenant context required" });
+      }
 
       if (!note || !note.trim()) {
         return res.status(400).json({ error: "Note is required" });
@@ -2006,7 +2444,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Get existing reservation
       const reservation = await storage.getReservation(id);
-      if (!reservation) {
+      if (!reservation || reservation.tenantId !== tenantId) {
         return res.status(404).json({ error: "Reservation not found" });
       }
 
@@ -2034,9 +2472,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.get("/reservations/:id/notes", authenticateTenantUser, async (req, res) => {
     try {
       const { id } = req.params;
-      
+      const tenantId = req.tenant?.id;
+      if (!tenantId) {
+        return res.status(403).json({ error: "Tenant context required" });
+      }
+
       const reservation = await storage.getReservation(id);
-      if (!reservation) {
+      if (!reservation || reservation.tenantId !== tenantId) {
         return res.status(404).json({ error: "Reservation not found" });
       }
 
@@ -2054,7 +2496,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // GET /tenants/:tenantId/assignments/:assignmentId/notes - Get notes for assignment
   apiRouter.get("/tenants/:tenantId/assignments/:assignmentId/notes", async (req, res) => {
     try {
-      const { assignmentId } = req.params;
+      const { tenantId, assignmentId } = req.params;
+      const currentTenantId = req.tenant?.id;
+      if (!currentTenantId || tenantId !== currentTenantId) {
+        return res.status(403).json({ error: "Bu tenant'a erişim izniniz yok" });
+      }
+      const assignment = await storage.getAssignment(assignmentId);
+      if (!assignment || assignment.tenantId !== currentTenantId) {
+        return res.status(404).json({ error: "Assignment not found" });
+      }
       const notes = await storage.getAssignmentNotesByAssignment(assignmentId);
       res.json(notes);
     } catch (error) {
@@ -2067,7 +2517,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.post("/tenants/:tenantId/assignments/:assignmentId/notes", async (req, res) => {
     try {
       const { tenantId, assignmentId } = req.params;
-      const note = await storage.createAssignmentNote({ ...req.body, tenantId, assignmentId });
+      const currentTenantId = req.tenant?.id;
+      if (!currentTenantId || tenantId !== currentTenantId) {
+        return res.status(403).json({ error: "Bu tenant için not oluşturma izniniz yok" });
+      }
+      const assignment = await storage.getAssignment(assignmentId);
+      if (!assignment || assignment.tenantId !== currentTenantId) {
+        return res.status(404).json({ error: "Assignment not found" });
+      }
+      const note = await storage.createAssignmentNote({ ...req.body, tenantId: currentTenantId, assignmentId });
       res.status(201).json(note);
     } catch (error) {
       console.error("Error creating assignment note:", error);

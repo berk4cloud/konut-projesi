@@ -5,6 +5,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/contexts/AuthContext";
 import type { AssignmentWithDetails, ChargeWithWorker, PaymentWithWorker, AssignmentNote, InsertAssignmentNote } from "@shared/schema";
 import Header from "@/components/Header";
+import { SHOW_PRICE_AND_PAYMENT_FIELDS } from "@/config/featureFlags";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -297,10 +298,11 @@ export default function Assignments() {
   };
 
   // Filter assignments based on search and status
-  const filteredAssignments = assignments.filter(assignment => {
+  const filteredAssignments = (assignments || []).filter(assignment => {
+    if (!assignment) return false;
     const matchesSearch = searchQuery === "" || 
-      assignment.workerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      assignment.houseName.toLowerCase().includes(searchQuery.toLowerCase());
+      (assignment.workerName || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (assignment.houseName || "").toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesStatus = statusFilter === "all" || assignment.status === statusFilter;
     
@@ -308,9 +310,10 @@ export default function Assignments() {
   });
 
   // Filter charges based on search and due date
-  const filteredCharges = charges.filter(charge => {
+  const filteredCharges = (charges || []).filter(charge => {
+    if (!charge) return false;
     const matchesSearch = searchQuery === "" || 
-      charge.workerName.toLowerCase().includes(searchQuery.toLowerCase());
+      (charge.workerName || "").toLowerCase().includes(searchQuery.toLowerCase());
     
     if (!matchesSearch) return false;
     
@@ -348,9 +351,10 @@ export default function Assignments() {
   });
 
   // Filter payments based on search and date range
-  const filteredPayments = payments.filter(payment => {
+  const filteredPayments = (payments || []).filter(payment => {
+    if (!payment) return false;
     const matchesSearch = searchQuery === "" || 
-      payment.workerName.toLowerCase().includes(searchQuery.toLowerCase());
+      (payment.workerName || "").toLowerCase().includes(searchQuery.toLowerCase());
     
     if (!matchesSearch) return false;
     
@@ -405,25 +409,27 @@ export default function Assignments() {
   };
 
   // Statistics
-  const activeAssignments = assignments.filter(a => a.status === "active").length;
-  const pendingDeposits = assignments.filter(a => !a.depositCollected).length;
-  const overdueCharges = charges.filter(c => c.status === "overdue").length;
-  const totalPendingAmount = charges
-    .filter(c => c.status === "pending" || c.status === "overdue")
-    .reduce((sum, c) => sum + c.amount, 0);
+  const activeAssignments = (assignments || []).filter(a => a && a.status === "active").length;
+  const pendingDeposits = (assignments || []).filter(a => a && !a.depositCollected).length;
+  const overdueCharges = (charges || []).filter(c => c && c.status === "overdue").length;
+  const totalPendingAmount = (charges || [])
+    .filter(c => c && (c.status === "pending" || c.status === "overdue"))
+    .reduce((sum, c) => sum + (c.amount || 0), 0);
   
   // New Enhanced Statistics
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   
   // Upcoming Due Dates (Yaklaşan Vadeler)
-  const dueTodayCount = charges.filter(c => {
+  const dueTodayCount = (charges || []).filter(c => {
+    if (!c || !c.dueDate) return false;
     const dueDate = new Date(c.dueDate);
     dueDate.setHours(0, 0, 0, 0);
     return dueDate.getTime() === today.getTime() && c.status !== "paid";
   }).length;
   
-  const dueNext3DaysCount = charges.filter(c => {
+  const dueNext3DaysCount = (charges || []).filter(c => {
+    if (!c || !c.dueDate) return false;
     const dueDate = new Date(c.dueDate);
     dueDate.setHours(0, 0, 0, 0);
     const threeDaysFromNow = new Date(today);
@@ -431,7 +437,8 @@ export default function Assignments() {
     return dueDate > today && dueDate <= threeDaysFromNow && c.status !== "paid";
   }).length;
   
-  const dueNext7DaysCount = charges.filter(c => {
+  const dueNext7DaysCount = (charges || []).filter(c => {
+    if (!c || !c.dueDate) return false;
     const dueDate = new Date(c.dueDate);
     dueDate.setHours(0, 0, 0, 0);
     const threeDaysFromNow = new Date(today);
@@ -442,28 +449,32 @@ export default function Assignments() {
   }).length;
   
   // Detailed Overdue Levels (Gecikmiş Ödemeler Detaylı)
-  const overdue1to7Days = charges.filter(c => {
+  const overdue1to7Days = (charges || []).filter(c => {
+    if (!c || !c.dueDate) return false;
     const dueDate = new Date(c.dueDate);
     dueDate.setHours(0, 0, 0, 0);
     const daysDiff = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
     return daysDiff >= 1 && daysDiff <= 7 && c.status !== "paid";
   }).length;
   
-  const overdue8to14Days = charges.filter(c => {
+  const overdue8to14Days = (charges || []).filter(c => {
+    if (!c || !c.dueDate) return false;
     const dueDate = new Date(c.dueDate);
     dueDate.setHours(0, 0, 0, 0);
     const daysDiff = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
     return daysDiff >= 8 && daysDiff <= 14 && c.status !== "paid";
   }).length;
   
-  const overdue15to30Days = charges.filter(c => {
+  const overdue15to30Days = (charges || []).filter(c => {
+    if (!c || !c.dueDate) return false;
     const dueDate = new Date(c.dueDate);
     dueDate.setHours(0, 0, 0, 0);
     const daysDiff = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
     return daysDiff >= 15 && daysDiff <= 30 && c.status !== "paid";
   }).length;
   
-  const overdue30PlusDays = charges.filter(c => {
+  const overdue30PlusDays = (charges || []).filter(c => {
+    if (!c || !c.dueDate) return false;
     const dueDate = new Date(c.dueDate);
     dueDate.setHours(0, 0, 0, 0);
     const daysDiff = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
@@ -474,15 +485,15 @@ export default function Assignments() {
   const sevenDaysFromNow = new Date(today);
   sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
   
-  const depositsToRefund = assignments.filter(a => {
-    if (!a.endDate || !a.depositCollected) return false;
+  const depositsToRefund = (assignments || []).filter(a => {
+    if (!a || !a.endDate || !a.depositCollected) return false;
     const endDate = new Date(a.endDate);
     endDate.setHours(0, 0, 0, 0);
     return endDate <= sevenDaysFromNow && endDate >= today && a.depositStatus === "collected";
   });
   
   const depositsToRefundCount = depositsToRefund.length;
-  const depositsToRefundAmount = depositsToRefund.reduce((sum, a) => sum + (a.depositAmount || 0), 0);
+  const depositsToRefundAmount = depositsToRefund.reduce((sum, a) => sum + (parseFloat(a.depositAmount || "0") || 0), 0);
 
   // Helper functions
   const getStatusColor = (status: AssignmentStatus) => {
@@ -557,16 +568,18 @@ export default function Assignments() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t('assignments.cards.pendingDeposits')}</CardTitle>
-                <AlertCircle className="h-4 w-4 text-amber-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{pendingDeposits}</div>
-                <p className="text-xs text-muted-foreground mt-1">{t('assignments.cards.pendingDepositsDesc')}</p>
-              </CardContent>
-            </Card>
+            {SHOW_PRICE_AND_PAYMENT_FIELDS && (
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">{t('assignments.cards.pendingDeposits')}</CardTitle>
+                  <AlertCircle className="h-4 w-4 text-amber-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{pendingDeposits}</div>
+                  <p className="text-xs text-muted-foreground mt-1">{t('assignments.cards.pendingDepositsDesc')}</p>
+                </CardContent>
+              </Card>
+            )}
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -653,19 +666,21 @@ export default function Assignments() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t('assignments.cards.depositsToRefund')}</CardTitle>
-                <Home className="h-4 w-4 text-green-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{depositsToRefundCount}</div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  €{depositsToRefundAmount.toLocaleString()} {t('assignments.cards.toBeRefunded')}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">{t('assignments.cards.next7DaysCheckout')}</p>
-              </CardContent>
-            </Card>
+            {SHOW_PRICE_AND_PAYMENT_FIELDS && (
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">{t('assignments.cards.depositsToRefund')}</CardTitle>
+                  <Home className="h-4 w-4 text-green-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{depositsToRefundCount}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    €{depositsToRefundAmount.toLocaleString()} {t('assignments.cards.toBeRefunded')}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">{t('assignments.cards.next7DaysCheckout')}</p>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Tabs */}
@@ -761,24 +776,28 @@ export default function Assignments() {
                             {new Date(assignment.startDate).toLocaleDateString(getLocale())}
                           </p>
                         </div>
-                        <div>
-                          <p className="text-muted-foreground mb-1">{t('assignments.assignmentCard.monthlyRate')}</p>
-                          <p className="font-medium">€{assignment.monthlyRate}</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground mb-1">{t('assignments.assignmentCard.deposit')}</p>
-                          {assignment.depositCollected ? (
-                            <p className="font-medium flex items-center gap-1 text-green-600">
-                              <CheckCircle className="w-3 h-3" />
-                              €{assignment.depositAmount}
-                            </p>
-                          ) : (
-                            <p className="font-medium flex items-center gap-1 text-amber-600">
-                              <AlertCircle className="w-3 h-3" />
-                              {t('assignments.paymentStatus.pending')}
-                            </p>
-                          )}
-                        </div>
+                        {SHOW_PRICE_AND_PAYMENT_FIELDS && (
+                          <>
+                            <div>
+                              <p className="text-muted-foreground mb-1">{t('assignments.assignmentCard.monthlyRate')}</p>
+                              <p className="font-medium">€{assignment.monthlyRate}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground mb-1">{t('assignments.assignmentCard.deposit')}</p>
+                              {assignment.depositCollected ? (
+                                <p className="font-medium flex items-center gap-1 text-green-600">
+                                  <CheckCircle className="w-3 h-3" />
+                                  €{assignment.depositAmount}
+                                </p>
+                              ) : (
+                                <p className="font-medium flex items-center gap-1 text-amber-600">
+                                  <AlertCircle className="w-3 h-3" />
+                                  {t('assignments.paymentStatus.pending')}
+                                </p>
+                              )}
+                            </div>
+                          </>
+                        )}
                         <div>
                           <p className="text-muted-foreground mb-1">{t('assignments.assignmentCard.endDate')}</p>
                           <p className="font-medium">
@@ -869,14 +888,16 @@ export default function Assignments() {
                             <p className="text-sm text-muted-foreground">{t('assignments.chargeCard.remainingDebt')}</p>
                             <p className="font-bold text-lg text-red-600">€{charge.remainingAmount}</p>
                           </div>
-                          <Button 
-                            onClick={() => handleOpenPaymentDialog(charge)}
-                            data-testid={`button-add-payment-${charge.id}`}
-                            size="sm"
-                          >
-                            <Plus className="w-4 h-4 mr-2" />
-                            {t('assignments.chargeCard.enterPayment')}
-                          </Button>
+                          {SHOW_PRICE_AND_PAYMENT_FIELDS && (
+                            <Button 
+                              onClick={() => handleOpenPaymentDialog(charge)}
+                              data-testid={`button-add-payment-${charge.id}`}
+                              size="sm"
+                            >
+                              <Plus className="w-4 h-4 mr-2" />
+                              {t('assignments.chargeCard.enterPayment')}
+                            </Button>
+                          )}
                         </div>
                       )}
                       
@@ -1036,24 +1057,25 @@ export default function Assignments() {
         </div>
       </main>
 
-      {/* Payment Dialog */}
-      <Dialog 
-        open={paymentDialogOpen} 
-        onOpenChange={(open) => {
-          setPaymentDialogOpen(open);
-          if (!open) {
-            // Reset state when dialog closes
-            setSelectedCharge(null);
-            setNewPayment({
-              amount: 0,
-              paymentDate: new Date().toISOString().split('T')[0],
-              paymentMethod: "cash",
-              collectorName: "",
-              notes: "",
-            });
-          }
-        }}
-      >
+      {/* Payment Dialog - Only show if feature flag is enabled */}
+      {SHOW_PRICE_AND_PAYMENT_FIELDS && (
+        <Dialog 
+          open={paymentDialogOpen} 
+          onOpenChange={(open) => {
+            setPaymentDialogOpen(open);
+            if (!open) {
+              // Reset state when dialog closes
+              setSelectedCharge(null);
+              setNewPayment({
+                amount: 0,
+                paymentDate: new Date().toISOString().split('T')[0],
+                paymentMethod: "cash",
+                collectorName: "",
+                notes: "",
+              });
+            }
+          }}
+        >
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>{t('assignments.paymentDialog.title')}</DialogTitle>
@@ -1170,6 +1192,7 @@ export default function Assignments() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      )}
 
       {/* Assignment Detail Dialog with Conversation Notes */}
       <Dialog 
@@ -1215,7 +1238,9 @@ export default function Assignments() {
                 )}
                 <div className="flex gap-4 text-sm items-center">
                   <span>{t('assignments.detailsDialog.startDate')}: {new Date(selectedAssignment.startDate).toLocaleDateString(getLocale())}</span>
-                  <span>{t('assignments.detailsDialog.monthlyRate')}: €{selectedAssignment.monthlyRate}</span>
+                  {SHOW_PRICE_AND_PAYMENT_FIELDS && (
+                    <span>{t('assignments.detailsDialog.monthlyRate')}: €{selectedAssignment.monthlyRate}</span>
+                  )}
                   <Badge className={getStatusColor(selectedAssignment.status)}>
                     {getStatusLabel(selectedAssignment.status)}
                   </Badge>

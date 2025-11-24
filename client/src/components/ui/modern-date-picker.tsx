@@ -91,11 +91,19 @@ export function ModernDatePicker({
     const years = Array.from({ length: currentYear - 1940 + 1 }, (_, i) => currentYear - i).filter(y => y <= currentYear - 16);
 
     const updateDate = (day?: number, month?: number, year?: number) => {
-      const newDay = day ?? selectedDay ?? 1;
-      const newMonth = month ?? selectedMonth ?? 0;
-      const newYear = year ?? selectedYear ?? currentYear - 30;
+      // Use current date as fallback if no date is selected yet
+      const today = new Date();
+      const newDay = day !== undefined ? day : (selectedDay ?? today.getDate());
+      const newMonth = month !== undefined ? month : (selectedMonth ?? today.getMonth());
+      const newYear = year !== undefined ? year : (selectedYear ?? today.getFullYear());
       
-      const newDate = new Date(newYear, newMonth, newDay);
+      // Validate the date - if day is invalid for the month, use the last day of the month
+      const daysInMonth = new Date(newYear, newMonth + 1, 0).getDate();
+      const validDay = Math.min(newDay, daysInMonth);
+      
+      const newDate = new Date(newYear, newMonth, validDay);
+      // Set time to midnight to avoid timezone issues
+      newDate.setHours(0, 0, 0, 0);
       onDateChange(newDate);
     };
 

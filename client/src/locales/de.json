@@ -37,6 +37,20 @@
     "none": "Keine",
     "unknown": "Unbekannt"
   },
+  "months": {
+    "january": "Januar",
+    "february": "Februar",
+    "march": "März",
+    "april": "April",
+    "may": "Mai",
+    "june": "Juni",
+    "july": "Juli",
+    "august": "August",
+    "september": "September",
+    "october": "Oktober",
+    "november": "November",
+    "december": "Dezember"
+  },
   "auth": {
     "login": "Anmelden",
     "demoLogin": "Demo-Zugang (Cova B.V.)",
@@ -54,7 +68,7 @@
   },
   "dashboard": {
     "title": "Unterkunftsübersicht",
-    "subtitle": "Verwalten Sie Mitarbeiterunterkünfte in allen Objekten",
+    "subtitle": "Verwalten Sie Gästeunterkünfte in allen Objekten",
     "newCheckIn": "Neuer Check-in",
     "filters": "Filter",
     "colorSystemTitle": "Farbsystem - LOGIK-Perspektive:",
@@ -69,11 +83,11 @@
     "colorInfoTitle": "Farbsystem-Erklärung",
     "colorInfoSubtitle": "Bedeutung der Bettstatus aus LOGIK-Sicht (Vertriebsleiter Unterkunft)",
     "greenTitle": "Grün: Verfügbar (Frei)",
-    "greenDesc": "Dieses Bett ist derzeit verfügbar und kann einem neuen Mitarbeiter zugewiesen werden. Das Bett ist sauber, bereit und wartet darauf, Einnahmen zu generieren. Buchungen sind möglich.",
+    "greenDesc": "Dieses Bett ist derzeit verfügbar und kann einem neuen Gast zugewiesen werden. Das Bett ist sauber, bereit und wartet darauf, Einnahmen zu generieren. Buchungen sind möglich.",
     "orangeTitle": "Orange: Vermietet",
-    "orangeDesc": "Dieses Bett ist derzeit an einen Mitarbeiter vermietet und generiert monatliche Mieteinnahmen. Der Mitarbeiter ist aktiv untergebracht und zahlt regelmäßig. Dies ist der optimale Zustand - das Bett erwirtschaftet Einnahmen.",
+    "orangeDesc": "Dieses Bett ist derzeit an einen Gast vermietet und generiert monatliche Mieteinnahmen. Der Gast ist aktiv untergebracht und zahlt regelmäßig. Dies ist der optimale Zustand - das Bett erwirtschaftet Einnahmen.",
     "yellowTitle": "Gelb: Reserviert (Bevorstehend)",
-    "yellowDesc": "Dieses Bett ist für eine zukünftige Reservierung vorgemerkt. Es generiert noch keine Einnahmen, aber ein Mitarbeiter wird bald einziehen und die Belegung beginnen. Eine geplante und kontrollierte Situation.",
+    "yellowDesc": "Dieses Bett ist für eine zukünftige Reservierung vorgemerkt. Es generiert noch keine Einnahmen, aber ein Gast wird bald einziehen und die Belegung beginnen. Eine geplante und kontrollierte Situation.",
     "redTitle": "Rot: Außer Betrieb (Wartung)",
     "redDesc": "Dieses Bett hat ein Problem und kann derzeit nicht vermietet werden. Wartung, Reparatur oder Reinigung können erforderlich sein. Das Bett ist außer Betrieb - generiert keine Einnahmen und kann nicht reserviert werden.",
     "colorTip": "Tipp:",
@@ -105,7 +119,7 @@
     "statusEmpty": "Frei",
     "statusEmptyDesc": "Bett ist verfügbar",
     "statusOccupied": "Belegt",
-    "statusOccupiedDesc": "Mitarbeiter wohnt",
+    "statusOccupiedDesc": "Gast wohnt",
     "statusReserved": "Reserviert",
     "statusReservedDesc": "Für zukünftiges Datum reserviert",
     "statusOutOfService": "Außer Betrieb",
@@ -160,7 +174,7 @@
     "capacity": "Kapazität"
   },
   "bedDetails": {
-    "workerInformation": "Mitarbeiter- und Unterkunftsinformationen",
+    "workerInformation": "Gast- und Unterkunftsinformationen",
     "bedInformation": "Bettinformationen",
     "checkInDate": "Check-in-Datum",
     "expectedCheckOut": "Voraussichtliches Check-out-Datum",
@@ -181,14 +195,14 @@
   },
   "bedAction": {
     "selectAction": "Wählen Sie die Aktion aus, die Sie ausführen möchten",
-    "assignWorker": "Mitarbeiter Zuweisen",
+    "assignWorker": "Gast Zuweisen",
     "reserveBed": "Bett Reservieren",
     "setMaintenance": "Wartung Einstellen",
-    "selectWorker": "Mitarbeiter Auswählen",
-    "searchWorker": "Mitarbeiter suchen...",
-    "noWorkerFound": "Kein Mitarbeiter gefunden",
-    "quickRegister": "Schnelle Mitarbeiterregistrierung",
-    "quickRegisterWorker": "Neue Mitarbeiterregistrierung",
+    "selectWorker": "Gast Auswählen",
+    "searchWorker": "Gast suchen...",
+    "noWorkerFound": "Kein Gast gefunden",
+    "quickRegister": "Schnelle Gastregistrierung",
+    "quickRegisterWorker": "Neue Gastregistrierung",
     "startDate": "Startdatum",
     "endDate": "Enddatum",
     "assign": "Zuweisen",
@@ -208,24 +222,24 @@
   "checkOut": {
     "wizard": {
       "title": "Auschecken-Prozess",
-      "description": "Schließen Sie den Auschecken-Prozess für den Mitarbeiter ab",
-      "step1": "Mitarbeiter Auswählen",
-      "step1Description": "Suchen und wählen Sie den Mitarbeiter zum Auschecken",
+      "description": "Schließen Sie den Auschecken-Prozess für den Gast ab",
+      "step1": "Gast Auswählen",
+      "step1Description": "Suchen und wählen Sie den Gast zum Auschecken",
       "step2": "Unterkunftsinfo",
-      "step2Description": "Überprüfen Sie die aktuellen Unterkunftsinformationen des Mitarbeiters",
+      "step2Description": "Überprüfen Sie die aktuellen Unterkunftsinformationen des Gastes",
       "step3": "Auschecken-Typ",
       "step3Description": "Wählen Sie Auschecken-Typ und geben Sie Details ein",
       "step4": "Bestätigung",
       "step4Description": "Überprüfen Sie die Informationen und schließen Sie das Auschecken ab",
-      "selectWorker": "Mitarbeiter Auswählen",
-      "searchWorkerPlaceholder": "Mitarbeiter suchen...",
-      "noWorkerFound": "Kein Mitarbeiter gefunden",
-      "worker": "Mitarbeiter",
+      "selectWorker": "Gast Auswählen",
+      "searchWorkerPlaceholder": "Gast suchen...",
+      "noWorkerFound": "Kein Gast gefunden",
+      "worker": "Gast",
       "checkOutType": "Auschecken-Typ",
       "vacationDates": "Urlaubsdaten",
-      "immediateDescription": "Mitarbeiter geht heute, Bett wird verfügbar",
-      "vacationDescription": "Mitarbeiter geht in den Urlaub, Bett bleibt bis zum angegebenen Datum reserviert",
-      "unnotifiedDescription": "Mitarbeiter ist ohne Ankündigung ausgezogen, Status wird aktualisiert"
+      "immediateDescription": "Gast geht heute, Bett wird verfügbar",
+      "vacationDescription": "Gast geht in den Urlaub, Bett bleibt bis zum angegebenen Datum reserviert",
+      "unnotifiedDescription": "Gast ist ohne Ankündigung ausgezogen, Status wird aktualisiert"
     }
   },
   "checkIn": {
@@ -236,8 +250,8 @@
       "step1Line1": "Datum &",
       "step1Line2": "Filter",
       "step1Description": "Startdatum und Suchfilter festlegen",
-      "step2": "Mitarbeiter",
-      "step2Description": "Mitarbeiter auswählen oder neue Mitarbeiterdaten eingeben",
+      "step2": "Gast",
+      "step2Description": "Gast auswählen oder neue Gastdaten eingeben",
       "step3": "Zimmer/Bett",
       "step3Line1": "Zimmer/",
       "step3Line2": "Bett",
@@ -250,11 +264,11 @@
       "startDate": "Startdatum",
       "startDateRequired": "Startdatum *",
       "selectDate": "Datum auswählen",
-      "selectWorker": "Mitarbeiter auswählen",
-      "selectWorkerPrompt": "Mitarbeiter wählen",
+      "selectWorker": "Gast auswählen",
+      "selectWorkerPrompt": "Gast wählen",
       "searchWorker": "Nach Name suchen...",
-      "noWorkerFound": "Kein Mitarbeiter gefunden",
-      "registerNewWorker": "Neuen Mitarbeiter registrieren",
+      "noWorkerFound": "Kein Gast gefunden",
+      "registerNewWorker": "Neuen Gast registrieren",
       "selectHouse": "Objekt auswählen",
       "selectHousePrompt": "Ein Objekt auswählen...",
       "selectCity": "Stadt auswählen (Optional)",
@@ -285,15 +299,15 @@
       "doesntMatter": "Egal (Zimmer oder Bett)",
       "wholeRoom": "Ganzes Zimmer",
       "singleBed": "Einzelbett",
-      "firstDayStaying": "Erster Aufenthaltstag des Mitarbeiters",
+      "firstDayStaying": "Erster Aufenthaltstag des Gastes",
       "lookingForRoomOrBed": "Suchen sie ein ganzes Zimmer oder nur ein Bett?",
       "roomUnavailable": "Dieses Zimmer kann nicht ausgewählt werden",
       "roomUnavailableDescription": "Alle Betten müssen für die Zimmervermietung leer sein."
     },
     "newWorker": {
-      "title": "Neue Mitarbeiterregistrierung",
-      "quickRegistration": "Schnelle Mitarbeiterregistrierung",
-      "quickRegistrationDescription": "Registrieren Sie einen neuen Mitarbeiter mit minimalen Pflichtinformationen",
+      "title": "Neue Gastregistrierung",
+      "quickRegistration": "Schnelle Gastregistrierung",
+      "quickRegistrationDescription": "Registrieren Sie einen neuen Gast mit minimalen Pflichtinformationen",
       "saveAndSelect": "Speichern und Auswählen",
       "firstName": "Vorname *",
       "lastName": "Nachname *",
@@ -307,12 +321,12 @@
     }
   },
   "worker": {
-    "title": "Mitarbeiter",
-    "subtitle": "Alle Mitarbeiter anzeigen und verwalten",
-    "addNew": "Neuen Mitarbeiter hinzufügen",
-    "search": "Mitarbeiter suchen...",
+    "title": "Gäste",
+    "subtitle": "Alle Gäste anzeigen und verwalten",
+    "addNew": "Neuen Gast hinzufügen",
+    "search": "Gast suchen...",
     "searchPlaceholder": "Sie können nach Name, Objekt, Geburtsdatum oder Land suchen",
-    "name": "Mitarbeiter",
+    "name": "Gast",
     "firstName": "Vorname",
     "firstNameRequired": "Vorname *",
     "lastName": "Nachname",
@@ -345,13 +359,13 @@
     "departureDate": "Abreisedatum",
     "checkoutDate": "Auszugsdatum",
     "accommodationInfo": "Unterkunftsinformationen",
-    "noAccommodation": "Diesem Mitarbeiter wurde noch keine Unterkunft zugewiesen",
+    "noAccommodation": "Diesem Gast wurde noch keine Unterkunft zugewiesen",
     "updateInfo": "Bitte aktualisieren Sie Ihre Informationen",
-    "updated": "Mitarbeiterinformationen aktualisiert",
-    "added": "Neuer Mitarbeiter hinzugefügt",
+    "updated": "Gastinformationen aktualisiert",
+    "added": "Neuer Gast hinzugefügt",
     "fillRequired": "Bitte füllen Sie alle Pflichtfelder aus",
-    "editWorker": "Mitarbeiter",
-    "updateWorkerInfo": "Mitarbeiterinformationen aktualisieren"
+    "editWorker": "Gast",
+    "updateWorkerInfo": "Gastinformationen aktualisieren"
   },
   "lease": {
     "title": "Mietvertragsinformationen",
@@ -383,7 +397,7 @@
   "genderWarning": {
     "title": "Geschlechterkonflikt erkannt",
     "workerName": "Name",
-    "roomPrefix": "Der Mitarbeiter hat ein anderes Geschlecht als die anderen Bewohner mit unterschiedlichen Nachnamen in Zimmer ",
+    "roomPrefix": "Der Gast hat ein anderes Geschlecht als die anderen Bewohner mit unterschiedlichen Nachnamen in Zimmer ",
     "roomSuffix": ".",
     "policyViolation": "Dies könnte gegen die Unterkunftsrichtlinien verstoßen.",
     "whatToDo": "Was möchten Sie tun?",
@@ -395,14 +409,14 @@
     "continueAnywayBtn": "Trotzdem fortfahren"
   },
   "workerAssignment": {
-    "title": "Mitarbeiter Bett zuweisen",
+    "title": "Gast Bett zuweisen",
     "assigningTo": "Zuweisung für",
-    "selectWorkerAndDate": "Wählen Sie einen Mitarbeiter und einen Zeitraum",
-    "worker": "Mitarbeiter",
-    "selectWorker": "Mitarbeiter auswählen",
+    "selectWorkerAndDate": "Wählen Sie einen Gast und einen Zeitraum",
+    "worker": "Gast",
+    "selectWorker": "Gast auswählen",
     "startDate": "Startdatum",
     "endDate": "Enddatum",
-    "assign": "Mitarbeiter zuweisen"
+    "assign": "Gast zuweisen"
   },
   "notifications": {
     "title": "Benachrichtigungen",
@@ -412,7 +426,7 @@
     "completed": "Erledigt",
     "noPending": "Keine ausstehenden QR-Genehmigungen",
     "noUpcoming": "Keine bevorstehenden Erinnerungen",
-    "workerRegistration": "Mitarbeiterregistrierung",
+    "workerRegistration": "Gastregistrierung",
     "meterReading": "Zählerstand",
     "documentUpload": "Dokumenten-Upload",
     "maintenance": "Wartung",
@@ -449,7 +463,14 @@
     "addNotePlaceholder": "Notiz hinzufügen...",
     "meterPhotoAlt": "Zählerstandsfoto",
     "documentPhotoAlt": "Dokumentenfoto",
-    "completedAt": "erledigt"
+    "completedAt": "erledigt",
+    "apartment": "Wohnung / Einheit",
+    "requestApprovedTitle": "Anfrage genehmigt",
+    "requestApprovedMessage": "Die Gästeregistrierung wurde genehmigt.",
+    "requestRejectedTitle": "Anfrage abgelehnt",
+    "requestRejectedMessage": "Die Gästeregistrierung wurde abgelehnt.",
+    "requestActionError": "Die Anfrage konnte nicht verarbeitet werden.",
+    "genericError": "Etwas ist schiefgelaufen."
   },
   "qr": {
     "title": "QR-Verwaltung",
@@ -458,7 +479,7 @@
     "activeQRs": "Aktive QR-Codes",
     "totalActive": "QR-Codes gesamt • aktiv",
     "searchPlaceholder": "QR-Code oder Titel suchen...",
-    "typeWorker": "Mitarbeiterregistrierung",
+    "typeWorker": "Gastregistrierung",
     "typeMeter": "Zählerstand",
     "typeDocument": "Dokumenten-Upload",
     "step1": "QR-Code-Typ auswählen",
@@ -467,8 +488,8 @@
     "step1Desc": "Wählen Sie den Zweck des QR-Codes",
     "step2Desc": "Nutzungslimit und Gültigkeitsdauer festlegen",
     "step3Desc": "Teilen oder laden Sie Ihren QR-Code herunter",
-    "workerRegTitle": "Mitarbeiterregistrierung",
-    "workerRegDesc": "Mitarbeiter können ihre eigenen Informationen eingeben, Sie genehmigen nur",
+    "workerRegTitle": "Gastregistrierung",
+    "workerRegDesc": "Gäste können ihre eigenen Informationen eingeben, Sie genehmigen nur",
     "meterReadingTitle": "Zählerstand",
     "meterReadingDesc": "Zählerstand eingeben und Foto hochladen",
     "documentUploadTitle": "Dokumenten-Upload",
@@ -494,7 +515,7 @@
     "limitReached": "Dieser QR-Code hat sein Nutzungslimit erreicht.",
     "notFound": "Dieser QR-Code wurde nicht gefunden oder ist ungültig.",
     "contactAdmin": "Bitte kontaktieren Sie Ihren Administrator.",
-    "workerForm": "Mitarbeiterregistrierungsformular",
+    "workerForm": "Gastregistrierungsformular",
     "workerFormDesc": "Bitte füllen Sie Ihre Informationen vollständig aus",
     "addressExample": "z.B.: Geldernstraße 13",
     "meterType": "Zählertyp",
@@ -524,13 +545,51 @@
     "fileTypes": "PDF, JPG, PNG",
     "upload": "Hochladen"
   },
+  "qrPublic": {
+    "formTitle": "Guest Registration Form",
+    "formDescription": "Please provide your visit details to continue.",
+    "fullNameLabel": "Full Name *",
+    "countryLabel": "Country *",
+    "phoneLabel": "Phone *",
+    "emailLabel": "Email *",
+    "visitStartLabel": "Visit start date *",
+    "visitEndLabel": "Visit end date *",
+    "apartmentLabel": "Apartment / Unit (optional)",
+    "genderLabel": "Gender (optional)",
+    "genderPlaceholder": "Select gender",
+    "notesLabel": "Notes (optional)",
+    "submitButton": "Submit request",
+    "submitting": "Submitting...",
+    "submitSuccessTitle": "Your request has been submitted",
+    "submitSuccessDescription": "We will review your information and notify you after approval.",
+    "meterSuccess": "Meter reading submitted successfully.",
+    "documentSuccess": "Document uploaded successfully.",
+    "submitErrorTitle": "Unable to submit",
+    "submitErrorDescription": "Please try again shortly.",
+    "validationError": "Missing information",
+    "invalidDateRange": "Visit end date must be after the start date.",
+    "invalidTitle": "Link is not valid",
+    "contactAdmin": "Please contact your administrator.",
+    "errors": {
+      "disabled": "This QR code has been disabled.",
+      "expired": "This QR code has expired.",
+      "limit": "This QR code has reached its usage limit.",
+      "notFound": "This QR code was not found or is invalid.",
+      "network": "We could not validate this QR code. Please try again."
+    },
+    "status": {
+      "pending": "A request has already been submitted and is waiting for approval.",
+      "approved": "This QR code has already been used.",
+      "rejected": "This QR code has already been reviewed."
+    }
+  },
   "approvals": {
     "title": "Ausstehende Genehmigungen",
     "subtitle": "Prüfen und genehmigen Sie Anfragen von QR-Codes",
     "pending": "Ausstehend",
     "approved": "Anfrage erfolgreich genehmigt",
     "rejected": "Anfrage abgelehnt",
-    "workerReg": "Mitarbeiterregistrierung",
+    "workerReg": "Gastregistrierung",
     "name": "Name:",
     "birthDate": "Geburtsdatum:",
     "gender": "Geschlecht:",
@@ -541,7 +600,7 @@
     "value": "Wert:",
     "photoAdded": "Foto hinzugefügt",
     "documentUpload": "Dokumenten-Upload",
-    "worker": "Mitarbeiter:",
+    "worker": "Gast:",
     "documentType": "Dokumenttyp:",
     "uploadedFile": "Hochgeladene Datei"
   },
@@ -559,7 +618,7 @@
     "tabAccommodations": "Unterkünfte",
     "tabCharges": "Abrechnung",
     "tabPayments": "Zahlungen",
-    "searchPlaceholder": "Mitarbeiter oder Unterkunft suchen...",
+    "searchPlaceholder": "Gast oder Unterkunft suchen...",
     "filterStatus": "Status filtern",
     "statusAll": "Alle",
     "statusActive": "Aktiv",
@@ -599,7 +658,7 @@
     "selectCurrency": "Währung auswählen",
     "selectCurrencyPrompt": "Währung wählen",
     "countryManagement": "Länderverwaltung",
-    "countryManagementDesc": "Fügen Sie Länder hinzu oder entfernen Sie sie für die Verwendung in Filtern. ⭐ Das Standardland wird automatisch in Filtern ausgewählt und als Standardwert bei neuen Dateneinträgen (Objekt, Mitarbeiter) verwendet.",
+    "countryManagementDesc": "Fügen Sie Länder hinzu oder entfernen Sie sie für die Verwendung in Filtern. ⭐ Das Standardland wird automatisch in Filtern ausgewählt und als Standardwert bei neuen Dateneinträgen (Objekt, Gast) verwendet.",
     "addCountry": "Neues Land hinzufügen",
     "countryPlaceholder": "Ländername...",
     "existingCountries": "Vorhandene Länder",
@@ -642,7 +701,7 @@
   "nav": {
     "housingOverview": "Unterkunfts-Übersicht",
     "houses": "Unterkünfte",
-    "workers": "Mitarbeiter",
+    "workers": "Gäste",
     "accommodation": "Unterkunft",
     "qrManagement": "QR-Verwaltung",
     "settings": "Einstellungen",
@@ -851,7 +910,7 @@
       "payments": "Zahlungen"
     },
     "search": {
-      "placeholder": "Mitarbeiter oder Unterkunft suchen...",
+      "placeholder": "Gast oder Unterkunft suchen...",
       "statusFilter": "Nach Status filtern",
       "chargesFilter": "Nach Zahlungsstatus filtern",
       "startDate": "Start:",
@@ -998,7 +1057,7 @@
       "empty": "Keine QR-Codes gefunden"
     },
     "types": {
-      "workerRegistration": "Mitarbeiterregistrierung",
+      "workerRegistration": "Gastregistrierung",
       "meterReading": "Zählerablesung",
       "documentUpload": "Dokumenten-Upload"
     },
@@ -1015,8 +1074,8 @@
         "title": "QR-Code-Typ auswählen",
         "description": "Wählen Sie den Zweck des QR-Codes",
         "workerType": {
-          "title": "Mitarbeiterregistrierung",
-          "description": "Mitarbeiter können ihre Informationen eingeben, Sie bestätigen nur"
+          "title": "Gastregistrierung",
+          "description": "Gäste können ihre Informationen eingeben, Sie bestätigen nur"
         },
         "meterType": {
           "title": "Zählerablesung",
@@ -1099,15 +1158,15 @@
     }
   },
   "workers": {
-    "pageTitle": "Mitarbeiter",
-    "pageSubtitle": "Alle Mitarbeiter anzeigen und verwalten",
-    "addButton": "Neuen Mitarbeiter hinzufügen",
+    "pageTitle": "Gäste",
+    "pageSubtitle": "Alle Gäste anzeigen und verwalten",
+    "addButton": "Neuen Gast hinzufügen",
     "search": {
-      "placeholder": "Mitarbeiter suchen...",
+      "placeholder": "Gast suchen...",
       "tooltip": "Sie können nach Name, Haus, Geburtsdatum oder Land suchen"
     },
     "table": {
-      "worker": "Mitarbeiter",
+      "worker": "Gast",
       "gender": "Geschlecht",
       "country": "Land",
       "accommodation": "Unterkunft",
@@ -1116,7 +1175,7 @@
       "unassigned": "Nicht zugewiesen",
       "room": "Zimmer",
       "bed": "Bett",
-      "empty": "Keine Mitarbeiter gefunden",
+      "empty": "Keine Gäste gefunden",
       "edit": "Bearbeiten"
     },
     "gender": {
@@ -1127,17 +1186,17 @@
     "status": {
       "active": "Aktiv",
       "inactive": "Inaktiv",
-      "former": "Ehemaliger Mitarbeiter",
+      "former": "Ehemaliger Gast",
       "invited": "Eingeladen"
     },
     "pagination": {
-      "total": "Insgesamt {{count}} Mitarbeiter",
+      "total": "Insgesamt {{count}} Gäste",
       "page": "Seite {{current}}/{{total}}",
       "perPage": "Pro Seite:"
     },
     "addDialog": {
-      "title": "Neuen Mitarbeiter hinzufügen",
-      "description": "Einen neuen Mitarbeiterdatensatz erstellen",
+      "title": "Neuen Gast hinzufügen",
+      "description": "Einen neuen Gastdatensatz erstellen",
       "firstName": "Vorname *",
       "lastName": "Nachname *",
       "birthDate": "Geburtsdatum",
@@ -1152,22 +1211,22 @@
       "save": "Speichern"
     },
     "editDialog": {
-      "title": "Mitarbeiter bearbeiten",
+      "title": "Gast bearbeiten",
       "description": "Informationen von {{name}} aktualisieren",
       "update": "Aktualisieren"
     },
     "toasts": {
       "workerAdded": {
         "title": "Erfolg",
-        "description": "Mitarbeiter erfolgreich hinzugefügt"
+        "description": "Gast erfolgreich hinzugefügt"
       },
       "workerUpdated": {
         "title": "Erfolg",
-        "description": "Mitarbeiterinformationen aktualisiert"
+        "description": "Gastinformationen aktualisiert"
       },
       "addError": {
         "title": "Fehler",
-        "description": "Mitarbeiter konnte nicht hinzugefügt werden"
+        "description": "Gast konnte nicht hinzugefügt werden"
       },
       "updateError": {
         "title": "Fehler",

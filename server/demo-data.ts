@@ -166,6 +166,24 @@ export const demoTenants: Tenant[] = [
 // ============================================
 
 export const demoTenantUsers: User[] = [
+  // Cova B.V. - Owner (Single role) - Demo user
+  {
+    id: "user-cova-ahmet",
+    tenantId: "tenant-cova",
+    email: "ahmet.yilmaz@cova-bv.com",
+    password: "$2b$10$rHjNVA.UIq3RGguCx24PTOkD.dF2kbuWnqBUiyMZk1FLX.Dt7mRGS", // password123 (will be updated by hash script)
+    firstName: "Ahmet",
+    lastName: "Yılmaz",
+    roles: ["owner"],
+    status: "active",
+    invitedAt: new Date("2024-01-15"),
+    invitedBy: "platform-admin-1",
+    activatedAt: new Date("2024-01-15"),
+    invitationToken: null,
+    lastLoginAt: new Date("2024-10-18"),
+    createdAt: new Date("2024-01-15"),
+    updatedAt: new Date("2024-10-18"),
+  },
   // Cova B.V. - Owner (Single role)
   {
     id: "user-cova-owner",

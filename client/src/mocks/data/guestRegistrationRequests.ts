@@ -1,0 +1,41 @@
+import type { GuestRegistrationRequest } from "./types";
+
+export const mockGuestRegistrationRequests: GuestRegistrationRequest[] = [
+  {
+    id: "grr-001",
+    qrCodeId: "qr-001",
+    tenantId: "tenant-001",
+    qrCode: "WR-2024-001",
+    fullName: "Ali Yılmaz",
+    country: "Türkiye",
+    phone: "+90 555 123 4567",
+    email: "ali.yilmaz@example.com",
+    gender: "male",
+    visitStartDate: "2025-11-10",
+    visitEndDate: "2025-12-10",
+    apartment: "Unit 4B",
+    notes: "Arriving by company shuttle.",
+    status: "PENDING",
+    createdAt: "2025-11-20T08:30:00Z",
+    updatedAt: "2025-11-20T08:30:00Z",
+  },
+  {
+    id: "grr-002",
+    qrCodeId: "qr-006",
+    tenantId: "tenant-002",
+    qrCode: "WR-2024-003",
+    fullName: "Maria Kowalski",
+    country: "Polonya",
+    phone: "+48 601 234 567",
+    email: "maria.k@example.com",
+    gender: "female",
+    visitStartDate: "2025-12-01",
+    visitEndDate: "2026-01-15",
+    apartment: null,
+    notes: "Needs ground floor access.",
+    status: "APPROVED",
+    createdAt: "2025-11-02T12:00:00Z",
+    updatedAt: "2025-11-05T09:45:00Z",
+  },
+];
+

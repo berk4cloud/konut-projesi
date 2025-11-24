@@ -15,7 +15,17 @@ export default function CapacityWidget({
   oosBeds,
 }: CapacityWidgetProps) {
   const { t } = useTranslation();
-  const occupancyRate = ((occupiedBeds / totalBeds) * 100).toFixed(1);
+  const safeTotalBeds = Math.max(totalBeds, 0);
+  const hasCapacity = safeTotalBeds > 0;
+  const safeOccupiedBeds = hasCapacity
+    ? Math.min(Math.max(occupiedBeds, 0), safeTotalBeds)
+    : 0;
+  const safeEmptyBeds = hasCapacity ? Math.max(emptyBeds, 0) : 0;
+  const occupancyRateValue = hasCapacity ? (safeOccupiedBeds / safeTotalBeds) * 100 : 0;
+  const occupancyRate = occupancyRateValue.toFixed(1);
+  const capacityLabel = hasCapacity
+    ? `${safeOccupiedBeds} / ${safeTotalBeds}`
+    : "0 / -";
 
   return (
     <div className="bg-primary/10 rounded-xl p-6 space-y-4 border border-primary/20">
@@ -28,7 +38,7 @@ export default function CapacityWidget({
         <div className="space-y-1">
           <p className="text-sm text-muted-foreground">{t('capacity.totalBeds')}</p>
           <p className="text-3xl font-bold" data-testid="text-total-beds">
-            {totalBeds}
+            {safeTotalBeds}
           </p>
         </div>
 
@@ -45,7 +55,7 @@ export default function CapacityWidget({
             <p className="text-sm text-muted-foreground">{t('capacity.occupied')}</p>
           </div>
           <p className="text-2xl font-semibold" data-testid="text-occupied-beds">
-            {occupiedBeds}
+            {safeOccupiedBeds}
           </p>
         </div>
 
@@ -55,7 +65,7 @@ export default function CapacityWidget({
             <p className="text-sm text-muted-foreground">{t('capacity.empty')}</p>
           </div>
           <p className="text-2xl font-semibold" data-testid="text-empty-beds">
-            {emptyBeds}
+            {safeEmptyBeds}
           </p>
         </div>
       </div>
@@ -74,12 +84,12 @@ export default function CapacityWidget({
       <div className="space-y-2">
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>{t('capacity.capacity')}</span>
-          <span>{occupiedBeds} / {totalBeds}</span>
+          <span>{capacityLabel}</span>
         </div>
         <div className="h-2 bg-muted rounded-full overflow-hidden">
           <div
             className="h-full bg-status-occupied transition-all duration-300"
-            style={{ width: `${occupancyRate}%` }}
+            style={{ width: `${occupancyRateValue}%` }}
           />
         </div>
       </div>

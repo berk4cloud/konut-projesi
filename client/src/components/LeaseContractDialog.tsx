@@ -14,6 +14,7 @@ import { FileText, Upload, X, Calendar, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { differenceInDays, format } from "date-fns";
 import { tr } from "date-fns/locale";
+import { SHOW_PRICE_AND_PAYMENT_FIELDS } from "@/config/featureFlags";
 
 type LeaseContractData = {
   startDate: string;
@@ -108,7 +109,17 @@ export default function LeaseContractDialog({
 
   const handleSave = () => {
     // Validation
-    if (!formData.startDate || !formData.endDate || !formData.monthlyRent) {
+    if (!formData.startDate || !formData.endDate) {
+      toast({
+        title: "Eksik Bilgi",
+        description: "Lütfen tüm zorunlu alanları doldurun",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Only validate monthly rent if price fields are enabled
+    if (SHOW_PRICE_AND_PAYMENT_FIELDS && !formData.monthlyRent) {
       toast({
         title: "Eksik Bilgi",
         description: "Lütfen tüm zorunlu alanları doldurun",
@@ -221,37 +232,39 @@ export default function LeaseContractDialog({
             </div>
           </div>
 
-          {/* Monthly Rent & Payment Day */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="monthly-rent">Aylık Kira (EUR) *</Label>
-              <Input
-                id="monthly-rent"
-                type="number"
-                placeholder="2500"
-                value={formData.monthlyRent || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, monthlyRent: Number(e.target.value) })
-                }
-                data-testid="input-monthly-rent"
-              />
+          {/* Monthly Rent & Payment Day - Only show if feature flag is enabled */}
+          {SHOW_PRICE_AND_PAYMENT_FIELDS && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="monthly-rent">Aylık Kira (EUR) *</Label>
+                <Input
+                  id="monthly-rent"
+                  type="number"
+                  placeholder="2500"
+                  value={formData.monthlyRent || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, monthlyRent: Number(e.target.value) })
+                  }
+                  data-testid="input-monthly-rent"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="payment-day">Ödeme Günü *</Label>
+                <Input
+                  id="payment-day"
+                  type="number"
+                  min="1"
+                  max="31"
+                  placeholder="Her ayın 1. günü"
+                  value={formData.paymentDay || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, paymentDay: Number(e.target.value) })
+                  }
+                  data-testid="input-payment-day"
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="payment-day">Ödeme Günü *</Label>
-              <Input
-                id="payment-day"
-                type="number"
-                min="1"
-                max="31"
-                placeholder="Her ayın 1. günü"
-                value={formData.paymentDay || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, paymentDay: Number(e.target.value) })
-                }
-                data-testid="input-payment-day"
-              />
-            </div>
-          </div>
+          )}
 
           {/* PDF Upload */}
           <div className="space-y-2">

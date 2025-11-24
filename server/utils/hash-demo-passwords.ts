@@ -17,6 +17,7 @@ const DEMO_PASSWORDS = {
   "admin@arpdo.com": "AdminPass123",
   
   // Tenant users
+  "ahmet.yilmaz@cova-bv.com": "password123",
   "jan@cova.nl": "CovaPass123",
   "lisa@cova.nl": "LisaPass123",
   "tim@apple.nl": "ApplePass123",
@@ -48,7 +49,7 @@ async function hashDemoPasswords() {
   
   // Update tenant users
   console.log("\n📝 Updating tenant users...");
-  for (const email of ["jan@cova.nl", "lisa@cova.nl", "tim@apple.nl", "sophie@oneflex.nl"]) {
+  for (const email of ["ahmet.yilmaz@cova-bv.com", "jan@cova.nl", "lisa@cova.nl", "tim@apple.nl", "sophie@oneflex.nl"]) {
     await db.update(users)
       .set({ password: hashedPasswords[email] })
       .where(eq(users.email, email));
@@ -58,6 +59,7 @@ async function hashDemoPasswords() {
   console.log("\n✅ All demo passwords hashed successfully!");
   console.log("\n📋 Demo Credentials:");
   console.log("Platform Admin: tahir@arpdo.com / SecurePass123");
+  console.log("Demo User: ahmet.yilmaz@cova-bv.com / password123");
   console.log("Cova Owner: jan@cova.nl / CovaPass123");
   console.log("Apple Owner: tim@apple.nl / ApplePass123");
   console.log("OneFlex Owner: sophie@oneflex.nl / OneFlexPass123");

@@ -37,6 +37,20 @@
     "none": "Aucun",
     "unknown": "Inconnu"
   },
+  "months": {
+    "january": "Janvier",
+    "february": "Février",
+    "march": "Mars",
+    "april": "Avril",
+    "may": "Mai",
+    "june": "Juin",
+    "july": "Juillet",
+    "august": "Août",
+    "september": "Septembre",
+    "october": "Octobre",
+    "november": "Novembre",
+    "december": "Décembre"
+  },
   "auth": {
     "login": "Se connecter",
     "demoLogin": "Connexion Démo (Cova B.V.)",
@@ -105,7 +119,7 @@
     "statusEmpty": "Libre",
     "statusEmptyDesc": "Lit disponible",
     "statusOccupied": "Occupé",
-    "statusOccupiedDesc": "Travailleur réside",
+    "statusOccupiedDesc": "Résident réside",
     "statusReserved": "Réservé",
     "statusReservedDesc": "Réservé pour une date future",
     "statusOutOfService": "Hors service",
@@ -181,14 +195,14 @@
   },
   "bedAction": {
     "selectAction": "Sélectionnez l'action que vous souhaitez effectuer",
-    "assignWorker": "Assigner un Collaborateur",
+    "assignWorker": "Assigner un Résident",
     "reserveBed": "Réserver le Lit",
     "setMaintenance": "Mettre en Maintenance",
-    "selectWorker": "Sélectionner un Collaborateur",
-    "searchWorker": "Rechercher un collaborateur...",
-    "noWorkerFound": "Aucun collaborateur trouvé",
-    "quickRegister": "Enregistrement Rapide de Collaborateur",
-    "quickRegisterWorker": "Nouvel Enregistrement de Collaborateur",
+    "selectWorker": "Sélectionner un Résident",
+    "searchWorker": "Rechercher un résident...",
+    "noWorkerFound": "Aucun résident trouvé",
+    "quickRegister": "Enregistrement Rapide de Résident",
+    "quickRegisterWorker": "Nouvel Enregistrement de Résident",
     "startDate": "Date de Début",
     "endDate": "Date de Fin",
     "assign": "Assigner",
@@ -208,19 +222,19 @@
   "checkOut": {
     "wizard": {
       "title": "Processus de Check-out",
-      "description": "Complétez le processus de check-out pour le collaborateur",
-      "step1": "Sélectionner le Collaborateur",
-      "step1Description": "Recherchez et sélectionnez le collaborateur à faire partir",
+      "description": "Complétez le processus de check-out pour le résident",
+      "step1": "Sélectionner le Résident",
+      "step1Description": "Recherchez et sélectionnez le résident à faire partir",
       "step2": "Info Hébergement",
-      "step2Description": "Examinez les informations d'hébergement actuelles du collaborateur",
+      "step2Description": "Examinez les informations d'hébergement actuelles du résident",
       "step3": "Type de Check-out",
       "step3Description": "Sélectionnez le type de check-out et entrez les détails",
       "step4": "Confirmation",
       "step4Description": "Vérifiez les informations et complétez le check-out",
-      "selectWorker": "Sélectionner le Collaborateur",
-      "searchWorkerPlaceholder": "Rechercher un collaborateur...",
-      "noWorkerFound": "Aucun collaborateur trouvé",
-      "worker": "Collaborateur",
+      "selectWorker": "Sélectionner le Résident",
+      "searchWorkerPlaceholder": "Rechercher un résident...",
+      "noWorkerFound": "Aucun résident trouvé",
+      "worker": "Résident",
       "checkOutType": "Type de Check-out",
       "vacationDates": "Dates de Vacances",
       "immediateDescription": "Le collaborateur part aujourd'hui, le lit sera disponible",
@@ -236,7 +250,7 @@
       "step1Line1": "Date &",
       "step1Line2": "Filtres",
       "step1Description": "Définir la date de début et les filtres de recherche",
-      "step2": "Collaborateur",
+      "step2": "Résident",
       "step2Description": "Sélectionner un collaborateur ou saisir les données d'un nouveau collaborateur",
       "step3": "Chambre/Lit",
       "step3Line1": "Chambre/",
@@ -292,7 +306,7 @@
     },
     "newWorker": {
       "title": "Nouvel enregistrement de collaborateur",
-      "quickRegistration": "Enregistrement Rapide de Collaborateur",
+      "quickRegistration": "Enregistrement Rapide de Résident",
       "quickRegistrationDescription": "Enregistrez un nouveau collaborateur avec un minimum d'informations requises",
       "saveAndSelect": "Enregistrer et Sélectionner",
       "firstName": "Prénom *",
@@ -307,12 +321,12 @@
     }
   },
   "worker": {
-    "title": "Collaborateurs",
-    "subtitle": "Afficher et gérer tous les collaborateurs",
-    "addNew": "Ajouter un nouveau collaborateur",
-    "search": "Rechercher un collaborateur...",
+    "title": "Résidents",
+    "subtitle": "Afficher et gérer tous les résidents",
+    "addNew": "Ajouter un nouveau résident",
+    "search": "Rechercher un résident...",
     "searchPlaceholder": "Vous pouvez rechercher par nom, propriété, date de naissance ou pays",
-    "name": "Collaborateur",
+    "name": "Résident",
     "firstName": "Prénom",
     "firstNameRequired": "Prénom *",
     "lastName": "Nom",
@@ -350,7 +364,7 @@
     "updated": "Informations du collaborateur mises à jour",
     "added": "Nouveau collaborateur ajouté",
     "fillRequired": "Veuillez remplir tous les champs obligatoires",
-    "editWorker": "Collaborateur",
+    "editWorker": "Résident",
     "updateWorkerInfo": "Mettre à jour les informations du collaborateur"
   },
   "lease": {
@@ -398,7 +412,7 @@
     "title": "Attribuer un lit au collaborateur",
     "assigningTo": "Attribution pour",
     "selectWorkerAndDate": "Sélectionner un collaborateur et une période",
-    "worker": "Collaborateur",
+    "worker": "Résident",
     "selectWorker": "Sélectionner un collaborateur",
     "startDate": "Date de début",
     "endDate": "Date de fin",
@@ -412,7 +426,7 @@
     "completed": "Terminé",
     "noPending": "Aucune approbation QR en attente",
     "noUpcoming": "Aucun rappel à venir",
-    "workerRegistration": "Enregistrement de collaborateur",
+    "workerRegistration": "Enregistrement de résident",
     "meterReading": "Relevé de compteur",
     "documentUpload": "Téléversement de document",
     "maintenance": "Maintenance",
@@ -449,7 +463,14 @@
     "addNotePlaceholder": "Ajouter une note...",
     "meterPhotoAlt": "Photo du relevé de compteur",
     "documentPhotoAlt": "Photo du document",
-    "completedAt": "terminé"
+    "completedAt": "terminé",
+    "apartment": "Appartement / Unité",
+    "requestApprovedTitle": "Demande approuvée",
+    "requestApprovedMessage": "L'enregistrement du client a été approuvé.",
+    "requestRejectedTitle": "Demande refusée",
+    "requestRejectedMessage": "L'enregistrement du client a été refusé.",
+    "requestActionError": "Impossible de traiter la demande.",
+    "genericError": "Une erreur s'est produite."
   },
   "qr": {
     "title": "Gestion QR",
@@ -524,6 +545,44 @@
     "fileTypes": "PDF, JPG, PNG",
     "upload": "Téléverser"
   },
+  "qrPublic": {
+    "formTitle": "Guest Registration Form",
+    "formDescription": "Please provide your visit details to continue.",
+    "fullNameLabel": "Full Name *",
+    "countryLabel": "Country *",
+    "phoneLabel": "Phone *",
+    "emailLabel": "Email *",
+    "visitStartLabel": "Visit start date *",
+    "visitEndLabel": "Visit end date *",
+    "apartmentLabel": "Apartment / Unit (optional)",
+    "genderLabel": "Gender (optional)",
+    "genderPlaceholder": "Select gender",
+    "notesLabel": "Notes (optional)",
+    "submitButton": "Submit request",
+    "submitting": "Submitting...",
+    "submitSuccessTitle": "Your request has been submitted",
+    "submitSuccessDescription": "We will review your information and notify you after approval.",
+    "meterSuccess": "Meter reading submitted successfully.",
+    "documentSuccess": "Document uploaded successfully.",
+    "submitErrorTitle": "Unable to submit",
+    "submitErrorDescription": "Please try again shortly.",
+    "validationError": "Missing information",
+    "invalidDateRange": "Visit end date must be after the start date.",
+    "invalidTitle": "Link is not valid",
+    "contactAdmin": "Please contact your administrator.",
+    "errors": {
+      "disabled": "This QR code has been disabled.",
+      "expired": "This QR code has expired.",
+      "limit": "This QR code has reached its usage limit.",
+      "notFound": "This QR code was not found or is invalid.",
+      "network": "We could not validate this QR code. Please try again."
+    },
+    "status": {
+      "pending": "A request has already been submitted and is waiting for approval.",
+      "approved": "This QR code has already been used.",
+      "rejected": "This QR code has already been reviewed."
+    }
+  },
   "approvals": {
     "title": "Approbations en attente",
     "subtitle": "Examinez et approuvez les demandes des codes QR",
@@ -541,7 +600,7 @@
     "value": "Valeur :",
     "photoAdded": "Photo ajoutée",
     "documentUpload": "Téléversement de document",
-    "worker": "Collaborateur :",
+    "worker": "Résident :",
     "documentType": "Type de document :",
     "uploadedFile": "Fichier téléversé"
   },
@@ -642,7 +701,7 @@
   "nav": {
     "housingOverview": "Aperçu du Logement",
     "houses": "Logements",
-    "workers": "Travailleurs",
+    "workers": "Résidents",
     "accommodation": "Hébergement",
     "qrManagement": "Gestion QR",
     "settings": "Paramètres",
@@ -1099,15 +1158,15 @@
     }
   },
   "workers": {
-    "pageTitle": "Travailleurs",
-    "pageSubtitle": "Afficher et gérer tous les travailleurs",
-    "addButton": "Ajouter un nouveau travailleur",
+    "pageTitle": "Résidents",
+    "pageSubtitle": "Afficher et gérer tous les résidents",
+    "addButton": "Ajouter un nouveau résident",
     "search": {
       "placeholder": "Rechercher un travailleur...",
       "tooltip": "Vous pouvez rechercher par nom, maison, date de naissance ou pays"
     },
     "table": {
-      "worker": "Travailleur",
+      "worker": "Résident",
       "gender": "Sexe",
       "country": "Pays",
       "accommodation": "Hébergement",
@@ -1159,7 +1218,7 @@
     "toasts": {
       "workerAdded": {
         "title": "Succès",
-        "description": "Travailleur ajouté avec succès"
+        "description": "Résident ajouté avec succès"
       },
       "workerUpdated": {
         "title": "Succès",

@@ -52,6 +52,11 @@ import {
   mockEmployments, 
   mockEmploymentPrivateData 
 } from "../client/src/mocks/federated-data";
+import {
+  mockHouses,
+  mockRooms,
+  mockBeds
+} from "../client/src/mocks/data/houses";
 
 // Storage interface with federated worker identity support + multi-tenant platform
 export interface IStorage {
@@ -304,8 +309,9 @@ export class MemStorage implements IStorage {
   }
 
   async getPlatformAdminByEmail(email: string): Promise<PlatformAdmin | undefined> {
+    const normalizedEmail = email.toLowerCase().trim();
     return Array.from(this.platformAdmins.values()).find(
-      (admin) => admin.email === email
+      (admin) => admin.email.toLowerCase().trim() === normalizedEmail
     );
   }
 
@@ -395,8 +401,9 @@ export class MemStorage implements IStorage {
   }
 
   async getUsersByEmail(email: string): Promise<User[]> {
+    const normalizedEmail = email.toLowerCase().trim();
     return Array.from(this.users.values()).filter(
-      (user) => user.email === email
+      (user) => user.email.toLowerCase().trim() === normalizedEmail
     );
   }
 
@@ -674,12 +681,14 @@ export class DbStorage implements IStorage {
     try {
       // Check if already seeded (check platform admins instead of worker profiles)
       const existingAdmins = await db.select().from(platformAdminsTable).limit(1);
-      if (existingAdmins.length > 0) {
+      const existingHouses = await db.select().from(housesTable).limit(1);
+      
+      if (existingAdmins.length > 0 && existingHouses.length > 0) {
         console.log("📦 Database already has data, skipping seed");
         return;
       }
 
-      console.log("🌱 Seeding database with platform and worker data...");
+      console.log("🌱 Seeding database with platform, worker, and housing data...");
 
       // Insert countries
       await db.insert(countriesTable).values(demoCountries);
@@ -701,6 +710,67 @@ export class DbStorage implements IStorage {
       
       // Insert employment private data
       await db.insert(employmentPrivateDataTable).values(mockEmploymentPrivateData);
+
+      // Insert houses, rooms, and beds (only if they don't exist)
+      if (existingHouses.length === 0 && mockHouses && mockHouses.length > 0) {
+        const housesToInsert = mockHouses.map(house => ({
+          id: house.id,
+          tenantId: house.tenantId,
+          name: house.name,
+          address: house.address || null,
+          houseNumber: house.houseNumber || null,
+          houseNumberAddition: house.houseNumberAddition || null,
+          postalCode: house.postalCode || null,
+          city: house.city || null,
+          country: house.country || null,
+          latitude: house.latitude || null,
+          longitude: house.longitude || null,
+          totalRooms: house.totalRooms || 0,
+          totalBeds: house.totalBeds || 0,
+          costPerWeek: house.costPerWeek || null,
+          costPerBedPerDay: house.costPerBedPerDay || null,
+          ownershipType: house.ownershipType || null,
+          status: (house.status || "active") as "active" | "inactive" | "maintenance",
+          description: house.description || null,
+          internalNotes: house.internalNotes || null,
+        }));
+        await db.insert(housesTable).values(housesToInsert);
+        console.log(`✅ Houses seeded: ${housesToInsert.length} houses`);
+      }
+
+      const existingRooms = await db.select().from(roomsTable).limit(1);
+      if (existingRooms.length === 0 && mockRooms && mockRooms.length > 0) {
+        const roomsToInsert = mockRooms.map(room => ({
+          id: room.id,
+          houseId: room.houseId,
+          roomNumber: room.roomNumber,
+          floor: room.floor || null,
+          bedCount: room.bedCount || 0,
+          genderRestriction: (room.genderRestriction || "none") as "none" | "male" | "female",
+          isFamilyRoom: room.isFamilyRoom || false,
+          availableForRoomRental: room.availableForRoomRental || false,
+          status: room.status || "active",
+          costPerDay: room.costPerDay || null,
+          costPerMonth: room.costPerMonth || null,
+        }));
+        await db.insert(roomsTable).values(roomsToInsert);
+        console.log(`✅ Rooms seeded: ${roomsToInsert.length} rooms`);
+      }
+
+      const existingBeds = await db.select().from(bedsTable).limit(1);
+      if (existingBeds.length === 0 && mockBeds && mockBeds.length > 0) {
+        const bedsToInsert = mockBeds.map(bed => ({
+          id: bed.id,
+          roomId: bed.roomId,
+          bedNumber: bed.bedNumber,
+          status: (bed.status || "available") as "available" | "occupied" | "reserved" | "out_of_service",
+          roomReservationId: bed.roomReservationId || null,
+          lastOccupiedBy: bed.lastOccupiedBy || null,
+          lastOccupiedAt: bed.lastOccupiedAt ? new Date(bed.lastOccupiedAt) : null,
+        }));
+        await db.insert(bedsTable).values(bedsToInsert);
+        console.log(`✅ Beds seeded: ${bedsToInsert.length} beds`);
+      }
 
       console.log(`✅ Platform data seeded: ${demoCountries.length} countries, ${demoPlatformAdmins.length} admins, ${demoTenants.length} tenants, ${demoTenantUsers.length} users`);
       console.log(`✅ Worker data seeded: ${mockWorkerProfiles.length} profiles, ${mockEmployments.length} employments, ${mockEmploymentPrivateData.length} private data`);
@@ -739,7 +809,11 @@ export class DbStorage implements IStorage {
 
   async getPlatformAdminByEmail(email: string): Promise<PlatformAdmin | undefined> {
     await this.seedPromise; // Ensure seeded before query
-    const result = await db.select().from(platformAdminsTable).where(eq(platformAdminsTable.email, email)).limit(1);
+    // Case-insensitive email lookup
+    const normalizedEmail = email.toLowerCase().trim();
+    const result = await db.select().from(platformAdminsTable)
+      .where(sql`LOWER(${platformAdminsTable.email}) = ${normalizedEmail}`)
+      .limit(1);
     return result[0];
   }
 
@@ -800,7 +874,10 @@ export class DbStorage implements IStorage {
 
   async getUsersByEmail(email: string): Promise<User[]> {
     await this.seedPromise; // Ensure seeded before query
-    const result = await db.select().from(usersTable).where(eq(usersTable.email, email));
+    // Case-insensitive email lookup
+    const normalizedEmail = email.toLowerCase().trim();
+    const result = await db.select().from(usersTable)
+      .where(sql`LOWER(${usersTable.email}) = ${normalizedEmail}`);
     return result;
   }
 
@@ -1152,40 +1229,41 @@ export class DbStorage implements IStorage {
       workerName: string;
     }>;
   }> {
-    await this.ensureSeeded();
-    
-    // CRITICAL: Check room-level reservation FIRST (room-first architecture)
-    // If room is rented, all beds in that room are unavailable
-    const bed = await this.getBed(bedId);
-    if (!bed) {
-      return {
-        available: false,
-        conflictType: 'full',
-        conflicts: []
-      };
-    }
-    
-    // Check if room has an active room reservation
-    const roomReservations = await db.select({
-      reservation: roomReservationsTable,
-      employment: employmentsTable,
-      profile: workerProfilesTable
-    })
-      .from(roomReservationsTable)
-      .leftJoin(employmentsTable, eq(roomReservationsTable.leadEmploymentId, employmentsTable.id))
-      .leftJoin(workerProfilesTable, eq(employmentsTable.workerProfileId, workerProfilesTable.id))
-      .where(
-        and(
-          eq(roomReservationsTable.roomId, bed.roomId),
-          eq(roomReservationsTable.status, "active"),
-          // Only consider room reservations that haven't been checked out yet
-          or(
-            isNull(roomReservationsTable.checkOutDate),
-            // Or checked out after our start date
-            gte(roomReservationsTable.checkOutDate, startDate)
+    try {
+      await this.ensureSeeded();
+      
+      // CRITICAL: Check room-level reservation FIRST (room-first architecture)
+      // If room is rented, all beds in that room are unavailable
+      const bed = await this.getBed(bedId);
+      if (!bed) {
+        return {
+          available: false,
+          conflictType: 'full',
+          conflicts: []
+        };
+      }
+      
+      // Check if room has an active room reservation
+      const roomReservations = await db.select({
+        reservation: roomReservationsTable,
+        employment: employmentsTable,
+        profile: workerProfilesTable
+      })
+        .from(roomReservationsTable)
+        .leftJoin(employmentsTable, eq(roomReservationsTable.leadEmploymentId, employmentsTable.id))
+        .leftJoin(workerProfilesTable, eq(employmentsTable.workerProfileId, workerProfilesTable.id))
+        .where(
+          and(
+            eq(roomReservationsTable.roomId, bed.roomId),
+            eq(roomReservationsTable.status, "active"),
+            // Only consider room reservations that haven't been checked out yet
+            or(
+              isNull(roomReservationsTable.checkOutDate),
+              // Or checked out after our start date
+              gte(roomReservationsTable.checkOutDate, startDate)
+            )
           )
-        )
-      );
+        );
     
     // Check for room reservation conflicts
     const roomConflicts = roomReservations
@@ -1297,11 +1375,16 @@ export class DbStorage implements IStorage {
       conflictType = 'partial';
     }
 
-    return {
-      available: false,
-      conflictType,
-      conflicts
-    };
+      return {
+        available: false,
+        conflictType,
+        conflicts
+      };
+    } catch (error) {
+      console.error(`Error in checkBedAvailability for bed ${bedId}:`, error);
+      // Return unavailable status on error to be safe
+      throw new Error(`Failed to check bed availability: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
 
   // ============================================

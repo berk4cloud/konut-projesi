@@ -47,10 +47,35 @@ export default function QRManagement() {
   const { toast } = useToast();
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
+  const qrCodesQueryKey = user?.tenantId
+    ? [`/api/qr-codes?tenantId=${user.tenantId}`]
+    : ['/api/qr-codes'];
   
   // Fetch QR codes from API
   const { data: qrCodes = [], isLoading } = useQuery<QRCodeData[]>({
-    queryKey: ['/api/qr-codes', user?.tenantId],
+    queryKey: qrCodesQueryKey,
+    enabled: !!user?.tenantId,
+  });
+  
+  // Fetch houses from API
+  type House = {
+    id: string;
+    name: string;
+    address?: string;
+  };
+  const { data: houses = [] } = useQuery<House[]>({
+    queryKey: [`/api/houses?tenantId=${user?.tenantId}`],
+    enabled: !!user?.tenantId,
+  });
+  
+  // Fetch workers from API (for document upload)
+  type Worker = {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+  const { data: workers = [] } = useQuery<Worker[]>({
+    queryKey: [`/api/workers?tenantId=${user?.tenantId}`],
     enabled: !!user?.tenantId,
   });
   
@@ -63,43 +88,92 @@ export default function QRManagement() {
     usageLimit: "unlimited" as string,
     customLimit: "",
     expiryDays: "30" as string,
+    houseId: "" as string,
+    workerId: "" as string,
   });
   const [generatedCode, setGeneratedCode] = useState("");
+  const publicBaseUrl = typeof window !== "undefined" ? window.location.origin : "https://apdohabitat.app";
   
   // View QR Dialog States
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [selectedQR, setSelectedQR] = useState<QRCodeData | null>(null);
+  
+  // Fetch selected worker for document upload QR codes
+  const { data: allWorkersForDialog = [] } = useQuery<Worker[]>({
+    queryKey: [`/api/workers?tenantId=${user?.tenantId}`],
+    enabled: !!selectedQR?.workerId && !!user?.tenantId && selectedQR.type === "document_upload",
+  });
+  const selectedWorker = selectedQR?.workerId 
+    ? allWorkersForDialog.find((w: Worker) => w.id === selectedQR.workerId)
+    : undefined;
 
   // Create QR mutation
   const createQRMutation = useMutation({
-    mutationFn: async (data: any) => apiRequest('POST', '/api/qr-codes', data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/qr-codes'] });
+    mutationFn: async (data: any) => {
+      const response = await apiRequest('POST', '/api/qr-codes', data);
+      return await response.json();
+    },
+    onSuccess: async () => {
+      // Invalidate and refetch queries
+      await queryClient.invalidateQueries({ queryKey: qrCodesQueryKey });
+      // Also try to refetch explicitly
+      await queryClient.refetchQueries({ queryKey: qrCodesQueryKey });
       toast({
         title: t('qrManagement.toasts.created.title'),
         description: t('qrManagement.toasts.created.description'),
+      });
+    },
+    onError: (error: any) => {
+      console.error('Error creating QR code:', error);
+      toast({
+        title: t('qrManagement.toasts.error.title') || 'Error',
+        description: error?.message || t('qrManagement.toasts.error.description') || 'Failed to create QR code',
+        variant: 'destructive',
       });
     },
   });
 
   // Update QR mutation
   const updateQRMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: any }) =>
-      apiRequest('PATCH', `/api/qr-codes/${id}`, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/qr-codes'] });
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      const response = await apiRequest('PATCH', `/api/qr-codes/${id}`, data);
+      return await response.json();
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: qrCodesQueryKey });
+      await queryClient.refetchQueries({ queryKey: qrCodesQueryKey });
+    },
+    onError: (error: any) => {
+      console.error('Error updating QR code:', error);
+      toast({
+        title: t('qrManagement.toasts.error.title') || 'Error',
+        description: error?.message || t('qrManagement.toasts.error.description') || 'Failed to update QR code',
+        variant: 'destructive',
+      });
     },
   });
 
   // Delete QR mutation
   const deleteQRMutation = useMutation({
-    mutationFn: async (id: string) => apiRequest('DELETE', `/api/qr-codes/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/qr-codes'] });
+    mutationFn: async (id: string) => {
+      const response = await apiRequest('DELETE', `/api/qr-codes/${id}`);
+      return await response.json();
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: qrCodesQueryKey });
+      await queryClient.refetchQueries({ queryKey: qrCodesQueryKey });
       toast({
         title: t('qrManagement.toasts.deleted.title'),
         description: t('qrManagement.toasts.deleted.description'),
         variant: "destructive",
+      });
+    },
+    onError: (error: any) => {
+      console.error('Error deleting QR code:', error);
+      toast({
+        title: t('qrManagement.toasts.error.title') || 'Error',
+        description: error?.message || t('qrManagement.toasts.error.description') || 'Failed to delete QR code',
+        variant: 'destructive',
       });
     },
   });
@@ -137,7 +211,7 @@ export default function QRManagement() {
   };
 
   const handleCopyLink = (code: string) => {
-    const link = `https://apdohabitat.app/qr/${code}`;
+    const link = `${publicBaseUrl}/qr/${code}`;
     navigator.clipboard.writeText(link);
     toast({
       title: t('qrManagement.toasts.linkCopied.title'),
@@ -196,6 +270,8 @@ export default function QRManagement() {
       usageLimit: "unlimited",
       customLimit: "",
       expiryDays: "30",
+      houseId: "",
+      workerId: "",
     });
     setGeneratedCode("");
     setIsCreateDialogOpen(true);
@@ -205,6 +281,26 @@ export default function QRManagement() {
     if (step === 1) {
       setStep(2);
     } else if (step === 2) {
+      // Validate: If meter_reading is selected, houseId is required
+      if (formData.type === "meter_reading" && !formData.houseId) {
+        toast({
+          title: t('qrManagement.createDialog.step2.validationError.title'),
+          description: t('qrManagement.createDialog.step2.validationError.houseRequired'),
+          variant: 'destructive',
+        });
+        return;
+      }
+      
+      // Validate: If document_upload is selected, workerId is required
+      if (formData.type === "document_upload" && !formData.workerId) {
+        toast({
+          title: t('qrManagement.createDialog.step2.validationError.title'),
+          description: t('qrManagement.createDialog.step2.validationError.workerRequired'),
+          variant: 'destructive',
+        });
+        return;
+      }
+      
       const code = generateQRCode();
       setGeneratedCode(code);
       
@@ -226,13 +322,56 @@ export default function QRManagement() {
         usageLimit,
         expiryDate,
         status: "active",
+        houseId: formData.houseId || undefined,
+        workerId: formData.workerId || undefined,
       }, {
-        onSuccess: () => {
+        onSuccess: async (data) => {
+          console.log('QR code created successfully:', data);
+          
+          // Add workerId and houseId to the response data (backend doesn't return these)
+          const qrCodeWithRelations: QRCodeData = {
+            ...data,
+            workerId: formData.workerId || undefined,
+            houseId: formData.houseId || undefined,
+          };
+          
+          // Update the query cache with the new QR code including workerId/houseId
+          queryClient.setQueryData<QRCodeData[]>(qrCodesQueryKey, (oldData = []) => {
+            // Remove the old entry if it exists (by id)
+            const filtered = oldData.filter(qr => qr.id !== qrCodeWithRelations.id);
+            // Add the new entry with workerId/houseId
+            return [...filtered, qrCodeWithRelations];
+          });
+          
+          // Refetch and merge to preserve workerId/houseId
+          await queryClient.refetchQueries({ 
+            queryKey: qrCodesQueryKey,
+            exact: true 
+          });
+          
+          // After refetch, update again to preserve workerId/houseId (backend doesn't return these)
+          queryClient.setQueryData<QRCodeData[]>(qrCodesQueryKey, (oldData = []) => {
+            return oldData.map(qr => {
+              if (qr.id === qrCodeWithRelations.id) {
+                return {
+                  ...qr,
+                  workerId: formData.workerId || undefined,
+                  houseId: formData.houseId || undefined,
+                };
+              }
+              return qr;
+            });
+          });
+          
           setStep(3);
           toast({
             title: t('qrManagement.toasts.qrCreated.title'),
             description: t('qrManagement.toasts.qrCreated.description'),
           });
+        },
+        onError: (error: any) => {
+          console.error('Error creating QR code in handleNextStep:', error);
+          // Error handling is already done in createQRMutation.onError
         }
       });
     }
@@ -418,7 +557,8 @@ export default function QRManagement() {
                     </div>
                   </label>
 
-                  <label className="flex items-start gap-4 p-4 border rounded-lg hover-elevate cursor-pointer">
+                  {/* Sayaç Okuma ve Döküman Upload seçenekleri geçici olarak gizlendi - geri açmak için yorumları kaldırın */}
+                  {/* <label className="flex items-start gap-4 p-4 border rounded-lg hover-elevate cursor-pointer">
                     <RadioGroupItem value="meter_reading" id="type-meter" />
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
@@ -429,9 +569,9 @@ export default function QRManagement() {
                         {t('qrManagement.createDialog.step1.meterType.description')}
                       </p>
                     </div>
-                  </label>
+                  </label> */}
 
-                  <label className="flex items-start gap-4 p-4 border rounded-lg hover-elevate cursor-pointer">
+                  {/* <label className="flex items-start gap-4 p-4 border rounded-lg hover-elevate cursor-pointer">
                     <RadioGroupItem value="document_upload" id="type-document" />
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
@@ -442,7 +582,7 @@ export default function QRManagement() {
                         {t('qrManagement.createDialog.step1.documentType.description')}
                       </p>
                     </div>
-                  </label>
+                  </label> */}
                 </div>
               </RadioGroup>
 
@@ -470,6 +610,64 @@ export default function QRManagement() {
                   data-testid="input-qr-title"
                 />
               </div>
+
+              {/* House selection - required for meter_reading */}
+              {formData.type === "meter_reading" && (
+                <div className="space-y-2">
+                  <Label htmlFor="house-select">
+                    {t('qrManagement.createDialog.step2.houseLabel')} *
+                  </Label>
+                  <Select
+                    value={formData.houseId}
+                    onValueChange={(value) => setFormData({ ...formData, houseId: value })}
+                  >
+                    <SelectTrigger id="house-select" data-testid="select-house">
+                      <SelectValue placeholder={t('qrManagement.createDialog.step2.housePlaceholder')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {houses.map((house: any) => (
+                        <SelectItem key={house.id} value={house.id}>
+                          {house.name} {house.address ? `- ${house.address}` : ''}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {!formData.houseId && (
+                    <p className="text-sm text-destructive">
+                      {t('qrManagement.createDialog.step2.houseRequired')}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Worker selection - required for document_upload */}
+              {formData.type === "document_upload" && (
+                <div className="space-y-2">
+                  <Label htmlFor="worker-select">
+                    {t('qrManagement.createDialog.step2.workerLabel')} *
+                  </Label>
+                  <Select
+                    value={formData.workerId}
+                    onValueChange={(value) => setFormData({ ...formData, workerId: value })}
+                  >
+                    <SelectTrigger id="worker-select" data-testid="select-worker">
+                      <SelectValue placeholder={t('qrManagement.createDialog.step2.workerPlaceholder')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {workers.map((worker) => (
+                        <SelectItem key={worker.id} value={worker.id}>
+                          {worker.firstName} {worker.lastName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {!formData.workerId && (
+                    <p className="text-sm text-destructive">
+                      {t('qrManagement.createDialog.step2.workerRequired')}
+                    </p>
+                  )}
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="usage-limit">{t('qrManagement.createDialog.step2.usageLimitLabel')}</Label>
@@ -526,7 +724,14 @@ export default function QRManagement() {
                 <Button variant="outline" onClick={() => setStep(1)}>
                   {t('qrManagement.createDialog.step2.back')}
                 </Button>
-                <Button onClick={handleNextStep} data-testid="button-create-qr-submit">
+                <Button 
+                  onClick={handleNextStep} 
+                  data-testid="button-create-qr-submit"
+                  disabled={
+                    (formData.type === "meter_reading" && !formData.houseId) ||
+                    (formData.type === "document_upload" && !formData.workerId)
+                  }
+                >
                   {t('qrManagement.createDialog.step2.create')}
                 </Button>
               </div>
@@ -555,7 +760,7 @@ export default function QRManagement() {
                 <div className="w-full p-3 bg-muted rounded-lg">
                   <p className="text-xs text-muted-foreground mb-1">{t('qrManagement.createDialog.step3.link')}</p>
                   <code className="text-sm break-all">
-                    https://apdohabitat.app/qr/{generatedCode}
+                    {publicBaseUrl}/qr/{generatedCode}
                   </code>
                 </div>
 
@@ -611,7 +816,7 @@ export default function QRManagement() {
                   <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
                     <div>
                       <p className="text-xs text-muted-foreground">{t('qrManagement.viewDialog.link')}</p>
-                      <code className="text-sm">https://apdohabitat.app/qr/{selectedQR.code}</code>
+                      <code className="text-sm">{publicBaseUrl}/qr/{selectedQR.code}</code>
                     </div>
                     <Button
                       variant="ghost"
@@ -654,6 +859,45 @@ export default function QRManagement() {
                       {new Date(selectedQR.createdAt).toLocaleDateString(i18n.language.split('-')[0])}
                     </p>
                   </div>
+
+                  {/* Show worker info for document_upload type */}
+                  {selectedQR.type === "document_upload" && (
+                    <div className="p-3 bg-muted rounded-lg">
+                      <p className="text-xs text-muted-foreground mb-1">
+                        {t('qrManagement.viewDialog.worker') || 'Konaklayan'}
+                      </p>
+                      <p className="text-sm font-medium">
+                        {selectedQR.workerId ? (
+                          selectedWorker 
+                            ? `${selectedWorker.firstName} ${selectedWorker.lastName}`
+                            : t('qrManagement.viewDialog.loading') || 'Yükleniyor...'
+                        ) : (
+                          <span className="text-muted-foreground">
+                            {t('qrManagement.viewDialog.notSelected') || 'Seçilmemiş'}
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Show house info for meter_reading type */}
+                  {selectedQR.type === "meter_reading" && (
+                    <div className="p-3 bg-muted rounded-lg">
+                      <p className="text-xs text-muted-foreground mb-1">
+                        {t('qrManagement.viewDialog.house') || 'Konut'}
+                      </p>
+                      <p className="text-sm font-medium">
+                        {selectedQR.houseId ? (
+                          houses.find((h: House) => h.id === selectedQR.houseId)?.name || 
+                          t('qrManagement.viewDialog.loading') || 'Yükleniyor...'
+                        ) : (
+                          <span className="text-muted-foreground">
+                            {t('qrManagement.viewDialog.notSelected') || 'Seçilmemiş'}
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex gap-2 w-full pt-4">

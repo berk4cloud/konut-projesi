@@ -37,6 +37,20 @@
     "none": "None",
     "unknown": "Unknown"
   },
+  "months": {
+    "january": "January",
+    "february": "February",
+    "march": "March",
+    "april": "April",
+    "may": "May",
+    "june": "June",
+    "july": "July",
+    "august": "August",
+    "september": "September",
+    "october": "October",
+    "november": "November",
+    "december": "December"
+  },
   "auth": {
     "login": "Login",
     "demoLogin": "Demo Login (Cova B.V.)",
@@ -54,7 +68,7 @@
   },
   "dashboard": {
     "title": "Housing Overview",
-    "subtitle": "Manage worker accommodations across all properties",
+    "subtitle": "Manage guest accommodations across all properties",
     "newCheckIn": "New Check-In",
     "filters": "Filters",
     "colorSystemTitle": "Color System - LODGING Manager Perspective:",
@@ -69,11 +83,11 @@
     "colorInfoTitle": "Color System Explanation",
     "colorInfoSubtitle": "Bed status meanings from the LODGING Manager perspective",
     "greenTitle": "Green: Available for Rent (Empty)",
-    "greenDesc": "This bed is currently available and ready to be assigned to a new worker. The bed is clean, prepared, and waiting to start generating revenue. Can be reserved.",
+    "greenDesc": "This bed is currently available and ready to be assigned to a new guest. The bed is clean, prepared, and waiting to start generating revenue. Can be reserved.",
     "orangeTitle": "Orange: Rented Out",
-    "orangeDesc": "This bed is currently rented to a worker and generating monthly rental income. The worker is actively staying and regular payments are being received. This is the ideal state - the bed is generating revenue.",
+    "orangeDesc": "This bed is currently rented to a guest and generating monthly rental income. The guest is actively staying and regular payments are being received. This is the ideal state - the bed is generating revenue.",
     "yellowTitle": "Yellow: Reserved (Someone Coming)",
-    "yellowDesc": "This bed is reserved for a future date. It's not generating revenue yet, but a worker is coming soon and occupancy will begin. This is a planned and controlled situation.",
+    "yellowDesc": "This bed is reserved for a future date. It's not generating revenue yet, but a guest is coming soon and occupancy will begin. This is a planned and controlled situation.",
     "redTitle": "Red: Out of Service (Problem)",
     "redDesc": "This bed has a problem and cannot currently be rented. Maintenance, repair, or cleaning may be needed. This bed is out of service - not generating revenue and cannot be reserved.",
     "colorTip": "Tip:",
@@ -109,7 +123,7 @@
     "statusEmpty": "Empty",
     "statusEmptyDesc": "Bed is available",
     "statusOccupied": "Occupied",
-    "statusOccupiedDesc": "Worker is staying",
+    "statusOccupiedDesc": "Guest is staying",
     "statusReserved": "Reserved",
     "statusReservedDesc": "Reserved for future date",
     "statusOutOfService": "Out of Service",
@@ -164,7 +178,7 @@
     "capacity": "Capacity"
   },
   "bedDetails": {
-    "workerInformation": "Worker and accommodation information",
+    "workerInformation": "Guest and accommodation information",
     "bedInformation": "Bed information",
     "checkInDate": "Check-In Date",
     "expectedCheckOut": "Expected Check-Out Date",
@@ -185,14 +199,14 @@
   },
   "bedAction": {
     "selectAction": "Select the action you want to perform",
-    "assignWorker": "Assign Worker",
+    "assignWorker": "Assign Guest",
     "reserveBed": "Reserve Bed",
     "setMaintenance": "Set Maintenance",
-    "selectWorker": "Select Worker",
-    "searchWorker": "Search worker...",
-    "noWorkerFound": "No worker found",
-    "quickRegister": "Quick Worker Registration",
-    "quickRegisterWorker": "New Worker Registration",
+    "selectWorker": "Select Guest",
+    "searchWorker": "Search guest...",
+    "noWorkerFound": "No guest found",
+    "quickRegister": "Quick Guest Registration",
+    "quickRegisterWorker": "New Guest Registration",
     "startDate": "Start Date",
     "endDate": "End Date",
     "assign": "Assign",
@@ -212,24 +226,24 @@
   "checkOut": {
     "wizard": {
       "title": "Check-Out Process",
-      "description": "Complete the accommodation check-out process for the worker",
-      "step1": "Select Worker",
-      "step1Description": "Search and select the worker to check out",
+      "description": "Complete the accommodation check-out process for the guest",
+      "step1": "Select Guest",
+      "step1Description": "Search and select the guest to check out",
       "step2": "Accommodation Info",
-      "step2Description": "Review the worker's current accommodation information",
+      "step2Description": "Review the guest's current accommodation information",
       "step3": "Check-Out Type",
       "step3Description": "Select check-out type and enter details",
       "step4": "Confirmation",
       "step4Description": "Review the information and complete the check-out",
-      "selectWorker": "Select Worker",
-      "searchWorkerPlaceholder": "Search worker...",
-      "noWorkerFound": "No worker found",
-      "worker": "Worker",
+      "selectWorker": "Select Guest",
+      "searchWorkerPlaceholder": "Search guest...",
+      "noWorkerFound": "No guest found",
+      "worker": "Guest",
       "checkOutType": "Check-Out Type",
       "vacationDates": "Vacation Dates",
-      "immediateDescription": "Worker is leaving today, bed will be available",
-      "vacationDescription": "Worker is going on vacation, bed will remain reserved until specified date",
-      "unnotifiedDescription": "Worker left without notice, status is being updated"
+      "immediateDescription": "Guest is leaving today, bed will be available",
+      "vacationDescription": "Guest is going on vacation, bed will remain reserved until specified date",
+      "unnotifiedDescription": "Guest left without notice, status is being updated"
     }
   },
   "checkIn": {
@@ -240,8 +254,8 @@
       "step1Line1": "Date &",
       "step1Line2": "Filters",
       "step1Description": "Set start date and search filters",
-      "step2": "Worker",
-      "step2Description": "Select worker or enter new worker details",
+      "step2": "Guest",
+      "step2Description": "Select guest or enter new guest details",
       "step3": "Room/Bed",
       "step3Line1": "Room/",
       "step3Line2": "Bed",
@@ -254,11 +268,11 @@
       "startDate": "Start Date",
       "startDateRequired": "Start Date *",
       "selectDate": "Select date",
-      "selectWorker": "Select Worker",
-      "selectWorkerPrompt": "Select worker",
-      "searchWorker": "Search by worker name...",
-      "noWorkerFound": "No worker found",
-      "registerNewWorker": "Register New Worker",
+      "selectWorker": "Select Guest",
+      "selectWorkerPrompt": "Select guest",
+      "searchWorker": "Search by guest name...",
+      "noWorkerFound": "No guest found",
+      "registerNewWorker": "Register New Guest",
       "selectHouse": "Select House",
       "selectHousePrompt": "Select a house...",
       "selectCity": "Select City (Optional)",
@@ -289,10 +303,10 @@
       "doesntMatter": "Doesn't Matter (Room or Bed)",
       "wholeRoom": "Whole Room",
       "singleBed": "Single Bed",
-      "firstDayStaying": "Worker's first day of stay",
+      "firstDayStaying": "Guest's first day of stay",
       "lookingForRoomOrBed": "Are they looking for a whole room or just a bed?",
       "selectSuitableRoomAndBed": "Select Suitable Room and Bed",
-      "selectedWorker": "Selected worker:",
+      "selectedWorker": "Selected guest:",
       "genderMixed": "Mixed Gender",
       "availableBeds": "{{count}} available",
       "bed": "Bed {{number}}",
@@ -304,9 +318,9 @@
       "roomUnavailableDescription": "All beds must be empty for room rental."
     },
     "newWorker": {
-      "title": "New Worker Registration",
-      "quickRegistration": "Quick Worker Registration",
-      "quickRegistrationDescription": "Register a new worker with minimum required information",
+      "title": "New Guest Registration",
+      "quickRegistration": "Quick Guest Registration",
+      "quickRegistrationDescription": "Register a new guest with minimum required information",
       "saveAndSelect": "Save and Select",
       "firstName": "First Name *",
       "lastName": "Last Name *",
@@ -320,12 +334,12 @@
     }
   },
   "worker": {
-    "title": "Workers",
-    "subtitle": "View and manage all workers",
-    "addNew": "Add New Worker",
-    "search": "Search worker...",
+    "title": "Guests",
+    "subtitle": "View and manage all guests",
+    "addNew": "Add New Guest",
+    "search": "Search guest...",
     "searchPlaceholder": "Search by name, house, birth date, or country",
-    "name": "Worker",
+    "name": "Guest",
     "firstName": "First Name",
     "firstNameRequired": "First Name *",
     "lastName": "Last Name",
@@ -358,13 +372,13 @@
     "departureDate": "Departure Date",
     "checkoutDate": "Check-Out Date",
     "accommodationInfo": "Accommodation Information",
-    "noAccommodation": "No accommodation assigned to this worker yet",
+    "noAccommodation": "No accommodation assigned to this guest yet",
     "updateInfo": "Please update your information",
-    "updated": "Worker information updated",
-    "added": "New worker added",
+    "updated": "Guest information updated",
+    "added": "New guest added",
     "fillRequired": "Please fill all required fields",
-    "editWorker": "Worker",
-    "updateWorkerInfo": "Update worker information"
+    "editWorker": "Guest",
+    "updateWorkerInfo": "Update guest information"
   },
   "lease": {
     "title": "Lease Contract Information",
@@ -396,7 +410,7 @@
   "genderWarning": {
     "title": "Gender Mismatch Detected",
     "workerName": "name",
-    "roomPrefix": "worker, Room ",
+    "roomPrefix": "guest, Room ",
     "roomSuffix": "has a different gender from other residents with different surnames.",
     "policyViolation": "This situation may violate accommodation policies.",
     "whatToDo": "What would you like to do?",
@@ -408,14 +422,14 @@
     "continueAnywayBtn": "Continue Anyway"
   },
   "workerAssignment": {
-    "title": "Assign Worker to Bed",
+    "title": "Assign Guest to Bed",
     "assigningTo": "assigning to",
-    "selectWorkerAndDate": "Select a worker and date range",
-    "worker": "Worker",
-    "selectWorker": "Select worker",
+    "selectWorkerAndDate": "Select a guest and date range",
+    "worker": "Guest",
+    "selectWorker": "Select guest",
     "startDate": "Start Date",
     "endDate": "End Date",
-    "assign": "Assign Worker"
+    "assign": "Assign Guest"
   },
   "notifications": {
     "title": "Notifications",
@@ -425,7 +439,7 @@
     "completed": "Completed",
     "noPending": "No pending QR approvals",
     "noUpcoming": "No upcoming reminders",
-    "workerRegistration": "Worker Registration",
+    "workerRegistration": "Guest Registration",
     "meterReading": "Meter Reading",
     "documentUpload": "Document Upload",
     "maintenance": "Maintenance",
@@ -462,7 +476,14 @@
     "addNotePlaceholder": "Add note...",
     "meterPhotoAlt": "Meter reading photo",
     "documentPhotoAlt": "Document photo",
-    "completedAt": "completed"
+    "completedAt": "completed",
+    "apartment": "Apartment / Unit",
+    "requestApprovedTitle": "Request approved",
+    "requestApprovedMessage": "The guest registration has been approved.",
+    "requestRejectedTitle": "Request rejected",
+    "requestRejectedMessage": "The guest registration has been rejected.",
+    "requestActionError": "Unable to process the request.",
+    "genericError": "Something went wrong."
   },
   "qr": {
     "title": "QR Management",
@@ -471,7 +492,7 @@
     "activeQRs": "Active QR Codes",
     "totalActive": "Total  QR codes •  active",
     "searchPlaceholder": "Search QR code or title...",
-    "typeWorker": "Worker Registration",
+    "typeWorker": "Guest Registration",
     "typeMeter": "Meter Reading",
     "typeDocument": "Document Upload",
     "step1": "Select QR Code Type",
@@ -480,8 +501,8 @@
     "step1Desc": "Select the purpose of the QR code",
     "step2Desc": "Set usage limit and validity period",
     "step3Desc": "Share or download your QR code",
-    "workerRegTitle": "Worker Registration",
-    "workerRegDesc": "Workers can enter their own information, you just approve",
+    "workerRegTitle": "Guest Registration",
+    "workerRegDesc": "Guests can enter their own information, you just approve",
     "meterReadingTitle": "Meter Reading",
     "meterReadingDesc": "Enter meter value and upload photo",
     "documentUploadTitle": "Document Upload",
@@ -507,7 +528,7 @@
     "limitReached": "This QR code has reached its usage limit.",
     "notFound": "This QR code was not found or is invalid.",
     "contactAdmin": "Please contact your administrator.",
-    "workerForm": "Worker Registration Form",
+    "workerForm": "Guest Registration Form",
     "workerFormDesc": "Please fill in your information completely",
     "addressExample": "E.g.: Geldernstrasse 13",
     "meterType": "Meter Type",
@@ -537,13 +558,51 @@
     "fileTypes": "PDF, JPG, PNG",
     "upload": "Upload"
   },
+  "qrPublic": {
+    "formTitle": "Guest Registration Form",
+    "formDescription": "Please provide your visit details to continue.",
+    "fullNameLabel": "Full Name *",
+    "countryLabel": "Country *",
+    "phoneLabel": "Phone *",
+    "emailLabel": "Email *",
+    "visitStartLabel": "Visit start date *",
+    "visitEndLabel": "Visit end date *",
+    "apartmentLabel": "Apartment / Unit (optional)",
+    "genderLabel": "Gender (optional)",
+    "genderPlaceholder": "Select gender",
+    "notesLabel": "Notes (optional)",
+    "submitButton": "Submit request",
+    "submitting": "Submitting...",
+    "submitSuccessTitle": "Your request has been submitted",
+    "submitSuccessDescription": "We will review your information and notify you after approval.",
+    "meterSuccess": "Meter reading submitted successfully.",
+    "documentSuccess": "Document uploaded successfully.",
+    "submitErrorTitle": "Unable to submit",
+    "submitErrorDescription": "Please try again shortly.",
+    "validationError": "Missing information",
+    "invalidDateRange": "Visit end date must be after the start date.",
+    "invalidTitle": "Link is not valid",
+    "contactAdmin": "Please contact your administrator.",
+    "errors": {
+      "disabled": "This QR code has been disabled.",
+      "expired": "This QR code has expired.",
+      "limit": "This QR code has reached its usage limit.",
+      "notFound": "This QR code was not found or is invalid.",
+      "network": "We could not validate this QR code. Please try again."
+    },
+    "status": {
+      "pending": "A request has already been submitted and is waiting for approval.",
+      "approved": "This QR code has already been used.",
+      "rejected": "This QR code has already been reviewed."
+    }
+  },
   "approvals": {
     "title": "Pending Approvals",
     "subtitle": "Review and approve requests from QR codes",
     "pending": "Pending",
     "approved": "Request successfully approved",
     "rejected": "Request rejected",
-    "workerReg": "Worker Registration",
+    "workerReg": "Guest Registration",
     "name": "Name:",
     "birthDate": "Birth Date:",
     "gender": "Gender:",
@@ -554,7 +613,7 @@
     "value": "Value:",
     "photoAdded": "Photo added",
     "documentUpload": "Document Upload",
-    "worker": "Worker:",
+    "worker": "Guest:",
     "documentType": "Document Type:",
     "uploadedFile": "Uploaded File"
   },
@@ -572,7 +631,7 @@
     "tabAccommodations": "Accommodations",
     "tabCharges": "Billing",
     "tabPayments": "Payments",
-    "searchPlaceholder": "Search worker or housing...",
+    "searchPlaceholder": "Search guest or housing...",
     "filterStatus": "Filter status",
     "statusAll": "All",
     "statusActive": "Active",
@@ -612,7 +671,7 @@
     "selectCurrency": "Select Currency",
     "selectCurrencyPrompt": "Select currency",
     "countryManagement": "Country Management",
-    "countryManagementDesc": "Add or remove countries to be used in filters. ⭐ The default country is automatically selected in filters and used as the default value in new data entries (housing, workers).",
+    "countryManagementDesc": "Add or remove countries to be used in filters. ⭐ The default country is automatically selected in filters and used as the default value in new data entries (housing, guests).",
     "addCountry": "Add New Country",
     "countryPlaceholder": "Country name...",
     "existingCountries": "Existing Countries",
@@ -655,7 +714,7 @@
   "nav": {
     "housingOverview": "Housing Overview",
     "houses": "Houses",
-    "workers": "Workers",
+    "workers": "Guests",
     "accommodation": "Accommodation",
     "qrManagement": "QR Management",
     "settings": "Settings",
@@ -877,7 +936,7 @@
       "payments": "Payments"
     },
     "search": {
-      "placeholder": "Search worker or property...",
+      "placeholder": "Search guest or property...",
       "statusFilter": "Filter by status",
       "chargesFilter": "Filter by payment status",
       "startDate": "Start:",
@@ -1024,7 +1083,7 @@
       "empty": "No QR codes found"
     },
     "types": {
-      "workerRegistration": "Worker Registration",
+      "workerRegistration": "Guest Registration",
       "meterReading": "Meter Reading",
       "documentUpload": "Document Upload"
     },
@@ -1041,8 +1100,8 @@
         "title": "Select QR Code Type",
         "description": "Choose the purpose of the QR code",
         "workerType": {
-          "title": "Worker Registration",
-          "description": "Workers can enter their information, you only approve"
+          "title": "Guest Registration",
+          "description": "Guests can enter their information, you only approve"
         },
         "meterType": {
           "title": "Meter Reading",
@@ -1060,6 +1119,17 @@
         "description": "Set usage limit and validity period",
         "titleLabel": "Title (Optional)",
         "titlePlaceholder": "Enter a descriptive title for the QR code",
+        "houseLabel": "House",
+        "housePlaceholder": "Select a house",
+        "houseRequired": "House selection is required",
+        "validationError": {
+          "title": "Validation Error",
+          "houseRequired": "House selection is required for meter reading",
+          "workerRequired": "Guest selection is required for document upload"
+        },
+        "workerLabel": "Guest",
+        "workerPlaceholder": "Select a guest",
+        "workerRequired": "Guest selection is required",
         "usageLimitLabel": "Usage Limit",
         "usageLimitOptions": {
           "unlimited": "Unlimited",
@@ -1103,7 +1173,11 @@
       "createdAt": "Created Date",
       "link": "Link",
       "copyLink": "Copy Link",
-      "downloadQR": "Download QR"
+      "downloadQR": "Download QR",
+      "worker": "Guest",
+      "house": "House",
+      "loading": "Loading...",
+      "notSelected": "Not Selected"
     },
     "toasts": {
       "linkCopied": {
@@ -1125,15 +1199,15 @@
     }
   },
   "workers": {
-    "pageTitle": "Workers",
-    "pageSubtitle": "View and manage all workers",
-    "addButton": "Add New Worker",
+    "pageTitle": "Guests",
+    "pageSubtitle": "View and manage all guests",
+    "addButton": "Add New Guest",
     "search": {
-      "placeholder": "Search worker...",
+      "placeholder": "Search guest...",
       "tooltip": "You can search by name, house, date of birth or country"
     },
     "table": {
-      "worker": "Worker",
+      "worker": "Guest",
       "gender": "Gender",
       "country": "Country",
       "accommodation": "Accommodation",
@@ -1142,7 +1216,7 @@
       "unassigned": "Unassigned",
       "room": "Room",
       "bed": "Bed",
-      "empty": "No workers found",
+      "empty": "No guests found",
       "edit": "Edit"
     },
     "gender": {
@@ -1153,17 +1227,17 @@
     "status": {
       "active": "Active",
       "inactive": "Inactive",
-      "former": "Former Employee",
+      "former": "Former Guest",
       "invited": "Invited"
     },
     "pagination": {
-      "total": "Total {{count}} workers",
+      "total": "Total {{count}} guests",
       "page": "Page {{current}}/{{total}}",
       "perPage": "Per page:"
     },
     "addDialog": {
-      "title": "Add New Worker",
-      "description": "Create a new worker record",
+      "title": "Add New Guest",
+      "description": "Create a new guest record",
       "firstName": "First Name *",
       "lastName": "Last Name *",
       "birthDate": "Date of Birth",
@@ -1178,22 +1252,22 @@
       "save": "Save"
     },
     "editDialog": {
-      "title": "Edit Worker",
+      "title": "Edit Guest",
       "description": "Update {{name}}'s information",
       "update": "Update"
     },
     "toasts": {
       "workerAdded": {
         "title": "Success",
-        "description": "Worker successfully added"
+        "description": "Guest successfully added"
       },
       "workerUpdated": {
         "title": "Success",
-        "description": "Worker information updated"
+        "description": "Guest information updated"
       },
       "addError": {
         "title": "Error",
-        "description": "Could not add worker"
+        "description": "Could not add guest"
       },
       "updateError": {
         "title": "Error",

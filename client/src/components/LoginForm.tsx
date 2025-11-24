@@ -128,9 +128,10 @@ export default function LoginForm() {
   };
 
   const handleDemoLogin = async () => {
-    // Demo credentials
-    const demoEmail = "jan@cova.nl";
-    const demoPassword = "CovaPass123";
+    // Demo credentials from demo-credentials.md
+    const demoEmail = "ahmet.yilmaz@cova-bv.com";
+    const demoPassword = "password123";
+    const demoRole = "owner"; // Always select owner role
     
     // Update form fields for visual feedback
     setEmail(demoEmail);
@@ -150,8 +151,22 @@ export default function LoginForm() {
         throw new Error(data.error || "Giriş başarısız");
       }
 
-      // Handle response (should be redirect type for jan@cova.nl)
-      if (data.type === "redirect") {
+      // Handle different response types (same as handleLogin)
+      if (data.type === "platform_admin") {
+        // Platform admin login
+        const adminData = {
+          id: data.admin.id,
+          email: data.admin.email,
+          firstName: data.admin.firstName,
+          lastName: data.admin.lastName,
+          role: data.admin.role,
+          isPlatformAdmin: true,
+        };
+        
+        login(adminData, data.token);
+        setLocation("/platform-admin");
+      } else if (data.type === "redirect") {
+        // Single tenant + single role - direct login
         const userData = {
           id: data.user.id,
           email: data.user.email,
@@ -168,6 +183,63 @@ export default function LoginForm() {
         
         login(userData, data.token);
         setLocation("/dashboard");
+      } else if (data.type === "select_tenant") {
+        // Multi-tenant user - show tenant selector
+        setTenantOptions(data.tenants);
+        setUserInfo(data.user);
+        setShowTenantSelector(true);
+      } else if (data.type === "select_role") {
+        // Multi-role user - automatically select owner role if available
+        if (data.roles.includes(demoRole)) {
+          // Auto-select owner role
+          try {
+            const confirmResponse = await fetch("/api/login/confirm", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                email: data.user.email,
+                tenantId: data.tenant.id,
+                role: demoRole,
+              }),
+            });
+
+            const confirmData = await confirmResponse.json();
+
+            if (!confirmResponse.ok) {
+              throw new Error(confirmData.error || "Token oluşturulamadı");
+            }
+
+            const userData = {
+              id: confirmData.user.id,
+              email: confirmData.user.email,
+              firstName: confirmData.user.firstName,
+              lastName: confirmData.user.lastName,
+              tenantId: confirmData.tenant.id,
+              tenantName: confirmData.tenant.name,
+              tenantSlug: confirmData.tenant.slug,
+              role: confirmData.role,
+            };
+
+            // Store tenant data in localStorage
+            localStorage.setItem("tenant", JSON.stringify(confirmData.tenant));
+
+            login(userData, confirmData.token);
+            setLocation("/dashboard");
+            return;
+          } catch (error) {
+            console.error("Auto-role selection failed:", error);
+            // Fall through to show role selector
+          }
+        }
+        
+        // Fallback: show role selector
+        setRoleOptions(data.roles);
+        setSelectedTenant({
+          tenant: data.tenant,
+          roles: data.roles,
+        });
+        setUserInfo(data.user);
+        setShowRoleSelector(true);
       }
     } catch (error) {
       toast({

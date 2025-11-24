@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import Header from "@/components/Header";
+import { SHOW_PRICE_AND_PAYMENT_FIELDS } from "@/config/featureFlags";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -557,7 +558,7 @@ export default function Houses() {
       });
       
       // Invalidate and refetch
-      queryClient.invalidateQueries({ queryKey: ["/api/houses", user.tenantId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/houses?tenantId=${user.tenantId}`] });
     },
   });
 
@@ -585,7 +586,7 @@ export default function Houses() {
       });
       
       // Invalidate and refetch
-      queryClient.invalidateQueries({ queryKey: ["/api/houses", user.tenantId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/houses?tenantId=${user.tenantId}`] });
     },
   });
 
@@ -600,7 +601,7 @@ export default function Houses() {
       localStorage.removeItem(`house_client_data_${id}`);
       
       // Invalidate and refetch
-      queryClient.invalidateQueries({ queryKey: ["/api/houses", user.tenantId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/houses?tenantId=${user.tenantId}`] });
     },
   });
 
@@ -1405,11 +1406,6 @@ export default function Houses() {
                               <span className="text-muted-foreground">
                                 {Array.isArray(room.beds) ? room.beds.length : room.beds} {t("houses.beds")}
                               </span>
-                              {room.canRentAsRoom && (
-                                <Badge variant="outline" className="text-xs" data-testid={`badge-can-rent-${house.id}-${room.roomNumber}`}>
-                                  {t("houses.canRentRoom")}
-                                </Badge>
-                              )}
                             </div>
                           </div>
                         ))}
@@ -1649,39 +1645,40 @@ export default function Houses() {
               </Select>
             </div>
 
-            {/* House Pricing Section - Moved before Rooms */}
-            <div className="space-y-4 pt-4 border-t p-4 rounded-lg bg-orange-50/40 dark:bg-orange-950/20">
-              <div>
-                <Label className="text-base font-semibold">{t("houses.housePricing")}</Label>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {t("houses.housePricingDesc")}
-                </p>
-              </div>
+            {/* House Pricing Section - Moved before Rooms - Only show if feature flag is enabled */}
+            {SHOW_PRICE_AND_PAYMENT_FIELDS && (
+              <div className="space-y-4 pt-4 border-t p-4 rounded-lg bg-orange-50/40 dark:bg-orange-950/20">
+                <div>
+                  <Label className="text-base font-semibold">{t("houses.housePricing")}</Label>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {t("houses.housePricingDesc")}
+                  </p>
+                </div>
 
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="use-custom-house-pricing"
-                  checked={formData.pricing.useCustomPricing}
-                  onCheckedChange={(checked) => 
-                    setFormData({ 
-                      ...formData, 
-                      pricing: { 
-                        ...formData.pricing, 
-                        useCustomPricing: checked as boolean 
-                      } 
-                    })
-                  }
-                  data-testid="checkbox-use-custom-house-pricing"
-                />
-                <Label 
-                  htmlFor="use-custom-house-pricing" 
-                  className="text-sm font-normal cursor-pointer"
-                >
-                  {t("houses.useCustomPricing")}
-                </Label>
-              </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="use-custom-house-pricing"
+                    checked={formData.pricing.useCustomPricing}
+                    onCheckedChange={(checked) => 
+                      setFormData({ 
+                        ...formData, 
+                        pricing: { 
+                          ...formData.pricing, 
+                          useCustomPricing: checked as boolean 
+                        } 
+                      })
+                    }
+                    data-testid="checkbox-use-custom-house-pricing"
+                  />
+                  <Label 
+                    htmlFor="use-custom-house-pricing" 
+                    className="text-sm font-normal cursor-pointer"
+                  >
+                    {t("houses.useCustomPricing")}
+                  </Label>
+                </div>
 
-              {formData.pricing.useCustomPricing && (
+                {formData.pricing.useCustomPricing && (
                 <div className="space-y-3 pl-6">
                   <div className="grid grid-cols-2 gap-4">
                     {systemSettings.dailyRentalEnabled && (
@@ -1778,7 +1775,8 @@ export default function Houses() {
                   </div>
                 </div>
               )}
-            </div>
+              </div>
+            )}
 
             {/* Rooms Section */}
             <div className="space-y-4 pt-4 border-t">
@@ -1860,23 +1858,7 @@ export default function Houses() {
                       </div>
                     </div>
 
-                    <div className="space-y-2 pt-2">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`can-rent-${index}`}
-                          checked={room.canRentAsRoom}
-                          onCheckedChange={(checked) => handleRoomChange(index, "canRentAsRoom", !!checked)}
-                          data-testid={`checkbox-can-rent-${index}`}
-                        />
-                        <Label
-                          htmlFor={`can-rent-${index}`}
-                          className="text-sm font-normal cursor-pointer"
-                        >
-                          {t("houses.canRentAsRoom")}
-                        </Label>
-                      </div>
-
-                      <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3">
                         <div className="flex items-center space-x-2">
                           <Checkbox
                             id={`use-floor-${index}`}
@@ -1919,40 +1901,40 @@ export default function Houses() {
                             />
                           </div>
                         )}
-                      </div>
                     </div>
 
-                    {/* Room Pricing */}
-                    <div className="space-y-2 pt-3 border-t mt-3">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`use-room-pricing-${index}`}
-                          checked={room.pricing?.useCustomPricing || false}
-                          onCheckedChange={(checked) => {
-                            const newRooms = [...formData.rooms];
-                            newRooms[index] = { 
-                              ...newRooms[index], 
-                              pricing: {
-                                useCustomPricing: !!checked,
-                                bedDailyPrice: room.pricing?.bedDailyPrice,
-                                bedMonthlyPrice: room.pricing?.bedMonthlyPrice,
-                                roomDailyPrice: room.pricing?.roomDailyPrice,
-                                roomMonthlyPrice: room.pricing?.roomMonthlyPrice,
-                              }
-                            };
-                            setFormData({ ...formData, rooms: newRooms });
-                          }}
-                          data-testid={`checkbox-use-room-pricing-${index}`}
-                        />
-                        <Label
-                          htmlFor={`use-room-pricing-${index}`}
-                          className="text-sm font-normal cursor-pointer"
-                        >
-                          {t("houses.roomPricing")}
-                        </Label>
-                      </div>
+                    {/* Room Pricing - Only show if feature flag is enabled */}
+                    {SHOW_PRICE_AND_PAYMENT_FIELDS && (
+                      <div className="space-y-2 pt-3 border-t mt-3">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`use-room-pricing-${index}`}
+                            checked={room.pricing?.useCustomPricing || false}
+                            onCheckedChange={(checked) => {
+                              const newRooms = [...formData.rooms];
+                              newRooms[index] = { 
+                                ...newRooms[index], 
+                                pricing: {
+                                  useCustomPricing: !!checked,
+                                  bedDailyPrice: room.pricing?.bedDailyPrice,
+                                  bedMonthlyPrice: room.pricing?.bedMonthlyPrice,
+                                  roomDailyPrice: room.pricing?.roomDailyPrice,
+                                  roomMonthlyPrice: room.pricing?.roomMonthlyPrice,
+                                }
+                              };
+                              setFormData({ ...formData, rooms: newRooms });
+                            }}
+                            data-testid={`checkbox-use-room-pricing-${index}`}
+                          />
+                          <Label
+                            htmlFor={`use-room-pricing-${index}`}
+                            className="text-sm font-normal cursor-pointer"
+                          >
+                            {t("houses.roomPricing")}
+                          </Label>
+                        </div>
 
-                      {room.pricing?.useCustomPricing && (
+                        {room.pricing?.useCustomPricing && (
                         <div className="space-y-3 pl-6">
                           <div className="grid grid-cols-2 gap-3">
                             {systemSettings.dailyRentalEnabled && (
@@ -2010,68 +1992,10 @@ export default function Houses() {
                               />
                             </div>
                           </div>
-
-                          {room.canRentAsRoom && (
-                            <div className="grid grid-cols-2 gap-3">
-                              {systemSettings.dailyRentalEnabled && (
-                                <div className="space-y-2">
-                                  <Label htmlFor={`room-room-daily-${index}`} className="text-xs">{t("houses.roomDaily")}</Label>
-                                  <Input
-                                    id={`room-room-daily-${index}`}
-                                    data-testid={`input-room-room-daily-${index}`}
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    placeholder={`€${getApplicablePrice(room, formData as any, 'roomDaily')}`}
-                                    value={room.pricing?.roomDailyPrice ?? ""}
-                                    onChange={(e) => {
-                                      const value = e.target.value ? parseFloat(e.target.value) : undefined;
-                                      const newRooms = [...formData.rooms];
-                                      const existingPricing = newRooms[index].pricing || {};
-                                      newRooms[index] = {
-                                        ...newRooms[index],
-                                        pricing: {
-                                          ...existingPricing,
-                                          useCustomPricing: value !== undefined ? true : (existingPricing.useCustomPricing || false),
-                                          roomDailyPrice: value
-                                        }
-                                      };
-                                      setFormData({ ...formData, rooms: newRooms });
-                                    }}
-                                  />
-                                </div>
-                              )}
-                              <div className="space-y-2">
-                                <Label htmlFor={`room-room-monthly-${index}`} className="text-xs">{t("houses.roomMonthly")}</Label>
-                                <Input
-                                  id={`room-room-monthly-${index}`}
-                                  data-testid={`input-room-room-monthly-${index}`}
-                                  type="number"
-                                  step="0.01"
-                                  min="0"
-                                  placeholder={`€${getApplicablePrice(room, formData as any, 'roomMonthly')}`}
-                                  value={room.pricing?.roomMonthlyPrice ?? ""}
-                                  onChange={(e) => {
-                                    const value = e.target.value ? parseFloat(e.target.value) : undefined;
-                                    const newRooms = [...formData.rooms];
-                                    const existingPricing = newRooms[index].pricing || {};
-                                    newRooms[index] = {
-                                      ...newRooms[index],
-                                      pricing: {
-                                        ...existingPricing,
-                                        useCustomPricing: value !== undefined ? true : (existingPricing.useCustomPricing || false),
-                                        roomMonthlyPrice: value
-                                      }
-                                    };
-                                    setFormData({ ...formData, rooms: newRooms });
-                                  }}
-                                />
-                              </div>
-                            </div>
-                          )}
                         </div>
                       )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                   );
                 })}

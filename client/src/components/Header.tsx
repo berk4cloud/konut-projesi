@@ -24,6 +24,10 @@ import { useTheme } from "@/components/ThemeProvider";
 import { useAuth } from "@/contexts/AuthContext";
 import NotificationsDialog from "@/components/NotificationsDialog";
 import LanguageSelector from "@/components/LanguageSelector";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import type { GuestRegistrationRequest } from "@/mocks/data/types";
 
 type Reminder = {
   id: string;
@@ -56,11 +60,12 @@ export default function Header({
   onAddNote,
 }: HeaderProps) {
   const { t } = useTranslation();
+  const { toast } = useToast();
   const [location, setLocation] = useLocation();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
 
   const handleLogout = async () => {
     try {
@@ -77,82 +82,72 @@ export default function Header({
     { icon: Home, label: t('nav.housingOverview'), path: "/dashboard" },
     { icon: Building2, label: t('nav.houses'), path: "/houses" },
     { icon: Users, label: t('nav.workers'), path: "/workers" },
-    { icon: ClipboardList, label: t('nav.accommodation'), path: "/assignments" },
+    // Konaklama menüsü geçici olarak gizlendi - geri açmak için aşağıdaki satırın yorumunu kaldırın ve filter'ı kaldırın
+    // { icon: ClipboardList, label: t('nav.accommodation'), path: "/assignments" },
     { icon: QrCode, label: t('nav.qrManagement'), path: "/qr-management" },
     { icon: Settings, label: t('nav.settings'), path: "/settings" },
-  ];
+  ].filter(item => item.path !== "/assignments"); // Konaklama menüsünü filtrele - geri açmak için bu satırı kaldırın
 
-  // Mock QR submissions (pending approvals)
-  const mockQRSubmissions = [
-    {
-      id: "qs1",
-      qrCode: "QR2024ABC1",
-      taskType: "worker_registration" as const,
-      submittedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
-      data: {
-        firstName: "Ali",
-        lastName: "Yılmaz",
-        nationality: "Türkiye",
-        phone: "+90 555 123 4567",
-        email: "ali.yilmaz@example.com",
-        idNumber: "12345678901",
-        dateOfBirth: "1990-05-15",
-        gender: "male",
-      },
+  const pendingRequestsQueryKey = user?.tenantId
+    ? [`/api/guest-registration-requests/pending?tenantId=${user.tenantId}`]
+    : ['/api/guest-registration-requests/pending'];
+
+  const { data: pendingGuestRequests = [] } = useQuery<GuestRegistrationRequest[]>({
+    queryKey: pendingRequestsQueryKey,
+    enabled: !!user?.tenantId,
+  });
+
+  const approveRequestMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiRequest('POST', `/api/guest-registration-requests/${id}/approve`);
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload?.error || 'Failed to approve request');
+      }
+      return payload;
     },
-    {
-      id: "qs2",
-      qrCode: "QR2024XYZ2",
-      taskType: "meter_reading" as const,
-      submittedAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), // 5 hours ago
-      data: {
-        meterType: "electricity" as const,
-        meterValue: "15750",
-        houseName: "Geldernstrasse 13",
-        photo: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&auto=format&fit=crop&q=60",
-      },
+    onSuccess: () => {
+      toast({
+        title: t("notifications.requestApprovedTitle") || "Approved",
+        description: t("notifications.requestApprovedMessage") || "Guest registration approved.",
+      });
+      queryClient.invalidateQueries({ queryKey: pendingRequestsQueryKey });
     },
-    {
-      id: "qs3",
-      qrCode: "QR2024DEF3",
-      taskType: "document_upload" as const,
-      submittedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
-      data: {
-        documentType: "Kimlik Belgesi",
-        photo: "https://images.unsplash.com/photo-1554224311-beee2c256099?w=800&auto=format&fit=crop&q=60",
-      },
+    onError: (error: any) => {
+      toast({
+        title: t("notifications.requestActionError") || "Error",
+        description: error?.message || t("notifications.genericError"),
+        variant: "destructive",
+      });
     },
-    {
-      id: "qs4",
-      qrCode: "QR2024GHI4",
-      taskType: "worker_registration" as const,
-      submittedAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), // 3 hours ago
-      data: {
-        firstName: "Maria",
-        lastName: "Kowalski",
-        nationality: "Polonya",
-        phone: "+48 601 234 567",
-        email: "maria.k@example.com",
-        idNumber: "POL987654321",
-        dateOfBirth: "1988-12-10",
-        gender: "female",
-      },
+  });
+
+  const rejectRequestMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiRequest('POST', `/api/guest-registration-requests/${id}/reject`);
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload?.error || 'Failed to reject request');
+      }
+      return payload;
     },
-    {
-      id: "qs5",
-      qrCode: "QR2024JKL5",
-      taskType: "meter_reading" as const,
-      submittedAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), // 6 hours ago
-      data: {
-        meterType: "gas" as const,
-        meterValue: "2850",
-        houseName: "Hauptstrasse 45",
-        photo: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&auto=format&fit=crop&q=60",
-      },
+    onSuccess: () => {
+      toast({
+        title: t("notifications.requestRejectedTitle") || "Rejected",
+        description: t("notifications.requestRejectedMessage") || "Guest registration rejected.",
+      });
+      queryClient.invalidateQueries({ queryKey: pendingRequestsQueryKey });
     },
-  ];
+    onError: (error: any) => {
+      toast({
+        title: t("notifications.requestActionError") || "Error",
+        description: error?.message || t("notifications.genericError"),
+        variant: "destructive",
+      });
+    },
+  });
   
-  const pendingApprovalsCount = mockQRSubmissions.length;
+  const pendingApprovalsCount = pendingGuestRequests.length;
   
   // Total notifications (QR approvals + upcoming reminders)
   const totalNotifications = pendingApprovalsCount + upcomingRemindersCount;
@@ -274,12 +269,12 @@ export default function Header({
         open={notificationsOpen}
         onOpenChange={setNotificationsOpen}
         pendingApprovalsCount={pendingApprovalsCount}
-        pendingApprovals={mockQRSubmissions}
+        pendingApprovals={pendingGuestRequests}
         upcomingReminders={upcomingReminders}
         onCompleteReminder={onCompleteReminder || (() => {})}
         onAddNote={onAddNote || (() => {})}
-        onApproveSubmission={(id) => console.log("Approve:", id)}
-        onRejectSubmission={(id) => console.log("Reject:", id)}
+        onApproveSubmission={(id) => approveRequestMutation.mutate(id)}
+        onRejectSubmission={(id) => rejectRequestMutation.mutate(id)}
       />
     </header>
   );

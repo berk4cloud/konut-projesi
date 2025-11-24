@@ -14,24 +14,34 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle, CheckCircle2, Building2, Upload, Camera } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { mockQRCodes, type QRCodeData, type QRCodeType, type QRStatus } from "@shared/mockQRData";
+import { type QRCodeData, type QRCodeType, type QRStatus } from "@shared/mockQRData";
+import { useTranslation } from "react-i18next";
+import type { GuestRegistrationRequest } from "@/mocks/data/types";
 
 export default function QRPublicPage() {
   const [, params] = useRoute("/qr/:code");
   const { toast } = useToast();
+  const { t } = useTranslation();
   const code = params?.code || "";
   
   const [qrData, setQrData] = useState<QRCodeData | null>(null);
   const [isValid, setIsValid] = useState<boolean | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [existingRequest, setExistingRequest] = useState<GuestRegistrationRequest | null>(null);
+  const [validationReason, setValidationReason] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Worker Registration Form
-  const [workerForm, setWorkerForm] = useState({
-    name: "",
-    birthDate: "",
-    gender: "",
-    country: "",
+  const [guestForm, setGuestForm] = useState({
+    firstName: "",
+    lastName: "",
+    dateOfBirth: "",
+    gender: "" as "male" | "female" | "",
+    nationality: "",
+    email: "",
     phone: "",
+    startDate: "",
+    jobTitle: "",
+    department: "",
   });
 
   // Meter Reading Form
@@ -51,45 +61,157 @@ export default function QRPublicPage() {
   });
 
   useEffect(() => {
-    // Validate QR code
-    const qr = mockQRCodes.find(q => q.code === code);
-    
-    if (!qr) {
-      setIsValid(false);
-      return;
+    let isMounted = true;
+
+    const validateQrCode = async () => {
+      setIsValid(null);
+      setValidationReason(null);
+      setExistingRequest(null);
+
+      try {
+        const response = await fetch(`/api/qr-codes/${code}/validate`);
+        
+        if (!response.ok) {
+          // Response başarısızsa, JSON parse etmeyi dene
+          try {
+            const errorData = await response.json();
+            if (isMounted) {
+              setQrData(errorData.qrCode || null);
+              setExistingRequest(errorData.existingRequest || null);
+              setValidationReason(errorData.reason || "not_found");
+              setIsValid(false);
+            }
+          } catch {
+            // JSON parse edilemezse
+            if (isMounted) {
+              setQrData(null);
+              setValidationReason("not_found");
+              setIsValid(false);
+            }
+          }
+          return;
+        }
+
+        const data = await response.json();
+
+        if (!data.valid) {
+          if (isMounted) {
+            setQrData(data.qrCode || null);
+            setExistingRequest(data.existingRequest || null);
+            setValidationReason(data.reason || "not_found");
+            setIsValid(false);
+          }
+          return;
+        }
+
+        if (isMounted) {
+          setQrData(data.qrCode);
+          setIsValid(true);
+        }
+
+        // One-time protection double-check - sadece 1 kerelik QR kodlar için
+        // Sınırsız veya çoklu kullanım için bu kontrol yapılmamalı
+        // Not: usedCount >= usageLimit kontrolü zaten validateQRCode'da yapılıyor,
+        // bu double-check sadece ekstra güvenlik için
+        if (data.qrCode && data.qrCode.usageLimit === 1) {
+          const requestResponse = await fetch(`/api/guest-registration-requests/by-code/${code}`);
+          if (requestResponse.ok) {
+            const requestData: GuestRegistrationRequest | null = await requestResponse.json();
+            if (requestData && isMounted && requestData.status !== "REJECTED") {
+              const reasonMap: Record<GuestRegistrationRequest["status"], string> = {
+                PENDING: "pending_request",
+                APPROVED: "already_used",
+                REJECTED: "rejected_request",
+              };
+              setExistingRequest(requestData);
+              setValidationReason(reasonMap[requestData.status]);
+              setIsValid(false);
+            }
+          }
+        }
+      } catch (error) {
+        if (isMounted) {
+          setIsValid(false);
+          setValidationReason("network");
+        }
+      }
+    };
+
+    if (code) {
+      validateQrCode();
     }
 
-    if (qr.status === "disabled" || qr.status === "expired") {
-      setIsValid(false);
-      setQrData(qr);
-      return;
-    }
-
-    // Check usage limit
-    if (qr.usageLimit && qr.usedCount >= qr.usageLimit) {
-      setIsValid(false);
-      setQrData(qr);
-      return;
-    }
-
-    // Check expiry
-    if (qr.expiryDate && new Date(qr.expiryDate) < new Date()) {
-      setIsValid(false);
-      setQrData(qr);
-      return;
-    }
-
-    setIsValid(true);
-    setQrData(qr);
+    return () => {
+      isMounted = false;
+    };
   }, [code]);
 
-  const handleWorkerSubmit = (e: React.FormEvent) => {
+  const handleGuestSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Başarılı!",
-      description: "Kayıt başvurunuz alındı. Yönetici onayından sonra haberdar edileceksiniz.",
-    });
-    setIsSubmitted(true);
+    if (!qrData) return;
+
+    // Validation - Workers sayfasındaki gibi
+    if (!guestForm.firstName || !guestForm.lastName || !guestForm.gender || !guestForm.email) {
+      toast({
+        title: t("qrPublic.validationError") || "Hata",
+        description: t("qrPublic.requiredFields") || "Lütfen zorunlu alanları doldurun.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      
+      // Workers formundan Guest Registration Request formatına dönüştür
+      const fullName = `${guestForm.firstName} ${guestForm.lastName}`.trim();
+      const visitStartDate = guestForm.startDate || new Date().toISOString().split('T')[0];
+      // Varsayılan olarak 30 gün sonra bitiş tarihi
+      const visitEndDate = guestForm.startDate 
+        ? new Date(new Date(guestForm.startDate).getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        : new Date(new Date().getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+      const response = await fetch("/api/guest-registration-requests", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          qrCode: code,
+          fullName,
+          country: guestForm.nationality || "",
+          phone: guestForm.phone || "",
+          email: guestForm.email,
+          visitStartDate,
+          visitEndDate,
+          apartment: null,
+          notes: guestForm.jobTitle || guestForm.department 
+            ? `Pozisyon: ${guestForm.jobTitle || '-'}, Departman: ${guestForm.department || '-'}` 
+            : null,
+          gender: guestForm.gender || null,
+        }),
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(payload?.error || "Request failed");
+      }
+
+      toast({
+        title: t("qrPublic.submitSuccessTitle"),
+        description: t("qrPublic.submitSuccessDescription"),
+      });
+      setExistingRequest(payload);
+      setIsSubmitted(true);
+    } catch (error: any) {
+      toast({
+        title: t("qrPublic.submitErrorTitle") || "Hata",
+        description: error?.message || t("qrPublic.submitErrorDescription"),
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleMeterSubmit = (e: React.FormEvent) => {
@@ -125,6 +247,29 @@ export default function QRPublicPage() {
   }
 
   if (!isValid || !qrData) {
+    const invalidDescription = () => {
+      switch (validationReason) {
+        case "status":
+          return t("qrPublic.errors.disabled");
+        case "expired":
+          return t("qrPublic.errors.expired");
+        case "limit":
+          return t("qrPublic.errors.limit");
+        case "pending_request":
+          return t("qrPublic.status.pending");
+        case "already_used":
+          return t("qrPublic.status.approved");
+        case "rejected_request":
+          return t("qrPublic.status.rejected");
+        case "network":
+          return t("qrPublic.errors.network");
+        case "not_found":
+          return t("qrPublic.errors.notFound");
+        default:
+          return t("qrPublic.errors.notFound");
+      }
+    };
+
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
@@ -134,19 +279,13 @@ export default function QRPublicPage() {
                 <AlertCircle className="w-8 h-8 text-destructive" />
               </div>
             </div>
-            <CardTitle className="text-2xl">Link Geçersiz</CardTitle>
+            <CardTitle className="text-2xl">{t("qrPublic.invalidTitle")}</CardTitle>
             <CardDescription className="text-base">
-              {qrData?.status === "disabled" 
-                ? "Bu QR kod devre dışı bırakılmıştır."
-                : qrData?.status === "expired"
-                ? "Bu QR kod'un süresi dolmuştur."
-                : qrData?.usageLimit && qrData.usedCount >= qrData.usageLimit
-                ? "Bu QR kod kullanım limitine ulaşmıştır."
-                : "Bu QR kod bulunamadı veya geçersiz."}
+              {invalidDescription()}
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center text-sm text-muted-foreground">
-            Lütfen yöneticinizle iletişime geçin.
+            {t("qrPublic.contactAdmin")}
           </CardContent>
         </Card>
       </div>
@@ -163,11 +302,11 @@ export default function QRPublicPage() {
                 <CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-400" />
               </div>
             </div>
-            <CardTitle className="text-2xl">Başarılı!</CardTitle>
+            <CardTitle className="text-2xl">{t("qrPublic.submitSuccessTitle")}</CardTitle>
             <CardDescription className="text-base">
-              {qrData.type === "worker_registration" && "Kayıt başvurunuz alındı. Yönetici onayından sonra bilgilendirileceksiniz."}
-              {qrData.type === "meter_reading" && "Sayaç okuma bilgileriniz başarıyla kaydedildi."}
-              {qrData.type === "document_upload" && "Dökümanınız başarıyla yüklendi ve incelemeye alındı."}
+              {qrData.type === "worker_registration" && t("qrPublic.submitSuccessDescription")}
+              {qrData.type === "meter_reading" && t("qrPublic.meterSuccess")}
+              {qrData.type === "document_upload" && t("qrPublic.documentSuccess")}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -190,78 +329,145 @@ export default function QRPublicPage() {
         {qrData.type === "worker_registration" && (
           <Card>
             <CardHeader>
-              <CardTitle>Çalışan Kayıt Formu</CardTitle>
+              <CardTitle>{t("qrPublic.formTitle")}</CardTitle>
               <CardDescription>
-                Lütfen bilgilerinizi eksiksiz doldurun
+                {t("qrPublic.formDescription")}
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleWorkerSubmit} className="space-y-4">
-                <div>
-                  <Label htmlFor="name">İsim Soyisim *</Label>
-                  <Input
-                    id="name"
-                    value={workerForm.name}
-                    onChange={(e) => setWorkerForm({ ...workerForm, name: e.target.value })}
-                    required
-                    data-testid="input-worker-name"
-                  />
+              <form onSubmit={handleGuestSubmit} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">{t("workers.addDialog.firstName")}</Label>
+                    <Input
+                      id="firstName"
+                      placeholder="John"
+                      value={guestForm.firstName}
+                      onChange={(e) => setGuestForm({ ...guestForm, firstName: e.target.value })}
+                      required
+                      data-testid="input-guest-firstname"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">{t("workers.addDialog.lastName")}</Label>
+                    <Input
+                      id="lastName"
+                      placeholder="Doe"
+                      value={guestForm.lastName}
+                      onChange={(e) => setGuestForm({ ...guestForm, lastName: e.target.value })}
+                      required
+                      data-testid="input-guest-lastname"
+                    />
+                  </div>
                 </div>
 
-                <div>
-                  <Label htmlFor="birthDate">Doğum Tarihi *</Label>
-                  <Input
-                    id="birthDate"
-                    type="date"
-                    value={workerForm.birthDate}
-                    onChange={(e) => setWorkerForm({ ...workerForm, birthDate: e.target.value })}
-                    required
-                    data-testid="input-worker-birthdate"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="dateOfBirth">{t("workers.addDialog.birthDate")}</Label>
+                    <Input
+                      id="dateOfBirth"
+                      type="date"
+                      value={guestForm.dateOfBirth}
+                      onChange={(e) => setGuestForm({ ...guestForm, dateOfBirth: e.target.value })}
+                      data-testid="input-guest-dateOfBirth"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="gender">{t("workers.addDialog.gender")}</Label>
+                    <Select
+                      value={guestForm.gender}
+                      onValueChange={(value: "male" | "female") => setGuestForm({ ...guestForm, gender: value })}
+                    >
+                      <SelectTrigger id="gender" data-testid="select-guest-gender">
+                        <SelectValue placeholder={t('workers.gender.selectPlaceholder')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="male">{t('workers.gender.male')}</SelectItem>
+                        <SelectItem value="female">{t('workers.gender.female')}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="nationality">{t("workers.addDialog.nationality")}</Label>
+                    <Input
+                      id="nationality"
+                      placeholder="Türkiye"
+                      value={guestForm.nationality}
+                      onChange={(e) => setGuestForm({ ...guestForm, nationality: e.target.value })}
+                      data-testid="input-guest-nationality"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email">{t("workers.addDialog.email")}</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="ornek@example.com"
+                      value={guestForm.email}
+                      onChange={(e) => setGuestForm({ ...guestForm, email: e.target.value })}
+                      required
+                      data-testid="input-guest-email"
+                    />
+                  </div>
                 </div>
 
-                <div>
-                  <Label htmlFor="gender">Cinsiyet *</Label>
-                  <Select
-                    value={workerForm.gender}
-                    onValueChange={(value) => setWorkerForm({ ...workerForm, gender: value })}
-                    required
-                  >
-                    <SelectTrigger id="gender" data-testid="select-worker-gender">
-                      <SelectValue placeholder="Seçiniz" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Erkek">Erkek</SelectItem>
-                      <SelectItem value="Kadın">Kadın</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">{t("workers.addDialog.phone")}</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="+31 6 12345678"
+                      value={guestForm.phone}
+                      onChange={(e) => setGuestForm({ ...guestForm, phone: e.target.value })}
+                      data-testid="input-guest-phone"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="startDate">{t("workers.addDialog.startDate")}</Label>
+                    <Input
+                      id="startDate"
+                      type="date"
+                      value={guestForm.startDate}
+                      onChange={(e) => setGuestForm({ ...guestForm, startDate: e.target.value })}
+                      data-testid="input-guest-startDate"
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="jobTitle">{t("workers.addDialog.position")}</Label>
+                    <Input
+                      id="jobTitle"
+                      placeholder="Temizlik Görevlisi"
+                      value={guestForm.jobTitle}
+                      onChange={(e) => setGuestForm({ ...guestForm, jobTitle: e.target.value })}
+                      data-testid="input-guest-jobTitle"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="department">{t("workers.addDialog.department")}</Label>
+                    <Input
+                      id="department"
+                      placeholder="Operasyon"
+                      value={guestForm.department}
+                      onChange={(e) => setGuestForm({ ...guestForm, department: e.target.value })}
+                      data-testid="input-guest-department"
+                    />
+                  </div>
                 </div>
 
-                <div>
-                  <Label htmlFor="country">Ülke *</Label>
-                  <Input
-                    id="country"
-                    value={workerForm.country}
-                    onChange={(e) => setWorkerForm({ ...workerForm, country: e.target.value })}
-                    required
-                    data-testid="input-worker-country"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="phone">Telefon *</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={workerForm.phone}
-                    onChange={(e) => setWorkerForm({ ...workerForm, phone: e.target.value })}
-                    required
-                    data-testid="input-worker-phone"
-                  />
-                </div>
-
-                <Button type="submit" className="w-full" data-testid="button-submit-worker">
-                  Kayıt Ol
+                <Button type="submit" className="w-full" data-testid="button-submit-guest" disabled={isSubmitting}>
+                  {isSubmitting ? t("qrPublic.submitting") : t("qrPublic.submitButton")}
                 </Button>
               </form>
             </CardContent>

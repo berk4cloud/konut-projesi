@@ -120,7 +120,7 @@ export default function CheckOutWizard({
 
   const handleComplete = async () => {
     // TODO: API call to check-out worker
-    console.log('Check-out data:', wizardData);
+    // Check-out data prepared
     onComplete();
     handleClose();
   };

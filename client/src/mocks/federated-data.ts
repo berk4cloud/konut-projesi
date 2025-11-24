@@ -31,38 +31,6 @@ export const mockWorkerProfiles: WorkerProfile[] = [
     updatedAt: new Date("2024-01-15"),
   },
   {
-    id: "wp-2",
-    email: "mehmet.demir@worker.com",
-    password: "hashed_password",
-    firstName: "Mehmet",
-    lastName: "Demir",
-    gender: "male",
-    phone: "+31 6 2345 6789",
-    nationality: "Türkiye",
-    dateOfBirth: "1988-08-22",
-    photo: "https://i.pravatar.cc/150?u=mehmet",
-    bio: "Reliable cleaner, punctual and detail-oriented",
-    address: "Rotterdam, Netherlands",
-    createdAt: new Date("2024-02-10"),
-    updatedAt: new Date("2024-02-10"),
-  },
-  {
-    id: "wp-3",
-    email: "ayse.kaya@worker.com",
-    password: "hashed_password",
-    firstName: "Ayşe",
-    lastName: "Kaya",
-    gender: "female",
-    phone: "+31 6 3456 7890",
-    nationality: "Türkiye",
-    dateOfBirth: "1995-03-10",
-    photo: "https://i.pravatar.cc/150?u=ayse",
-    bio: "Factory worker with excellent attendance record",
-    address: "Utrecht, Netherlands",
-    createdAt: new Date("2024-03-05"),
-    updatedAt: new Date("2024-03-05"),
-  },
-  {
     id: "wp-4",
     email: "fatma.sahin@worker.com",
     password: "hashed_password",
@@ -232,43 +200,6 @@ export const mockEmployments: Employment[] = [
     createdBy: "user-1",
   },
   
-  // Mehmet - Active at Cova
-  {
-    id: "emp-2",
-    workerProfileId: "wp-2",
-    tenantId: "tenant-cova",
-    status: "active",
-    startDate: "2024-11-01",
-    endDate: null,
-    snapshotGender: "male",
-    snapshotPhoto: "https://i.pravatar.cc/150?u=mehmet",
-    snapshotFirstName: "Mehmet",
-    snapshotLastName: "Demir",
-    jobTitle: "Cleaner",
-    department: "Facility Management",
-    createdAt: new Date("2024-11-01"),
-    updatedAt: new Date("2024-11-01"),
-    createdBy: "user-1",
-  },
-  
-  // Ayşe - Active at Cova
-  {
-    id: "emp-3",
-    workerProfileId: "wp-3",
-    tenantId: "tenant-cova",
-    status: "active",
-    startDate: "2024-09-01",
-    endDate: null,
-    snapshotGender: "female",
-    snapshotPhoto: "https://i.pravatar.cc/150?u=ayse",
-    snapshotFirstName: "Ayşe",
-    snapshotLastName: "Kaya",
-    jobTitle: "Factory Worker",
-    department: "Production",
-    createdAt: new Date("2024-09-01"),
-    updatedAt: new Date("2024-09-01"),
-    createdBy: "user-1",
-  },
   
   // Fatma - Active at Cova
   {
@@ -464,39 +395,6 @@ export const mockEmploymentPrivateData: EmploymentPrivateData[] = [
     updatedAt: new Date("2024-10-15"),
   },
   
-  // Mehmet's private data
-  {
-    id: "epd-2",
-    employmentId: "emp-2",
-    salary: "2200",
-    salaryFrequency: "monthly",
-    currency: "EUR",
-    contractType: "full_time",
-    contractStartDate: "2024-11-01",
-    contractEndDate: null,
-    internalNotes: "Reliable, good attention to detail",
-    performanceRating: "4.2",
-    managerId: "user-1",
-    createdAt: new Date("2024-11-01"),
-    updatedAt: new Date("2024-11-01"),
-  },
-  
-  // Ayşe's private data
-  {
-    id: "epd-3",
-    employmentId: "emp-3",
-    salary: "2400",
-    salaryFrequency: "monthly",
-    currency: "EUR",
-    contractType: "full_time",
-    contractStartDate: "2024-09-01",
-    contractEndDate: null,
-    internalNotes: "Fast learner, excellent team player",
-    performanceRating: "4.7",
-    managerId: "user-1",
-    createdAt: new Date("2024-09-01"),
-    updatedAt: new Date("2024-09-01"),
-  },
   
   // Fatma's private data
   {
